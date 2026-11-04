@@ -11,18 +11,27 @@ package ux
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	uncheck "github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestMarkModifiedRecalculates checks that telling the sheet something changed brings the entity's derived state up to
@@ -429,4 +438,567 @@ func TestSheetPaginatedToggle(t *testing.T) {
 	sheet.toggleLayoutEditing()
 	c.True(sheet.canTogglePaginated(item), "the command comes back once the editing is over")
 	c.True(sheet.pagesButton.Enabled(), "and so does the button")
+}
+
+// A new sheet puts the focus on its name field, not on the portrait laid out ahead of it, where typing would go
+// nowhere, nor on the Identity heading, which can take the focus while a screen reader is listening. The same choice is
+// made whenever the sheet's focus has to be found afresh, as when the layout editor closes.
+func TestSheetOpensWithTheFocusOnItsName(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	focusKey := func() (key string) {
+		screen.Do(func() {
+			if focus := wnd.Focus(); focus != nil {
+				key = focus.RefKey
+			}
+		})
+		return key
+	}
+	c.Equal(identityPanelNameFieldRefKey, focusKey(), "the sheet opens with the focus on its name")
+	var portrait *PortraitPanel
+	screen.Do(func() { portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
+	if portrait == nil {
+		t.Fatal("the character sheet must show the portrait")
+	}
+	var portraitFirst bool
+	screen.Do(func() {
+		portraitFirst = firstFocusableInSubtree(sheet.scroll.Content().AsPanel(), nil) == portrait.AsPanel()
+	})
+	c.True(portraitFirst, "the portrait is the first tab stop on the page, which is what makes the choice one")
+	screen.Do(func() { FocusFirstContent(sheet.toolbar, sheet.scroll.Content()) })
+	c.Equal(identityPanelNameFieldRefKey, focusKey(), "the focus found afresh goes to the name as well")
+
+	// Under Linux's rules, which a headless session follows, the headings take the focus while a screen reader is
+	// listening and come ahead of the name; they are passed over too.
+	if screen.AccessibilityTree(wnd) == nil {
+		t.Fatal("the window must be described")
+	}
+	headingIndex, nameIndex := -1, -1
+	screen.Do(func() {
+		for i, one := range uxtest.PanelsMatching(sheet.scroll.Content().AsPanel(), (*unison.Panel).Focusable) {
+			switch {
+			case one.Accessibility.Role == role.Heading && headingIndex < 0:
+				headingIndex = i
+			case one.RefKey == identityPanelNameFieldRefKey:
+				nameIndex = i
+			}
+		}
+	})
+	c.True(headingIndex >= 0 && headingIndex < nameIndex, "a heading is now a tab stop ahead of the name, but the "+
+		"first heading is tab stop %d and the name is tab stop %d", headingIndex, nameIndex)
+	screen.Do(func() { FocusFirstContent(sheet.toolbar, sheet.scroll.Content()) })
+	c.Equal(identityPanelNameFieldRefKey, focusKey(), "the focus found afresh still goes to the name")
+}
+
+// A tab stop without a reference key, such as the portrait, a heading or a label, keeps the focus through a change that
+// leaves it in place. When the change removes it, the focus goes to the name field, as for a keyed field that is gone.
+func TestSheetKeepsTheFocusOnKeylessTabStops(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	focus := func() (focus *unison.Panel) {
+		screen.Do(func() { focus = wnd.Focus() })
+		return focus
+	}
+	var portrait *PortraitPanel
+	screen.Do(func() { portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
+	if portrait == nil {
+		t.Fatal("the character sheet must show the portrait")
+	}
+	screen.Do(portrait.RequestFocus)
+	c.Equal(portrait.AsPanel(), focus())
+	screen.Do(func() { sheet.updatePortrait(nil) })
+	c.Equal(portrait.AsPanel(), focus(), "changing the portrait leaves the focus on it")
+	screen.Do(func() { sheet.Rebuild(false) })
+	c.Equal(portrait.AsPanel(), focus(), "a rebuild leaves the focus on it")
+
+	// Under Linux's rules a heading takes the focus once asking for the tree has activated accessibility. The Identity
+	// block never rebuilds its contents, so its heading survives Rebuild(false).
+	if screen.AccessibilityTree(wnd) == nil {
+		t.Fatal("the window must be described")
+	}
+	var heading *unison.Panel
+	screen.Do(func() {
+		for _, one := range uxtest.PanelsMatching(sheet.AsPanel(), func(p *unison.Panel) bool {
+			return p.Accessibility.Role == role.Heading && p.Accessibility.Name == "Identity"
+		}) {
+			heading = one
+		}
+	})
+	if heading == nil {
+		t.Fatal("the character sheet must show the Identity heading")
+	}
+	screen.Do(heading.RequestFocus)
+	c.Equal(heading, focus(), "the heading takes the focus while a screen reader is listening")
+	screen.Do(func() { sheet.Rebuild(false) })
+	c.Equal(heading, focus(), "a rebuild leaves the focus on the heading")
+
+	// An attribute block's rebuild replaces its rows and their read-only points fields, which are keyless tab stops
+	// with static text in the Tab order (the name label is not, being the value field's caption).
+	uxtest.FocusForReadingSetter(t, screen, wnd)(true)
+	var attrs *AttrPanel
+	var points *NonEditablePageField
+	screen.Do(func() {
+		for _, one := range uxtest.PanelsOfType[*AttrPanel](sheet.AsPanel()) {
+			if fields := uxtest.PanelsOfType[*NonEditablePageField](one.AsPanel()); len(fields) > 0 {
+				attrs = one
+				points = fields[0]
+				break
+			}
+		}
+	})
+	if points == nil {
+		t.Fatal("the character sheet must show an attribute block with a points field")
+	}
+	screen.Do(points.RequestFocus)
+	c.Equal(points.AsPanel(), focus(), "the points field takes the focus with static text in the Tab order")
+	screen.Do(func() { attrs.rebuild(gurps.SheetSettingsFor(sheet.Entity()).Attributes) })
+	var key string
+	var stillThere bool
+	screen.Do(func() {
+		stillThere = points.Window() == wnd
+		if f := wnd.Focus(); f != nil {
+			key = f.RefKey
+		}
+	})
+	c.False(stillThere, "the points field is gone with the rows")
+	c.Equal(identityPanelNameFieldRefKey, key, "the focus goes to the name field")
+}
+
+// The benchmarks below measure what a character sheet with large lists costs to update, rebuild, draw and
+// scroll, in a headless session. Run them with:
+//
+//	GOEXPERIMENT=simd go test ./ux -run '^$' -bench '^Benchmark(Sheet|PageList|NameablesPanel)' -benchmem -benchtime 2s \
+//	    -count 6 -timeout 90m | tee baseline.txt
+//
+// For a quick look, add GCS_BENCH_SIZE=0.25 and -benchtime 5x. GCS_BENCH_FILE names a real sheet to measure instead
+// of the generated one (see benchEntity); a benchmark of a list that sheet leaves off the page is skipped. Compare two
+// runs with:
+//
+//	go run golang.org/x/perf/cmd/benchstat@latest before.txt after.txt
+//
+// Besides ns/op, which is the end-to-end time including the headless session's round trips, each benchmark reports
+// ui-ns/op, the time the operation itself took on the UI thread, and draw-ns/op, the time the redraw it provoked
+// took. Each benchmark starts one headless session and must therefore never run in parallel. The sheet is shown as one
+// continuous page, except where a benchmark measures each of sheetViewModes in turn.
+
+// benchFileEnvVar names the environment variable that, when set to the path of a character sheet, has the benchmarks
+// measure that sheet instead of a generated one.
+const benchFileEnvVar = "GCS_BENCH_FILE"
+
+// sheetBench is a sheet open in a headless session, ready to be measured.
+type sheetBench struct {
+	screen *unison.HeadlessScreen
+	wnd    *unison.Window
+	sheet  *Sheet
+	heapMB float64 // The heap in use once the sheet was open, which each measurement reports as heap-MB.
+	draws  int     // How many times the window has drawn, counted on the UI thread; read it once the session is quiet.
+}
+
+// sheetViewModes are the ways a sheet can be shown, which the benchmarks of rebuilding and drawing measure in turn.
+var sheetViewModes = []struct {
+	name      string
+	paginated bool
+}{{"continuous", false}, {"pages", true}}
+
+// benchEntity returns the character to measure: the sheet named by benchFileEnvVar, or a generated one of the size
+// gurpstest.LargeEntitySizeFromEnv reports.
+func benchEntity(b *testing.B) (entity *gurps.Entity, generated bool) {
+	b.Helper()
+	if path := os.Getenv(benchFileEnvVar); path != "" {
+		e, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(path)), filepath.Base(path))
+		if err != nil {
+			b.Fatalf("unable to load %s: %v", path, err)
+		}
+		return e, false
+	}
+	size, err := gurpstest.LargeEntitySizeFromEnv()
+	if err != nil {
+		b.Fatal(err)
+	}
+	return gurpstest.NewLargeEntity(&size), true
+}
+
+// newSheetBench starts a headless session, opens the character to measure in it as a sheet, checks that every list
+// is on the page when the character was generated for that purpose, and performs one untimed update so that the
+// first measurement doesn't pay for anything lazily built. It also records the heap in use once the sheet is open and
+// starts counting the window's draws.
+func newSheetBench(b *testing.B) *sheetBench {
+	b.Helper()
+	c := check.New(b)
+	screen, wnd := uxtest.StartHeadlessWorkspace(b, c)
+	uxtest.SwapForTest(b, &gurps.GlobalSettings().General.InitialSheetPaginated, false)
+	sb := &sheetBench{screen: screen, wnd: wnd}
+	entity, generated := benchEntity(b)
+	var sheet *Sheet
+	screen.Do(func() {
+		content := wnd.Content()
+		prior := content.DrawOverCallback
+		content.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
+			if prior != nil {
+				prior(gc, rect)
+			}
+			sb.draws++
+		}
+		sheet = NewSheet("bench"+gurps.SheetExt, entity)
+		DisplayNewDockable(sheet)
+	})
+	if generated {
+		for _, key := range gurps.AllBlockKeys {
+			if !gurps.IsListBlockKey(key) {
+				continue
+			}
+			list := sheet.list(key)
+			if xreflect.IsNil(list) || !listAttachedToSheet(sheet, list) {
+				b.Fatalf("the %s list is not on the page", key)
+			}
+		}
+	}
+	screen.Do(func() { sheet.MarkModified(sheet) })
+	// Registered after the session's own cleanup, so that it runs first: the sheet is closed without a save prompt,
+	// which a modified sheet would otherwise put up.
+	b.Cleanup(func() {
+		screen.Do(func() { sheet.markUnmodified() })
+		uxtest.CloseEditorWithoutPrompt(b, screen, sheet)
+	})
+	runtime.GC()
+	var stats runtime.MemStats
+	runtime.ReadMemStats(&stats)
+	sb.sheet = sheet
+	sb.heapMB = float64(stats.HeapAlloc) / (1 << 20)
+	return sb
+}
+
+// showAs shows the sheet as pages or as one continuous page.
+func (sb *sheetBench) showAs(paginated bool) {
+	sb.screen.Do(func() {
+		if sb.sheet.paginated != paginated {
+			sb.sheet.togglePaginated()
+		}
+	})
+}
+
+// reportHeap reports the heap in use once the sheet was open. It has to be reported after the timed loop, since
+// resetting the timer discards the metrics reported before it.
+func (sb *sheetBench) reportHeap(b *testing.B) {
+	b.ReportMetric(sb.heapMB, "heap-MB")
+}
+
+// drawSince returns the time of the window's last draw if it has drawn since it had drawn seen times, or 0 if it has
+// not, and updates seen to the current count. Call it once the session is quiet.
+func (sb *sheetBench) drawSince(seen *int) time.Duration {
+	if sb.draws == *seen {
+		return 0
+	}
+	*seen = sb.draws
+	return sb.wnd.LastDrawDuration()
+}
+
+// run measures fn, which runs on the UI thread once per iteration, reporting the time it took there as ui-ns/op and
+// the time of the redraw it provoked, if any, as draw-ns/op alongside the usual end-to-end ns/op.
+func (sb *sheetBench) run(b *testing.B, fn func()) {
+	b.Helper()
+	var ui, draw time.Duration
+	var seen int
+	sb.screen.Do(func() { seen = sb.draws })
+	n := 0
+	b.ResetTimer()
+	for b.Loop() {
+		sb.screen.Do(func() {
+			// Do waits for the session to go quiet, so a draw since the last look is the redraw the previous iteration
+			// provoked.
+			draw += sb.drawSince(&seen)
+			start := time.Now()
+			fn()
+			ui += time.Since(start)
+		})
+		n++
+	}
+	b.StopTimer()
+	sb.screen.Do(func() { draw += sb.drawSince(&seen) })
+	b.ReportMetric(float64(ui.Nanoseconds())/float64(n), "ui-ns/op")
+	b.ReportMetric(float64(draw.Nanoseconds())/float64(n), "draw-ns/op")
+	sb.reportHeap(b)
+}
+
+// scrollTo brings the panel into view, so that drawing and scrolling measure the part of the page that holds it. It
+// skips the benchmark when the panel isn't on the page, as is the case on a sheet loaded through benchFileEnvVar for an
+// empty weapons list or a list its layout omits.
+func (sb *sheetBench) scrollTo(b *testing.B, p unison.Paneler) {
+	b.Helper()
+	var onPage bool
+	sb.screen.Do(func() {
+		if onPage = listAttachedToSheet(sb.sheet, p); onPage {
+			p.AsPanel().ScrollIntoView()
+		}
+	})
+	if !onPage {
+		b.Skip("not on the page")
+	}
+}
+
+func BenchmarkSheetMarkModified(b *testing.B) {
+	sb := newSheetBench(b)
+	sb.run(b, func() { sb.sheet.MarkModified(sb.sheet) })
+}
+
+func BenchmarkSheetRebuild(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, mode := range sheetViewModes {
+		for _, one := range []struct {
+			name string
+			full bool
+		}{{"full", true}, {"partial", false}} {
+			b.Run(mode.name+"/"+one.name, func(b *testing.B) {
+				sb.showAs(mode.paginated)
+				sb.run(b, func() { sb.sheet.Rebuild(one.full) })
+			})
+		}
+	}
+}
+
+func BenchmarkSheetRedraw(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, mode := range sheetViewModes {
+		for _, one := range []struct {
+			name  string
+			panel unison.Paneler
+		}{{"top", sb.sheet.page}, {"melee", sb.sheet.MeleeWeapons}, {"spells", sb.sheet.Spells}} {
+			b.Run(mode.name+"/"+one.name, func(b *testing.B) {
+				sb.showAs(mode.paginated)
+				sb.scrollTo(b, one.panel)
+				sb.run(b, func() {
+					sb.wnd.MarkForRedraw()
+					sb.wnd.FlushDrawing()
+				})
+			})
+		}
+	}
+}
+
+// BenchmarkSheetScroll measures wheel scrolling over each of the lists that are costly to draw: twenty steps down
+// and twenty back up per iteration, reporting the time per step.
+func BenchmarkSheetScroll(b *testing.B) {
+	sb := newSheetBench(b)
+	const steps = 20
+	for _, one := range []struct {
+		name  string
+		panel unison.Paneler
+	}{
+		{"melee", sb.sheet.MeleeWeapons},
+		{"ranged", sb.sheet.RangedWeapons},
+		{"skills", sb.sheet.Skills},
+		{"spells", sb.sheet.Spells},
+	} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.scrollTo(b, one.panel)
+			pt := sb.screen.PanelCenter(sb.sheet.scroll)
+			var draw time.Duration
+			seen := sb.draws
+			n := 0
+			b.ResetTimer()
+			for b.Loop() {
+				// Wheel waits for the session to go quiet, so a draw since the last look is the one its step provoked.
+				for range steps {
+					sb.screen.Wheel(pt, geom.Point{Y: -3}, 0)
+					draw += sb.drawSince(&seen)
+				}
+				for range steps {
+					sb.screen.Wheel(pt, geom.Point{Y: 3}, 0)
+					draw += sb.drawSince(&seen)
+				}
+				n++
+			}
+			b.StopTimer()
+			b.ReportMetric(float64(b.Elapsed().Nanoseconds())/float64(n*2*steps), "ns/step")
+			b.ReportMetric(float64(draw.Nanoseconds())/float64(n*2*steps), "draw-ns/step")
+			sb.reportHeap(b)
+		})
+	}
+}
+
+// BenchmarkPageListSync measures syncing each of the sheet's lists to its model, which is the bulk of an update.
+func BenchmarkPageListSync(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, key := range gurps.AllBlockKeys {
+		if !gurps.IsListBlockKey(key) {
+			continue
+		}
+		list := sb.sheet.list(key)
+		if xreflect.IsNil(list) {
+			continue
+		}
+		syncer, ok := list.(Syncer)
+		if !ok {
+			b.Fatalf("the %s list is not a Syncer", key)
+		}
+		b.Run(key, func(b *testing.B) {
+			sb.run(b, syncer.Sync)
+		})
+	}
+}
+
+// BenchmarkSheetSearch measures the search refresh every update performs: with the field empty, with text in it and its
+// matches showing, and with the same text but the matches hidden, which must cost next to nothing.
+func BenchmarkSheetSearch(b *testing.B) {
+	sb := newSheetBench(b)
+	search := sb.sheet.search
+	for _, one := range []struct {
+		name   string
+		text   string
+		hidden bool
+	}{{name: "empty"}, {name: "text", text: "spell"}, {name: "hidden", text: "spell", hidden: true}} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.screen.Do(func() {
+				search.field.RequestFocus()
+				search.field.SetText(one.text)
+				if one.hidden {
+					search.suggestions.Hide()
+				}
+			})
+			sb.run(b, search.Refresh)
+		})
+	}
+}
+
+// BenchmarkNameablesPanel measures the Nameables section of the editor of a trait on the sheet whose modifiers share
+// and are linked to its nameables: "sync" is the check it makes after every change in the editor, and "rebuild" builds
+// its rows again, as each change to them does. The section isn't in a window, so both are timed on the UI thread
+// alone, with nothing drawn.
+func BenchmarkNameablesPanel(b *testing.B) {
+	sb := newSheetBench(b)
+	var p *nameablesPanel
+	sb.screen.Do(func() {
+		gurps.Traverse(func(t *gurps.Trait) bool {
+			if len(t.NameableLinks) == 0 {
+				return false
+			}
+			_, content := buildEditorContent(sb.sheet, t, initTraitEditor)
+			p, _ = uxtest.FirstPanelOfType[*nameablesPanel](content)
+			return true
+		}, false, true, sb.sheet.entity.Traits...)
+	})
+	if p == nil {
+		b.Skip("no trait on the sheet links its modifiers' nameables")
+	}
+	sb.screen.Do(func() {
+		if p.collapse.collapsed {
+			p.collapse.toggle()
+		}
+	})
+	b.Run("sync", func(b *testing.B) {
+		sb.screen.Do(func() {
+			for b.Loop() {
+				p.Sync()
+			}
+		})
+	})
+	b.Run("rebuild", func(b *testing.B) {
+		sb.screen.Do(func() {
+			for b.Loop() {
+				p.RemoveAllChildren()
+				p.build()
+			}
+		})
+	})
+}
+
+// TestSheetBenchSkipsAListNotOnThePage verifies that a benchmark of a list that a loaded sheet leaves off the page, such
+// as the ranged weapons of a character without any, is skipped rather than measuring whatever part of the page is in
+// view.
+func TestSheetBenchSkipsAListNotOnThePage(t *testing.T) {
+	c := check.New(t)
+	path := filepath.Join(t.TempDir(), "empty"+gurps.SheetExt)
+	c.NoError(gurps.NewEntity().Save(path))
+	t.Setenv(benchFileEnvVar, path)
+	var opened, skipped bool
+	testing.Benchmark(func(b *testing.B) {
+		sb := newSheetBench(b)
+		opened = true
+		b.Run("ranged", func(b *testing.B) {
+			defer func() { skipped = b.Skipped() }()
+			sb.scrollTo(b, sb.sheet.RangedWeapons)
+		})
+	})
+	c.True(opened, "the sheet must open")
+	c.True(skipped, "a list that is not on the page must not be measured")
+}
+
+// TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce verifies that a change to a sheet's settings, which used to report
+// itself more than once, syncs the sheet a single time while still bumping its modification timestamp, and that a
+// change to another entity's settings leaves the sheet alone.
+func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	for _, fullRebuild := range []bool{false, true} {
+		entity.ModifiedOn = jio.Time{}
+		counter := installSyncCounter(sheet)
+		sheet.SheetSettingsUpdated(entity, gurps.SheetSettingsAllParts, fullRebuild)
+		c.Equal(1, counter.count, "a sheet settings change must sync the sheet exactly once (fullRebuild=%v)",
+			fullRebuild)
+		c.NotEqual(jio.Time{}, entity.ModifiedOn,
+			"a sheet settings change must bump the modification timestamp (fullRebuild=%v)", fullRebuild)
+		sheet.AsPanel().RemoveChild(counter)
+	}
+
+	// Settings for some other entity are none of this sheet's business.
+	counter := installSyncCounter(sheet)
+	sheet.SheetSettingsUpdated(gurps.NewEntity(), gurps.SheetSettingsAllParts, true)
+	c.Equal(0, counter.count, "another entity's settings change must not touch the sheet")
+}
+
+// syncCountingProvider counts the syncs of the page list it is installed in: PageList.Sync is the only caller of
+// SyncHeader.
+type syncCountingProvider[T gurps.Node[T]] struct {
+	TableProvider[T]
+	syncs int
+}
+
+func (p *syncCountingProvider[T]) SyncHeader(headers []unison.TableColumnHeader[*Node[T]]) {
+	p.syncs++
+	p.TableProvider.SyncHeader(headers)
+}
+
+// A full rebuild syncs every list it keeps as it lays the page out, and the deep sync that follows used to sync each
+// of them a second time, which on a sheet with large lists was half the cost of the rebuild. A list is synced once
+// per update, whichever kind of update it is.
+func TestFullRebuildSyncsEachListOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Kept"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	counter := &syncCountingProvider[*gurps.Trait]{TableProvider: sheet.Traits.provider}
+	sheet.Traits.provider = counter
+	list := sheet.Traits
+
+	sheet.Rebuild(true)
+	c.Equal(list, sheet.Traits, "the list must have been kept, or the count means nothing")
+	c.Equal(1, counter.syncs, "a full rebuild syncs a list it keeps once")
+	counter.syncs = 0
+	sheet.Rebuild(false)
+	c.Equal(1, counter.syncs, "a partial rebuild syncs the list once")
+	counter.syncs = 0
+	sheet.MarkModified(sheet)
+	c.Equal(1, counter.syncs, "marking the sheet modified syncs the list once")
+
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{gurps.NewTrait(nil, nil, false)}
+	template := newTestTemplateDockable("Syncs", data)
+	templateCounter := &syncCountingProvider[*gurps.Trait]{TableProvider: template.Traits.provider}
+	template.Traits.provider = templateCounter
+	templateList := template.Traits
+	template.Rebuild(true)
+	c.Equal(templateList, template.Traits, "the template's list must have been kept")
+	c.Equal(1, templateCounter.syncs, "a full rebuild of a template syncs a list it keeps once")
 }

@@ -248,3 +248,25 @@ func TestDescribeWithHint(t *testing.T) {
 		c.Equal(one.name, node.Name)
 	}
 }
+
+func TestFindRefs(t *testing.T) {
+	c := check.New(t)
+	found := func(text string, refs ...string) []string {
+		spans := findRefs(text, refs)
+		if len(spans) == 0 {
+			return nil
+		}
+		result := make([]string, 0, len(spans))
+		for _, one := range spans {
+			result = append(result, text[one[0]:one[1]])
+		}
+		return result
+	}
+	c.Equal([]string{"PY65:30"}, found("(PY65:30)", "PY65:30"))
+	c.Equal([]string{"B351", "HT55"}, found("Hiking (B351, HT55)", "HT55", "B351"), "in the order they appear")
+	c.Equal([]string{"B102", "B10"}, found("(B102, B10)", "B10", "B102"), "a reference is found as a whole word")
+	c.Equal([]string{"B10"}, found("B102 and B10", "B10"), "and never within another")
+	c.Equal([]string{"B10", "B10"}, found("B10 and B10", "B10"), "each time it appears")
+	c.Equal([]string{"PY65:30"}, found("PY65:30 PY65", "PY65:30", "PY65:3"), "the longer of two wins")
+	c.Nil(found("nothing to find", "B10", ""))
+}

@@ -12,10 +12,14 @@ package gurps
 import (
 	"context"
 	"log/slog"
+	"maps"
+	"slices"
 	"sync/atomic"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -141,4 +145,143 @@ func reloadInto[T, R any](project func(*T) R) func(data []byte) (R, error) {
 		err := jio.Unmarshal(data, &v)
 		return project(&v), err
 	}
+}
+
+// bonusTagsCriteria returns the tags criteria of one of the bonus types that migrated from "category" to "tags".
+func bonusTagsCriteria(c check.Checker, f Feature) criteria.Text {
+	switch b := f.(type) {
+	case *SkillBonus:
+		return b.TagsCriteria
+	case *SkillPointBonus:
+		return b.TagsCriteria
+	case *SpellBonus:
+		return b.TagsCriteria
+	case *SpellPointBonus:
+		return b.TagsCriteria
+	case *WeaponBonus:
+		return b.TagsCriteria
+	default:
+		c.Errorf("unexpected feature type %T", f)
+		return criteria.Text{}
+	}
+}
+
+// loadSingleFeature loads a feature list holding a single feature from its JSON and returns that feature.
+func loadSingleFeature(c check.Checker, data string) Feature {
+	var loaded Features
+	c.NoError(jio.Unmarshal([]byte(data), &loaded), "%s: should load", data)
+	c.Equal(1, len(loaded), "%s: a single feature should load", data)
+	if len(loaded) != 1 {
+		return nil
+	}
+	return loaded[0]
+}
+
+// nameableKeysOf returns the nameable keys the feature contributes, sorted.
+func nameableKeysOf(f Feature) []string {
+	m := make(map[string]string)
+	f.FillWithNameableKeys(m, nil)
+	return slices.Sorted(maps.Keys(m))
+}
+
+// stepLevelUpAndDown drives IncrementSkillLevel and DecrementSkillLevel through the expected point ladders, checking
+// after each step that exactly one level was gained or lost and that the points landed on the expected value.
+func stepLevelUpAndDown(t *testing.T, p SkillAdjustmentProvider, level func() Level, up, down []fxp.Int) {
+	t.Helper()
+	c := check.New(t)
+	for _, expected := range up {
+		before := level().Level
+		p.IncrementSkillLevel()
+		c.Equal(expected, p.RawPoints(), "points after incrementing to %v", expected)
+		c.Equal(before+fxp.One, level().Level, "level after incrementing to %v points", expected)
+	}
+	for _, expected := range down {
+		before := level().Level
+		p.DecrementSkillLevel()
+		c.Equal(expected, p.RawPoints(), "points after decrementing to %v", expected)
+		c.Equal(before-fxp.One, level().Level, "level after decrementing to %v points", expected)
+	}
+}
+
+// recalculatedLevel returns what reads the item's level once the sheet is recalculated, as it is after every step the
+// user takes.
+func recalculatedLevel(e *Entity, level func() Level) func() Level {
+	return func() Level {
+		e.Recalculate()
+		return level()
+	}
+}
+
+// newSkillDefaultTo builds a skill-based default. When anySpecialization is true, the default carries no specialization
+// criteria (matching any specialization); otherwise it requires an exact ("is") match of the given specialization,
+// including the empty string for an unspecialized skill.
+func newSkillDefaultTo(name, specialization string, anySpecialization bool, modifier fxp.Int) *SkillDefault {
+	def := &SkillDefault{
+		DefaultType: SkillID,
+		Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: name}},
+		Modifier:    modifier,
+	}
+	if !anySpecialization {
+		def.Specialization = criteria.Text{Compare: criteria.IsText, Qualifier: specialization}
+	}
+	return def
+}
+
+func textCriteria(compare criteria.StringComparison, qualifier string) criteria.Text {
+	return criteria.Text{Compare: compare, Qualifier: qualifier}
+}
+
+// addRitualMagic creates a Ritual Magic skill with the given specialization and points. When defaultMode is non-empty
+// it also installs a default: "base" defaults to the unspecialized Ritual Magic (an exact, empty-specialization match);
+// "any" defaults to any Ritual Magic skill.
+func addRitualMagic(e *Entity, specialization string, points fxp.Int, defaultMode string) *Skill {
+	sk := addTestSkill(e, "Ritual Magic", specialization, "", points)
+	switch defaultMode {
+	case "base":
+		sk.Defaults = []*SkillDefault{newSkillDefaultTo("Ritual Magic", "", false, -fxp.Six)}
+	case "any":
+		sk.Defaults = []*SkillDefault{newSkillDefaultTo("Ritual Magic", "", true, -fxp.Six)}
+	}
+	return sk
+}
+
+func newEquipmentItem(name, value, weight string) *Equipment {
+	e := NewEquipment(nil, nil, false)
+	e.Name = name
+	e.BaseValue = value
+	e.BaseWeight = weight
+	return e
+}
+
+// newEquipmentChoice returns an equipment choice container holding an option for each name.
+func newEquipmentChoice(names ...string) *Equipment {
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	for _, name := range names {
+		option := newEquipmentItem(name, "10", "1 lb")
+		option.SetParent(choice)
+		choice.Children = append(choice.Children, option)
+	}
+	return choice
+}
+
+// newRangeTestChoice returns an equipment choice picked as given from two options, one worth $10 and weighing 1 lb, the
+// other worth $30 and weighing 3 lb.
+func newRangeTestChoice(pickerType picker.Type, compare criteria.NumericComparison, qualifier fxp.Int) *Equipment {
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	choice.TemplatePicker.Type = pickerType
+	choice.TemplatePicker.Qualifier.Compare = compare
+	choice.TemplatePicker.Qualifier.Qualifier = qualifier
+	for _, one := range []*Equipment{newEquipmentItem("Cheap", "10", "1 lb"), newEquipmentItem("Dear", "30", "3 lb")} {
+		one.SetParent(choice)
+		choice.Children = append(choice.Children, one)
+	}
+	return choice
+}
+
+// item adds a piece of equipment with the given name, value and weight to the parent.
+func item(parent *Equipment, name, value, weight string) *Equipment {
+	one := newEquipmentItem(name, value, weight)
+	one.SetParent(parent)
+	parent.Children = append(parent.Children, one)
+	return one
 }

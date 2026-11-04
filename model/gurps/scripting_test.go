@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"strconv"
 	"sync"
 	"testing"
@@ -998,4 +999,100 @@ func TestScriptFindActiveModifier(t *testing.T) {
 		"a trait modifier lists its own weapons")
 	c.Equal("Swipe", resolve(scriptItem+`.findActiveModifier("Gear Mod").weapons[0].usage`),
 		"as does an equipment modifier")
+}
+
+// TestScriptExecTimeLimitSyncIsConcurrencySafe verifies that scriptExecTimeLimit can be called from a background
+// goroutine while the UI thread rewrites the general settings and republishes the limit, the pattern the deep search
+// content cache produces. The reader must observe only published values, never the struct field being written.
+func TestScriptExecTimeLimitSyncIsConcurrencySafe(t *testing.T) {
+	c := check.New(t)
+	prevOverride := scriptExecTimeLimitOverride.Load()
+	scriptExecTimeLimitOverride.Store(0)
+	defer scriptExecTimeLimitOverride.Store(prevOverride)
+	general := GlobalSettings().General
+	prevLimit := general.PermittedPerScriptExecTime
+	defer func() {
+		general.PermittedPerScriptExecTime = prevLimit
+		SyncScriptExecTimeLimit()
+	}()
+
+	// The published values all lie within the permitted range, so the settings dialog's validation would leave each of
+	// them alone rather than collapsing it to the default, and none is the default, so a sync that published nothing
+	// could not pass by coincidence.
+	published := []fxp.Int{
+		PermittedScriptExecTimeMin,
+		fxp.FromStringForced("0.1"),
+		fxp.FromStringForced("0.2"),
+		fxp.FromStringForced("0.3"),
+		PermittedScriptExecTimeMax,
+	}
+	for _, limit := range published {
+		c.Equal(limit, fxp.ResetIfOutOfRange(limit, PermittedScriptExecTimeMin, PermittedScriptExecTimeMax,
+			PermittedScriptExecTimeDef), "%v must be a value the user could configure", limit)
+		c.NotEqual(PermittedScriptExecTimeDef, limit, "%v must not be the default", limit)
+	}
+	general.PermittedPerScriptExecTime = published[0]
+	SyncScriptExecTimeLimit()
+	c.Equal(published[0], scriptExecTimeLimit(), "the sync must publish the value it was given")
+
+	// The reader records what it sees rather than asserting as it goes: the checker's assertions lock the test's
+	// mutex, which would establish an ordering between the two goroutines that could hide a race from the detector.
+	var strays []fxp.Int
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	wg.Go(func() {
+		<-start
+		for range 200 {
+			if limit := scriptExecTimeLimit(); !slices.Contains(published, limit) {
+				strays = append(strays, limit)
+			}
+		}
+	})
+	const writes = 200
+	wg.Go(func() {
+		<-start
+		for i := range writes {
+			general.PermittedPerScriptExecTime = published[i%len(published)]
+			SyncScriptExecTimeLimit()
+		}
+	})
+	close(start)
+	wg.Wait()
+	c.Equal(0, len(strays), "the reader must see only published limits, but saw %v", strays[:min(len(strays), 5)])
+	c.Equal(published[(writes-1)%len(published)], scriptExecTimeLimit(),
+		"the last limit published must be the one in effect")
+}
+
+// A value that fails to resolve fails every time it is asked for, which for an equipment weight is once per draw of
+// the sheet, so the failure is reported once per edit rather than once per frame.
+func TestScriptResolveFailureLoggedOnce(t *testing.T) {
+	c := check.New(t)
+	count := countLogs(t, slog.LevelError)
+	DiscardGlobalResolveCache()
+	for range 5 {
+		c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
+	}
+	c.Equal(int32(1), count.Load(), "the same failure is reported once")
+	c.Equal(fxp.Weight(0), ResolveToWeight(nil, ScriptSelfProvider{}, "'not a number'", fxp.Pound))
+	c.Equal(int32(2), count.Load(), "a failure to resolve to another kind of value is a different failure")
+	DiscardGlobalResolveCache()
+	c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
+	c.Equal(int32(3), count.Load(), "an edit discards the cache, after which a failure that persists is reported again")
+}
+
+// The record of reported failures is shared by every goroutine that resolves scripts.
+func TestScriptResolveFailureLogConcurrency(t *testing.T) {
+	c := check.New(t)
+	count := countLogs(t, slog.LevelError)
+	DiscardGlobalResolveCache()
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Go(func() {
+			for range 20 {
+				ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'")
+			}
+		})
+	}
+	wg.Wait()
+	c.Equal(int32(1), count.Load(), "the failure is reported once, however many goroutines hit it")
 }

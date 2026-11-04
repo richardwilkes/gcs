@@ -10,6 +10,7 @@
 package gurps_test
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -573,4 +574,23 @@ func TestWeaponDamageCopySelectsByItsOwnType(t *testing.T) {
 	cp.Type = "imp"
 	c.Equal("1d+1(2) imp", cp.ResolvedDamage(nil), "and apply to a copy whose type they match")
 	c.Equal("1d cr", w.Damage.ResolvedDamage(nil), "the weapon's own damage is unchanged")
+}
+
+func TestKickDamageUsesBaseSkill(t *testing.T) {
+	c := check.New(t)
+	e, err := gurps.NewEntityFromFile(os.DirFS("testdata"), "issue767.gcs")
+	c.NoError(err)
+	var kick *gurps.Weapon
+	gurps.Traverse(func(tr *gurps.Trait) bool {
+		for _, w := range tr.Weapons {
+			if w.UsageWithReplacements() == "Kick" {
+				kick = w
+			}
+		}
+		return false
+	}, false, false, e.Traits...)
+	c.NotNil(kick)
+	// Brawling is at DX+2 (RSL +2), so its "+1 per die, RSL >= 2" weapon damage bonus must apply even though the
+	// best skill default for the Kick is the Kicking technique (RSL -1 vs Brawling). 1d-2 base + 1 = 1d-1.
+	c.Equal("1d-1 cr", kick.Damage.ResolvedDamage(nil))
 }

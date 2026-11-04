@@ -1844,3 +1844,182 @@ func TestEntityRecalculateReportsWhetherTheDerivedStateChanged(t *testing.T) {
 	e.Recalculate()
 	c.True(e.DerivedStateChanged(), "a change to a skill's level changes the derived state")
 }
+
+func TestDisabledItemsAreAsIfAbsent(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	_, skill, spell, eqp := newSwitchableItemSet(e, NewAttributeBonus(StrengthID))
+	skill.Points = fxp.Four
+	spell.Points = fxp.Four
+	eqp.BaseWeight = "2 lb"
+	eqp.BaseValue = "10"
+	needsSkill := addTraitWithFeatures(e, "Needs Brawling")
+	needsSkill.Prereq = NewPrereqList()
+	addSkillPrereq(needsSkill.Prereq, "Brawling", fxp.One)
+	e.Recalculate()
+	c.Equal(fxp.Four, e.AttributeBonusFor(StrengthID, stlimit.None, nil))
+	c.Equal(fxp.Four, e.PointsBreakdown().Skills)
+	c.Equal(fxp.Four, e.PointsBreakdown().Spells)
+	c.True(skill.LevelData.Level > 0)
+	c.True(spell.LevelData.Level > 0)
+	c.True(e.WeightCarried(false) > 0)
+	c.Equal(fxp.Ten, e.WealthCarried())
+	c.Equal(1, len(e.SkillNamed("Brawling", "", false, nil)))
+	c.Equal("", needsSkill.UnsatisfiedReason)
+
+	skill.SetDisabled(true)
+	spell.SetDisabled(true)
+	eqp.SetDisabled(true)
+	e.Recalculate()
+	c.Equal(fxp.One, e.AttributeBonusFor(StrengthID, stlimit.None, nil), "only the trait's bonus remains")
+	c.Equal(fxp.Int(0), e.PointsBreakdown().Skills)
+	c.Equal(fxp.Int(0), e.PointsBreakdown().Spells)
+	c.Equal(fxp.Int(0), skill.LevelData.Level)
+	c.Equal(fxp.Int(0), spell.LevelData.Level)
+	c.Equal(fxp.Weight(0), e.WeightCarried(false))
+	c.Equal(fxp.Int(0), e.WealthCarried())
+	c.Equal(0, len(e.SkillNamed("Brawling", "", false, nil)))
+	c.NotEqual("", needsSkill.UnsatisfiedReason)
+}
+
+// TestDisabledItemsHaveNoUnsatisfiedReason verifies that disabling a trait, skill, spell or piece of equipment,
+// directly or by disabling a container above it, clears the unsatisfied prerequisite reason it had (for a trait, also
+// one for exceeding its maximum level) and a skill's or spell's equipment penalty, and that re-enabling it flags it
+// again.
+func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait, skill, spell, eqp := newSwitchableItemSet(e)
+	trait.Prereq = newPrereqListRequiringTrait("Combat Reflexes")
+	traitBox := NewTrait(e, nil, true)
+	traitBox.Name = "Martial Arts"
+	boxedTrait := newTraitNeedingMissingTrait(e, "Weapon Master")
+	boxedTrait.SetParent(traitBox)
+	traitBox.Children = append(traitBox.Children, boxedTrait)
+	e.Traits = append(e.Traits, traitBox)
+	overMax := NewTrait(e, nil, false)
+	overMax.Name = "Extra Arm"
+	overMax.CanLevel = true
+	overMax.Levels = fxp.Three
+	overMax.MaxLevels = "2"
+	e.Traits = append(e.Traits, overMax)
+	box := NewEquipment(e, nil, true)
+	boxed := NewEquipment(e, box, false)
+	box.Children = []*Equipment{boxed}
+	e.CarriedEquipment = append(e.CarriedEquipment, box)
+	requireMissingEquipment := func() *PrereqList {
+		list := NewPrereqList()
+		p := NewEquippedEquipmentPrereq()
+		p.Parent = list
+		p.NameCriteria.Qualifier = "Lockpicks"
+		list.Prereqs = append(list.Prereqs, p)
+		return list
+	}
+	skill.Prereq = requireMissingEquipment()
+	spell.Prereq = requireMissingEquipment()
+	eqp.Prereq = requireMissingEquipment()
+	boxed.Prereq = requireMissingEquipment()
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "an enabled trait with an unmet prereq is flagged")
+	c.NotEqual("", boxedTrait.UnsatisfiedReason, "a trait inside an enabled container is flagged")
+	c.NotEqual("", overMax.UnsatisfiedReason, "a trait above its maximum level is flagged")
+	c.NotEqual("", skill.UnsatisfiedReason)
+	c.NotEqual("", spell.UnsatisfiedReason)
+	c.NotEqual("", eqp.UnsatisfiedReason)
+	c.NotEqual("", boxed.UnsatisfiedReason)
+	c.True(skill.takesEquipmentPenalty)
+	c.True(spell.takesEquipmentPenalty)
+
+	trait.SetDisabled(true)
+	traitBox.SetDisabled(true)
+	overMax.SetDisabled(true)
+	skill.SetDisabled(true)
+	spell.SetDisabled(true)
+	eqp.SetDisabled(true)
+	box.SetDisabled(true)
+	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the stale reason")
+	c.Equal("", boxedTrait.UnsatisfiedReason, "disabling the container clears the nested trait's stale reason")
+	c.Equal("", overMax.UnsatisfiedReason, "disabling the trait clears the maximum-level reason")
+	c.Equal("", skill.UnsatisfiedReason)
+	c.Equal("", spell.UnsatisfiedReason)
+	c.Equal("", eqp.UnsatisfiedReason)
+	c.Equal("", boxed.UnsatisfiedReason, "an item in a disabled container is not judged")
+	c.False(skill.takesEquipmentPenalty)
+	c.False(spell.takesEquipmentPenalty)
+
+	trait.SetDisabled(false)
+	traitBox.SetDisabled(false)
+	overMax.SetDisabled(false)
+	skill.SetDisabled(false)
+	spell.SetDisabled(false)
+	eqp.SetDisabled(false)
+	box.SetDisabled(false)
+	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "re-enabling the trait flags it again")
+	c.NotEqual("", boxedTrait.UnsatisfiedReason)
+	c.NotEqual("", overMax.UnsatisfiedReason)
+	c.NotEqual("", skill.UnsatisfiedReason)
+	c.NotEqual("", spell.UnsatisfiedReason)
+	c.NotEqual("", eqp.UnsatisfiedReason)
+	c.NotEqual("", boxed.UnsatisfiedReason)
+}
+
+// The carried weight is derived from every carried item, so it is cached until the caches are discarded, as the
+// encumbrance level derived from it already was.
+func TestWeightCarriedCached(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	eqp := NewEquipment(e, nil, false)
+	eqp.BaseWeight = "10 lb"
+	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+	e.Recalculate()
+	c.Equal(fxp.WeightFromInteger(10, fxp.Pound), e.WeightCarried(false))
+	eqp.BaseWeight = "20 lb"
+	c.Equal(fxp.WeightFromInteger(10, fxp.Pound), e.WeightCarried(false), "the weight is cached until the caches are discarded")
+	e.DiscardCaches()
+	c.Equal(fxp.WeightFromInteger(20, fxp.Pound), e.WeightCarried(false))
+}
+
+// TestSkillMatchingEmptySpecialization verifies that an exact ("is") match against an empty specialization matches only
+// the truly unspecialized skill, not one that has only a required or only an optional specialization, or both, and
+// that an exact match against a required or an optional specialization matches the skill carrying it. The first is
+// the bug that caused a specialized Ritual Magic to default to a sibling specialization instead of the unspecialized
+// one.
+func TestSkillMatchingEmptySpecialization(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addRitualMagic(e, "", fxp.Eight, "")
+	addRitualMagic(e, "Fire", fxp.Four, "")
+	addRitualMagic(e, "Water", fxp.Four, "")
+	earth := addRitualMagic(e, "Earth", fxp.Four, "")
+	earth.Specialization = ""
+	earth.OptionalSpecialization = "Earth"
+	light := addTestSkill(e, "Ritual Magic", "Light", "", fxp.Four)
+	light.OptionalSpecialization = "Dark"
+	e.Recalculate()
+
+	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
+	for _, one := range []struct {
+		specialization string
+		wantRequired   string
+		wantOptional   string
+		msg            string
+	}{
+		{"", "", "", "an empty 'is' specialization must match only the truly unspecialized skill"},
+		{"Fire", "Fire", "", "an 'is Fire' specialization must match only the Fire skill"},
+		{"Earth", "", "Earth", "an 'is Earth' specialization must match the optionally-specialized skill"},
+		{"Light", "Light", "Dark", "the required specialization should match"},
+		{"Dark", "Light", "Dark", "the optional specialization should match"},
+	} {
+		matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, one.specialization), nil, false, nil)
+		c.Equal(1, len(matches), one.msg)
+		if len(matches) == 1 {
+			c.Equal(one.wantRequired, matches[0].SpecializationWithReplacements(), one.msg)
+			c.Equal(one.wantOptional, matches[0].OptionalSpecializationWithReplacements(), one.msg)
+		}
+	}
+
+	c.Equal(5, len(e.SkillMatching(nameIs, criteria.Text{}, nil, false, nil)),
+		"an empty (any) specialization criteria must match every skill")
+}

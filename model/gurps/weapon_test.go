@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -1066,4 +1067,117 @@ func TestWeaponEffectiveStrength(t *testing.T) {
 	var tooltip xbytes.InsertBuffer
 	w.ResolvedRange(&tooltip)
 	c.Contains(tooltip.String(), "+2 to effective ST", "range resolution explains the effective ST bonus")
+}
+
+// TestCloneWeaponsBelongToTheirNewHolder verifies that the weapon copies made when a trait, skill, spell or piece of
+// equipment is cloned -- or synced from its library source -- belong to the clone, those of its modifiers included,
+// which are held by the clone's modifier. Weapon.Clone() keeps the original's owner and holding modifier, so every
+// caller must supply the new ones; a copy left pointing at the original resolves its nameable replacements (and its
+// skill defaults and minimum ST) through it, so a duplicated row's weapons followed the original.
+func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
+	c := check.New(t)
+
+	// Each case builds a node named "@kind@ Attack" holding one weapon, clones it, then diverges the clone's
+	// replacements. The clone's weapon must read the clone's map.
+	for _, one := range []struct {
+		name  string
+		build func() (source, clone any, sourceWeapon, cloneWeapon *gurps.Weapon)
+		// holder returns the modifier of the node that holds its weapon, or is nil when the node holds it itself.
+		holder func(node any) gurps.WeaponHoldingModifier
+	}{
+		{
+			name: "trait",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewTrait(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				return cloneWithWeapon(n, true, func(t *gurps.Trait) *[]*gurps.Weapon { return &t.Weapons })
+			},
+		},
+		{
+			name: "skill",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewSkill(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				return cloneWithWeapon(n, true, func(s *gurps.Skill) *[]*gurps.Weapon { return &s.Weapons })
+			},
+		},
+		{
+			name: "spell",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewSpell(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				return cloneWithWeapon(n, false, func(s *gurps.Spell) *[]*gurps.Weapon { return &s.Weapons })
+			},
+		},
+		{
+			name: "equipment",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewEquipment(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				return cloneWithWeapon(n, true, func(e *gurps.Equipment) *[]*gurps.Weapon { return &e.Weapons })
+			},
+		},
+		{
+			name: "trait modifier",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewTrait(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				n.AddModifiers(gurps.NewTraitModifier(nil, nil, false))
+				return cloneWithWeapon(n, true, func(t *gurps.Trait) *[]*gurps.Weapon { return &t.Modifiers[0].Weapons })
+			},
+			holder: func(node any) gurps.WeaponHoldingModifier {
+				if n, ok := node.(*gurps.Trait); ok {
+					return n.Modifiers[0]
+				}
+				return nil
+			},
+		},
+		{
+			name: "equipment modifier",
+			build: func() (any, any, *gurps.Weapon, *gurps.Weapon) {
+				n := gurps.NewEquipment(nil, nil, false)
+				n.Name = "@kind@ Attack"
+				n.AddModifiers(gurps.NewEquipmentModifier(nil, nil, false))
+				return cloneWithWeapon(n, true, func(e *gurps.Equipment) *[]*gurps.Weapon { return &e.Modifiers[0].Weapons })
+			},
+			holder: func(node any) gurps.WeaponHoldingModifier {
+				if n, ok := node.(*gurps.Equipment); ok {
+					return n.Modifiers[0]
+				}
+				return nil
+			},
+		},
+	} {
+		source, clone, sourceWeapon, cloneWeapon := one.build()
+		c.True(cloneWeapon.Owner == clone, "%s: the cloned weapon belongs to the clone", one.name)
+		c.True(sourceWeapon.Owner == source, "%s: the original's weapon still belongs to the original", one.name)
+		var sourceHolder, cloneHolder gurps.WeaponHoldingModifier
+		if one.holder != nil {
+			sourceHolder, cloneHolder = one.holder(source), one.holder(clone)
+		}
+		c.True(cloneWeapon.HoldingModifier() == cloneHolder,
+			"%s: the cloned weapon is held by the clone's modifier, if any", one.name)
+		c.True(sourceWeapon.HoldingModifier() == sourceHolder, "%s: the original's weapon keeps its holder", one.name)
+		c.Equal(map[string]string{"kind": "Ice"}, cloneWeapon.NameableReplacements(),
+			"%s: the cloned weapon resolves against the clone's replacements", one.name)
+		c.Equal(map[string]string{"kind": "Fire"}, sourceWeapon.NameableReplacements(),
+			"%s: the original's weapon is unaffected", one.name)
+		c.True(cloneWeapon.Damage.Owner == cloneWeapon, "%s: the cloned weapon's damage belongs to it", one.name)
+	}
+}
+
+// cloneWithWeapon gives n a "Fire" replacement for "@kind@" and one weapon, then clones n and diverges the clone's
+// replacement to "Ice", so the two weapons must resolve differently. The Weapons slice is a plain field on every node
+// type rather than an interface method, so it needs the accessor, which may reach into the node's modifier.
+func cloneWithWeapon[T interface {
+	gurps.Node[T]
+	gurps.WeaponOwner
+	nameable.Setter
+}](n T, melee bool, weapons func(T) *[]*gurps.Weapon) (source, clone any, sourceWeapon, cloneWeapon *gurps.Weapon) {
+	n.SetNameableReplacements(map[string]string{"kind": "Fire"})
+	*weapons(n) = []*gurps.Weapon{gurps.NewWeapon(n, melee)}
+	n.SetDataOwner(nil)
+	dup := n.Clone(gurps.LibraryFile{}, nil, nil, gurps.Reference)
+	dup.NameableReplacements()["kind"] = "Ice"
+	return n, dup, (*weapons(n))[0], (*weapons(dup))[0]
 }

@@ -12,16 +12,22 @@ package ux
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // editingTableCmdIDs are the standard table commands that only an editable table offers.
@@ -210,4 +216,261 @@ func TestSyncWithSourceForSelectionLoadsEachFileOnce(t *testing.T) {
 	notes[0].MarkDown = "First (old)"
 	state, _ := gurps.MatchSource(notes[0])
 	c.Equal(srcstate.Missing, state, "the file is checked again for a row matched once the sync is done")
+}
+
+// TestSheetListContextMenuHeadless verifies that a list on a character sheet offers its context menu every way a user
+// can ask for it. A right-click on one of several selected rows keeps them all selected for the menu's commands to act
+// on, while a right-click or a screen reader's request on a row that is not selected makes it the selection alone, and
+// either puts the focus on the list, since the menu's commands act on what holds it.
+func TestSheetListContextMenuHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	names := []string{"Alpha", "Beta", "Gamma"}
+	var table *unison.Table[*Node[*gurps.Trait]]
+	screen.Do(func() {
+		entity := sheet.Entity()
+		for _, name := range names {
+			trait := gurps.NewTrait(entity, nil, false)
+			trait.Name = name
+			entity.Traits = append(entity.Traits, trait)
+		}
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		table = sheet.Traits.Table
+	})
+	if table == nil {
+		t.Fatal("the sheet must have a traits list")
+	}
+	selectedNames := func() []string {
+		var selected []string
+		screen.Do(func() {
+			for _, row := range table.SelectedRows(false) {
+				selected = append(selected, row.Data().Name)
+			}
+		})
+		slices.Sort(selected)
+		return selected
+	}
+	tableFocused := func() bool {
+		var focused bool
+		screen.Do(func() { focused = wnd.Focus() == table.AsPanel() })
+		return focused
+	}
+	// rowPoint brings the named trait's row into view and returns the middle of its description cell on the screen,
+	// clear of the check box at the front of the row that a click would toggle. Rows are found by name, since a new
+	// sheet comes with a trait of its own.
+	rowPoint := func(name string) geom.Point {
+		t.Helper()
+		row := -1
+		screen.Do(func() {
+			for i := 0; i <= table.LastRowIndex(); i++ {
+				if table.RowFromIndex(i).Data().Name == name {
+					row = i
+					break
+				}
+			}
+		})
+		if row < 0 {
+			t.Fatalf("the traits list must have a row for %s", name)
+		}
+		return cellScreenPoint(t, screen, wnd, table, row, gurps.TraitDescriptionColumn)
+	}
+	checkMenu := func(how string) {
+		t.Helper()
+		titles := contextMenuTitles(t, screen, wnd)
+		c.NotNil(titles, "%s must open the list's menu", how)
+		c.True(slices.Contains(titles, openEditorAction.Title), "the menu %s opens must offer %q; it offers %v", how,
+			openEditorAction.Title, titles)
+		c.True(slices.Contains(titles, duplicateAction.Title), "the menu %s opens must offer %q; it offers %v", how,
+			duplicateAction.Title, titles)
+	}
+
+	screen.Click(rowPoint("Alpha"))
+	c.Equal([]string{"Alpha"}, selectedNames(), "clicking a row selects it")
+	c.True(tableFocused(), "clicking a row focuses the list")
+
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	checkMenu("shift+F10")
+	c.Equal([]string{"Alpha"}, selectedNames(), "opening the menu leaves the selection alone")
+	closeContextMenu(c, screen, wnd)
+	screen.KeyPress(unison.KeyMenu, mod.None)
+	checkMenu("the Menu key")
+	closeContextMenu(c, screen, wnd)
+
+	screen.ClickWith(rowPoint("Beta"), unison.ButtonLeft, mod.Shift)
+	c.Equal([]string{"Alpha", "Beta"}, selectedNames(), "shift-clicking the next row extends the selection to it")
+	screen.ClickWith(rowPoint("Beta"), unison.ButtonRight, mod.None)
+	checkMenu("a right-click on a selected row")
+	c.Equal([]string{"Alpha", "Beta"}, selectedNames(),
+		"a right-click on one of several selected rows must keep them all selected for the menu to act on")
+	closeContextMenu(c, screen, wnd)
+
+	// A screen reader asks a row that is not selected for the menu while the focus is elsewhere. Only rows that can be
+	// seen, are selected or hold the focus are described, so the row is brought into view first.
+	var navigatorFocused bool
+	screen.Do(func() {
+		Workspace.Navigator.InitialFocus()
+		navigatorFocused = wnd.Focus() == Workspace.Navigator.table.AsPanel()
+	})
+	c.True(navigatorFocused, "the test needs the focus to start out in the navigator")
+	rowPoint("Gamma")
+	tree := screen.AccessibilityTree(wnd)
+	if tree == nil {
+		t.Fatal("the workspace window must be described")
+	}
+	tableNode := screen.AccessibilityNodeFor(table)
+	if tableNode == nil {
+		t.Fatal("the traits list must be described")
+	}
+	var gamma *accessibility.Node
+	for _, id := range tableNode.Children {
+		if node := tree.Node(id); node != nil && node.Role == role.Row && strings.Contains(node.Name, "Gamma") {
+			gamma = node
+		}
+	}
+	if gamma == nil {
+		t.Fatal("the row for Gamma must be described")
+	}
+	c.False(gamma.Selected, "the Gamma row must not start out selected")
+	c.True(gamma.Actions.Has(accessibility.ShowContextMenu), "a row of the list must offer its context menu")
+	c.True(screen.PerformAccessibilityAction(accessibility.ActionRequest{
+		Node:   gamma.ID,
+		Action: accessibility.ShowContextMenu,
+	}), "the row must carry out the request for its context menu")
+	checkMenu("a screen reader's request")
+	c.Equal([]string{"Gamma"}, selectedNames(), "asking a row that is not selected for the menu makes it the selection")
+	c.True(tableFocused(), "asking a row for the menu puts the focus on the list its commands act on")
+	var menuNodes int
+	screen.AccessibilityTree(wnd).Walk(func(n *accessibility.Node) bool {
+		if n.Role == role.Menu {
+			menuNodes++
+		}
+		return true
+	})
+	c.Equal(1, menuNodes, "the open menu must be described to the screen reader")
+	closeContextMenu(c, screen, wnd)
+
+	// A right-click on a row outside a selection of several, made while the focus is elsewhere, makes that row the
+	// whole selection and puts the focus on the list, although unison delivers the list no mouse event for it.
+	screen.ClickWith(rowPoint("Beta"), unison.ButtonLeft, mod.Shift)
+	c.Equal([]string{"Beta", "Gamma"}, selectedNames(), "shift-clicking the row before extends the selection to it")
+	screen.Do(func() {
+		Workspace.Navigator.InitialFocus()
+		navigatorFocused = wnd.Focus() == Workspace.Navigator.table.AsPanel()
+	})
+	c.True(navigatorFocused, "the test needs the focus to be in the navigator again")
+	screen.ClickWith(rowPoint("Alpha"), unison.ButtonRight, mod.None)
+	checkMenu("a right-click on a row that is not selected")
+	c.Equal([]string{"Alpha"}, selectedNames(), "a right-click on a row that is not selected makes it the selection")
+	c.True(tableFocused(), "a right-click on a row puts the focus on the list its menu's commands act on")
+	closeContextMenu(c, screen, wnd)
+}
+
+// TestDuplicatingAnOptionKeepsThePick verifies that an option duplicated within a choice in an editor arrives turned
+// off, so that the choice keeps its pick, and modifies the item its original does with the same data owner. What a
+// structural undo gives back still belongs to the item: the pick is still locked, and a weapon still has its owner.
+func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
+	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	choice := e.editorData.Modifiers[0]
+	table.SetSelectionMap(map[tid.TID]bool{choice.Children[0].ID(): true})
+	DuplicateSelection(table)
+	c.Equal(3, len(choice.Children))
+	c.True(choice.Children[0].Enabled(), "the pick the choice had is kept")
+	c.False(choice.Children[1].Enabled(), "the duplicate arrives turned off")
+	c.Equal(trait, choice.Children[1].Target(), "the duplicate modifies the trait its original does")
+	c.True(gurps.IsOnSheet(choice.Children[1]))
+
+	unison.UndoManagerFor(table).Undo()
+	table = liveTable(table)
+	options := table.RootRows()[0].Data().Children
+	c.Equal(2, len(options), "undo takes the duplicate away")
+	c.False(options[1].Enabled())
+	pick := options[0]
+	c.True(pick.Enabled(), "undo keeps the pick")
+	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the sheet as their owner")
+	c.Equal(trait, pick.Target(), "the restored modifiers keep modifying the trait")
+	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
+	adjustModifierEnabled(e, table, pick, false)
+	c.True(pick.Enabled(), "and can't be turned off")
+
+	weapons, ok := uxtest.FirstPanelOfType[*weaponsPanel](content)
+	c.True(ok)
+	weaponTable := weapons.table
+	weaponTable.SetSelectionMap(map[tid.TID]bool{e.editorData.Weapons[0].ID(): true})
+	DuplicateSelection(weaponTable)
+	unison.UndoManagerFor(weaponTable).Undo()
+	c.Equal(1, len(e.editorData.Weapons))
+	c.Equal(gurps.WeaponOwner(trait), e.editorData.Weapons[0].Owner, "the restored weapon keeps its owner")
+}
+
+// TestTakingThePickAwayLeavesTheChoiceFlagged verifies that deleting the pick of a mandatory choice on a sheet, or
+// moving it out of the choice, leaves the choice without a pick, flagged as required, rather than picking another
+// option in its place.
+func TestTakingThePickAwayLeavesTheChoiceFlagged(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	required := func(choice *gurps.TraitModifier) bool {
+		var data gurps.CellData
+		choice.CellData(gurps.TraitModifierDescriptionColumn, &data)
+		return data.ChoiceRequired
+	}
+	for _, remove := range []func(table *unison.Table[*Node[*gurps.TraitModifier]]){
+		func(table *unison.Table[*Node[*gurps.TraitModifier]]) { DeleteSelection(table, true) },
+		func(table *unison.Table[*Node[*gurps.TraitModifier]]) {
+			table.PerformCmd(nil, MoveOutOfContainerItemID)
+		},
+	} {
+		e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
+		choice := e.editorData.Modifiers[len(e.editorData.Modifiers)-1]
+		c.False(required(choice))
+		table.SetSelectionMap(map[tid.TID]bool{choice.Children[0].ID(): true})
+		remove(table)
+		choice = e.editorData.Modifiers[len(e.editorData.Modifiers)-1]
+		c.Equal(1, len(choice.Children))
+		c.False(choice.Children[0].Enabled(), "B isn't picked in A's place")
+		c.True(required(choice), "the choice is flagged as required")
+	}
+}
+
+// TestRowEditsReportThemselvesOnce verifies that the row-level edits that report themselves by rebuilding the sheet --
+// deleting and duplicating rows, here -- do so exactly once and bump the modification timestamp as they go, which a
+// bare rebuild used to leave out.
+func TestRowEditsReportThemselvesOnce(t *testing.T) {
+	c := check.New(t)
+	sheet, trait := newSheetWithSwitchableTrait(t)
+	entity := sheet.Entity()
+	before := len(entity.Traits)
+
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	entity.ModifiedOn = jio.Time{}
+	counter := installSyncCounter(sheet)
+	DuplicateSelection(sheet.Traits.Table)
+	c.Equal(before+1, len(entity.Traits), "duplicating must add a row")
+	c.Equal(1, counter.count, "duplicating must sync the sheet exactly once")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "duplicating must bump the modification timestamp")
+
+	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+	entity.ModifiedOn = jio.Time{}
+	counter.count = 0
+	DeleteSelection(sheet.Traits.Table, true)
+	c.Equal(before, len(entity.Traits), "deleting must remove the row")
+	c.Equal(1, counter.count, "deleting must sync the sheet exactly once")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "deleting must bump the modification timestamp")
 }

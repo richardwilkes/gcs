@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -402,4 +403,15 @@ func TestHashStartsWithSyncKind(t *testing.T) {
 			c.NotEqual(Hash64(a), Hash64(b), one.name+" hash differently")
 		}
 	}
+}
+
+func TestNameablesTakePartInSync(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "Trained in @style@"
+	before := Hash64(trait)
+	trait.Nameables = map[string]nameable.Detail{}
+	c.Equal(before, Hash64(trait), "an item without nameables hashes as it did before they existed")
+	trait.Nameables["style"] = nameable.Detail{Label: "Style", Options: []string{"Judo"}}
+	c.NotEqual(before, Hash64(trait), "a change to its nameables puts a copy out of sync with its source")
 }

@@ -153,3 +153,27 @@ func TestDetailDescribe(t *testing.T) {
 	empty := nameable.Detail{Label: "Nothing"}
 	c.Equal("@x@ asks for Nothing, with nothing to choose from", empty.Describe("x", plain))
 }
+
+// BenchmarkApply measures replacing the markers in the kinds of strings a sheet's names hold. Run it with:
+//
+//	GOEXPERIMENT=simd go test ./model/nameable -run '^$' -bench BenchmarkApply -benchmem
+func BenchmarkApply(b *testing.B) {
+	replacements := map[string]string{"Skill": "Broadsword", "Attack": "Swung", "Specialty": "Fire"}
+	for _, one := range []struct {
+		name string
+		text string
+	}{
+		{"plain", "Broadsword"},
+		{"marker", "Ritual Magic (@Specialty@)"},
+		{"multiple", "Targeted Attack (@Skill@ @Attack@/Neck)"},
+		{"legacy", "@Skill: Broadsword, Shortsword, etc.@"},
+		{"unfilled", "Hobby Skill (@Hobby@)"},
+		{"options", "@Skill|Broadsword|Shortsword|*@"},
+	} {
+		b.Run(one.name, func(b *testing.B) {
+			for b.Loop() {
+				nameable.Apply(one.text, replacements)
+			}
+		})
+	}
+}

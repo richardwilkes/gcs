@@ -16,9 +16,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
@@ -685,4 +689,709 @@ func TestDimmedMarkdownCellFiltersEveryInk(t *testing.T) {
 	} {
 		c.True(filtered(ink), "as are quote bars")
 	}
+}
+
+// Clicking the equipped checkmark of disabled equipment is refused, leaving the item and the checkmark as they were.
+func TestEquippedCheckmarkRefusesDisabledEquipment(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Equipped = true
+	eqp.SetDisabled(true)
+	entity.CarriedEquipment = []*gurps.Equipment{eqp}
+	_, table := NewNodeTable(NewEquipmentProvider(entity, true, false), nil)
+	node := NewNode(table, nil, eqp, false)
+	cellData := &gurps.CellData{Checked: true}
+	label, ok := node.createToggleCell(cellData, unison.Black).(*unison.Label)
+	c.True(ok, "the toggle cell must be a label")
+
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	c.True(eqp.Equipped, "the click must not unequip disabled equipment")
+	c.True(cellData.Checked, "the checkmark must be put back")
+}
+
+// newCellCacheTestSheet returns a sheet holding a single trait of the given name, along with the row the traits table
+// shows it in and the index of the table's description column.
+func newCellCacheTestSheet(t *testing.T, c check.Checker, name string) (*gurps.Trait, *Node[*gurps.Trait], int) {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = name
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+	c.True(col >= 0, "the traits table must have a description column")
+	row := table.RowFromIndex(0)
+	c.NotNil(row, "the traits table must show the trait")
+	return trait, row, col
+}
+
+// TestNodeKeepsCellDataUntilAChangeIsReported verifies that a row derives its cell data once per reported change
+// rather than on every call, which is what spares a draw or a sizing pass the cost of the model, and that reporting a
+// change is all it takes for the next call to show it.
+func TestNodeKeepsCellDataUntilAChangeIsReported(t *testing.T) {
+	c := check.New(t)
+	trait, row, col := newCellCacheTestSheet(t, c, "Before")
+	before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(slices.Contains(uxtest.LabelTexts(before), "Before"), "the cell must show the trait's name")
+
+	trait.Name = "After"
+	again := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(again == before, "until a change is reported, the cell must come back as it was")
+	c.True(slices.Contains(uxtest.LabelTexts(again), "Before"), "and must still show the name it was built with")
+
+	invalidateDisplayData()
+	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(after != before, "once a change is reported, the cell must be built afresh")
+	c.True(slices.Contains(uxtest.LabelTexts(after), "After"), "and must show the new name")
+}
+
+// TestCellKeepsPanelsForFourWidths verifies that a cell keeps the panels built for four widths, since a sync of a page
+// list asks for the cells of the column taking the excess width at four: before and after the page reference columns
+// take their share, both at the table's preferred width, rounded up to whole pixels, and at the width the layout then
+// gives it. Keeping fewer would build those cells anew several times on every sync. The sizing passes, which ask for
+// every cell at its natural size before settling on the widths, get a panel of their own that evicts none of those,
+// so that measuring the table and then drawing it doesn't build every cell twice.
+func TestCellKeepsPanelsForFourWidths(t *testing.T) {
+	c := check.New(t)
+	_, row, col := newCellCacheTestSheet(t, c, "Trait")
+	table := row.table
+	widths := []float32{300, 300.25, 250, 250.25}
+	panels := make([]unison.Paneler, len(widths))
+	var natural unison.Paneler
+	for i, width := range widths {
+		// The sheet is never laid out, so the column is given a width of its own.
+		table.Columns[col].Current = width
+		c.True(table.CellWidth(0, col) > 0, "the cell must have a width to fit")
+		panels[i] = row.ColumnCell(0, col, unison.Black, unison.White, false, false, false)
+
+		table.Columns[col].Current = 0
+		c.True(table.CellWidth(0, col) <= 0, "a sizing pass asks for the cell without a width")
+		sized := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false)
+		c.True(sized != panels[i], "the natural size must come from a panel of its own")
+		if natural == nil {
+			natural = sized
+		}
+		c.True(sized == natural, "asking for the natural size again must reuse that panel")
+	}
+	for i, width := range widths {
+		table.Columns[col].Current = width
+		c.True(row.ColumnCell(0, col, unison.Black, unison.White, false, false, false) == panels[i],
+			"the panel built for width %v must have been kept", width)
+	}
+}
+
+// TestLibraryListShowsQuantityAdjustmentWithoutSync verifies that adjusting a quantity in an equipment library list
+// shows the new quantity on the next draw. Marking a library list as modified only updates its title, so the table
+// keeps its rows, and it is the report of the change that has them derive their cell data afresh.
+func TestLibraryListShowsQuantityAdjustmentWithoutSync(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	item := gurps.NewEquipment(nil, nil, false)
+	item.Name = "Rope"
+	item.Quantity = fxp.One
+	d := NewEquipmentTableDockable("test"+gurps.EquipmentExt, []*gurps.Equipment{item})
+	col := d.table.ColumnIndexForID(gurps.EquipmentQuantityColumn)
+	c.True(col >= 0, "the equipment table must have a quantity column")
+	row := d.table.RowFromIndex(0)
+	c.NotNil(row, "the equipment table must show the item")
+	c.Equal([]string{"1"}, uxtest.LabelTexts(row.ColumnCell(0, col, unison.Black, unison.White, false, false,
+		false).AsPanel()), "the quantity cell must show the starting quantity")
+
+	d.table.SelectByIndex(0)
+	adjustQuantity(d, d.table, true)
+	c.Equal(fxp.Two, item.Quantity, "the quantity must have been incremented")
+	c.True(d.table.RowFromIndex(0) == row, "nothing may have synced the table, or this test covers nothing")
+	c.Equal([]string{"2"}, uxtest.LabelTexts(row.ColumnCell(0, col, unison.Black, unison.White, false, false,
+		false).AsPanel()), "the same row must show the new quantity")
+}
+
+// TestCheckCellRightClickOpensMenuHeadless verifies that a right-click on the check box at the front of a row -- a
+// trait's switch or an item's equipped box -- opens the list's menu for that row without toggling the box or recording
+// anything to undo.
+func TestCheckCellRightClickOpensMenuHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var trait *gurps.Trait
+	var eqp *gurps.Equipment
+	var mgr *unison.UndoManager
+	traitRow, eqpRow := -1, -1
+	var switchColumnFirst, equippedColumnFirst bool
+	screen.Do(func() {
+		entity := sheet.Entity()
+		trait = newSwitchableTrait(entity, "Claws")
+		entity.Traits = append(entity.Traits, trait)
+		eqp = gurps.NewEquipment(entity, nil, false)
+		eqp.Name = "Powered Armor"
+		eqp.Equipped = false
+		entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		mgr = sheet.UndoManager()
+		traits := sheet.Traits.Table
+		switchColumnFirst = traits.Columns[0].ID == gurps.TraitSwitchColumn
+		for i := 0; i <= traits.LastRowIndex(); i++ {
+			if traits.RowFromIndex(i).Data() == trait {
+				traitRow = i
+			}
+		}
+		carried := sheet.CarriedEquipment.Table
+		equippedColumnFirst = carried.Columns[0].ID == gurps.EquipmentEquippedColumn
+		for i := 0; i <= carried.LastRowIndex(); i++ {
+			if carried.RowFromIndex(i).Data() == eqp {
+				eqpRow = i
+			}
+		}
+	})
+	c.True(switchColumnFirst, "the switch column must come first in the traits list")
+	c.True(equippedColumnFirst, "the equipped column must come first in the carried equipment list")
+	if traitRow < 0 || eqpRow < 0 {
+		t.Fatal("the lists must have rows for the trait and the equipment")
+	}
+	c.NotNil(mgr, "the sheet must have an undo manager")
+
+	screen.ClickWith(cellScreenPoint(t, screen, wnd, sheet.Traits.Table, traitRow, gurps.TraitSwitchColumn),
+		unison.ButtonRight, mod.None)
+	titles := contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, openEditorAction.Title),
+		"a right-click on the switch must open the traits list's menu; it offers %v", titles)
+	var switchedOn, canUndo bool
+	var selected []*gurps.Trait
+	var bonus fxp.Int
+	screen.Do(func() {
+		switchedOn = trait.SwitchedOn
+		bonus = stBonusFor(sheet.Entity())
+		canUndo = mgr.CanUndo()
+		for _, row := range sheet.Traits.Table.SelectedRows(false) {
+			selected = append(selected, row.Data())
+		}
+	})
+	c.False(switchedOn, "a right-click on the switch must not throw it")
+	c.Equal(fxp.Int(0), bonus, "nor bring the switchable bonus into play")
+	c.False(canUndo, "nor record anything to undo")
+	c.Equal([]*gurps.Trait{trait}, selected, "a right-click on the switch must select its row for the menu")
+	closeContextMenu(c, screen, wnd)
+
+	screen.ClickWith(cellScreenPoint(t, screen, wnd, sheet.CarriedEquipment.Table, eqpRow,
+		gurps.EquipmentEquippedColumn), unison.ButtonRight, mod.None)
+	titles = contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, openEditorAction.Title),
+		"a right-click on the equipped box must open the equipment list's menu; it offers %v", titles)
+	var equipped bool
+	var selectedEqp []*gurps.Equipment
+	screen.Do(func() {
+		equipped = eqp.Equipped
+		canUndo = mgr.CanUndo()
+		for _, row := range sheet.CarriedEquipment.Table.SelectedRows(false) {
+			selectedEqp = append(selectedEqp, row.Data())
+		}
+	})
+	c.False(equipped, "a right-click on the equipped box must not equip the item")
+	c.False(canUndo, "nor record anything to undo")
+	c.Equal([]*gurps.Equipment{eqp}, selectedEqp, "a right-click on the equipped box must select its row for the menu")
+	closeContextMenu(c, screen, wnd)
+}
+
+// TestLockedPickKeepsItsCheckmark verifies that clicking the checkmark of the pick of a mandatory choice on a sheet
+// leaves both the modifier and the checkmark drawn for it as they were, rather than clearing the mark over a pick that
+// is still in force.
+func TestLockedPickKeepsItsCheckmark(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
+	pick := table.RootRows()[0].Children()[0]
+	label, ok := pick.ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the enabled cell must be a label")
+	c.NotNil(label.Drawable, "the pick starts out checked")
+	table.AddChild(label)
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	label.RemoveFromParent()
+	c.NotNil(label.Drawable, "the checkmark must stay, since the pick can't be turned off")
+	c.True(e.editorData.Modifiers[0].Children[0].Enabled())
+	c.False(unison.UndoManagerFor(table).CanUndo(), "a refused click records nothing")
+}
+
+// insertNewTraitModifier inserts a new trait modifier into an editor's table of modifiers, as "New Trait Modifier"
+// does, without opening an editor for it, and returns it.
+func insertNewTraitModifier(t *testing.T, owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]]) *gurps.TraitModifier {
+	t.Helper()
+	provider, ok := table.Model.(*modifiersProvider[*gurps.TraitModifier])
+	if !ok {
+		t.Fatal("expected a trait modifiers provider")
+	}
+	item := gurps.NewTraitModifier(provider.DataOwner(), nil, false)
+	item.Name = "New"
+	provider.insertItems(owner, table, item)
+	return item
+}
+
+// TestNewModifierInAChoiceArrivesOff verifies that a new modifier inserted into a choice arrives turned off: into an
+// optional choice, into a mandatory choice on a sheet with no pick, which is left without one and flagged, and into a
+// closed group within a choice, which keeps its pick. Undo takes it away.
+func TestNewModifierInAChoiceArrivesOff(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	withGroup := newTraitModifierChoiceFor(entity, true, []string{"y"}, "y")
+	group := gurps.NewTraitModifier(entity, withGroup, true)
+	x := gurps.NewTraitModifier(entity, group, false)
+	x.SetDisabled(true)
+	group.Children = []*gurps.TraitModifier{x}
+	group.SetOpen(false)
+	withGroup.Children = slices.Insert(withGroup.Children, 0, group)
+	e, _, table := traitEditorOnSheet(t, sheet, withGroup,
+		newTraitModifierChoiceFor(entity, false, []string{"a"}),
+		newTraitModifierChoiceFor(entity, true, []string{"b"}))
+	optional := e.editorData.Modifiers[1]
+	table.SetSelectionMap(map[tid.TID]bool{optional.ID(): true})
+	item := insertNewTraitModifier(t, e, table)
+	c.Equal(item, optional.Children[1])
+	c.False(item.Enabled(), "the new modifier arrives turned off in an optional choice")
+
+	mandatory := e.editorData.Modifiers[2]
+	table.SetSelectionMap(map[tid.TID]bool{mandatory.Children[0].ID(): true})
+	item = insertNewTraitModifier(t, e, table)
+	c.Equal(item, mandatory.Children[1])
+	c.False(item.Enabled(), "and in a mandatory one")
+	c.Equal([]*gurps.TraitModifier{mandatory}, gurps.UnresolvedModifierChoices(e.editorData.Modifiers...),
+		"which is left without its pick")
+
+	groupCopy := e.editorData.Modifiers[0].Children[0]
+	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
+	item = insertNewTraitModifier(t, e, table)
+	c.Equal(item, groupCopy.Children[1], "the new modifier goes into the group")
+	c.False(item.Enabled(), "and arrives turned off there too")
+	c.True(e.editorData.Modifiers[0].Children[1].Enabled(), "y stays the pick")
+	unison.UndoManagerFor(table).Undo()
+	restored := liveTable(table).RootRows()[0].Data().Children[0]
+	c.Equal(1, len(restored.Children), "undo takes the new modifier away")
+}
+
+// newReuseTestSheet returns a sheet, shown as one continuous page, whose traits list is the named traits, the one at
+// boxIndex (if any) being a container holding a trait named "Inside", along with the traits at the top of the list.
+func newReuseTestSheet(t *testing.T, boxIndex int, names ...string) (*Sheet, []*gurps.Trait) {
+	t.Helper()
+	sheet := newContinuousTestSheet(t)
+	entity := sheet.Entity()
+	traits := make([]*gurps.Trait, len(names))
+	for i, name := range names {
+		traits[i] = gurps.NewTrait(entity, nil, i == boxIndex)
+		traits[i].Name = name
+		if i == boxIndex {
+			inside := gurps.NewTrait(entity, traits[i], false)
+			inside.Name = "Inside"
+			traits[i].Children = []*gurps.Trait{inside}
+		}
+	}
+	entity.Traits = traits
+	sheet.Rebuild(true)
+	return sheet, traits
+}
+
+// updateSheet reports a change to the sheet and then lays its page out, as the window would before drawing it. A sync
+// sizes the columns to fit the table's preferred width, which is rounded up to whole pixels, so until the page has
+// been laid out again the cells are asked for at widths that differ from the settled ones by that rounding.
+func updateSheet(sheet *Sheet) {
+	sheet.MarkModified(sheet)
+	sheet.page.ValidateLayout()
+}
+
+// traitDescriptionCells returns each row the traits table shows, in order, along with the panel of its description
+// cell.
+func traitDescriptionCells(c check.Checker, table *unison.Table[*Node[*gurps.Trait]]) ([]*Node[*gurps.Trait], []*unison.Panel) {
+	col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+	c.True(col >= 0, "the traits table must have a description column")
+	count := table.LastRowIndex() + 1
+	rows := make([]*Node[*gurps.Trait], count)
+	panels := make([]*unison.Panel, count)
+	for i := range count {
+		rows[i] = table.RowFromIndex(i)
+		panels[i] = rows[i].ColumnCell(i, col, unison.Black, unison.White, false, false, false).AsPanel()
+	}
+	return rows, panels
+}
+
+// TestMovedRowGetsANewNodeWithTheRightParent verifies that a row whose data moves to another container is given a new
+// node there rather than its old one, which still names the old container as its parent, while the rows that stayed
+// put are kept.
+func TestMovedRowGetsANewNodeWithTheRightParent(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	boxA := gurps.NewTrait(entity, nil, true)
+	boxA.Name = "A"
+	boxB := gurps.NewTrait(entity, nil, true)
+	boxB.Name = "B"
+	child := gurps.NewTrait(entity, boxA, false)
+	child.Name = "Child"
+	boxA.Children = []*gurps.Trait{child}
+	entity.Traits = []*gurps.Trait{boxA, boxB}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	c.True(boxA.IsOpen() && boxB.IsOpen(), "the containers must be open, so that their children are shown")
+	rowA, oldChild, rowB := table.RowFromIndex(0), table.RowFromIndex(1), table.RowFromIndex(2)
+	c.True(oldChild.Data() == child && oldChild.Parent() == rowA, "the child must start out under A")
+
+	boxA.SetChildren(nil)
+	boxB.SetChildren([]*gurps.Trait{child})
+	child.SetParent(boxB)
+	sheet.Rebuild(true)
+	c.True(table == sheet.Traits.Table, "the rebuild must have kept the table, or this test covers nothing")
+	c.True(table.RowFromIndex(0) == rowA && table.RowFromIndex(1) == rowB, "the containers must have been kept")
+	newChild := table.RowFromIndex(2)
+	c.True(newChild.Data() == child, "the child must now be shown under B")
+	c.True(newChild.Parent() == rowB, "the child's row must have B's row as its parent")
+	c.True(newChild != oldChild, "the child must have been given a new node")
+	c.Equal(0, len(rowA.Children()), "A's row must no longer hold the child")
+}
+
+// TestNotesToggleRebuildsAReusedCell verifies that showing or hiding a row's notes rebuilds its description cell in a
+// list that keeps the row across the sync that follows the toggle, as a sheet's list and a filtered library list do.
+// The cell's data stays the same, so only the notes disclosure kept with the panel tells the panel built before the
+// toggle from the one wanted after it.
+func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
+	for _, one := range []struct {
+		name  string
+		table func(*testing.T, check.Checker) *unison.Table[*Node[*gurps.Trait]]
+	}{
+		{
+			name: "sheet",
+			table: func(t *testing.T, _ check.Checker) *unison.Table[*Node[*gurps.Trait]] {
+				sheet := newTestSheetForTemplate(t)
+				entity := sheet.Entity()
+				entity.SheetSettings.NotesDisplay = display.Inline
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.Name = "Charisma"
+				trait.LocalNotes = "A note"
+				entity.Traits = []*gurps.Trait{trait}
+				sheet.Rebuild(true)
+				return sheet.Traits.Table
+			},
+		},
+		{
+			name: "filtered library list",
+			table: func(t *testing.T, c check.Checker) *unison.Table[*Node[*gurps.Trait]] {
+				uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+				registerKeyBindingsOnce.Do(func() { registerActions() })
+				trait := newTraitForTest("Charisma", nil)
+				trait.LocalNotes = "A note"
+				d := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{trait})
+				d.table.ApplyFilter(func(*Node[*gurps.Trait]) bool { return false })
+				c.True(d.table.IsFiltered(), "the table must be filtered")
+				return d.table
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			table := one.table(t, c)
+			row := table.RowFromIndex(0)
+			c.NotNil(row, "the table must show the trait")
+			key := row.noteKey()
+			wasClosed := gurps.IsClosed(key)
+			t.Cleanup(func() { gurps.SetClosedState(key, wasClosed) })
+			gurps.SetClosedState(key, false)
+			col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+			c.True(col >= 0, "the traits table must have a description column")
+
+			before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+			c.True(findMarkdown(before) != nil, "the cell must show the open notes")
+			button, ok := uxtest.FirstPanelOfType[*unison.Button](before)
+			c.True(ok, "the cell must hold the notes disclosure button")
+
+			button.ClickCallback()
+			c.True(gurps.IsClosed(key), "clicking the button must close the notes")
+			c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the sync")
+			after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+			c.True(after != before, "the cell must be rebuilt once its notes are closed")
+			c.True(findMarkdown(after) == nil, "and must no longer show them")
+		})
+	}
+}
+
+// TestNotesToggleFollowsAConvertedRow verifies that the notes disclosure button of a kept cell acts on the row's notes
+// as they are keyed now. Converting an item to or from a container changes its ID, and with it the key its notes'
+// disclosure is kept under, while its row and, when the disclosure is the same under both keys, its cell are kept.
+func TestNotesToggleFollowsAConvertedRow(t *testing.T) {
+	c := check.New(t)
+	sheet := newContinuousTestSheet(t)
+	entity := sheet.Entity()
+	entity.SheetSettings.NotesDisplay = display.Inline
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Name = "Backpack"
+	eqp.LocalNotes = "A note"
+	// Already a container, so that the list leaves room for the disclosure triangle and the conversion doesn't change
+	// the width of the cell.
+	bag := gurps.NewEquipment(entity, nil, true)
+	bag.Name = "Bag"
+	entity.CarriedEquipment = []*gurps.Equipment{eqp, bag}
+	sheet.Rebuild(true)
+	sheet.page.ValidateLayout()
+	table := sheet.CarriedEquipment.Table
+	row := table.RowFromIndex(0)
+	c.NotNil(row, "the table must show the equipment")
+	oldKey := row.noteKey()
+	col := table.ColumnIndexForID(gurps.EquipmentDescriptionColumn)
+	c.True(col >= 0, "the equipment table must have a description column")
+	before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+
+	table.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
+	ConvertToContainer(sheet, table)
+	sheet.page.ValidateLayout()
+	c.True(eqp.Container(), "the equipment must have become a container")
+	c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the conversion")
+	newKey := row.noteKey()
+	c.NotEqual(oldKey, newKey, "the conversion must have changed the key the notes' disclosure is kept under")
+	for _, key := range []string{oldKey, newKey} {
+		wasClosed := gurps.IsClosed(key)
+		t.Cleanup(func() { gurps.SetClosedState(key, wasClosed) })
+		gurps.SetClosedState(key, false)
+	}
+	kept := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(kept == before, "the cell must have been kept, or this test covers nothing")
+	button, ok := uxtest.FirstPanelOfType[*unison.Button](kept)
+	c.True(ok, "the cell must hold the notes disclosure button")
+
+	button.ClickCallback()
+	c.True(gurps.IsClosed(newKey), "clicking the button must close the notes of the converted row")
+	c.False(gurps.IsClosed(oldKey), "and must leave the key the row no longer has alone")
+	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(findMarkdown(after) == nil, "the cell must no longer show the notes")
+}
+
+// TestFontChangeRebuildsCells verifies that a change of fonts rebuilds the panels a row keeps, although the data of
+// its cells is unchanged, since their text was wrapped and measured with the old fonts.
+func TestFontChangeRebuildsCells(t *testing.T) {
+	c := check.New(t)
+	sheet, _ := newReuseTestSheet(t, -1, "Alpha")
+	rows, panels := traitDescriptionCells(c, sheet.Traits.Table)
+	again, againPanels := traitDescriptionCells(c, sheet.Traits.Table)
+	c.True(again[0] == rows[0] && againPanels[0] == panels[0], "until the fonts change, the cell must be kept")
+
+	invalidateCellPanels()
+	after, afterPanels := traitDescriptionCells(c, sheet.Traits.Table)
+	c.True(after[0] == rows[0], "the row must be the same object")
+	c.True(afterPanels[0] != panels[0], "the cell must be built anew once the fonts change")
+	c.True(slices.Contains(uxtest.LabelTexts(afterPanels[0]), "Alpha"), "and must still show the trait")
+}
+
+// newEquipmentTable returns a table holding a single piece of carried equipment whose weight has more decimal places
+// than the sheet is told to show, along with the node for that row and the index of the weight column. forPage says
+// whether the table is one of a sheet's page lists or a library-style table.
+func newEquipmentTable(t *testing.T, forPage bool) (node *Node[*gurps.Equipment], weightCol int) {
+	t.Helper()
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.TwoPlaces}
+	e := gurps.NewEquipment(entity, nil, false)
+	e.Name = "Heavy Thing"
+	e.BaseWeight = exactWeightText
+	entity.CarriedEquipment = []*gurps.Equipment{e}
+
+	provider := NewEquipmentProvider(entity, true, forPage)
+	table := newProviderTable(provider)
+	ids := provider.ColumnIDs()
+	table.Columns = make([]unison.ColumnInfo, len(ids))
+	for i, id := range ids {
+		table.Columns[i].ID = id
+	}
+	rows := table.RootRows()
+	c.Equal(1, len(rows), "the table must hold the single piece of equipment")
+	weightCol = slices.Index(ids, gurps.EquipmentWeightColumn)
+	c.True(weightCol != -1, "the table must have a weight column")
+	return rows[0], weightCol
+}
+
+// TestEquipmentPageCellDataRoundsOnlyForDisplay verifies that a page table's weight cells show the rounded weight, with
+// the exact weight available as a tooltip, while the text the rows are sorted by stays exact. Sorting on the rounded
+// text would tie rows whose weights actually differ, leaving them in an arbitrary order.
+func TestEquipmentPageCellDataRoundsOnlyForDisplay(t *testing.T) {
+	c := check.New(t)
+	node, weightCol := newEquipmentTable(t, true)
+
+	displayed := node.cellData(weightCol, true)
+	c.Equal(roundedWeightText, displayed.Primary, "a page cell shows the rounded weight")
+	c.Equal(exactWeightText, displayed.Tooltip, "the exact weight is available as a tooltip")
+
+	exact := node.cellData(weightCol, false)
+	c.Equal(exactWeightText, exact.Primary, "a cell that isn't for display holds the exact weight")
+	c.Equal("", exact.Tooltip, "there is nothing for a tooltip to add when the exact weight is shown")
+
+	c.Equal(exactWeightText, node.CellDataForSort(weightCol), "sorting must order by the exact weight")
+}
+
+// TestEquipmentRowsMatchDisplayedAndExactText verifies that searching finds a page row by the rounded weight the user
+// can see as well as by the exact weight behind it, while a row off the page -- where the two renderings are the same
+// -- matches only the exact text. The rounded text is chosen so that it is not simply a prefix of the exact text.
+func TestEquipmentRowsMatchDisplayedAndExactText(t *testing.T) {
+	c := check.New(t)
+	node, _ := newEquipmentTable(t, true)
+	c.True(node.Match(roundedWeightText), "the sheet search must find the weight as displayed")
+	c.True(node.Match("7.5127"), "the sheet search must find the exact weight")
+	c.False(node.Match("7.52"), "a value that is neither rendering must not match")
+
+	node, _ = newEquipmentTable(t, false)
+	c.False(node.Match(roundedWeightText), "off the page, there is no rounded rendering to match")
+	c.True(node.Match("7.5127"), "off the page, the exact weight still matches")
+}
+
+// TestInsertItemsSyncsTheSheetOnlyOnce verifies that inserting items into a sheet's list, an edit that used to report
+// itself more than once, syncs the sheet a single time while still bumping its modification timestamp, which is the
+// one thing a rebuild on its own leaves out.
+func TestInsertItemsSyncsTheSheetOnlyOnce(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := newSwitchableTrait(entity, "Claws")
+	before := len(entity.Traits)
+	entity.ModifiedOn = jio.Time{}
+	counter := installSyncCounter(sheet)
+
+	InsertItems(sheet, sheet.Traits.Table, entity.TraitList, entity.SetTraitList,
+		func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
+			return sheet.Traits.provider.RootRows()
+		},
+		trait)
+
+	c.Equal(before+1, len(entity.Traits), "the item must be inserted into the entity")
+	c.Equal(1, counter.count, "an insertion must sync the sheet exactly once")
+	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"the rebuild must bring the switch column in with the switchable item")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "an insertion must bump the modification timestamp")
+	mgr := unison.UndoManagerFor(sheet.Traits.Table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.True(mgr.CanUndo(), "the insertion must be undoable")
+}
+
+func columnIndexForID[T unison.TableRowConstraint[T]](table *unison.Table[T], id int) int {
+	for i, col := range table.Columns {
+		if col.ID == id {
+			return i
+		}
+	}
+	return -1
+}
+
+// The table synthesizes no click for Space at cell level, so page reference and check cells must answer the press
+// themselves; a cell with nothing to press leaves Space to open the row's editor.
+func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	const ref = "https://example.com/ref"
+	var traits *unison.Table[*Node[*gurps.Trait]]
+	var equipment *unison.Table[*Node[*gurps.Equipment]]
+	var eq *gurps.Equipment
+	screen.Do(func() {
+		entity := sheet.Entity()
+		tr := gurps.NewTrait(entity, nil, false)
+		tr.Name = "Alpha"
+		tr.PageRef = ref
+		// Training grants Night Vision, whose notes the sheet shows inline, beside the mark of a granted row.
+		training := gurps.NewTrait(entity, nil, false)
+		training.Name = "Training"
+		g := gurps.NewGrant(feature.GrantTrait)
+		nightVision := newGrantTestTrait("Night Vision", 0)
+		nightVision.LocalNotes = "Seen in the dark"
+		g.SetItem(nightVision, gurps.LibraryFile{})
+		training.Features = gurps.Features{g}
+		// Replaces the new sheet's own traits, whose book references would prompt for a PDF if opened.
+		entity.Traits = []*gurps.Trait{tr, training}
+		eq = gurps.NewEquipment(entity, nil, false)
+		eq.Name = "Rope"
+		eq.Equipped = true
+		entity.CarriedEquipment = append(entity.CarriedEquipment, eq)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		traits, _ = uxtest.FirstPanelOfType[*unison.Table[*Node[*gurps.Trait]]](sheet.AsPanel())
+		for _, one := range uxtest.PanelsOfType[*unison.Table[*Node[*gurps.Equipment]]](sheet.AsPanel()) {
+			if one.RootRowCount() > 0 {
+				equipment = one
+				break
+			}
+		}
+	})
+	if traits == nil || equipment == nil {
+		t.Fatal("the character sheet must show the traits and the carried equipment")
+	}
+	dockables := func() (count int) {
+		screen.Do(func() { count = len(AllDockables()) })
+		return count
+	}
+	before := dockables()
+	spaceOn := func(table unison.Paneler, place func() bool) {
+		t.Helper()
+		var placed bool
+		screen.Do(func() {
+			placed = place()
+			table.AsPanel().RequestFocus()
+		})
+		if !placed {
+			t.Fatal("the cell cursor must go where it is put")
+		}
+		screen.KeyPress(unison.KeySpace, mod.None)
+	}
+
+	refCol := columnIndexForID(traits, gurps.TraitReferenceColumn)
+	if refCol < 0 {
+		t.Fatal("the traits must show their page references")
+	}
+	c.Nil(screen.OpenedURLs(), "nothing has asked for the browser yet")
+	spaceOn(traits, func() bool { return traits.SetLeadCell(0, refCol) })
+	c.Equal([]string{ref}, screen.OpenedURLs(), "space on a page reference opens it")
+	c.Equal(before, dockables(), "and opens no editor")
+
+	equippedCol := columnIndexForID(equipment, gurps.EquipmentEquippedColumn)
+	if equippedCol < 0 {
+		t.Fatal("the carried equipment must show whether it is equipped")
+	}
+	spaceOn(equipment, func() bool { return equipment.SetLeadCell(0, equippedCol) })
+	var equipped bool
+	screen.Do(func() { equipped = eq.Equipped })
+	c.False(equipped, "space on a check cell unchecks it")
+	c.Equal(before, dockables(), "and opens no editor")
+	screen.KeyPress(unison.KeySpace, mod.None)
+	screen.Do(func() { equipped = eq.Equipped })
+	c.True(equipped, "and checks it again")
+	c.Nil(screen.OpenedURLs())
+
+	nameCol := columnIndexForID(traits, gurps.TraitDescriptionColumn)
+	spaceOn(traits, func() bool { return traits.SetLeadCell(0, nameCol) })
+	c.Equal(before+1, dockables(), "space on a cell with nothing to press opens the editor")
+
+	// The granted row's name cell holds the mark of a granted row ahead of its notes button.
+	var granted *gurps.Trait
+	screen.Do(func() {
+		for _, one := range sheet.Entity().Traits {
+			if gurps.IsGranted(one) {
+				granted = one
+			}
+		}
+	})
+	if granted == nil {
+		t.Fatal("the sheet must show the granted trait")
+	}
+	noteKey := "N:" + string(granted.ID())
+	closed := gurps.IsClosed(noteKey)
+	before = dockables()
+	spaceOn(traits, func() bool { return traits.SetLeadCell(2, nameCol) })
+	var selected []*gurps.Trait
+	screen.Do(func() {
+		for _, row := range traits.SelectedRows(false) {
+			selected = append(selected, row.Data())
+		}
+	})
+	c.Equal(!closed, gurps.IsClosed(noteKey), "space on the name cell of a granted row with notes toggles the notes")
+	c.Equal([]*gurps.Trait{granted}, selected, "rather than selecting the item granting it")
+	c.Equal(before, dockables(), "and opens no editor")
 }

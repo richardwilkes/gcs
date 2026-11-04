@@ -479,3 +479,36 @@ func modifierNames(modifiers []*gurps.TraitModifier) []string {
 	}
 	return names
 }
+
+// TestMovingAGroupIntoAChoiceKeepsThePick verifies that a group moved into a choice brings its options in turned off,
+// so that the choice keeps the pick it had even though they land ahead of it, the pick being selected along with the
+// group not counting as a move, and that undo puts both back.
+func TestMovingAGroupIntoAChoiceKeepsThePick(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	group := gurps.NewTraitModifier(entity, nil, true)
+	group.Children = []*gurps.TraitModifier{gurps.NewTraitModifier(entity, group, false)}
+	e, _, table := traitEditorOnSheet(t, sheet, group, newTraitModifierChoiceFor(entity, false, []string{"X", "Y"}, "X"))
+	groupCopy := e.editorData.Modifiers[0]
+	pick := e.editorData.Modifiers[1].Children[0]
+	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true, pick.ID(): true})
+	c.True(table.CanPerformCmd(nil, MoveIntoContainerItemID))
+	table.PerformCmd(nil, MoveIntoContainerItemID)
+	c.Equal(1, len(e.editorData.Modifiers), "the group went into the choice")
+	options := gurps.ModifierChoiceOptions(e.editorData.Modifiers[0])
+	c.Equal([]*gurps.TraitModifier{groupCopy.Children[0], pick, options[2]}, options,
+		"the option the group carried, then X and Y")
+	c.False(options[0].Enabled(), "what the group carried in arrives turned off")
+	c.True(pick.Enabled(), "the choice keeps its pick, X, which didn't move")
+	c.False(options[2].Enabled())
+
+	unison.UndoManagerFor(table).Undo()
+	roots := liveTable(table).RootRows()
+	c.Equal(2, len(roots), "undo takes the group back out")
+	c.True(roots[0].Data().Children[0].Enabled(), "and turns what it carried back on")
+	options = gurps.ModifierChoiceOptions(roots[1].Data())
+	c.True(options[0].Enabled(), "the choice still has its pick")
+	c.False(options[1].Enabled())
+}

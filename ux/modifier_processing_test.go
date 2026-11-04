@@ -10,11 +10,14 @@
 package ux
 
 import (
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // modifierPrompt records one invocation of a modifier enable/disable prompt.
@@ -347,4 +350,265 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c.True(equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData))
 	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
 	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
+}
+
+// The modifier prompt's list has the same least room as the picker's, however few modifiers it holds, and the prompt
+// can't be made too small to give it that.
+func TestModifierPromptListHoldsTenRows(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	res := n["res"]
+	done := false
+	c.True(screen.Post(func() {
+		s.chooseModifiers(res)
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	uxtest.CaptureScreen(t, c, screen, "modifier_prompt")
+	screen.Do(func() {
+		scroll := uxtest.PanelsOfType[*unison.ScrollPanel](dialogWnd.Content())[0]
+		layout, ok := scroll.Layout().(*minSizeLayout)
+		c.True(ok, "the list's scroll panel holds its least size")
+		if !ok {
+			return
+		}
+		minimum := layout.minimum
+		view := scroll.ContentView().ContentRect(false).Size
+		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
+			"the list has its least room: wants %v, has %v", minimum, view)
+		r := dialogWnd.ContentRect()
+		r.Width /= 2
+		r.Height /= 2
+		dialogWnd.SetContentRect(r)
+		dialogWnd.ValidateLayout()
+		view = scroll.ContentView().ContentRect(false).Size
+		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
+			"asked to be smaller, the prompt keeps the list's room: wants %v, has %v", minimum, view)
+	})
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	c.True(done, "the prompt has returned")
+}
+
+// TestPreconfiguredAsksOnlyAboutUnresolvedChoices verifies that a preconfigured trait is asked about the mandatory
+// modifier choices it has left without a pick, and about nothing else: not its other modifiers, not its optional
+// choices and not the mandatory choices it has already picked for.
+func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
+	c := check.New(t)
+	prompts := captureModifierPrompts(t)
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	made := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"}, "High")
+	made.Name = "Made"
+	open := newTraitModifierChoiceFor(nil, true, []string{"Hot", "Cold"})
+	open.Name = "Open"
+	optional := newTraitModifierChoiceFor(nil, false, []string{"Loud", "Quiet"})
+	optional.Name = "Optional"
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Blast"
+	trait.Modifiers = []*gurps.TraitModifier{plain, made, open, optional}
+	trait.Preconfigured = true
+
+	c.True(processModifiers([]*gurps.Trait{trait}, true))
+	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Open"}}}, *prompts,
+		"only the unresolved mandatory choice is asked about")
+
+	*prompts = nil
+	open.Children[0].SetDisabled(false)
+	c.True(processModifiers([]*gurps.Trait{trait}, true))
+	c.Equal(0, len(*prompts), "with every mandatory choice made, a preconfigured trait isn't asked at all")
+
+	*prompts = nil
+	trait.Preconfigured = false
+	c.True(processModifiers([]*gurps.Trait{trait}, true))
+	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Plain", "Made", "Open", "Optional"}}}, *prompts,
+		"a trait that isn't preconfigured is asked about everything")
+
+	*prompts = nil
+	open.Children[0].SetDisabled(true)
+	trait.Preconfigured = true
+	c.True(processModifiers([]*gurps.Trait{trait}, false))
+	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
+}
+
+// TestModifierSelectionTreatsChoicesByKind verifies the prompt asking which modifiers to enable: a modifier outside a
+// choice gets a check box, and each choice, reaching through the groups beneath it but not into a choice within it,
+// gets radio buttons for its options, an optional one adding "None"; picking an option or clicking a check box tells
+// the prompt. On a sheet a mandatory choice shows whether it has its pick and holds the prompt open until it does,
+// unless it has no options to pick from; elsewhere it is offered as an optional one is.
+func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
+	c := check.New(t)
+	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
+		m := gurps.NewTraitModifier(nil, parent, false)
+		m.Name = name
+		m.SetDisabled(true)
+		parent.Children = append(parent.Children, m)
+		return m
+	}
+	outer := gurps.NewTraitModifier(nil, nil, true)
+	plain := named(outer, "Plain")
+	plain.SetDisabled(false)
+	choice := gurps.NewTraitModifierChoice(nil, outer)
+	outer.Children = append(outer.Children, choice)
+	direct := named(choice, "Direct")
+	group := gurps.NewTraitModifier(nil, choice, true)
+	choice.Children = append(choice.Children, group)
+	grouped := named(group, "Grouped")
+	inner := gurps.NewTraitModifierChoice(nil, choice)
+	choice.Children = append(choice.Children, inner)
+	low := named(inner, "Low")
+	high := named(inner, "High")
+	optional := newTraitModifierChoiceFor(nil, false, []string{"Hot", "Cold"}, "Hot", "Cold")
+
+	s := newModifierSelection([]*gurps.TraitModifier{outer, optional}, true, false)
+	c.NotNil(s)
+	var changes int
+	s.onChange = func() { changes++ }
+	c.Equal(1, len(s.boxes), "only the modifier outside every choice gets a check box")
+	c.Equal(3, len(s.choices), "each choice, nested or not, gets its own group of radio buttons")
+	c.Equal(7, len(uxtest.PanelsOfType[*unison.RadioButton](s.list)), "only the optional choice adds one for None")
+	optionsOf := func(choice *choiceRadioGroup) map[gurps.GeneralModifier]*unison.RadioButton {
+		options := make(map[gurps.GeneralModifier]*unison.RadioButton)
+		for rb, gm := range choice.options {
+			options[gm] = rb
+		}
+		return options
+	}
+	outerOptions := optionsOf(s.choices[0])
+	innerOptions := optionsOf(s.choices[1])
+	c.Equal(2, len(outerOptions))
+	c.NotNil(outerOptions[direct])
+	c.NotNil(outerOptions[grouped], "an option in a group beneath the choice is one of its options")
+	c.Equal(2, len(innerOptions), "the nested choice's options are its own")
+	c.NotNil(innerOptions[low])
+	c.NotNil(innerOptions[high])
+	c.False(s.choices[2].mandatory)
+	c.True(s.choices[2].group.Selected(optionsOf(s.choices[2])[optional.Children[0]]),
+		"the first enabled option starts out picked")
+	pills := func() []string {
+		return slices.DeleteFunc(labelTitles(s.list), func(title string) bool { return title != "Required" && title != "Picked" })
+	}
+	c.Equal([]string{"Required", "Required"}, pills())
+	c.False(s.complete(), "a mandatory choice with nothing picked must hold the prompt open")
+
+	outerOptions[grouped].Click()
+	c.Equal(1, changes, "picking an option tells the prompt")
+	c.Equal([]string{"Picked", "Required"}, pills())
+	c.False(s.complete(), "the nested choice still has to be made")
+	innerOptions[high].Click()
+	c.Equal(2, changes)
+	c.True(s.complete())
+	for cb := range s.boxes {
+		cb.Click()
+	}
+	c.Equal(3, changes, "clicking a check box tells the prompt as well")
+	c.True(s.apply())
+	c.False(plain.Enabled())
+	c.False(direct.Enabled())
+	c.True(grouped.Enabled())
+	c.False(low.Enabled())
+	c.True(high.Enabled())
+	c.True(optional.Children[0].Enabled())
+	c.False(optional.Children[1].Enabled(), "only one option of a choice may be left on")
+
+	s = newModifierSelection([]*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}, false, false)
+	c.True(s.complete(), "off a sheet a mandatory choice may be left without its pick")
+	c.Equal(3, len(uxtest.PanelsOfType[*unison.RadioButton](s.list)), "the options and None")
+	c.Nil(s.choices[0].updateStatus)
+
+	s = newModifierSelection([]*gurps.TraitModifier{gurps.NewTraitModifierChoice(nil, nil)}, true, false)
+	c.NotNil(s)
+	c.True(s.complete(), "a mandatory choice with no options to pick from must not hold the prompt open")
+	c.Nil(s.choices[0].updateStatus, "nothing is flagged")
+	for _, row := range s.list.Children() {
+		layout, ok := row.Layout().(*unison.FlexLayout)
+		c.True(ok)
+		c.Equal(len(row.Children()), layout.Columns, "each row has a column for each of its parts")
+	}
+}
+
+// TestModifierSelectionClearsAndPreviews verifies that clearing takes back the choices' picks and unchecks the check
+// boxes, that a preview sees the answers without keeping them, and that a name still to be filled in is in italics.
+func TestModifierSelectionClearsAndPreviews(t *testing.T) {
+	c := check.New(t)
+	mandatory := newTraitModifierChoiceFor(nil, true, []string{"Low", "@High@"}, "Low")
+	optional := newTraitModifierChoiceFor(nil, false, []string{"Hot", "Cold"}, "Hot")
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	mods := []*gurps.TraitModifier{mandatory, optional, plain}
+	enabled := func() string {
+		var names []string
+		gurps.Traverse(func(m *gurps.TraitModifier) bool {
+			names = append(names, m.Name)
+			return false
+		}, true, true, mods...)
+		return strings.Join(names, ", ")
+	}
+	s := newModifierSelection(mods, true, true)
+	c.True(s.italics)
+	for rb, gm := range s.choices[0].options {
+		if gm == mandatory.Children[1] {
+			rb.Click()
+		}
+	}
+	c.Equal("@High@, Hot, Plain", s.preview(enabled))
+	c.Equal("Low, Hot, Plain", enabled(), "a preview keeps nothing")
+	s.clear()
+	c.False(s.complete())
+	c.Equal("", s.preview(enabled))
+	c.False(newModifierSelection(mods, true, false).italics)
+}
+
+// TestApplyingAChoiceToLootAsksForItsPick verifies that applying a container of modifiers to equipment on a loot sheet
+// asks which of its modifiers to enable, a pick required, just as on a character sheet, since both are sheets.
+func TestApplyingAChoiceToLootAsksForItsPick(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	eqp := gurps.NewEquipment(sheet.loot, nil, false)
+	eqp.Name = "Sword"
+	sheet.loot.Equipment = []*gurps.Equipment{eqp}
+	sheet.Rebuild(true)
+	var asked []bool
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+			asked = append(asked, info.requirePicks)
+			return false, false
+		})
+	choice := newEquipmentModifierChoiceFor(nil, []string{"A"}, "A")
+	attachModifierClones("", []*unison.Table[*Node[*gurps.Equipment]]{sheet.Equipment.Table}, sheet.loot,
+		[]*gurps.Equipment{eqp}, []*gurps.EquipmentModifier{choice}, gurps.LibraryFile{})
+	c.Equal([]bool{true}, asked, "the loot sheet asks, requiring the pick")
+}
+
+// TestPromptRequiresPicksOnlyForSheets verifies that rows headed for a template are asked about their modifiers
+// without a pick being required, and rows headed for a loot sheet with one.
+func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
+	c := check.New(t)
+	var traitAsked, equipmentAsked []bool
+	uxtest.SwapForTest(t, &promptForTraitModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+			traitAsked = append(traitAsked, info.requirePicks)
+			return false, false
+		})
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+			equipmentAsked = append(equipmentAsked, info.requirePicks)
+			return false, false
+		})
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"A"})}
+	template := newTestTemplateWithTraits()
+	toTemplate := &applyPart[*gurps.Trait]{table: template.Traits.Table, rows: []*gurps.Trait{trait}}
+	_, ok := toTemplate.promptForModifiers(promptOperation{}, 0, 1)
+	c.True(ok)
+	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
+
+	loot := newTestLootSheet(t)
+	equipment := gurps.NewEquipment(nil, nil, false)
+	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
+	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
+	_, ok = toLoot.promptForModifiers(promptOperation{}, 0, 1)
+	c.True(ok)
+	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
 }

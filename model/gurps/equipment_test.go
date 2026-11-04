@@ -10,10 +10,14 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -396,4 +400,255 @@ func TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T
 	equipment.SetModifiers(nil)
 	equipment.ApplyNameableKeys(map[string]string{})
 	c.Nil(equipment.Replacements, "nothing left to hold must be held as nothing")
+}
+
+func TestDisabledContainerDisablesItsContents(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	box := NewEquipment(e, nil, true)
+	box.BaseWeight = "1 lb"
+	box.BaseValue = "5"
+	item := NewEquipment(e, box, false)
+	item.BaseWeight = "3 lb"
+	item.BaseValue = "10"
+	other := NewEquipment(e, box, false)
+	other.BaseWeight = "2 lb"
+	other.BaseValue = "20"
+	box.Children = []*Equipment{item, other}
+	e.CarriedEquipment = append(e.CarriedEquipment, box)
+	e.Recalculate()
+	c.Equal(fxp.WeightFromInteger(6, fxp.Pound), e.WeightCarried(false))
+	c.Equal(fxp.FromInteger(35), e.WealthCarried())
+
+	item.SetDisabled(true)
+	e.DiscardCaches() // The carried weight is cached until the caches are discarded, as a recalculation does.
+	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), e.WeightCarried(false), "a disabled item adds nothing to its container")
+	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), e.WeightCarried(true))
+	c.Equal(fxp.FromInteger(25), e.WealthCarried())
+
+	item.SetDisabled(false)
+	box.SetDisabled(true)
+	e.DiscardCaches()
+	c.False(item.Enabled())
+	c.False(item.ReallyEquipped())
+	c.Equal(fxp.Weight(0), e.WeightCarried(false))
+}
+
+func TestDisabledItemsAreLeftOutOfTheListTotals(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	a := addCarriedEquipmentWithFeatures(e, "A")
+	a.BaseWeight = "3 lb"
+	a.BaseValue = "10"
+	b := addCarriedEquipmentWithFeatures(e, "B")
+	b.BaseWeight = "2 lb"
+	b.BaseValue = "20"
+	e.Recalculate()
+	title, _ := equipmentTotalsTitle("Carried Equipment", e.CarriedEquipment, e.SheetSettings)
+	c.Equal("Carried Equipment (5 lb; $30)", title)
+
+	b.SetDisabled(true)
+	e.Recalculate()
+	title, _ = equipmentTotalsTitle("Carried Equipment", e.CarriedEquipment, e.SheetSettings)
+	c.Equal("Carried Equipment (3 lb; $10)", title)
+}
+
+// TestEquipmentContainerTypeDefaultsToPhysical verifies that a container written without a container type, as every
+// container was before groups existed, loads as a physical container keeping everything it had, and that only a group
+// writes its type out.
+func TestEquipmentContainerTypeDefaultsToPhysical(t *testing.T) {
+	c := check.New(t)
+	var legacy Equipment
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(NewEquipment(nil, nil, true).TID)+
+		`","description":"Backpack","quantity":2,"base_value":"60","base_weight":"3 lb","tech_level":"3"}`),
+		&legacy))
+	c.True(legacy.IsPhysicalContainer(), "a container with no type must be a physical container")
+	c.Equal(fxp.FromInteger(2), legacy.Quantity)
+	c.Equal("60", legacy.BaseValue)
+	c.Equal("3 lb", legacy.BaseWeight)
+	c.Equal("3", legacy.TechLevel)
+
+	data, err := json.Marshal(&legacy)
+	c.NoError(err)
+	c.False(strings.Contains(string(data), `"container_type"`), "a physical container must not write its type")
+
+	group := NewEquipmentGroup(nil, nil)
+	data, err = json.Marshal(group)
+	c.NoError(err)
+	c.True(strings.Contains(string(data), `"container_type":"group"`), "a group must write its type")
+	var loaded Equipment
+	c.NoError(json.Unmarshal(data, &loaded))
+	c.True(loaded.IsGroup(), "a group must load as one")
+}
+
+// TestEquipmentKinds verifies that each kind of equipment is named after what it is.
+func TestEquipmentKinds(t *testing.T) {
+	c := check.New(t)
+	c.Equal("Equipment", NewEquipment(nil, nil, false).Kind())
+	c.Equal("Equipment Container", NewEquipment(nil, nil, true).Kind())
+	group := NewEquipmentGroup(nil, nil)
+	c.Equal("Equipment Group", group.Kind())
+	c.Equal("Equipment Group", group.Name)
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	c.Equal("Equipment Choice", choice.Kind())
+	c.Equal("Equipment Choice", choice.Name)
+}
+
+// TestEquipmentGroupHasNothingOfItsOwn verifies that a group holds none of the data that would make it a piece of
+// equipment in its own right, and so is worth and weighs exactly what its contents do.
+func TestEquipmentGroupHasNothingOfItsOwn(t *testing.T) {
+	c := check.New(t)
+	group := NewEquipmentGroup(nil, nil)
+	c.Equal("", group.LegalityClass, "a new group must not start out with a legality class")
+	group.Quantity = fxp.FromInteger(3)
+	group.BaseValue = "100"
+	group.BaseWeight = "5 lb"
+	group.TechLevel = "4"
+	group.LegalityClass = "2"
+	group.MaxUses = 3
+	group.Uses = 2
+	group.RatedST = fxp.FromInteger(10)
+	group.Level = fxp.One
+	group.WeightIgnoredForSkills = true
+	group.SwitchedOn = true
+	group.Preconfigured = true
+	group.Prereq = NewPrereqList()
+	group.Features = Features{NewContainedWeightReduction()}
+	group.Modifiers = []*EquipmentModifier{NewEquipmentModifier(nil, nil, false)}
+	group.Weapons = []*Weapon{NewWeapon(group, true)}
+	for _, one := range []*Equipment{newEquipmentItem("Rope", "10", "2 lb"), newEquipmentItem("Torch", "3", "1 lb")} {
+		one.SetParent(group)
+		group.Children = append(group.Children, one)
+	}
+	group.ClearUnusedFieldsForType()
+
+	c.Equal(fxp.One, group.Quantity, "a group's quantity must always be one")
+	c.Equal("", group.BaseValue)
+	c.Equal("", group.BaseWeight)
+	c.Equal("", group.TechLevel)
+	c.Equal("", group.LegalityClass)
+	c.Equal(0, group.MaxUses)
+	c.Equal(0, group.Uses)
+	c.Equal(fxp.Int(0), group.RatedST)
+	c.Equal(fxp.Int(0), group.Level)
+	c.False(group.WeightIgnoredForSkills)
+	c.False(group.SwitchedOn)
+	c.False(group.Preconfigured)
+	c.True(group.Prereq.IsZero())
+	c.Equal(0, len(group.Features))
+	c.Equal(0, len(group.Modifiers))
+	c.Equal(0, len(group.Weapons))
+	c.Equal(2, len(group.Children), "a group must keep its contents")
+
+	c.Equal(fxp.FromInteger(13), group.ExtendedValue(), "a group must be worth what its contents are")
+	c.Equal(fxp.Weight(fxp.FromInteger(3)), group.ExtendedWeight(false, fxp.Pound),
+		"a group must weigh what its contents do")
+	c.False(group.RequiresTL(), "a group has no tech level of its own")
+	c.False(group.CanPreconfigureContainer(), "a group has no modifiers of its own to preconfigure")
+	c.True(NewEquipment(nil, nil, true).CanPreconfigureContainer(), "a physical container may still be preconfigured")
+}
+
+// TestEquipmentGroupConversion verifies that a physical container and a group can be converted into each other, that
+// converting to a group reports and removes what a group can't hold, and that a choice container can't skip straight
+// to either a physical container or a piece of equipment that isn't a container.
+func TestEquipmentGroupConversion(t *testing.T) {
+	c := check.New(t)
+	backpack := NewEquipment(nil, nil, true)
+	backpack.Name = "Backpack"
+	c.True(backpack.CanConvertToGroup())
+	c.False(backpack.CanConvertToPhysicalContainer(), "a physical container already is one")
+	c.Equal(0, len(backpack.GroupConversionLosses()), "a new container has nothing worth a warning to lose")
+	backpack.LegalityClass = "2"
+	c.Equal([]string{"legality class"}, backpack.GroupConversionLosses(), "a changed legality class is worth one")
+	backpack.BaseValue = "60"
+	backpack.Modifiers = []*EquipmentModifier{NewEquipmentModifier(nil, nil, false)}
+	c.Equal([]string{"value", "legality class", "modifiers"}, backpack.GroupConversionLosses())
+
+	backpack.ConvertToGroup()
+	c.True(backpack.IsGroup())
+	c.Equal("", backpack.BaseValue)
+	c.Equal(0, len(backpack.Modifiers))
+	c.False(backpack.CanConvertToGroup(), "a group already is one")
+
+	c.True(backpack.CanConvertToPhysicalContainer())
+	backpack.ConvertToPhysicalContainer()
+	c.True(backpack.IsPhysicalContainer())
+	c.Equal("4", backpack.LegalityClass, "a container must get back the legality class new equipment starts with")
+
+	c.False(NewEquipment(nil, nil, false).CanConvertToGroup(), "only a container may become a group")
+
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	c.False(choice.CanConvertToPhysicalContainer(), "a choice container must become a group first")
+	c.False(choice.CanConvertToGroup(), "a choice container becomes a group by losing its choices")
+	c.False(choice.CanConvertToFromContainer(), "a choice container must not become a plain piece of equipment")
+	c.True(NewEquipmentGroup(nil, nil).CanConvertToFromContainer(), "an empty group may become a plain item")
+}
+
+// TestEquipmentSyncToGroupClearsWhatAGroupCantHold verifies that a physical container synced to a library entry that
+// has since become a group drops what a group can't hold, rather than keeping it hidden until the next save.
+func TestEquipmentSyncToGroupClearsWhatAGroupCantHold(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + EquipmentExt}
+	source := NewEquipmentGroup(nil, nil)
+	source.Name = "Kit"
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
+	local := NewEquipment(e, nil, true)
+	local.Name = "Kit"
+	local.Quantity = fxp.FromInteger(2)
+	local.RatedST = fxp.FromInteger(10)
+	local.Modifiers = []*EquipmentModifier{NewEquipmentModifier(e, nil, false)}
+	local.Source = Source{LibraryFile: libFile, TID: source.TID}
+	state, _ := e.SourceMatcher().Match(local)
+	c.Equal(srcstate.Mismatched, state, "precondition: the local copy differs from its source")
+
+	local.SyncWithSource()
+	c.True(local.IsGroup(), "the container must have become a group, as its source is")
+	c.Equal(fxp.One, local.Quantity, "a group's quantity must be one")
+	c.Equal(fxp.Int(0), local.RatedST)
+	c.Equal(0, len(local.Modifiers))
+}
+
+// TestEquipmentGroupRoundTripsThroughAnItem verifies that a group converted to a plain item and back comes back as a
+// physical container, since the item it became is a piece of equipment in its own right, and that the item keeps no
+// trace of having been a group but gets the legality class new equipment starts out with, while a physical container
+// converted to an item keeps whatever legality class it had.
+func TestEquipmentGroupRoundTripsThroughAnItem(t *testing.T) {
+	c := check.New(t)
+	group := NewEquipmentGroup(nil, nil)
+	group.ConvertToNonContainer()
+	c.False(group.Container(), "the group must have become an item")
+	c.Equal(eqcontainer.Container, group.ContainerType, "the item must not keep the group's container type")
+	c.Equal("4", group.LegalityClass, "the item must get the legality class new equipment starts out with")
+	group.BaseValue = "10"
+	group.ConvertToContainer()
+	c.True(group.IsPhysicalContainer(), "an item must become a physical container")
+	c.Equal("10", group.BaseValue, "the value the item was given must be kept")
+	c.Equal(fxp.FromInteger(10), group.ExtendedValue())
+
+	state := group.ContainerConversionState()
+	group.ConvertToGroup()
+	group.RestoreContainerConversionState(state)
+	c.True(group.IsPhysicalContainer(), "restoring the state must put the container type back")
+
+	backpack := NewEquipment(nil, nil, true)
+	backpack.LegalityClass = ""
+	backpack.ConvertToNonContainer()
+	c.Equal("", backpack.LegalityClass, "a legality class the user cleared must be left alone")
+}
+
+// TestEditorDataCantChangeTheKindOfContainer verifies that data an editor took from a container before the container
+// was converted to another kind can't put the old kind back when applied, since the kind isn't among the data an editor
+// edits.
+func TestEditorDataCantChangeTheKindOfContainer(t *testing.T) {
+	c := check.New(t)
+	backpack := NewEquipment(nil, nil, true)
+	var data EquipmentEditData
+	data.CopyFrom(backpack)
+	backpack.ConvertToGroup()
+	data.ApplyTo(backpack)
+	c.True(backpack.IsGroup(), "applying the stale data must leave the group a group")
+
+	clone := backpack.Clone(LibraryFile{}, nil, nil, Copy)
+	c.True(clone.IsGroup(), "a clone must keep the kind of container")
 }

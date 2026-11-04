@@ -257,3 +257,30 @@ func TestEquipmentProviderFollowsTLAndLCColumnSettings(t *testing.T) {
 		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentLCColumn), "off a page the LC column must be present")
 	}
 }
+
+// TestRootRowsReturnsTheTablesOwnRows verifies that a page list's provider hands out the rows the table already shows
+// rather than new ones, while a provider without reuse, as off a page, builds new rows on every call.
+func TestRootRowsReturnsTheTablesOwnRows(t *testing.T) {
+	c := check.New(t)
+	sheet, traits := newReuseTestSheet(t, -1, "Alpha", "Beta")
+	table := sheet.Traits.Table
+	roots := table.RootRows()
+	c.Equal(2, len(roots), "the table must have both traits at the top")
+	c.True(roots[0] == table.RowFromIndex(0) && roots[1] == table.RowFromIndex(1),
+		"the provider must return the rows the table shows")
+
+	lists := &listsForTest{traits: traits}
+	for _, p := range []TableProvider[*gurps.Trait]{NewTraitsProvider(lists, false), NewTraitsProvider(lists, true)} {
+		if tp, ok := p.(*traitsProvider); ok {
+			// Reuse switched off for the page provider too, which must then behave as one off a page.
+			tp.reuse = nil
+		}
+		p.SetTable(unison.NewTable[*Node[*gurps.Trait]](p))
+		first, second := p.RootRows(), p.RootRows()
+		c.Equal(2, len(first), "the provider must return a row for each trait")
+		for i := range first {
+			c.True(first[i].Data() == traits[i] && second[i].Data() == traits[i], "row %d must hold its trait", i)
+			c.True(first[i] != second[i], "without reuse, row %d must be built anew on each call", i)
+		}
+	}
+}

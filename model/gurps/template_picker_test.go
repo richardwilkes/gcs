@@ -424,3 +424,112 @@ func TestPickerMeasureRangeWithContents(t *testing.T) {
 		"none of it counts as nothing")
 	c.Equal("0", PickerMeasureRangeWithContents(NewTrait(nil, nil, true), picker.Value, false, nil, value).String())
 }
+
+// TestDisabledContainersWithPickersCostNothing verifies that a disabled skill or spell container reports no points
+// through its ranges either, whatever its picker would be worth, so the points column agrees with the points total.
+func TestDisabledContainersWithPickersCostNothing(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	skills := NewSkill(e, nil, true)
+	skills.TemplatePicker.Type = picker.Points
+	skills.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	skills.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(20)
+	brawling := NewSkill(e, skills, false)
+	brawling.Points = fxp.Four
+	skills.Children = []*Skill{brawling}
+	e.Skills = append(e.Skills, skills)
+	spells := NewSpell(e, nil, true)
+	spells.TemplatePicker = skills.TemplatePicker
+	light := NewSpell(e, spells, false)
+	light.Points = fxp.One
+	spells.Children = []*Spell{light}
+	e.Spells = append(e.Spells, spells)
+	e.Recalculate()
+	twenty := NumericRangeOf(fxp.FromInteger(20))
+	c.Equal(twenty, skills.PointsRange(nil))
+	c.Equal(twenty, skills.RawPointsRange())
+	c.Equal(twenty, spells.PointsRange(nil))
+	c.Equal(twenty, spells.RawPointsRange())
+
+	skills.SetDisabled(true)
+	spells.SetDisabled(true)
+	e.Recalculate()
+	none := NumericRangeOf(0)
+	c.Equal(none, skills.PointsRange(nil), "a disabled skill container's range holds its AdjustedPoints")
+	c.Equal(none, skills.RawPointsRange())
+	c.Equal(none, brawling.RawPointsRange(), "a skill under a disabled container is counted as nothing")
+	c.Equal(none, spells.PointsRange(nil), "a disabled spell container's range holds its AdjustedPoints")
+	c.Equal(none, spells.RawPointsRange())
+	c.Equal(none, light.RawPointsRange(), "a spell under a disabled container is counted as nothing")
+
+	// A disabled child of an enabled container is counted as nothing, as AdjustedPoints counts it.
+	skills.SetDisabled(false)
+	skills.TemplatePicker = TemplatePicker{}
+	brawling.SetDisabled(true)
+	c.Equal(none, skills.PointsRange(nil))
+	c.Equal(none, skills.RawPointsRange())
+}
+
+// TestEquipmentChoiceConversion verifies that only a group may become a choice container, giving up its VTT notes,
+// tags, unequipped state and library source, and that converting back leaves a group.
+func TestEquipmentChoiceConversion(t *testing.T) {
+	c := check.New(t)
+	c.False(CanConvertToTemplateChoiceContainer(NewEquipment(nil, nil, true)),
+		"a physical container must become a group first")
+	c.False(CanConvertToTemplateChoiceContainer(NewEquipment(nil, nil, false)), "only a container may become one")
+
+	group := NewEquipmentGroup(nil, nil)
+	c.True(CanConvertToTemplateChoiceContainer(group))
+	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare group loses nothing")
+	group.Equipped = false
+	group.VTTNotes = "vtt"
+	group.Tags = []string{"Gear"}
+	group.Source = Source{Library: "lib", Path: "group.eqp", TID: group.ID()}
+	c.Equal([]string{"VTT notes", "tags", "unequipped state", "library source"}, TemplateChoiceConversionLosses(group))
+
+	ConvertToTemplateChoiceContainer(group)
+	c.True(IsTemplateChoiceContainer(group))
+	c.True(group.Equipped, "a choice container must be left equipped")
+	c.Equal("", group.VTTNotes)
+	c.Equal(0, len(group.Tags))
+	c.True(group.Source.IsZero())
+	c.Equal("Pick 1", group.TemplatePicker.String())
+
+	ConvertFromTemplateChoiceContainer(group)
+	c.False(IsTemplateChoiceContainer(group))
+	c.True(group.IsGroup(), "it must be left a group")
+}
+
+// TestEquipmentChoiceContainers verifies that an equipment choice container is picked by count, value or weight, and
+// takes part in finding and clearing template picker data like any other.
+func TestEquipmentChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	choice := newEquipmentChoice("Sword", "Axe")
+	c.True(IsTemplateChoiceContainer(choice))
+	c.True(choice.IsGroup(), "a choice container must be a group")
+	types, _ := choice.TemplatePickerData()
+	c.Equal([]picker.Type{picker.NotApplicable, picker.Count, picker.Value, picker.Weight}, types,
+		"equipment may be picked by count, value or weight, but not by points")
+
+	outer := NewEquipmentGroup(nil, nil)
+	choice.SetParent(outer)
+	outer.Children = []*Equipment{choice}
+	c.True(HasTemplatePickerData(outer), "a nested choice must be found")
+	ClearTemplatePickerData(outer)
+	c.False(HasTemplatePickerData(outer), "the nested choice must be cleared")
+	c.True(choice.IsGroup(), "a cleared choice must be left a group")
+}
+
+// TestEquipmentChoiceDescriptions verifies how a choice made by value or weight describes itself, a weight in the
+// sheet's default units unless it is given others.
+func TestEquipmentChoiceDescriptions(t *testing.T) {
+	c := check.New(t)
+	c.Equal("Pick at most $1,500 worth",
+		newRangeTestChoice(picker.Value, criteria.AtMostNumber, fxp.FromInteger(1500)).TemplatePicker.String())
+	units := SheetSettingsFor(nil).DefaultWeightUnits
+	c.Equal("Pick at least "+units.Format(fxp.Weight(fxp.FromInteger(10)))+" in weight",
+		newRangeTestChoice(picker.Weight, criteria.AtLeastNumber, fxp.FromInteger(10)).TemplatePicker.String())
+	tp := newRangeTestChoice(picker.Weight, criteria.AtMostNumber, fxp.FromInteger(10)).TemplatePicker
+	c.Equal("Pick at most "+fxp.Kilogram.Format(fxp.Weight(fxp.FromInteger(10)))+" in weight",
+		tp.StringWithUnits(fxp.Kilogram), "a weight must be given in the units of the sheet it is picked for")
+}

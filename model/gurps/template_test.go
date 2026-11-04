@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -79,4 +80,34 @@ func TestTemplatePointsRange(t *testing.T) {
 	template.EnsureAttachments()
 
 	c.Equal("20~30", template.PointsRange().String())
+}
+
+// TestTemplateLoadGroupsEquipmentChoiceContainers verifies that loading a template turns an equipment choice container
+// that isn't a group into one, clearing what only a physical container holds.
+func TestTemplateLoadGroupsEquipmentChoiceContainers(t *testing.T) {
+	c := check.New(t)
+	choice := newEquipmentChoice("Sword", "Axe")
+	choice.ContainerType = eqcontainer.Container
+	choice.BaseValue = "50"
+	choice.VTTNotes = "vtt"
+	choice.Tags = []string{"Weapon"}
+	choice.Source = Source{Library: "lib", Path: "choice.eqp", TID: choice.ID()}
+	backpack := NewEquipment(nil, nil, true)
+	backpack.BaseValue = "60"
+	tmpl := NewTemplate()
+	tmpl.Equipment = []*Equipment{choice, backpack}
+
+	data, err := json.Marshal(tmpl)
+	c.NoError(err)
+	var loaded Template
+	c.NoError(json.Unmarshal(data, &loaded))
+	c.Equal(2, len(loaded.Equipment))
+	c.True(loaded.Equipment[0].IsGroup(), "a choice container must become a group")
+	c.Equal("", loaded.Equipment[0].BaseValue, "a choice container must not keep a value of its own")
+	c.Equal("", loaded.Equipment[0].VTTNotes, "a choice container must not keep VTT notes")
+	c.Equal(0, len(loaded.Equipment[0].Tags), "a choice container must not keep tags")
+	c.True(loaded.Equipment[0].Source.IsZero(), "a choice container must not keep a source")
+	c.True(IsTemplateChoiceContainer(loaded.Equipment[0]), "the choices themselves must survive")
+	c.True(loaded.Equipment[1].IsPhysicalContainer(), "a container without choices keeps its type")
+	c.Equal("60", loaded.Equipment[1].BaseValue)
 }

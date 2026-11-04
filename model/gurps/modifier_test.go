@@ -10,11 +10,19 @@
 package gurps
 
 import (
+	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 func TestMergeReplacements(t *testing.T) {
@@ -183,4 +191,242 @@ func TestModifierSyncWithSource(t *testing.T) {
 	c.Equal("Options", localContainer.Name)
 	c.Equal("B1", localContainer.PageRef)
 	c.Equal("", localContainer.CostAmount, "a container carries no leaf-only data")
+}
+
+// TestModifierHideNotes checks that a modifier with HideNotes set is listed in its owner's notes without its notes,
+// while its full description and its weapon usage notes keep them.
+func TestModifierHideNotes(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	allies := addTraitWithFeatures(e, "Allies")
+	unwilling := NewTraitModifier(e, nil, false)
+	unwilling.Name = "Unwilling"
+	unwilling.LocalNotes = "Must be persuaded"
+	unwilling.HideNotes = true
+	unwilling.ShowNotesOnWeapon = true
+	summonable := NewTraitModifier(e, nil, false)
+	summonable.Name = "Summonable"
+	summonable.LocalNotes = "Takes a turn"
+	allies.SetModifiers([]*TraitModifier{unwilling, summonable})
+	allies.Weapons = []*Weapon{NewWeapon(allies, true)}
+	c.True(unwilling.Enabled(), "precondition: the unwilling modifier is enabled")
+	c.True(summonable.Enabled(), "precondition: the summonable modifier is enabled")
+
+	c.Equal("Unwilling; Summonable (Takes a turn)", allies.ModifierNotes(),
+		"hidden notes are left out, while the modifier is still listed")
+	c.Equal("Unwilling (Must be persuaded)", unwilling.FullDescription(), "the full description keeps hidden notes")
+	c.Equal("Must be persuaded", allies.Weapons[0].Notes(), "weapon usage notes ignore HideNotes")
+
+	sword := addCarriedEquipmentWithFeatures(e, "Broadsword")
+	silvered := NewEquipmentModifier(e, nil, false)
+	silvered.Name = "Silvered"
+	silvered.LocalNotes = "Hurts werewolves"
+	silvered.HideNotes = true
+	sword.SetModifiers([]*EquipmentModifier{silvered})
+	c.True(silvered.Enabled(), "precondition: the silvered modifier is enabled")
+
+	c.Equal("Silvered", sword.ModifierNotes(), "equipment modifiers hide their notes too")
+	c.Equal("Silvered (Hurts werewolves)", silvered.FullDescription(), "the full description keeps hidden notes")
+}
+
+// TestModifierHideNotesRoundTripAndHash checks that HideNotes and ShowInTitle on both kinds of modifier, and
+// CostIgnoresLevel on a trait modifier, are each saved only when set, so that existing files re-save unchanged, load
+// back, and are hashed, so that a library row differing only in one is reported as mismatched.
+func TestModifierHideNotesRoundTripAndHash(t *testing.T) {
+	c := check.New(t)
+	traitMod := NewTraitModifier(nil, nil, false)
+	traitMod.Name = "Unwilling"
+	equipmentMod := NewEquipmentModifier(nil, nil, false)
+	equipmentMod.Name = "Silvered"
+	for _, one := range []struct {
+		name string
+		key  string
+		set  func(bool)
+		node Hashable
+	}{
+		{"trait modifier", "hide_notes", func(on bool) { traitMod.HideNotes = on }, traitMod},
+		{"trait modifier", "show_in_title", func(on bool) { traitMod.ShowInTitle = on }, traitMod},
+		{"trait modifier", "cost_ignores_level", func(on bool) { traitMod.CostIgnoresLevel = on }, traitMod},
+		{"equipment modifier", "hide_notes", func(on bool) { equipmentMod.HideNotes = on }, equipmentMod},
+		{"equipment modifier", "show_in_title", func(on bool) { equipmentMod.ShowInTitle = on }, equipmentMod},
+	} {
+		data, err := jio.Marshal(one.node)
+		c.NoError(err)
+		c.NotContains(string(data), one.key, "%s: an unset %s isn't saved", one.name, one.key)
+		hash := Hash64(one.node)
+		one.set(true)
+		c.NotEqual(hash, Hash64(one.node), "%s: %s is source data and is hashed", one.name, one.key)
+		data, err = jio.Marshal(one.node)
+		c.NoError(err)
+		c.Contains(string(data), `"`+one.key+`":true`, "%s", one.name)
+	}
+
+	data, err := jio.Marshal(traitMod)
+	c.NoError(err)
+	var restoredTraitMod TraitModifier
+	c.NoError(jio.Unmarshal(data, &restoredTraitMod))
+	c.True(restoredTraitMod.HideNotes && restoredTraitMod.ShowInTitle && restoredTraitMod.CostIgnoresLevel,
+		"the trait modifier's flags load back")
+	data, err = jio.Marshal(equipmentMod)
+	c.NoError(err)
+	var restoredEquipmentMod EquipmentModifier
+	c.NoError(jio.Unmarshal(data, &restoredEquipmentMod))
+	c.True(restoredEquipmentMod.HideNotes && restoredEquipmentMod.ShowInTitle,
+		"the equipment modifier's flags load back")
+}
+
+// linkedTrait returns a trait whose own text uses @style@, with a modifier whose @focus@ is linked to it and whose
+// @extra@ is not.
+func linkedTrait() (*Trait, *TraitModifier) {
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "Trained in @style@"
+	mod := NewTraitModifier(nil, nil, false)
+	mod.Name = "@focus@ focus"
+	mod.LocalNotes = "with @extra@"
+	trait.Modifiers = []*TraitModifier{mod}
+	mod.SetTarget(trait)
+	trait.NameableLinks = map[tid.TID]map[string]string{mod.TID: {"focus": "style"}}
+	return trait, mod
+}
+
+// TestLinkedModifierCodeIsAskedAsOwnerCode verifies that a modifier's linked code is asked for, answered and kept as
+// its owner's code, and that its linked and unlinked codes both resolve through the owner's replacements, in the text
+// of the modifier's own weapon as in the rest of it.
+func TestLinkedModifierCodeIsAskedAsOwnerCode(t *testing.T) {
+	c := check.New(t)
+	trait, mod := linkedTrait()
+	w := NewWeapon(nil, true)
+	w.Usage = "@focus@ strike"
+	w.UsageNotes = "@stance@"
+	mod.Weapons = []*Weapon{w}
+	mod.SetTarget(trait)
+	trait.Replacements = map[string]string{"style": "Judo"}
+	m := make(map[string]string)
+	trait.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"style": "Judo", "extra": nameable.Unset, "stance": nameable.Unset}, m,
+		"the linked code is asked as the trait's, and the weapon's codes are asked too")
+
+	// An answer given for the trait's code is the one the linked code shows.
+	m["style"] = "Karate"
+	m["extra"] = "zeal"
+	m["stance"] = "Horse stance"
+	trait.ApplyNameableKeys(m)
+	c.Equal("Karate focus", mod.NameWithReplacements())
+	c.Equal("with zeal", mod.LocalNotesWithReplacements(), "an unlinked code resolves through the owner too")
+	c.Equal("Karate strike", w.UsageWithReplacements(), "the modifier's weapon resolves the linked code as it does")
+	c.Equal("Horse stance", w.UsageNotesWithReplacements(), "and an unlinked one")
+	c.Equal(map[string]string{"style": "Karate", "extra": "zeal", "stance": "Horse stance"}, trait.Replacements,
+		"nothing is kept under the modifier's own code")
+}
+
+func TestCloneRekeysNameableLinks(t *testing.T) {
+	c := check.New(t)
+	trait, mod := linkedTrait()
+	trait.Replacements = map[string]string{"style": "Judo"}
+	clone := trait.Clone(LibraryFile{}, nil, nil, Reference)
+	c.Equal(1, len(clone.Modifiers))
+	if len(clone.Modifiers) != 1 {
+		return
+	}
+	cloned := clone.Modifiers[0]
+	c.NotEqual(mod.TID, cloned.TID, "a reference copy gets a fresh ID")
+	c.Equal(map[tid.TID]map[string]string{cloned.TID: {"focus": "style"}}, clone.NameableLinks)
+	c.Equal("Judo focus", cloned.NameWithReplacements())
+
+	clone.NameableLinks[cloned.TID]["focus"] = "other"
+	c.Equal("style", trait.NameableLinks[mod.TID]["focus"], "the original's links are not shared")
+}
+
+func TestLinkedEquipmentModifierCode(t *testing.T) {
+	c := check.New(t)
+	eqp := NewEquipment(nil, nil, false)
+	eqp.Name = "Sword of @metal@"
+	mod := NewEquipmentModifier(nil, nil, false)
+	mod.Name = "@material@ inlay"
+	eqp.SetModifiers([]*EquipmentModifier{mod})
+	eqp.NameableLinks = map[tid.TID]map[string]string{mod.TID: {"material": "metal"}}
+	eqp.Replacements = map[string]string{"metal": "Silver"}
+	c.Equal("Silver inlay", mod.NameWithReplacements())
+	m := make(map[string]string)
+	eqp.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"metal": "Silver"}, m, "the linked code is asked as the equipment's")
+}
+
+func TestLinkedModifierCodeReachesItsFeatures(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	skill := NewSkill(e, nil, false)
+	skill.Name = "Broadsword"
+	skill.Points = fxp.Four
+	e.Skills = append(e.Skills, skill)
+
+	// A trait modifier whose skill bonus names its skill through a code linked to the trait's, and whose bonuses to the
+	// trait's weapons name their usage through it.
+	traitMod := NewTraitModifier(e, nil, false)
+	traitMod.Name = "Focused on @skill@"
+	usage := criteria.Text{Compare: criteria.IsText, Qualifier: "@skill@"}
+	weaponBonus := NewWeaponBonus(feature.WeaponBonus)
+	weaponBonus.SelectionType = wsel.ThisWeapon
+	weaponBonus.SpecializationCriteria = usage
+	weaponSkillBonus := NewSkillBonus()
+	weaponSkillBonus.SelectionType = skillsel.ThisWeapon
+	weaponSkillBonus.SpecializationCriteria = usage
+	weaponSkillBonus.Amount = fxp.Two
+	traitMod.Features = Features{newSkillBonusTo("@skill@", fxp.Two), weaponBonus, weaponSkillBonus}
+	trait := addTraitWithFeatures(e, "Weapon Master (@weapon@)")
+	trait.SetModifiers([]*TraitModifier{traitMod})
+	trait.NameableLinks = map[tid.TID]map[string]string{traitMod.TID: {"skill": "weapon"}}
+	trait.Replacements = map[string]string{"weapon": "Broadsword"}
+	w := newCrushingWeapon(trait, "@weapon@")
+	w.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+	trait.Weapons = []*Weapon{w}
+
+	// Likewise for an equipment modifier.
+	eqpMod := NewEquipmentModifier(e, nil, false)
+	eqpMod.Name = "Balanced for @use@"
+	eqpMod.Features = Features{newSkillBonusTo("@use@", fxp.One)}
+	eqp := addCarriedEquipmentWithFeatures(e, "Sword of @skill@")
+	eqp.SetModifiers([]*EquipmentModifier{eqpMod})
+	eqp.NameableLinks = map[tid.TID]map[string]string{eqpMod.TID: {"use": "skill"}}
+	eqp.Replacements = map[string]string{"skill": "Broadsword"}
+	eqp.Equipped = true
+
+	e.Recalculate()
+	c.Equal("Focused on Broadsword", traitMod.NameWithReplacements())
+	c.Equal("Balanced for Broadsword", eqpMod.NameWithReplacements())
+	c.Equal(fxp.Three, e.SkillBonusFor("Broadsword", "", "", nil, nil),
+		"a modifier's bonus resolves its linked code through its owner, as its name does")
+	c.True(slices.Contains(w.collectWeaponBonuses(oneDieCount, nil, feature.WeaponBonus), weaponBonus),
+		"so does a modifier's weapon bonus to the weapons of its owner")
+	c.Equal(skill.LevelData.Level+fxp.Two, w.SkillLevel(nil), "and its skill bonus to those weapons")
+}
+
+func TestApplyDropsSelfLinks(t *testing.T) {
+	c := check.New(t)
+	trait, mod := linkedTrait()
+	trait.NameableLinks[mod.TID]["extra"] = "style"
+	var edit TraitEditData
+	edit.CopyFrom(trait)
+	// Renaming the trait's code to the modifier's in the editor leaves the link pointing at itself.
+	edit.NameableLinks[mod.TID]["focus"] = "focus"
+	edit.ApplyTo(trait)
+	c.Equal(map[tid.TID]map[string]string{mod.TID: {"extra": "style"}}, trait.NameableLinks,
+		"a link of a code to itself means the same as none, so it is not kept")
+
+	edit.CopyFrom(trait)
+	edit.NameableLinks[mod.TID]["extra"] = "extra"
+	edit.ApplyTo(trait)
+	c.Nil(trait.NameableLinks, "a modifier left with no links has no entry")
+}
+
+// TestCanTakeModifiers verifies which rows modifiers may be attached to: anything but a template choice container or
+// an equipment group.
+func TestCanTakeModifiers(t *testing.T) {
+	c := check.New(t)
+	c.True(CanTakeModifiers(NewEquipment(nil, nil, false)))
+	c.True(CanTakeModifiers(NewEquipment(nil, nil, true)), "a physical container keeps modifiers of its own")
+	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)), "a group keeps nothing of its own, modifiers included")
+	c.False(CanTakeModifiers(NewEquipmentChoiceContainer(nil, nil)))
+	c.True(CanTakeModifiers(NewTrait(nil, nil, true)))
+	c.False(CanTakeModifiers(NewTraitChoiceContainer(nil, nil)))
 }

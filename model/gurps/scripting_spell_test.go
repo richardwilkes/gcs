@@ -92,3 +92,17 @@ func TestScriptSpellDifficultyMatchesSkill(t *testing.T) {
 	c.Equal(ResolveScript(nil, deferredNewScriptSkill(skill), "self.difficulty"),
 		ResolveScript(nil, deferredNewScriptSpell(spell), "self.difficulty"))
 }
+
+// A spell's college list is exposed to scripts with any nameable replacements applied, matching every other text field
+// on the script spell object. It previously handed scripts the raw stored college (containing @placeholders@).
+func TestScriptSpellCollegeUsesReplacements(t *testing.T) {
+	c := check.New(t)
+	spell := NewSpell(nil, nil, false)
+	spell.Name = "Create @element@"
+	spell.College = CollegeList{"@element@ College", "Meta"}
+	spell.Replacements = map[string]string{"element": "Fire"}
+	c.Equal("Fire College|Meta", ResolveScript(nil, deferredNewScriptSpell(spell), "self.college.join('|')"))
+	// A spell with no colleges has an empty list, as a spell with no tags does, not null.
+	spell.College = nil
+	c.Equal("0", ResolveScript(nil, deferredNewScriptSpell(spell), "self.college.length"))
+}

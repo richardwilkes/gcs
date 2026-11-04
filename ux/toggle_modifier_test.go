@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -17,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -180,4 +182,68 @@ func TestModifierCheckmarkClickIsUndoable(t *testing.T) {
 		checkModifierCheckmarkClickInEditor(t, table, e.editorData.Modifiers, e.isModified,
 			gurps.EquipmentModifierEnabledColumn, i18n.Text("Toggle Equipment Modifier"))
 	})
+}
+
+// newTraitModifierChoiceFor returns a trait modifier choice owned by owner, holding an option for each name, each
+// enabled only if its name is among those given as enabled.
+func newTraitModifierChoiceFor(owner gurps.DataOwner, mandatory bool, names []string, enabled ...string) *gurps.TraitModifier {
+	choice := gurps.NewTraitModifierChoice(owner, nil)
+	choice.SetMandatoryChoice(mandatory)
+	for _, name := range names {
+		option := gurps.NewTraitModifier(owner, choice, false)
+		option.Name = name
+		option.SetDisabled(!slices.Contains(enabled, name))
+		choice.Children = append(choice.Children, option)
+	}
+	return choice
+}
+
+// traitEditorOnSheet returns an editor for a trait on the sheet holding the given modifiers, along with its content and
+// its table of modifiers.
+func traitEditorOnSheet(t *testing.T, sheet *Sheet, modifiers ...*gurps.TraitModifier) (
+	*editor[*gurps.Trait, *gurps.TraitEditData], *unison.Panel, *unison.Table[*Node[*gurps.TraitModifier]],
+) {
+	t.Helper()
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.Modifiers = modifiers
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
+	if !ok {
+		t.Fatal("expected a trait modifiers panel in the trait editor")
+	}
+	return e, content, panel.table
+}
+
+// TestTogglingAnOptionOnTurnsTheOthersOff verifies that turning on an option of a modifier choice turns off the one
+// that was on, as a single undoable edit, and that on a sheet the pick of a mandatory choice can't be turned off,
+// only replaced by another.
+func TestTogglingAnOptionOnTurnsTheOthersOff(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B", "C"}, "A"))
+	options := e.editorData.Modifiers[0].Children
+	enabled := func() []bool {
+		return []bool{options[0].Enabled(), options[1].Enabled(), options[2].Enabled()}
+	}
+
+	table.SetSelectionMap(map[tid.TID]bool{options[1].ID(): true})
+	table.PerformCmd(nil, ToggleStateItemID)
+	c.Equal([]bool{false, true, false}, enabled(), "turning B on must turn A off")
+	mgr := unison.UndoManagerFor(table)
+	mgr.Undo()
+	c.Equal([]bool{true, false, false}, enabled(), "undo must put both back")
+	mgr.Redo()
+	c.Equal([]bool{false, true, false}, enabled())
+
+	table.SetSelectionMap(map[tid.TID]bool{options[0].ID(): true, options[2].ID(): true})
+	table.PerformCmd(nil, ToggleStateItemID)
+	c.Equal([]bool{false, false, true}, enabled(), "turning two on together leaves only the later one on")
+
+	table.SetSelectionMap(map[tid.TID]bool{options[2].ID(): true})
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick of a mandatory choice on a sheet can't be turned off")
+	adjustModifierEnabled(e, table, options[2], false)
+	c.Equal([]bool{false, false, true}, enabled(), "not by its checkmark either")
+
+	adjustModifierEnabled(e, table, options[1], true)
+	c.Equal([]bool{false, true, false}, enabled(), "the checkmark cell turns the others off as the command does")
 }

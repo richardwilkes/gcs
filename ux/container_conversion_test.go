@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -123,4 +124,230 @@ func TestContainerConversionIsUndoableAsOneEdit(t *testing.T) {
 	ConvertToNonContainer(sheet, table)
 	c.True(parent.Container(), "a container with children must not be converted")
 	c.True(mgr.CanRedo(), "a conversion that changes nothing must not have recorded an edit that clears the redo stack")
+}
+
+// TestContainerConversionClosesEditorsAndUndoesTheKind verifies that converting a displayed equipment group to a plain
+// item closes its editor first, and that undo brings back a group, not a physical container, even though the sheet is
+// checked for modification, and so written out, in between. Undo and redo each discard an editor opened on the row in
+// between, whose ID's kind the conversion changes, and redo brings back the legality class new equipment starts with.
+func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	group := gurps.NewEquipmentGroup(entity, nil)
+	group.Name = "Kit"
+	entity.CarriedEquipment = []*gurps.Equipment{group}
+	var sheet *Sheet
+	screen.Do(func() {
+		sheet = NewSheet("test"+gurps.SheetExt, entity)
+		DisplayNewDockable(sheet)
+	})
+	editorsOpen := func() int {
+		var count int
+		screen.Do(func() {
+			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
+				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+				return ok && e.target == group
+			}))
+		})
+		return count
+	}
+	var mgr *unison.UndoManager
+	screen.Do(func() {
+		mgr = unison.UndoManagerFor(sheet.CarriedEquipment.Table)
+		EditEquipment(sheet, group, true)
+	})
+	c.NotNil(mgr, "the sheet must have an undo manager")
+	c.Equal(1, editorsOpen(), "the group's editor must be open")
+
+	screen.Do(func() {
+		table := sheet.CarriedEquipment.Table
+		table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
+		ConvertToNonContainer(sheet, table)
+	})
+	c.False(group.Container(), "the group must have become a plain item")
+	c.Equal("4", group.LegalityClass, "the item must start out with the default legality class")
+	c.Equal(0, editorsOpen(), "converting must close the group's editor")
+
+	screen.Do(func() { EditEquipment(sheet, group, true) })
+	c.Equal(1, editorsOpen(), "the item's editor must be open")
+	screen.Do(func() { _ = sheet.Modified() })
+	screen.Do(mgr.Undo)
+	c.True(group.IsGroup(), "undo must bring back a group, not a physical container")
+	c.Equal(0, editorsOpen(), "undo must discard the editor opened on the item")
+	c.Equal("", group.LegalityClass, "undo must take the legality class away again")
+
+	screen.Do(func() { EditEquipment(sheet, group, true) })
+	c.Equal(1, editorsOpen(), "the group's editor must be open")
+	screen.Do(mgr.Redo)
+	c.False(group.Container(), "redo must convert the group again")
+	c.Equal("4", group.LegalityClass)
+	c.Equal(0, editorsOpen(), "redo must discard the editor opened on the group")
+}
+
+// newTestTemplateWithEquipment returns a template dockable holding the equipment.
+func newTestTemplateWithEquipment(equipment ...*gurps.Equipment) *Template {
+	data := gurps.NewTemplate()
+	data.Equipment = equipment
+	return newTestTemplateDockable("Source", data)
+}
+
+// newTestSheetWithEquipment returns a sheet dockable carrying the equipment.
+func newTestSheetWithEquipment(t *testing.T, equipment ...*gurps.Equipment) *Sheet {
+	t.Helper()
+	sheet := newTestSheetForTemplate(t)
+	for _, one := range equipment {
+		one.SetDataOwner(sheet.Entity())
+	}
+	sheet.Entity().CarriedEquipment = equipment
+	sheet.Rebuild(true)
+	return sheet
+}
+
+// equipmentConversions returns whether each of the conversion commands is available for the selected equipment.
+func equipmentConversions(table *unison.Table[*Node[*gurps.Equipment]], selected ...*gurps.Equipment) (toChoice, toGroup, toContainer, toNonContainer bool) {
+	selection := make(map[tid.TID]bool)
+	for _, one := range selected {
+		selection[one.ID()] = true
+	}
+	table.SetSelectionMap(selection)
+	return table.CanPerformCmd(table, ConvertToChoiceContainerItemID),
+		table.CanPerformCmd(table, ConvertToGroupContainerItemID),
+		table.CanPerformCmd(table, ConvertToContainerItemID),
+		table.CanPerformCmd(table, ConvertToNonContainerItemID)
+}
+
+// TestEquipmentConversionCommandsFollowTheSelection verifies that each kind of equipment offers exactly the
+// conversions it can make, and that only a template offers to make a choice.
+func TestEquipmentConversionCommandsFollowTheSelection(t *testing.T) {
+	c := check.New(t)
+	item := gurps.NewEquipment(nil, nil, false)
+	backpack := gurps.NewEquipment(nil, nil, true)
+	group := gurps.NewEquipmentGroup(nil, nil)
+	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
+	template := newTestTemplateWithEquipment(item, backpack, group, choice)
+	table := template.Equipment.Table
+
+	toChoice, toGroup, toContainer, toNonContainer := equipmentConversions(table, item)
+	c.False(toChoice || toGroup, "an item can only become a container")
+	c.True(toContainer)
+	c.False(toNonContainer)
+
+	toChoice, toGroup, toContainer, toNonContainer = equipmentConversions(table, backpack)
+	c.False(toChoice, "a physical container must become a group before it can become a choice")
+	c.True(toGroup)
+	c.False(toContainer, "a physical container already is one")
+	c.True(toNonContainer, "an empty physical container can become an item")
+
+	toChoice, toGroup, toContainer, toNonContainer = equipmentConversions(table, group)
+	c.True(toChoice)
+	c.False(toGroup, "a group already is one")
+	c.True(toContainer, "a group can become a physical container")
+	c.True(toNonContainer, "an empty group can become an item")
+
+	toChoice, toGroup, toContainer, toNonContainer = equipmentConversions(table, choice)
+	c.False(toChoice, "a choice already is one")
+	c.True(toGroup)
+	c.False(toContainer, "a choice must become a group before it can become a physical container")
+	c.False(toNonContainer, "a choice must become a group before it can become an item")
+
+	sheetBackpack := gurps.NewEquipment(nil, nil, true)
+	sheetGroup := gurps.NewEquipmentGroup(nil, nil)
+	sheet := newTestSheetWithEquipment(t, sheetBackpack, sheetGroup)
+	sheetTable := sheet.CarriedEquipment.Table
+	_, toGroup, _, _ = equipmentConversions(sheetTable, sheetBackpack)
+	c.True(toGroup, "a sheet may hold groups")
+	toChoice, _, toContainer, _ = equipmentConversions(sheetTable, sheetGroup)
+	c.False(toChoice, "only a template may hold choices")
+	c.True(toContainer, "a sheet may hold physical containers")
+}
+
+// TestEquipmentGroupConversionWarnsAndIsUndoable verifies that converting a physical container to a group asks before
+// removing what a group can't hold, that converting back asks nothing, and that undo restores each step.
+func TestEquipmentGroupConversionWarnsAndIsUndoable(t *testing.T) {
+	c := check.New(t)
+	backpack := gurps.NewEquipment(nil, nil, true)
+	backpack.BaseValue = "60"
+	backpack.BaseWeight = "3 lb"
+	sheet := newTestSheetWithEquipment(t, backpack)
+	table := sheet.CarriedEquipment.Table
+	table.SetSelectionMap(map[tid.TID]bool{backpack.ID(): true})
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr)
+
+	var asked int
+	answer := false
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+		asked++
+		return answer
+	})
+
+	table.PerformCmd(table, ConvertToGroupContainerItemID)
+	c.Equal(1, asked, "removing data must be confirmed first")
+	c.True(backpack.IsPhysicalContainer(), "declining must leave the container alone")
+	c.False(mgr.CanUndo(), "declining must not record an edit")
+
+	answer = true
+	table.PerformCmd(table, ConvertToGroupContainerItemID)
+	c.True(backpack.IsGroup(), "the container must have become a group")
+	c.Equal("", backpack.BaseValue, "the value must be removed")
+	c.Equal("", backpack.BaseWeight, "the weight must be removed")
+
+	mgr.Undo()
+	c.True(backpack.IsPhysicalContainer(), "undo must turn it back into a physical container")
+	c.Equal("60", backpack.BaseValue, "undo must restore the value")
+	c.Equal("3 lb", backpack.BaseWeight, "undo must restore the weight")
+
+	mgr.Redo()
+	c.True(backpack.IsGroup(), "redo must convert it again")
+
+	asked = 0
+	table.SetSelectionMap(map[tid.TID]bool{backpack.ID(): true})
+	table.PerformCmd(table, ConvertToContainerItemID)
+	c.Equal(0, asked, "nothing is lost, so nothing may be asked")
+	c.True(backpack.IsPhysicalContainer(), "the group must have become a physical container")
+	mgr.Undo()
+	c.True(backpack.IsGroup(), "undo must turn it back into a group")
+}
+
+// TestConvertToContainerTakesItemsAndGroupsTogether verifies that "Convert to Container" turns the selected items into
+// containers and the selected groups into physical containers at once, as a single undoable edit, both on a sheet and
+// in an equipment library, where the library's own command performs the shared conversion.
+func TestConvertToContainerTakesItemsAndGroupsTogether(t *testing.T) {
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	type equipmentTable = *unison.Table[*Node[*gurps.Equipment]]
+	for _, one := range []struct {
+		owner string
+		open  func(t *testing.T, item, group *gurps.Equipment) (cmds *unison.Panel, table equipmentTable)
+	}{
+		{"sheet", func(t *testing.T, item, group *gurps.Equipment) (*unison.Panel, equipmentTable) {
+			table := newTestSheetWithEquipment(t, item, group).CarriedEquipment.Table
+			panel := table.AsPanel()
+			return panel, table
+		}},
+		{"library", func(_ *testing.T, item, group *gurps.Equipment) (*unison.Panel, equipmentTable) {
+			d := NewEquipmentTableDockable("Gear"+gurps.EquipmentExt, []*gurps.Equipment{group, item})
+			return d.AsPanel(), d.table
+		}},
+	} {
+		t.Run(one.owner, func(t *testing.T) {
+			c := check.New(t)
+			item := gurps.NewEquipment(nil, nil, false)
+			group := gurps.NewEquipmentGroup(nil, nil)
+			cmds, table := one.open(t, item, group)
+			table.SetSelectionMap(map[tid.TID]bool{item.ID(): true, group.ID(): true})
+			mgr := unison.UndoManagerFor(table)
+			c.NotNil(mgr)
+
+			c.True(cmds.CanPerformCmd(nil, ConvertToContainerItemID))
+			cmds.PerformCmd(nil, ConvertToContainerItemID)
+			c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
+			c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
+
+			mgr.Undo()
+			c.False(item.Container(), "undo must turn the item back")
+			c.True(group.IsGroup(), "the same undo must turn the group back")
+			c.False(mgr.CanUndo(), "the conversion must have been a single edit")
+		})
+	}
 }

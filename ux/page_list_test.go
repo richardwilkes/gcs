@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -377,4 +378,50 @@ func TestPageListTrimContinuationsRemovesTheirViews(t *testing.T) {
 	c.Equal([]*unison.Panel{kept.AsPanel()}, page.Children(), "and the trimmed continuation off its page")
 	c.Equal(kept, list.continuation(0), "the continuation kept is handed out again")
 	c.NotEqual(trimmed, list.continuation(1), "while the next one is made anew")
+}
+
+// TestSyncKeepsThePanelsOfUnchangedRows verifies that a page list keeps its rows, children included, across the sync
+// an update makes, and with them the panels built for cells whose data didn't change, which is what spares an update
+// the cost of building every cell on the page anew, while a cell whose data did change is built anew to show it.
+func TestSyncKeepsThePanelsOfUnchangedRows(t *testing.T) {
+	for _, one := range []struct {
+		name     string
+		names    []string
+		boxIndex int // the trait that is a container, or -1
+		rows     int
+		renamed  int // the trait renamed to "Changed" before the update, or -1
+	}{
+		{name: "nothing changed", names: []string{"Alpha", "Box", "Gamma"}, boxIndex: 1, rows: 4, renamed: -1},
+		{name: "one trait renamed", names: []string{"Alpha", "Beta", "Gamma"}, boxIndex: -1, rows: 3, renamed: 1},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet, traits := newReuseTestSheet(t, one.boxIndex, one.names...)
+			if one.boxIndex >= 0 {
+				c.True(traits[one.boxIndex].IsOpen(), "the container must be open, so that its child is shown")
+			}
+			rows, panels := traitDescriptionCells(c, sheet.Traits.Table)
+			c.Equal(one.rows, len(rows), "the table must show the traits and any container's child")
+
+			if one.renamed >= 0 {
+				traits[one.renamed].Name = "Changed"
+			}
+			updateSheet(sheet)
+			after, afterPanels := traitDescriptionCells(c, sheet.Traits.Table)
+			c.Equal(len(rows), len(after), "the update must leave the same rows on show")
+			for i := range rows {
+				c.True(after[i] == rows[i], "row %d must be the same object after the sync", i)
+				if i == one.renamed {
+					c.True(afterPanels[i] != panels[i], "the changed cell must be built anew")
+					c.True(slices.Contains(uxtest.LabelTexts(afterPanels[i]), "Changed"), "and must show the new name")
+				} else {
+					c.True(afterPanels[i] == panels[i], "row %d must keep the panel of its unchanged cell", i)
+				}
+			}
+			if one.boxIndex >= 0 {
+				c.True(after[one.boxIndex+1].Parent() == after[one.boxIndex],
+					"the kept child must still have its container as its parent")
+			}
+		})
+	}
 }

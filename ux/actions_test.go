@@ -10,9 +10,11 @@
 package ux
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -248,4 +250,136 @@ func TestUndoAndRedoActionsDriveTheActiveWindowUndoManager(t *testing.T) {
 func isTableDockable[T gurps.Node[T]](d unison.Dockable) bool {
 	_, ok := d.AsPanel().Self.(*TableDockable[T])
 	return ok
+}
+
+// TestContextMenuItemsMatchTheirActions checks that every item a table provider puts in its context menu names a
+// registered action and carries that action's own title, or the one contextMenuShortTitles registers for it, so that a
+// menu can never show a stale copy of a title that was changed on the action. Separators are the only items that name
+// no action.
+func TestContextMenuItemsMatchTheirActions(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	actions := map[int]*unison.Action{unison.DeleteItemID: unison.DeleteAction()}
+	for _, binding := range gurps.CurrentBindings() {
+		actions[binding.Action.ID] = binding.Action
+	}
+	lists := &listsForTest{}
+	entity := gurps.NewEntity()
+	providers := map[string]interface{ ContextMenuItems() []ContextMenuItem }{
+		"traits":              NewTraitsProvider(lists, false),
+		"trait modifiers":     NewTraitModifiersProvider(&traitModifierListProvider{}, false),
+		"skills":              NewSkillsProvider(entity, false),
+		"spells":              NewSpellsProvider(entity, false),
+		"carried equipment":   NewEquipmentProvider(lists, true, false),
+		"other equipment":     NewEquipmentProvider(lists, false, false),
+		"equipment modifiers": NewEquipmentModifiersProvider(&equipmentModifierListProvider{}, false),
+		"notes":               NewNotesProvider(lists, false),
+		"melee weapons":       NewWeaponsProvider(lists, true, false),
+		"ranged weapons":      NewWeaponsProvider(lists, false, false),
+	}
+	shared := AppendDefaultContextMenuItems(nil)
+	for name, provider := range providers {
+		items := provider.ContextMenuItems()
+		if len(items) <= len(shared) {
+			t.Errorf("%s: the provider adds nothing of its own to the context menu", name)
+			continue
+		}
+		c.Equal(shared, items[len(items)-len(shared):], "%s: the shared items follow the provider's own", name)
+		for i, item := range items {
+			where := fmt.Sprintf("%s item %d", name, i)
+			if item.ID == -1 {
+				c.Equal("", item.Title, "%s: a separator has no title", where)
+				continue
+			}
+			action, ok := actions[item.ID]
+			if !ok {
+				t.Errorf("%s: no registered action has ID %d", where, item.ID)
+				continue
+			}
+			want := action.Title
+			if title, has := contextMenuShortTitles[item.ID]; has {
+				want = title
+			}
+			c.Equal(want, item.Title, "%s: the item carries its action's title", where)
+		}
+	}
+}
+
+// TestContextMenusUseShortTitles verifies that a list's context menu leaves what the list holds out of its "New" items
+// for containers and choices, since it can only add to that list, while the menu bar keeps the full titles.
+func TestContextMenusUseShortTitles(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	lists := &listsForTest{}
+	entity := gurps.NewEntity()
+	titles := func(provider interface{ ContextMenuItems() []ContextMenuItem }) map[int]string {
+		m := make(map[int]string)
+		for _, one := range provider.ContextMenuItems() {
+			m[one.ID] = one.Title
+		}
+		return m
+	}
+	traits := titles(NewTraitsProvider(lists, false))
+	c.Equal("New Trait", traits[NewTraitItemID])
+	c.Equal("New Container", traits[NewTraitContainerItemID])
+	c.Equal("New Choice", traits[NewTraitChoiceContainerItemID])
+	skills := titles(NewSkillsProvider(entity, false))
+	c.Equal("New Skill", skills[NewSkillItemID])
+	c.Equal("New Container", skills[NewSkillContainerItemID])
+	c.Equal("New Technique", skills[NewTechniqueItemID], "a distinct kind of item keeps its name")
+	spells := titles(NewSpellsProvider(entity, false))
+	c.Equal("New Container", spells[NewSpellContainerItemID])
+	c.Equal("New Choice", spells[NewSpellChoiceContainerItemID])
+	c.Equal("New Ritual Magic Spell", spells[NewRitualMagicSpellItemID])
+	notes := titles(NewNotesProvider(lists, false))
+	c.Equal("New Note", notes[NewNoteItemID])
+	c.Equal("New Container", notes[NewNoteContainerItemID])
+	c.Equal("New Trait Container", newTraitContainerAction.Title, "the menu bar keeps the full title")
+}
+
+// TestBrowserRequestsAreRecordedHeadless verifies that the places GCS hands a URL to the browser go through
+// unison.OpenBrowser, so that a headless session records the request for OpenedURLs() rather than launching the
+// host's browser from under a test, and that no error dialog results from the recorded request.
+func TestBrowserRequestsAreRecordedHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	c.Nil(screen.OpenedURLs(), "nothing has asked for the browser yet")
+
+	var cancel bool
+	c.True(screen.Do(func() { cancel = OpenPageReference("https://example.com/ref", "", nil) }))
+	c.False(cancel, "a web page reference never asks to cancel further processing")
+	c.Equal([]string{"https://example.com/ref"}, screen.OpenedURLs(),
+		"a page reference that is a URL is handed to the browser through unison")
+
+	c.True(screen.Do(func() { showWebPage("https://example.com/help") }))
+	c.Equal([]string{"https://example.com/help"}, screen.OpenedURLs(),
+		"the Help menu's web pages are handed to the browser through unison")
+	c.Nil(screen.OpenedURLs(), "and each request is handed back only once")
+}
+
+// TestCreatingModifierChoices verifies that the "New ... Modifier Choice" commands are offered by a modifier library
+// and by an editor's modifier table, in the menus as well, and that what they create is a mandatory choice.
+func TestCreatingModifierChoices(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, nil)
+	c.True(library.CanPerformCmd(nil, NewTraitModifierChoiceItemID))
+	provider, ok := library.provider.(*modifiersProvider[*gurps.TraitModifier])
+	c.True(ok)
+	items := provider.ContextMenuItems()
+	titles := make([]string, 0, len(items))
+	for _, item := range items {
+		titles = append(titles, item.Title)
+	}
+	c.True(slices.Contains(titles, "New Trait Modifier Group"), "a modifier container is now called a group")
+	c.True(slices.Contains(titles, "New Trait Modifier Choice"))
+
+	var edited *gurps.TraitModifier
+	provider.edit = func(_ Rebuildable, item *gurps.TraitModifier) { edited = item }
+	library.PerformCmd(nil, NewTraitModifierChoiceItemID)
+	c.Equal([]*gurps.TraitModifier{edited}, provider.RootData(), "the command adds the choice and hands it to its editor")
+	c.True(gurps.IsMandatoryModifierChoice(edited))
+
+	e, _, _ := newEquipmentEditorWithModifiers(t)
+	c.True(e.CanPerformCmd(nil, NewEquipmentModifierChoiceItemID))
 }

@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -389,4 +390,55 @@ func TestSheetSettingsCloneTakesTheEntity(t *testing.T) {
 	c.True(s.Clone(e).Entity == e, "a clone made for an entity belongs to it")
 	s.Entity = e
 	c.True(s.Clone(nil).Entity == nil, "a clone made for no entity belongs to none")
+}
+
+// TestGlobalSheetSettingsSyncIsConcurrencySafe verifies that an entity without embedded sheet settings can be
+// unmarshaled on a background goroutine while the UI thread mutates the global sheet settings in place, adds and
+// removes sell money, writes them out, replaces them wholesale, and republishes the snapshot -- the combination the
+// deep search content cache and the settings dockables produce. The unmarshal must clone only published snapshots,
+// never the live settings being edited.
+func TestGlobalSheetSettingsSyncIsConcurrencySafe(t *testing.T) {
+	c := check.New(t)
+	settings := GlobalSettings()
+	penny := withTags(newEquipmentItem("Copper Penny", "1", "0"), MoneyTag)
+	// A clone must be captured for the restore, since the writer below mutates the live object in place.
+	prevSheet := settings.Sheet.Clone(nil)
+	defer func() {
+		settings.Sheet = prevSheet
+		SyncGlobalSheetSettings()
+	}()
+
+	data := fmt.Appendf(nil, `{"version":%d}`, jio.CurrentDataVersion)
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	wg.Go(func() {
+		<-start
+		for range 100 {
+			var e Entity
+			e.DiscardCaches()
+			c.NoError(jio.Unmarshal(data, &e))
+			c.NotNil(e.SheetSettings, "the unmarshaled entity must have been given a clone of the global sheet settings")
+		}
+	})
+	wg.Go(func() {
+		<-start
+		for i := range 100 {
+			if i%10 == 9 {
+				settings.Sheet = FactorySheetSettings()
+			} else {
+				settings.Sheet.ShowAllWeapons = !settings.Sheet.ShowAllWeapons
+				settings.Sheet.Attributes = FactoryAttributeDefs()
+				if len(settings.Sheet.SellMoney) == 0 {
+					settings.Sheet.AddSellMoney(penny, LibraryFile{})
+				} else {
+					settings.Sheet.RemoveSellMoney(settings.Sheet.SellMoney[0].TID)
+				}
+				_, err := jio.Marshal(settings.Sheet)
+				c.NoError(err)
+			}
+			SyncGlobalSheetSettings()
+		}
+	})
+	close(start)
+	wg.Wait()
 }

@@ -15,6 +15,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -397,4 +399,362 @@ func TestListFilterPopupFixesWidth(t *testing.T) {
 	h.choose(popupFirstSavedIndex + 1)
 	c.NotContains(tooltipText(popup.Tooltip), long, "the tooltip drops the long name once another is chosen")
 	c.NotContains(tooltipText(popup.Tooltip), "Short", "a name the button shows whole is kept out of the tooltip")
+}
+
+// The titles of the saved filter popup's commands.
+const (
+	newFilterItemTitle    = "New Filter…"
+	editFilterItemTitle   = "Edit Filter…"
+	deleteFilterItemTitle = "Delete Filter…"
+)
+
+// listFilterHeadlessTraitNames are the names of the fixture's traits, in the order the list holds them, which is what
+// the table shows whenever nothing is filtering it.
+var listFilterHeadlessTraitNames = []string{"Acute Vision", "Combat Reflexes", "Fur"}
+
+// newListFilterHeadlessTraits returns the three traits the tests filter: each bears a name, a tag and a point cost of
+// its own, so that every filter below can be told apart row by row. Only one of them is tagged "Physical", which is
+// what lets the quick filter be seen searching the tags column rather than the name.
+func newListFilterHeadlessTraits() []*gurps.Trait {
+	acuteVision := newFilterTestTrait("Acute Vision", "Physical")
+	acuteVision.BasePoints = fxp.FromInteger(2)
+	combatReflexes := newFilterTestTrait("Combat Reflexes", "Mental")
+	combatReflexes.BasePoints = fxp.FromInteger(15)
+	fur := newFilterTestTrait("Fur", "Exotic")
+	fur.BasePoints = fxp.FromInteger(4)
+	return []*gurps.Trait{acuteVision, combatReflexes, fur}
+}
+
+// openListFilterTraitDockable opens a trait list holding the fixture's traits in the workspace's document dock and
+// returns it. The file lives in the test's own directory, so nothing the dockable might write touches the user's files.
+func openListFilterTraitDockable(t *testing.T, screen *unison.HeadlessScreen) *TableDockable[*gurps.Trait] {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "test"+gurps.TraitsExt)
+	var d *TableDockable[*gurps.Trait]
+	screen.Do(func() {
+		d = NewTraitTableDockable(path, newListFilterHeadlessTraits())
+		DisplayNewDockable(d)
+	})
+	if d == nil {
+		t.Fatal("the trait list could not be opened")
+	}
+	return d
+}
+
+// seedListFilter saves a filter for the trait list type whose lone condition compares the field with the given key
+// against the qualifier, and returns it. A text or list field is what the tests use, so the text criterion is the one
+// that is filled in.
+func seedListFilter(name, fieldKey, qualifier string) *gurps.ListFilter {
+	f := gurps.NewListFilter(name)
+	condition := gurps.NewFilterCondition(f.Root, fieldKey)
+	condition.Text.Compare = criteria.ContainsText
+	condition.Text.Qualifier = qualifier
+	f.Root.Children = append(f.Root.Children, condition)
+	gurps.GlobalSettings().AddListFilter(listFilterPopupTestKey, f)
+	return f
+}
+
+// listFilterState is what the tests look at after each choice: the rows the list is showing and how the toolbar's two
+// filters stand.
+type listFilterState struct {
+	selected     *gurps.ListFilter
+	popupText    string
+	fieldText    string
+	names        []string
+	fieldEnabled bool
+	filtered     bool
+}
+
+// readListFilterState takes a snapshot of the dockable's filtering, all of it read in one pass on the UI thread.
+func readListFilterState(screen *unison.HeadlessScreen, d *TableDockable[*gurps.Trait]) listFilterState {
+	var state listFilterState
+	screen.Do(func() {
+		state.selected = d.selectedFilter
+		state.popupText = d.savedFilters.popup.Text()
+		state.fieldText = d.filterField.Text()
+		state.names = visibleTraitNames(d)
+		state.fieldEnabled = d.filterField.Enabled()
+		state.filtered = d.table.IsFiltered()
+	})
+	return state
+}
+
+// popupItemIndexOf returns the index of the popup's item with the title, failing the test if there is none.
+func popupItemIndexOf(t *testing.T, screen *unison.HeadlessScreen, popup *unison.PopupMenu[string], title string) int {
+	t.Helper()
+	index := -1
+	screen.Do(func() {
+		for i := range popup.ItemCount() {
+			if one, _ := popup.ItemAt(i); one == title {
+				index = i
+				return
+			}
+		}
+	})
+	if index == -1 {
+		t.Fatalf("the popup has no item %q", title)
+	}
+	return index
+}
+
+// TestListFilterPopupAppliesSavedFilterHeadless drives the saved filter popup of a trait list inside a headless
+// workspace: choosing a saved filter narrows the list and leaves the quick filter's field usable, what is typed there
+// narrows the list further while the saved filter is in force, choosing No Filter drops the saved filter alone, and the
+// quick filter searches the tags column as well as the name.
+func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	mental := seedListFilter("Mental", "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+
+	var inWorkspace bool
+	var titles []string
+	screen.Do(func() {
+		inWorkspace = d.Window() == wnd
+		titles = popupItemTitles(d.savedFilters.popup)
+	})
+	c.True(inWorkspace, "the trait list opens in the workspace window")
+	c.Equal([]string{
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
+		"Mental",
+	}, titles, "the commands lead, and the separator after No Filter puts the saved filter at index 6")
+
+	state := readListFilterState(screen, d)
+	c.Equal(listFilterHeadlessTraitNames, state.names, "every trait is shown before any filtering")
+	c.Equal("No Filter", state.popupText, "no saved filter is in force to start with")
+	c.True(state.fieldEnabled, "and the quick filter's field is usable")
+	c.False(state.filtered, "and nothing is filtering the table")
+
+	// Choose the saved filter. The item ahead of it is the separator, which occupies an index of its own.
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
+	state = readListFilterState(screen, d)
+	c.Equal([]string{"Combat Reflexes"}, state.names, "only the traits the saved filter accepts may be shown")
+	c.True(mental == state.selected, "the saved filter itself must be the one in force")
+	c.Equal("Mental", state.popupText, "and the popup must show it")
+	c.True(state.fieldEnabled, "the quick filter's field must stay usable while a saved filter is in force")
+	c.True(state.filtered, "the saved filter must filter the table")
+	uxtest.CaptureScreen(t, c, screen, "list_filter_applied")
+
+	// Type into the quick filter while the saved filter is in force. The one trait the saved filter keeps is not
+	// tagged "Physical", so nothing passes both, which shows the two being applied together rather than the typed
+	// text taking over.
+	screen.Click(screen.PanelCenter(d.filterField))
+	screen.Type("physical")
+	state = readListFilterState(screen, d)
+	c.Equal("physical", state.fieldText, "the typed text reaches the quick filter's field")
+	c.True(mental == state.selected, "typing in the quick filter must leave the saved filter in force")
+	c.True(state.filtered, "the two together must filter the table")
+	c.Equal(0, len(state.names), "no trait passes both the saved filter and the quick filter")
+	uxtest.CaptureScreen(t, c, screen, "list_filter_combined")
+
+	// Choose No Filter, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
+	// Only one trait is tagged "Physical" and no trait's name holds the word, so keeping exactly that one shows the
+	// quick filter searching the tags column.
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupNoneIndex)
+	state = readListFilterState(screen, d)
+	c.Nil(state.selected, "the saved filter must have been dropped")
+	c.Equal("physical", state.fieldText, "dropping the saved filter must leave the quick filter's text alone")
+	c.True(state.fieldEnabled, "and its field usable")
+	c.True(state.filtered, "the quick filter must filter the table on its own")
+	c.Equal([]string{"Acute Vision"}, state.names, "the quick filter searches the tags column, not just the name")
+}
+
+// TestListFilterDeleteAsksAndFallsBackHeadless drives the Delete Filter… command inside a headless workspace: it asks
+// before removing anything, a refusal leaves the filter in force, and confirming removes it and leaves the list with no
+// saved filter.
+func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	mental := seedListFilter("Mental", "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
+	c.True(mental == readListFilterState(screen, d).selected,
+		"the saved filter itself must be in force before it is deleted")
+	var itemCount int
+	screen.Do(func() { itemCount = d.savedFilters.popup.ItemCount() })
+	deleteIndex := popupItemIndexOf(t, screen, d.savedFilters.popup, deleteFilterItemTitle)
+	c.Equal(2, deleteIndex, "Delete Filter… is the third item")
+
+	// Refuse the confirmation. The prompt names the filter in force, and turning it down removes nothing.
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, deleteIndex)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt string
+	screen.Do(func() { prompt = strings.Join(uxtest.LabelTexts(dialogWnd.Content()), "\n") })
+	c.Contains(prompt, `Delete the filter 'Mental'?`, "the prompt must name the filter in force")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	c.Equal(1, len(savedFilters()), "a refused deletion must remove nothing")
+	state := readListFilterState(screen, d)
+	c.True(mental == state.selected, "and must leave the filter itself in force")
+	c.Equal([]string{"Combat Reflexes"}, state.names, "so the list is still filtered by it")
+
+	// Confirm it the second time around. The filter goes away and the list is left with no saved filter.
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, deleteIndex)
+	_, dialog = modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	var windows int
+	var titles []string
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		titles = popupItemTitles(d.savedFilters.popup)
+	})
+	c.Equal(1, windows, "the prompt has been dismissed")
+	c.Equal(0, len(savedFilters()), "confirming must remove the filter")
+	state = readListFilterState(screen, d)
+	c.Nil(state.selected, "the list must be left with no saved filter")
+	c.Equal("No Filter", state.popupText, "which the popup must show")
+	c.False(state.filtered, "with the quick filter empty, nothing filters the table")
+	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown again")
+	c.Equal([]string{
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter",
+	}, titles, "the deleted filter and the separator that set the saved filters apart must both be gone")
+	c.Equal(itemCount-2, len(titles), "so the popup holds two items fewer than it did")
+}
+
+// TestListFilterEditCancelHeadless edits a saved filter through the real dialog and cancels it, checking that the
+// saved filter is left as it was.
+func TestListFilterEditCancelHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	mental := seedListFilter("Mental", "tags", "Mental")
+	before := gurps.Hash64(mental)
+	d := openListFilterTraitDockable(t, screen)
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupItemIndexOf(t, screen, d.savedFilters.popup, "Mental"))
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup,
+		popupItemIndexOf(t, screen, d.savedFilters.popup, editFilterItemTitle))
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	screen.Type("Changed")
+	screen.Do(func() {
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")()
+		menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Delete")()
+	})
+	screen.Do(func() {
+		c.True(p.filter != mental, "the dialog edits a copy")
+		c.Equal("Changed", p.filter.Name, "which takes the typed name")
+		c.Equal([]string{gurps.TraitFilterFields()[0].Key}, filterShape(p.filter.Root),
+			"and the change to its conditions")
+	})
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var windows int
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "Cancel dismisses the dialog")
+	c.Equal("Mental", mental.Name, "the saved filter keeps its name")
+	c.Equal(before, gurps.Hash64(mental), "and its conditions")
+	c.True(mental == readListFilterState(screen, d).selected, "and stays in force")
+}
+
+// TestListFilterChangesReachOtherDockablesHeadless verifies that a change made to the saved filters through one
+// list's popup reaches every other open list of the same type: a renamed filter that is in force there keeps its
+// place under its new name, a new filter appears in its popup, and a deleted filter that was in force there leaves the
+// list with no saved filter. Each time, the other list's popup keeps its width. The two lists share a tab group, so
+// only the second, in front, can be clicked; the first is driven through its popup's callback directly. The editor is
+// stubbed, since it is the popups' bookkeeping that is under test here.
+func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	mental := seedListFilter("Mental", "tags", "Mental")
+	first := openListFilterTraitDockable(t, screen)
+	second := openListFilterTraitDockable(t, screen)
+	uxtest.ChoosePopupItem(t, screen, wnd, second.savedFilters.popup, popupFirstSavedIndex)
+	choosePopupItemDirectly(screen, first, popupFirstSavedIndex)
+	state := readListFilterState(screen, second)
+	c.True(mental == state.selected, "the saved filter itself must be in force in the list in front")
+	c.Equal([]string{"Combat Reflexes"}, state.names, "and filtering it")
+	c.True(mental == readListFilterState(screen, first).selected, "and in force in the list behind")
+
+	// Rename the filter through the list behind. The one in front keeps it in force, under the new name.
+	uxtest.SwapForTest(t, &showFilterEditor,
+		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
+			filter.Name = "Mind"
+			return true
+		})
+	editIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, editFilterItemTitle)
+	choosePopupItemDirectly(screen, first, editIndex)
+	state = readListFilterState(screen, second)
+	c.True(mental == state.selected, "the renamed filter itself must still be in force in the list in front")
+	c.Equal("Mind", state.popupText, "under its new name")
+	c.Equal([]string{"Combat Reflexes"}, state.names, "and still filtering it")
+
+	// Create a filter through the list behind. The popup in front lists it without growing to fit its long name, while
+	// the list keeps what it had in force.
+	uxtest.SwapForTest(t, &showFilterEditor,
+		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
+			filter.Name = "A much longer filter name"
+			return true
+		})
+	widthBefore := popupWidth(screen, second)
+	newIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, newFilterItemTitle)
+	choosePopupItemDirectly(screen, first, newIndex)
+	var titles []string
+	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
+	c.Equal([]string{
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
+		"A much longer filter name", "Mind",
+	}, titles, "the popup in front must list the new filter")
+	state = readListFilterState(screen, second)
+	c.True(mental == state.selected, "the list in front must keep the very filter it had in force")
+	c.Equal("Mind", state.popupText, "and show it")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must keep its width")
+
+	// Delete the filter in force through the list behind, which put the new one in force when it created it, so it
+	// has to be put back first. The list in front, still on the deleted filter, falls back to No Filter.
+	choosePopupItemDirectly(screen, first, popupFirstSavedIndex+1) // "Mind"
+	uxtest.SwapForTest(t, &confirmFilterDeletion, func(_ string) bool { return true })
+	deleteIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
+	choosePopupItemDirectly(screen, first, deleteIndex)
+	state = readListFilterState(screen, second)
+	c.Nil(state.selected, "the list in front must fall back to no saved filter once its filter is gone")
+	c.Equal("No Filter", state.popupText, "and its popup must say so")
+	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown there again")
+	c.Nil(readListFilterState(screen, first).selected, "the list behind must be on no saved filter as well")
+
+	// Delete the remaining filter too. The popup in front still keeps its width.
+	choosePopupItemDirectly(screen, first, popupFirstSavedIndex) // "A much longer filter name"
+	deleteIndex = popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
+	choosePopupItemDirectly(screen, first, deleteIndex)
+	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
+	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter"},
+		titles, "the popup in front must have lost the deleted filter")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must still keep its width")
+}
+
+// choosePopupItemDirectly makes the choice at the given index in the dockable's saved filter popup through the popup's
+// own callback, the way the menu would, without opening the menu. It is for a dockable that can't be clicked because
+// another one in its tab group is in front of it.
+func choosePopupItemDirectly(screen *unison.HeadlessScreen, d *TableDockable[*gurps.Trait], index int) {
+	screen.Do(func() {
+		title, _ := d.savedFilters.popup.ItemAt(index)
+		d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, index, title)
+	})
+}
+
+// popupWidth returns the width the dockable's saved filter popup was last laid out at.
+func popupWidth(screen *unison.HeadlessScreen, d *TableDockable[*gurps.Trait]) float32 {
+	var width float32
+	screen.Do(func() { width = d.savedFilters.popup.FrameRect().Width })
+	return width
+}
+
+// TestListFilterPopupCutsNameHeadless verifies, with the popup drawn in a headless workspace, that a filter name too
+// long for the button is cut short there while the menu it opens still lists it in full.
+func TestListFilterPopupCutsNameHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	long := "Mental or Social Advantages Worth Keeping"
+	seedListFilter(long, "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
+	var cut bool
+	screen.Do(func() { _, cut = d.savedFilters.button.textCut() })
+	c.True(cut, "the button cuts the long name short")
+
+	screen.Click(screen.PanelCenter(d.savedFilters.popup))
+	chooseOpenMenuItem(t, screen, wnd, long) // Fails unless the menu lists the long name in full.
 }

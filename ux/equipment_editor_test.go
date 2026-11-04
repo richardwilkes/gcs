@@ -10,13 +10,17 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/unison"
 )
 
 // newEditorEquipment creates a piece of equipment carrying a single non-container modifier, then returns both it and
@@ -256,4 +260,50 @@ func TestExtendedPreviewsLeaveTheModifiersOnTheEditedItem(t *testing.T) {
 		return false
 	}, false, false, e.editorData.Modifiers...)
 	c.Equal(4, count)
+}
+
+// newEquipmentModifierChoiceFor returns a mandatory equipment modifier choice owned by owner, holding an option for
+// each name, each enabled only if its name is among those given as enabled.
+func newEquipmentModifierChoiceFor(owner gurps.DataOwner, names []string, enabled ...string) *gurps.EquipmentModifier {
+	choice := gurps.NewEquipmentModifierChoice(owner, nil)
+	for _, name := range names {
+		option := gurps.NewEquipmentModifier(owner, choice, false)
+		option.Name = name
+		option.SetDisabled(!slices.Contains(enabled, name))
+		choice.Children = append(choice.Children, option)
+	}
+	return choice
+}
+
+// TestEquipmentEditorOnALootSheet verifies the choice rules in an equipment editor on a loot sheet, as on a character
+// sheet: turning an option on turns the pick off, and the new pick can't be turned off. A duplicate is on the loot
+// sheet as its original is, and the modifiers a structural undo gives back keep the loot as their owner, so the pick
+// stays locked.
+func TestEquipmentEditorOnALootSheet(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	equipment := gurps.NewEquipment(sheet.loot, nil, false)
+	equipment.Modifiers = []*gurps.EquipmentModifier{newEquipmentModifierChoiceFor(sheet.loot, []string{"A", "B"}, "A")}
+	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
+	panel, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content)
+	c.True(ok)
+	table := panel.table
+	options := e.editorData.Modifiers[0].Children
+	table.SetSelectionMap(map[tid.TID]bool{options[1].ID(): true})
+	table.PerformCmd(nil, ToggleStateItemID)
+	c.False(options[0].Enabled(), "turning B on turns A off")
+	c.True(options[1].Enabled())
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the new pick can't be turned off on a sheet")
+
+	DuplicateSelection(table)
+	options = e.editorData.Modifiers[0].Children
+	c.Equal(3, len(options))
+	c.True(gurps.IsOnSheet(options[2]), "the duplicate is on the loot sheet as its original is")
+	unison.UndoManagerFor(table).Undo()
+	table = liveTable(table)
+	pick := table.RootRows()[0].Data().Children[1]
+	c.True(pick.Enabled())
+	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the loot as their owner")
+	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
 }

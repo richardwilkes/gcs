@@ -17,7 +17,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -294,4 +296,81 @@ func TestLoadSettingsKeepsTheFileWhenASellMoneyEntryIsUnreadable(t *testing.T) {
 	}
 	c.True(xos.FileExists(path), "the settings file is left where it was")
 	c.False(xos.FileExists(path+".bad"), "and not set aside")
+}
+
+// TestClosedStateIsConcurrencySafe verifies that the unmarshalers for the legacy file format, which record the open
+// state of their container rows in the global closed-state map, can run on a background goroutine -- as the deep search
+// content cache runs them -- while the UI thread refreshes and toggles closed states and saves the settings. Without
+// the lock, both sides write the map and the runtime throws with "concurrent map writes".
+func TestClosedStateIsConcurrencySafe(t *testing.T) {
+	c := check.New(t)
+	prevPath := SettingsPath
+	SettingsPath = filepath.Join(t.TempDir(), "settings.json")
+	t.Cleanup(func() { SettingsPath = prevPath })
+	const closedKey = "n:closed-state-test-closed"
+	const toggledKey = "n:closed-state-test-toggled"
+	SetClosedState(closedKey, true)
+	t.Cleanup(func() {
+		SetClosedState(closedKey, false)
+		SetClosedState(toggledKey, false)
+	})
+
+	// A legacy-format trait list: pre-TID ids and the "open" flag that later versions moved to the closed-state map.
+	legacy := fstest.MapFS{"Test.adq": {Data: []byte(`{
+	"version": 2,
+	"rows": [
+		{
+			"type": "advantage_container",
+			"id": "8f7a1c2e-legacy",
+			"name": "Container",
+			"open": true,
+			"children": [{"type": "advantage", "id": "3b9d0e4f-legacy", "name": "Child"}]
+		}
+	]
+}`)}}
+
+	// The loops below avoid the checker, whose assertions lock the test's mutex and would establish enough ordering
+	// between the two goroutines to hide the race from the detector; the results are checked once both have finished.
+	var loadErr, saveErr error
+	loaded, open, stayedClosed := 0, 0, true
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	wg.Go(func() {
+		<-start
+		for range 200 {
+			traits, err := NewTraitsFromFile(legacy, "Test.adq")
+			if err != nil {
+				loadErr = err
+				return
+			}
+			loaded++
+			if len(traits) == 1 && traits[0].IsOpen() {
+				open++
+			}
+		}
+	})
+	wg.Go(func() {
+		<-start
+		settings := GlobalSettings()
+		for i := range 200 {
+			if !IsClosed(closedKey) {
+				stayedClosed = false
+			}
+			SetClosedState(toggledKey, i%2 == 0)
+			if i%50 == 49 {
+				if err := settings.Save(); err != nil {
+					saveErr = err
+					return
+				}
+			}
+		}
+	})
+	close(start)
+	wg.Wait()
+	c.NoError(loadErr)
+	c.Equal(200, loaded)
+	c.Equal(200, open, "a legacy container flagged open must load open")
+	c.NoError(saveErr)
+	c.True(stayedClosed, "a closed key must stay closed while it is only being refreshed")
+	c.True(IsClosed(closedKey), "the closed key must survive the saves")
 }

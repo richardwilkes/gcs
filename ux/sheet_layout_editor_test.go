@@ -25,8 +25,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/side"
 )
 
@@ -1889,4 +1891,152 @@ func TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt(t *testing.T) {
 		"a template lays itself out from the default layout, so it must be rebuilt")
 	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "a loot sheet has no layout, so it must be left alone")
 	c.True(list.table.RowFromIndex(0) == row, "a library list has no layout, so it must be left alone")
+}
+
+// TestSheetLayoutEditorContextMenuHeadless verifies that the block layout editor's menu opens for a right-click on a
+// block, offering to hide that block, and for shift+F10 while the editor has the focus.
+func TestSheetLayoutEditorContextMenuHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	editLayout := i18n.Text("Edit Layout")
+	var pt geom.Point
+	var editing, visible, overlayFocused bool
+	screen.Do(func() {
+		sheet.toggleLayoutEditing()
+		editing = sheet.layoutEditing()
+		if !editing {
+			return
+		}
+		overlay := sheet.layoutEditor.overlay
+		overlayFocused = wnd.Focus() == overlay
+		leaf := sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockTraitsKey)
+		if leaf == nil {
+			return
+		}
+		overlay.ScrollRectIntoView(leaf.rect)
+		overlay.ValidateScrollRoot()
+		leaf = sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockTraitsKey)
+		rootPt := overlay.PointToRoot(leaf.rect.Center())
+		visible = rootPt.In(visibleRect(overlay))
+		pt = screenPoint(wnd, rootPt)
+	})
+	t.Cleanup(func() {
+		screen.Do(func() {
+			if sheet.layoutEditing() {
+				sheet.toggleLayoutEditing()
+			}
+		})
+	})
+	if !editing {
+		t.Fatal("the sheet must be in layout editing mode")
+	}
+	c.True(overlayFocused, "the layout editor takes the focus")
+	if !visible {
+		t.Fatal("the traits block must be in view to be clicked")
+	}
+
+	screen.ClickWith(pt, unison.ButtonRight, mod.None)
+	titles := contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, editLayout), "a right-click on a block must open the layout menu; it offers %v",
+		titles)
+	hideTraits := i18n.Text("Hide %s", gurps.BlockTitle(gurps.BlockTraitsKey))
+	c.True(slices.Contains(titles, hideTraits), "the menu must offer to hide the block clicked on; it offers %v",
+		titles)
+	closeContextMenu(c, screen, wnd)
+
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	titles = contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, editLayout), "shift+F10 must open the layout menu; it offers %v", titles)
+	closeContextMenu(c, screen, wnd)
+	screen.Do(func() { editing = sheet.layoutEditing() })
+	c.True(editing, "closing the menu with Escape must leave layout editing on")
+}
+
+// TestSheetLayoutEditorMenuDuringADragHeadless verifies that shift+F10 in the middle of a divider drag ends the drag
+// where the pointer last was, as one undoable edit, rather than at the release unison delivers off the page before
+// asking for the menu, and then opens the menu.
+func TestSheetLayoutEditorMenuDuringADragHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var start geom.Point
+	var editing, visible bool
+	var editor *sheetLayoutEditor
+	screen.Do(func() {
+		sheet.toggleLayoutEditing()
+		editing = sheet.layoutEditing()
+		if !editing {
+			return
+		}
+		editor = sheet.layoutEditor
+		overlay := editor.overlay
+		divider := findTestDivider(editor.ensureRegions(), gurps.BlockTraitsKey)
+		if divider == nil {
+			return
+		}
+		overlay.ScrollRectIntoView(divider.rect)
+		overlay.ValidateScrollRoot()
+		divider = findTestDivider(editor.ensureRegions(), gurps.BlockTraitsKey)
+		rootPt := overlay.PointToRoot(divider.rect.Center())
+		visible = rootPt.In(visibleRect(overlay))
+		start = screenPoint(wnd, rootPt)
+	})
+	t.Cleanup(func() {
+		screen.Do(func() {
+			if sheet.layoutEditing() {
+				sheet.toggleLayoutEditing()
+			}
+		})
+	})
+	if !editing {
+		t.Fatal("the sheet must be in layout editing mode")
+	}
+	if !visible {
+		t.Fatal("the divider between the traits and skills blocks must be in view to be dragged")
+	}
+	traitsWeight := func() fxp.Int {
+		var weight fxp.Int
+		screen.Do(func() {
+			traits, _, _ := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockTraitsKey)
+			weight = traits.Weight
+		})
+		return weight
+	}
+	mode := func() layoutEditMode {
+		var m layoutEditMode
+		screen.Do(func() { m = editor.mode })
+		return m
+	}
+
+	screen.MouseDown(start, unison.ButtonLeft, mod.None)
+	screen.MouseMove(geom.NewPoint(start.X+40, start.Y), mod.None)
+	c.Equal(layoutDraggingDivider, mode(), "pressing on the divider and moving must be a divider drag")
+	dragged := traitsWeight()
+	c.True(dragged > fxp.One, "the drag must have widened the traits block")
+
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	c.Equal(layoutIdle, mode(), "shift+F10 must end the drag")
+	c.Equal(dragged, traitsWeight(), "the divider must stay where the drag last put it")
+	var edits int
+	screen.Do(func() { edits = undoEditCount(sheet.UndoManager()) })
+	c.Equal(1, edits, "the resize must be recorded as one undoable edit")
+	titles := contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, i18n.Text("Edit Layout")), "shift+F10 must then open the layout menu; it offers %v",
+		titles)
+	closeContextMenu(c, screen, wnd)
+	// The window has already seen the release, so letting go of the button changes nothing.
+	screen.MouseUp(geom.NewPoint(start.X+40, start.Y), unison.ButtonLeft, mod.None)
+	c.Equal(layoutIdle, mode(), "the release of a button the window no longer holds down must change nothing")
+	c.Equal(dragged, traitsWeight(), "and must leave the layout alone")
+	screen.Do(func() { edits = undoEditCount(sheet.UndoManager()) })
+	c.Equal(1, edits, "and record nothing")
 }

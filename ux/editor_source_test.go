@@ -13,16 +13,22 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // testSource is a complete source that no library holds.
@@ -854,4 +860,1089 @@ func newChoiceWithinChoice(t *testing.T, c check.Checker, innerIsChoice bool) (s
 	entity.Traits = append(entity.Traits, trait)
 	entity.Recalculate()
 	return sheet, outer, inner
+}
+
+// stringFieldLabeled returns the string field that follows the label bearing the given text among the panel's direct
+// children, or nil if there is none.
+func stringFieldLabeled(p *unison.Panel, labelText string) *StringField {
+	children := p.Children()
+	for i, child := range children {
+		if label, ok := child.Self.(*unison.Label); ok && label.String() == labelText && i+1 < len(children) {
+			if field, ok2 := children[i+1].Self.(*StringField); ok2 {
+				return field
+			}
+		}
+	}
+	return nil
+}
+
+// openSourceMenu clicks the editor's source button and returns the panels of the items of the menu that opens.
+func openSourceMenu(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, d unison.Dockable) []*unison.Panel {
+	t.Helper()
+	var button *unison.Button
+	screen.Do(func() { button = buttonWithSVG(d.AsPanel(), svg.Database) })
+	if button == nil {
+		t.Fatal("the editor has no source button")
+	}
+	screen.Click(screen.PanelCenter(button))
+	var items []*unison.Panel
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
+	if len(items) == 0 {
+		t.Fatal("the source button opened no menu")
+	}
+	return items
+}
+
+// TestEditorSourceMenu drives the source menu of a trait editor as a user would: the button names itself, the menu
+// shows the trait's ID and source and how it compares to the library, choosing the ID copies it, a command that doesn't
+// apply is disabled and does nothing, and a source cleared from the menu stays put when the editor's changes are
+// discarded. A weapon's editor has no such menu, since a weapon has no source.
+func TestEditorSourceMenu(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.Name = "Claws"
+	trait.Source = testSource
+	custom := gurps.NewTrait(sheet.Entity(), nil, false)
+	custom.Name = "Fangs"
+	var e, customEditor *editor[*gurps.Trait, *gurps.TraitEditData]
+	var tip string
+	screen.Do(func() {
+		sheet.Entity().Traits = append(sheet.Entity().Traits, trait, custom)
+		sheet.Rebuild(true)
+		customEditor = EditTrait(sheet, custom)
+		if button := buttonWithSVG(customEditor.AsPanel(), svg.Database); button != nil {
+			tip = tooltipText(button.Tooltip)
+		}
+	})
+	c.Equal("ID & Library Source", tip, "the source button is named by its tooltip")
+
+	// clearSource has no check of its own, so only the menu keeps it from a trait without a source.
+	items := openSourceMenu(t, screen, wnd, customEditor)
+	c.Equal([]string{
+		"ID: " + string(custom.ID()),
+		srcstate.Custom.String(),
+		"Sync with Source",
+		"Clear Source",
+	}, contextMenuTitles(t, screen, wnd))
+	clearItem := items[len(items)-1]
+	node := screen.AccessibilityNodeFor(clearItem)
+	c.True(node != nil && node.Disabled, "a trait without a source has none to clear")
+	screen.Click(screen.PanelCenter(clearItem))
+	var modified, menuOpen bool
+	screen.Do(func() {
+		modified = customEditor.isModified()
+		menuOpen = uxtest.OpenMenuPopup(wnd) != nil
+	})
+	c.False(modified, "choosing a disabled command does nothing")
+	c.True(menuOpen, "and leaves the menu open")
+	closeContextMenu(c, screen, wnd)
+	uxtest.CloseEditorWithoutPrompt(t, screen, customEditor)
+
+	screen.Do(func() { e = EditTrait(sheet, trait) })
+	items = openSourceMenu(t, screen, wnd, e)
+	c.Equal([]string{
+		"ID: " + string(trait.ID()),
+		"Source ID: " + string(testSource.TID),
+		"Source Library: " + testSource.Library,
+		"Source Path: " + testSource.Path,
+		srcstate.Missing.String(),
+		"Sync with Source",
+		"Clear Source",
+	}, contextMenuTitles(t, screen, wnd))
+	node = screen.AccessibilityNodeFor(items[len(items)-2])
+	c.True(node != nil && node.Disabled, "a source no library holds can't be synced with")
+	closeContextMenu(c, screen, wnd)
+
+	items = openSourceMenu(t, screen, wnd, e)
+	screen.Click(screen.PanelCenter(items[0]))
+	var clip string
+	screen.Do(func() { clip = unison.ClipboardGetText() })
+	c.Equal(string(trait.ID()), clip, "choosing the ID copies it")
+
+	items = openSourceMenu(t, screen, wnd, e)
+	screen.Click(screen.PanelCenter(items[len(items)-1]))
+	var cancelEnabled bool
+	screen.Do(func() {
+		modified = e.isModified()
+		cancelEnabled = e.cancelButton.Enabled()
+	})
+	c.True(modified, "clearing the source is a change to apply")
+	c.True(cancelEnabled, "or to discard")
+	c.Equal(testSource, trait.Source, "the trait keeps its source until the change is applied")
+	screen.Click(screen.PanelCenter(e.cancelButton))
+	var open bool
+	screen.Do(func() {
+		open = slices.ContainsFunc(AllDockables(), func(d unison.Dockable) bool { return d.AsPanel().Self == e })
+	})
+	c.False(open, "Discard closes the editor")
+	c.Equal(testSource, trait.Source, "and the trait keeps its source")
+
+	var weaponEditor unison.Dockable
+	var hasButton bool
+	screen.Do(func() {
+		before := AllDockables()
+		EditWeapon(sheet, gurps.NewWeapon(trait, true))
+		for _, d := range AllDockables() {
+			if !slices.Contains(before, d) {
+				weaponEditor = d
+			}
+		}
+		if weaponEditor != nil {
+			hasButton = buttonWithSVG(weaponEditor.AsPanel(), svg.Database) != nil
+		}
+	})
+	if weaponEditor == nil {
+		t.Fatal("the weapon editor did not open")
+	}
+	c.False(hasButton, "a weapon has no source, so its editor has no source menu")
+	if closer, isCloser := weaponEditor.(interface {
+		unison.Dockable
+		unison.TabCloser
+	}); isCloser {
+		uxtest.CloseEditorWithoutPrompt(t, screen, closer)
+	}
+}
+
+// newEditedLibraryTrait saves a trait named "Claws", with a melee weapon, further altered by prepareLib if not nil, into
+// a file of the user library, adds a copy sourced from that file to the sheet as "Claws (old)", further altered by
+// prepare if not nil, and opens the copy in an editor.
+func newEditedLibraryTrait(t *testing.T, c check.Checker, screen *unison.HeadlessScreen, sheet *Sheet, prepareLib, prepare func(trait *gurps.Trait)) (*editor[*gurps.Trait, *gurps.TraitEditData], *gurps.Trait) {
+	t.Helper()
+	user := gurps.GlobalSettings().Libraries.User()
+	lib := gurps.NewTrait(nil, nil, false)
+	lib.Name = "Claws"
+	lib.Weapons = []*gurps.Weapon{gurps.NewWeapon(lib, true)}
+	if prepareLib != nil {
+		prepareLib(lib)
+	}
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	var local *gurps.Trait
+	screen.Do(func() {
+		entity := sheet.Entity()
+		local = lib.Clone(libFile, entity, nil, gurps.Reference)
+		local.Name = "Claws (old)"
+		if prepare != nil {
+			prepare(local)
+		}
+		entity.Traits = append(entity.Traits, local)
+		sheet.Rebuild(true)
+		e = EditTrait(sheet, local)
+	})
+	return e, local
+}
+
+// editorField returns the string field of the editor's content under the label, ending the test if there is none.
+func editorField[N gurps.Node[N], D gurps.EditorData[N]](t *testing.T, screen *unison.HeadlessScreen, e *editor[N, D], label string) *StringField {
+	t.Helper()
+	var field *StringField
+	screen.Do(func() { field = stringFieldLabeled(e.content, label) })
+	if field == nil {
+		t.Fatalf("the editor has no %s field", label)
+	}
+	return field
+}
+
+// chooseSyncWithSource chooses Sync with Source from the editor's source menu, without reading the menu's items as
+// contextMenuTitles would, since that turns accessibility support on, after which clicking a button gives it the focus.
+func chooseSyncWithSource(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, d unison.Dockable) {
+	t.Helper()
+	items := openSourceMenu(t, screen, wnd, d)
+	screen.Click(screen.PanelCenter(items[len(items)-2]))
+}
+
+// TestEditorSyncAsksGrantItemEditorToDiscard verifies that syncing from the source menu asks the editor open on the
+// item of one of the editor's grants whether to discard its changes, rather than whether to save them, since the sync
+// replaces the features, grants and all.
+func TestEditorSyncAsksGrantItemEditorToDiscard(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		g := gurps.NewGrant(feature.GrantTrait)
+		g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+		lib.Features = gurps.Features{g}
+	}, nil)
+	isTraitEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+		return isEditor
+	}
+	screen.Do(func() {
+		p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
+		p.editGrantedItem(grantAt(t, p, 0))
+	})
+	nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
+	screen.Do(func() {
+		nested.editorData.Name = "Dark Vision"
+		nested.MarkModified(nil)
+	})
+	chooseSyncWithSource(t, screen, wnd, e)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	var offersSave bool
+	screen.Do(func() {
+		prompt = uxtest.LabelTexts(dialogWnd.Content())
+		offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+	})
+	c.True(slices.Contains(prompt, "Discard changes made to"), "the prompt asks whether to discard the item's changes: %v",
+		prompt)
+	c.True(slices.Contains(prompt, "Syncing with the source replaces this item."), "and says why: %v", prompt)
+	c.False(offersSave, "rather than whether to save them, which the sync would undo")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var discardReason string
+	screen.Do(func() { discardReason = nested.discardReason })
+	c.Equal("", discardReason, "canceling leaves the editor asking whether to save when closed for any other reason")
+}
+
+// TestEditorDiscardAndSyncReachSubEditorsOfSubEditors verifies that Discard, and Sync with Source, ask an editor opened
+// from the editor of a grant's item, on one of the item's modifiers, whether to discard its changes rather than whether
+// to save them, as they ask the item's editor, since what it would save goes into the same data.
+func TestEditorDiscardAndSyncReachSubEditorsOfSubEditors(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// act discards or syncs the outer editor.
+		act func(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData])
+		// reason is how the prompt's reason starts.
+		reason string
+	}{
+		{name: "discard", act: func(_ *testing.T, screen *unison.HeadlessScreen, _ *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData]) {
+			screen.Do(func() {
+				e.editorData.Name = "Talons"
+				e.MarkModified(nil)
+			})
+			screen.Click(screen.PanelCenter(e.cancelButton))
+		}, reason: "Discarding the changes made to"},
+		{name: "sync", act: func(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData]) {
+			chooseSyncWithSource(t, screen, wnd, e)
+		}, reason: "Syncing with the source replaces this item."},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+				g := gurps.NewGrant(feature.GrantTrait)
+				nightVision := newGrantTestTrait("Night Vision", 0)
+				modifier := gurps.NewTraitModifier(nil, nil, false)
+				modifier.Name = "Long"
+				nightVision.Modifiers = []*gurps.TraitModifier{modifier}
+				g.SetItem(nightVision, gurps.LibraryFile{})
+				lib.Features = gurps.Features{g}
+			}, nil)
+			isTraitEditor := func(d unison.Dockable) bool {
+				_, isEditor := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+				return isEditor
+			}
+			isModifierEditor := func(d unison.Dockable) bool {
+				_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+				return isEditor
+			}
+			screen.Do(func() {
+				p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
+				p.editGrantedItem(grantAt(t, p, 0))
+			})
+			nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
+			screen.Do(func() { EditTraitModifier(nested, nested.editorData.Modifiers[0]) })
+			modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+				isModifierEditor)
+			screen.Do(func() {
+				modifierEditor.editorData.Name = "Longer"
+				modifierEditor.MarkModified(nil)
+			})
+			tc.act(t, screen, wnd, e)
+			dialogWnd, dialog := modalDialog(t, screen, wnd)
+			var prompt []string
+			var offersSave bool
+			screen.Do(func() {
+				prompt = uxtest.LabelTexts(dialogWnd.Content())
+				offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+			})
+			c.True(slices.Contains(prompt, "Discard changes made to"),
+				"the prompt asks whether to discard the modifier's changes: %v", prompt)
+			c.True(slices.ContainsFunc(prompt, func(s string) bool { return strings.HasPrefix(s, tc.reason) }),
+				"and says why: %v", prompt)
+			c.False(offersSave, "rather than whether to save them")
+			screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+			var discardReason string
+			screen.Do(func() { discardReason = modifierEditor.discardReason })
+			c.Equal("", discardReason, "canceling leaves the editor asking whether to save when closed for any other reason")
+		})
+	}
+}
+
+// TestEditorSyncKeepsTheEditInProgress verifies that syncing from the source menu while a field holds the focus keeps
+// what was typed into it when the sync leaves that field alone, and leaves the focus, the caret and the editor's
+// scrolling as they were, so that typing carries on there. The field gives the focus up before it is replaced, while it
+// is still part of the editor.
+func TestEditorSyncKeepsTheEditInProgress(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	// Enlarged, so that the editor's content is bigger than its view, which can then be scrolled past the field.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
+	e, local := newEditedLibraryTrait(t, c, screen, sheet, nil, nil)
+	vttNotes := editorField(t, screen, e, "VTT Notes")
+	// Near its start, since at this size the middle of the field lies beyond the window's edge.
+	screen.Click(screen.PanelPoint(vttNotes, geom.Point{X: 4, Y: 4}))
+	var focused bool
+	screen.Do(func() { focused = wnd.CurrentFocus() == vttNotes.AsPanel() })
+	c.True(focused, "precondition: the click focuses the field")
+	screen.Type("Typed")
+	screen.KeyPress(unison.KeyLeft, 0)
+	screen.KeyPress(unison.KeyLeft, 0)
+
+	// Scrolled past the field, since giving the focus to a field out of view scrolls it into view, which putting the
+	// focus back must not do.
+	var h, v float32
+	var inView bool
+	var lostFocusWithinEditor []bool
+	screen.Do(func() {
+		e.scroll.SetPosition(0, e.content.FrameRect().Height)
+		h, v = e.scroll.Position()
+		inView = !visibleRect(vttNotes.AsPanel()).Empty()
+		lostFocus := vttNotes.LostFocusCallback
+		vttNotes.LostFocusCallback = func() {
+			lostFocusWithinEditor = append(lostFocusWithinEditor, unison.AncestorIsOrSelf(vttNotes, e.content))
+			lostFocus()
+		}
+	})
+	c.False(inView, "precondition: the field is scrolled out of view")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var name, notes string
+	var modified, focusOnNotes bool
+	var selStart, selEnd int
+	var hAfter, vAfter float32
+	screen.Do(func() {
+		name = e.editorData.Name
+		notes = e.editorData.VTTNotes
+		modified = e.isModified()
+		rebuilt := stringFieldLabeled(e.content, "VTT Notes")
+		focusOnNotes = rebuilt != nil && rebuilt != vttNotes && wnd.CurrentFocus() == rebuilt.AsPanel()
+		if rebuilt != nil {
+			selStart, selEnd = rebuilt.Selection()
+		}
+		hAfter, vAfter = e.scroll.Position()
+	})
+	c.Equal("Claws", name, "the sync brings the library's name across")
+	c.Equal("Typed", notes, "and keeps what was typed into a field it leaves alone")
+	c.True(modified)
+	c.True(len(lostFocusWithinEditor) != 0 && !slices.Contains(lostFocusWithinEditor, false),
+		"the field gives up the focus while it is still part of the editor: %v", lostFocusWithinEditor)
+	c.True(focusOnNotes, "the focus is on the rebuilt field that had it")
+	c.Equal(3, selStart, "with the caret where it was")
+	c.Equal(3, selEnd, "and nothing selected")
+	c.Equal(h, hAfter, "the editor stays scrolled as it was")
+	c.Equal(v, vAfter)
+	c.Equal("Claws (old)", local.Name, "the trait is left alone until the changes are applied")
+
+	screen.Type("X")
+	screen.KeyPress(unison.KeyReturn, mod.OSMenuCommand())
+	var state srcstate.Value
+	screen.Do(func() { state, _ = gurps.MatchSource(local) })
+	c.Equal("Claws", local.Name, "applying the changes syncs the trait")
+	c.Equal("TypXed", local.VTTNotes, "typing carried on where it left off")
+	c.Equal(srcstate.Matched, state)
+	// Applying the changes modified the sheet, which is to be left unmodified (see uxtest.StartHeadlessWorkspace).
+	screen.Do(sheet.markUnmodified)
+}
+
+// TestEditorSyncPutsTheFocusBack verifies where the focus goes after a sync that changes what held it: a field whose
+// text the sync replaced gets it back with all of its text selected, and when the control that held it is gone, as the
+// popup of a modifier choice is once the sync has made the choice a group, the nearest control gets it.
+func TestEditorSyncPutsTheFocusBack(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, nil)
+	nameField := editorField(t, screen, e, "Name")
+	screen.Click(screen.PanelCenter(nameField))
+	screen.KeyPress(unison.KeyEnd, 0)
+	var focused bool
+	var selStart, selEnd int
+	screen.Do(func() {
+		focused = wnd.CurrentFocus() == nameField.AsPanel()
+		selStart, selEnd = nameField.Selection()
+	})
+	c.True(focused, "precondition: the click focuses the field")
+	c.Equal(len("Claws (old)"), selStart, "precondition: the caret is at the end of the name")
+	c.Equal(selStart, selEnd, "precondition: nothing is selected")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var text string
+	screen.Do(func() {
+		rebuilt := stringFieldLabeled(e.content, "Name")
+		focused = rebuilt != nil && rebuilt != nameField && wnd.CurrentFocus() == rebuilt.AsPanel()
+		if rebuilt != nil {
+			text = rebuilt.Text()
+			selStart, selEnd = rebuilt.Selection()
+		}
+	})
+	c.Equal("Claws", text, "the sync replaces the name")
+	c.True(focused, "the focus is on the rebuilt field that had it")
+	c.Equal(0, selStart, "with all of what the sync brought in selected")
+	c.Equal(len("Claws"), selEnd)
+	screen.Click(screen.PanelCenter(e.cancelButton))
+
+	// A choice whose library copy is a group, with notes long enough to put what follows them out of view.
+	user := gurps.GlobalSettings().Libraries.User()
+	lib := gurps.NewTraitModifier(nil, nil, true)
+	lib.Name = "Options"
+	lib.LocalNotes = strings.Repeat("A line of notes.\n", 80)
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Modifiers/Test" + gurps.TraitModifiersExt}
+	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
+		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
+	isChoiceEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return isEditor
+	}
+	screen.Do(func() {
+		entity := sheet.Entity()
+		choice := gurps.NewTraitModifierChoice(entity, nil)
+		choice.Name = lib.Name
+		choice.LocalNotes = lib.LocalNotes
+		choice.Source = gurps.Source{LibraryFile: libFile, TID: lib.TID}
+		trait := gurps.NewTrait(entity, nil, false)
+		trait.Modifiers = []*gurps.TraitModifier{choice}
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		entity.Traits = append(entity.Traits, trait)
+		sheet.Rebuild(true)
+		EditTraitModifier(sheet, choice)
+	})
+	choiceEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isChoiceEditor)
+	var popup *unison.Panel
+	var popupInView bool
+	screen.Do(func() {
+		if popups := uxtest.PanelsOfType[*unison.PopupMenu[string]](choiceEditor.content); len(popups) == 1 {
+			popup = popups[0].AsPanel()
+			popup.RequestFocus()
+			focused = wnd.CurrentFocus() == popup
+			choiceEditor.scroll.SetPosition(0, 0)
+			popupInView = !visibleRect(popup).Empty()
+		}
+	})
+	if popup == nil {
+		t.Fatal("the choice's editor must have the popup that says what the choice asks for")
+	}
+	c.True(focused, "precondition: the popup holds the focus")
+	c.False(popupInView, "precondition: the popup is scrolled out of view")
+
+	chooseSyncWithSource(t, screen, wnd, choiceEditor)
+	var isChoice, focusOnTags, tagsInView bool
+	screen.Do(func() {
+		isChoice = choiceEditor.editorData.IsChoice()
+		if tags := stringFieldLabeled(choiceEditor.content, "Tags"); tags != nil {
+			focusOnTags = wnd.CurrentFocus() == tags.AsPanel()
+			tagsInView = fullyVisible(tags.AsPanel())
+		}
+	})
+	c.False(isChoice, "the sync makes the choice a group, whose editor has no such popup")
+	c.True(focusOnTags, "the focus goes to the field that is now where the popup was")
+	c.True(tagsInView, "which is scrolled into view")
+	screen.Click(screen.PanelCenter(choiceEditor.cancelButton))
+}
+
+// TestEditorSyncKeepsTheFocusInPlaceAsContentGrows verifies that when a sync grows the content ahead of the field that
+// holds the focus, as longer notes from the library do, the editor scrolls along with the field, which stays where it
+// was within the view rather than being pushed out of it.
+func TestEditorSyncKeepsTheFocusInPlaceAsContentGrows(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		lib.LocalNotes = strings.Repeat("A line of notes.\n", 150)
+	}, func(local *gurps.Trait) {
+		local.LocalNotes = ""
+		// Tall enough that the content doesn't fit the view even before the sync, so that it can be scrolled by all
+		// of what it then grows by.
+		local.UserDesc = strings.Repeat("A line of my own.\n", 20)
+	})
+	tags := editorField(t, screen, e, "Tags")
+	screen.Do(tags.ScrollIntoView)
+	screen.Click(screen.PanelCenter(tags))
+	var focused bool
+	var before geom.Rect
+	screen.Do(func() {
+		focused = wnd.CurrentFocus() == tags.AsPanel()
+		before = visibleRect(tags.AsPanel())
+	})
+	c.True(focused, "precondition: the click focuses the field")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var notes string
+	var focusOnTags bool
+	var v, viewHeight float32
+	var after, whole geom.Rect
+	screen.Do(func() {
+		notes = e.editorData.LocalNotes
+		if rebuilt := stringFieldLabeled(e.content, "Tags"); rebuilt != nil {
+			focusOnTags = rebuilt != tags && wnd.CurrentFocus() == rebuilt.AsPanel()
+			after = visibleRect(rebuilt.AsPanel())
+			whole = rebuilt.RectToRoot(rebuilt.ContentRect(false))
+		}
+		_, v = e.scroll.Position()
+		viewHeight = e.scroll.ContentView().ContentRect(false).Height
+	})
+	c.Equal(150, strings.Count(notes, "\n"), "the sync brings the library's notes across")
+	c.True(focusOnTags, "the focus is on the rebuilt field that had it")
+	c.True(v > viewHeight, "the notes push the field down by more than the view's height, and the editor scrolls "+
+		"along with it: scrolled to %v, in a view %v high", v, viewHeight)
+	c.True(nearlyWithin(whole, after), "so all of the field is in view: %v within %v", whole, after)
+	c.True(nearlyWithin(before, after) && nearlyWithin(after, before),
+		"right where it was: %v, was %v", after, before)
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestEditorSyncClosesItsSubEditors verifies that syncing from the source menu first closes the editors open on the
+// modifiers and weapons within the editor's data, and syncs nothing when one of them is kept open, as canceling its
+// prompt does. A weapon's editor with changes asks only whether to discard them, since the sync replaces the weapons
+// and saving the changes would have them thrown away. Closing a sub-editor gives the focus to the list it was opened
+// from and scrolls the editor to that list, yet the focus, its selection and the editor's scrolling all end up as they
+// were when the sync was chosen.
+func TestEditorSyncClosesItsSubEditors(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	// Enlarged, so that the lists at the end of the editor are out of view while a field near its start is in view.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, func(local *gurps.Trait) {
+		local.Weapons = []*gurps.Weapon{gurps.NewWeapon(local, true)}
+		local.Weapons[0].Usage = "Thrust"
+		modifier := gurps.NewTraitModifier(local.DataOwner(), nil, false)
+		modifier.Name = "Long"
+		local.Modifiers = []*gurps.TraitModifier{modifier}
+		gurps.AttachModifiers(local, local.Modifiers)
+	})
+	isWeaponEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.Weapon, *gurps.Weapon])
+		return isEditor
+	}
+	isModifierEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return isEditor
+	}
+	// Opened as from the list of weapons, which holds the focus as the weapon's editor opens.
+	screen.Do(func() {
+		e.meleeWeapons.table.RequestFocus()
+		EditWeapon(e, e.editorData.Weapons[0])
+	})
+	weaponEditor := uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+	screen.Do(func() {
+		weaponEditor.editorData.Usage = "Swung"
+		weaponEditor.MarkModified(nil)
+	})
+	vttNotes := editorField(t, screen, e, "VTT Notes")
+	// Brought into view to be clicked on, which leaves the list of weapons out of view.
+	screen.Do(vttNotes.ScrollIntoView)
+	screen.Click(screen.PanelPoint(vttNotes, geom.Point{X: 4, Y: 4}))
+	screen.Type("Typed")
+	// A selection made backwards, whose start is the end that moves as it is extended.
+	screen.KeyPress(unison.KeyLeft, mod.Shift)
+	screen.KeyPress(unison.KeyLeft, mod.Shift)
+	var focused, listInView bool
+	var h, v float32
+	screen.Do(func() {
+		focused = wnd.CurrentFocus() == vttNotes.AsPanel()
+		listInView = !visibleRect(e.meleeWeapons.table.AsPanel()).Empty()
+		h, v = e.scroll.Position()
+	})
+	c.True(focused, "precondition: the field holds the focus")
+	c.False(listInView, "precondition: the list of weapons is out of view")
+
+	// Canceling the prompt to discard the weapon's changes keeps its editor open, so nothing is synced.
+	chooseSyncWithSource(t, screen, wnd, e)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	var offersSave bool
+	screen.Do(func() {
+		prompt = uxtest.LabelTexts(dialogWnd.Content())
+		offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+	})
+	c.True(slices.Contains(prompt, "Discard changes made to"), "the prompt asks whether to discard the weapon's "+
+		"changes: %v", prompt)
+	c.True(slices.Contains(prompt, "Syncing with the source replaces this weapon."), "and says why: %v", prompt)
+	c.False(offersSave, "rather than whether to save them, which the sync would undo")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var name, discardReason string
+	var weaponEditors, selStart, selEnd int
+	var hAfter, vAfter float32
+	screen.Do(func() {
+		name = e.editorData.Name
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		discardReason = weaponEditor.discardReason
+		focused = wnd.CurrentFocus() == vttNotes.AsPanel()
+		selStart, selEnd = vttNotes.Selection()
+		hAfter, vAfter = e.scroll.Position()
+	})
+	c.Equal(1, weaponEditors, "canceling keeps the weapon's editor open")
+	c.Equal("", discardReason, "which asks whether to save its changes again when closed for any other reason")
+	c.Equal("Claws (old)", name, "so nothing is synced")
+	c.True(focused, "and the focus is back on the field that had it")
+	c.Equal(3, selStart, "with the selection as it was")
+	c.Equal(5, selEnd)
+	c.Equal(h, hAfter, "and the editor scrolled as it was")
+	c.Equal(v, vAfter)
+	screen.KeyPress(unison.KeyLeft, mod.Shift)
+	screen.Do(func() {
+		selStart, selEnd = vttNotes.Selection()
+		h, v = e.scroll.Position()
+	})
+	c.Equal(2, selStart, "the selection is still extended from its start")
+	c.Equal(5, selEnd)
+
+	// Discarding the weapon's changes lets its editor close, and the sync go ahead.
+	chooseSyncWithSource(t, screen, wnd, e)
+	_, dialog = modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	rebuilt := editorField(t, screen, e, "VTT Notes")
+	var notes, usage string
+	screen.Do(func() {
+		name = e.editorData.Name
+		notes = e.editorData.VTTNotes
+		if len(e.editorData.Weapons) == 1 {
+			usage = e.editorData.Weapons[0].Usage
+		}
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		focused = rebuilt != vttNotes && wnd.CurrentFocus() == rebuilt.AsPanel()
+		selStart, selEnd = rebuilt.Selection()
+		listInView = !visibleRect(e.meleeWeapons.table.AsPanel()).Empty()
+		hAfter, vAfter = e.scroll.Position()
+	})
+	c.Equal(0, weaponEditors, "the weapon's editor is closed")
+	c.Equal("Claws", name, "and the trait synced")
+	c.Equal("Typed", notes)
+	c.Equal("", usage, "with the library's weapon in place of the one that was edited")
+	c.True(focused, "the focus is on the rebuilt field that had it, not the list the weapon's editor gave it to")
+	c.Equal(2, selStart, "with the selection as it was")
+	c.Equal(5, selEnd)
+	c.Equal(h, hAfter, "the editor is scrolled as it was, not to the list the weapon's editor was opened from")
+	c.Equal(v, vAfter)
+	c.False(listInView)
+	screen.KeyPress(unison.KeyLeft, mod.Shift)
+	screen.Do(func() { selStart, selEnd = rebuilt.Selection() })
+	c.Equal(1, selStart, "the rebuilt field's selection is extended from its start as well")
+	c.Equal(5, selEnd)
+
+	// A focus that isn't within the content, as the source button's is once a screen reader has clicked it, is put back
+	// too, rather than left on the list a closed sub-editor gave it to, and the editor is scrolled as it was.
+	var sourceButton *unison.Button
+	var modifiers *traitModifiersPanel
+	screen.Do(func() {
+		e.editorData.Name = "Claws (changed)"
+		e.meleeWeapons.table.RequestFocus()
+		EditWeapon(e, e.editorData.Weapons[0])
+		if panels := uxtest.PanelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
+			modifiers = panels[0]
+			modifiers.table.RequestFocus()
+			EditTraitModifier(e, e.editorData.Modifiers[0])
+		}
+		if sourceButton = buttonWithSVG(e.AsPanel(), svg.Database); sourceButton != nil {
+			sourceButton.RequestFocus()
+			focused = wnd.CurrentFocus() == sourceButton.AsPanel()
+		}
+		e.scroll.SetPosition(0, 0)
+		listInView = !visibleRect(e.meleeWeapons.table.AsPanel()).Empty()
+	})
+	if sourceButton == nil {
+		t.Fatal("the editor has no source button")
+	}
+	if modifiers == nil {
+		t.Fatal("the editor has no list of modifiers")
+	}
+	c.True(focused, "precondition: the source button holds the focus")
+	c.False(listInView, "precondition: the list of weapons is out of view")
+	uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+	uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isModifierEditor)
+	chooseSyncWithSource(t, screen, wnd, e)
+	var modifierEditors int
+	screen.Do(func() {
+		name = e.editorData.Name
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		focused = wnd.CurrentFocus() == sourceButton.AsPanel()
+		hAfter, vAfter = e.scroll.Position()
+	})
+	c.Equal(0, weaponEditors, "an unchanged weapon's editor closes without asking")
+	c.Equal(0, modifierEditors, "as does an unchanged modifier's")
+	c.Equal("Claws", name, "and the trait is synced")
+	c.True(focused, "the focus is back on the source button")
+	c.Equal(float32(0), hAfter, "and the editor scrolled as it was")
+	c.Equal(float32(0), vAfter)
+
+	// A field outside the content, as the toolbar's scale field is, gets its caret back along with the focus.
+	var scaleField *PercentageField
+	screen.Do(func() {
+		e.editorData.Name = "Claws (changed)"
+		e.meleeWeapons.table.RequestFocus()
+		EditWeapon(e, e.editorData.Weapons[0])
+		if fields := uxtest.PanelsOfType[*PercentageField](e.Children()[0]); len(fields) == 1 {
+			scaleField = fields[0]
+			scaleField.RequestFocus()
+			scaleField.SetSelection(1, 1)
+			focused = wnd.CurrentFocus() == scaleField.AsPanel()
+		}
+	})
+	if scaleField == nil {
+		t.Fatal("the editor's toolbar has no scale field")
+	}
+	c.True(focused, "precondition: the scale field holds the focus")
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		name = e.editorData.Name
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		focused = wnd.CurrentFocus() == scaleField.AsPanel()
+		selStart, selEnd = scaleField.Selection()
+	})
+	c.Equal(0, weaponEditors, "the weapon's editor is closed")
+	c.Equal("Claws", name, "and the trait synced")
+	c.True(focused, "the focus is back on the scale field")
+	c.Equal(1, selStart, "with the caret where it was, rather than all of its text selected")
+	c.Equal(1, selEnd)
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestEditorSyncTakesTheFocusFromAClosedSubEditor verifies that syncing while the focus is within a sub-editor, which
+// the sync closes, leaves the focus within the editor, where Escape and Cmd-Return still reach it: on the list the
+// sub-editor was opened from, as rebuilt, or on the editor's first control when closing the sub-editor gave the focus
+// to something else.
+func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, func(local *gurps.Trait) {
+		local.Weapons = []*gurps.Weapon{gurps.NewWeapon(local, true)}
+		local.Weapons[0].Usage = "Thrust"
+	})
+	isWeaponEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.Weapon, *gurps.Weapon])
+		return isEditor
+	}
+	// typeIntoWeaponEditor types into the first field of the one weapon editor open, leaving the focus there.
+	typeIntoWeaponEditor := func() {
+		t.Helper()
+		weaponEditor := uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+		var field *StringField
+		screen.Do(func() {
+			if fields := uxtest.PanelsOfType[*StringField](weaponEditor.content); len(fields) != 0 {
+				field = fields[0]
+			}
+		})
+		if field == nil {
+			t.Fatal("the weapon's editor has no field to type into")
+		}
+		screen.Click(screen.PanelCenter(field))
+		screen.Type("Swung")
+		var focused, modified bool
+		screen.Do(func() {
+			focused = wnd.CurrentFocus() == field.AsPanel()
+			modified = weaponEditor.isModified()
+		})
+		c.True(focused, "precondition: the focus is within the weapon's editor")
+		c.True(modified, "precondition: which has changes to save")
+	}
+	// syncDiscardingWeaponChanges chooses Sync with Source, then agrees to the weapon editor's prompt to discard its
+	// changes.
+	syncDiscardingWeaponChanges := func() {
+		t.Helper()
+		chooseSyncWithSource(t, screen, wnd, e)
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	}
+
+	// Opened as from the list of weapons, which holds the focus as the weapon's editor opens.
+	var oldTable *unison.Panel
+	screen.Do(func() {
+		oldTable = e.meleeWeapons.table.AsPanel()
+		oldTable.RequestFocus()
+		EditWeapon(e, e.editorData.Weapons[0])
+	})
+	typeIntoWeaponEditor()
+	syncDiscardingWeaponChanges()
+	var name string
+	var weaponEditors int
+	var focusOnList, listInView bool
+	screen.Do(func() {
+		name = e.editorData.Name
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		table := e.meleeWeapons.table.AsPanel()
+		focusOnList = table != oldTable && wnd.CurrentFocus() == table
+		listInView = !visibleRect(table).Empty()
+	})
+	c.Equal(0, weaponEditors, "the weapon's editor is closed")
+	c.Equal("Claws", name, "and the trait synced")
+	c.True(focusOnList, "the focus is on the list the weapon's editor was opened from, as rebuilt")
+	c.True(listInView, "which is in view")
+
+	// Opened while the sheet holds the focus, which is what closing the weapon's editor then gives it back to.
+	screen.Do(func() {
+		e.editorData.Name = "Claws (changed)"
+		wnd.SetFocus(sheet)
+		EditWeapon(e, e.editorData.Weapons[0])
+	})
+	typeIntoWeaponEditor()
+	syncDiscardingWeaponChanges()
+	var focusInContent bool
+	screen.Do(func() {
+		name = e.editorData.Name
+		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		focus := wnd.CurrentFocus()
+		focusInContent = focus != nil && unison.AncestorIsOrSelf(focus, e.content)
+	})
+	c.Equal(0, weaponEditors, "the weapon's editor is closed")
+	c.Equal("Claws", name, "and the trait synced")
+	c.True(focusInContent, "the focus is within the editor's content, not on the sheet")
+
+	screen.KeyPress(unison.KeyEscape, 0)
+	var open bool
+	screen.Do(func() {
+		open = slices.ContainsFunc(AllDockables(), func(d unison.Dockable) bool { return d.AsPanel().Self == e })
+	})
+	c.False(open, "Escape reaches the editor, which discards its changes and closes")
+}
+
+// TestEditorSyncKeepsSavedModifierChanges verifies that syncing while a modifier's editor has changes asks whether to
+// save them, as closing it any other way does, and that the sync keeps what was saved, since it leaves the modifiers
+// alone.
+func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, func(local *gurps.Trait) {
+		modifier := gurps.NewTraitModifier(local.DataOwner(), nil, false)
+		modifier.Name = "Long"
+		local.Modifiers = []*gurps.TraitModifier{modifier}
+		gurps.AttachModifiers(local, local.Modifiers)
+	})
+	isModifierEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return isEditor
+	}
+	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
+	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isModifierEditor)
+	screen.Do(func() {
+		modifierEditor.editorData.Name = "Longer"
+		modifierEditor.MarkModified(nil)
+	})
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	screen.Do(func() { prompt = uxtest.LabelTexts(dialogWnd.Content()) })
+	c.True(slices.Contains(prompt, "Save changes made to"), "the prompt asks whether to save the modifier's "+
+		"changes: %v", prompt)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	var name, modifierName string
+	var modifierEditors int
+	screen.Do(func() {
+		name = e.editorData.Name
+		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		if len(e.editorData.Modifiers) == 1 {
+			modifierName = e.editorData.Modifiers[0].Name
+		}
+	})
+	c.Equal(0, modifierEditors, "saving closes the modifier's editor")
+	c.Equal("Claws", name, "and the trait is synced")
+	c.Equal("Longer", modifierName, "keeping the modifier as it was saved")
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestEditorSyncKeepsTheSelectionOfTheFocusedList verifies that a sync leaves the rows of the list that holds the focus
+// selected in the list as rebuilt: the same modifiers, which a sync leaves alone, and the weapons in the same places,
+// since a sync replaces the weapons with the library's.
+func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		lib.Weapons = append(lib.Weapons, gurps.NewWeapon(lib, true))
+		lib.Weapons[1].Usage = "Swung"
+	}, func(local *gurps.Trait) {
+		for _, name := range []string{"Long", "Sharp"} {
+			modifier := gurps.NewTraitModifier(local.DataOwner(), nil, false)
+			modifier.Name = name
+			local.Modifiers = append(local.Modifiers, modifier)
+		}
+		gurps.AttachModifiers(local, local.Modifiers)
+	})
+	modifiersTable := func() *unison.Table[*Node[*gurps.TraitModifier]] {
+		if panels := uxtest.PanelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
+			return panels[0].table
+		}
+		return nil
+	}
+	var oldModifiers *unison.Table[*Node[*gurps.TraitModifier]]
+	var focused bool
+	screen.Do(func() {
+		if oldModifiers = modifiersTable(); oldModifiers != nil {
+			oldModifiers.RequestFocus()
+			oldModifiers.SelectByIndex(1)
+			focused = wnd.CurrentFocus() == oldModifiers.AsPanel()
+		}
+	})
+	if oldModifiers == nil {
+		t.Fatal("the editor has no list of modifiers")
+	}
+	c.True(focused, "precondition: the list of modifiers holds the focus")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var name, selected string
+	var count int
+	screen.Do(func() {
+		name = e.editorData.Name
+		table := modifiersTable()
+		focused = table != nil && table != oldModifiers && wnd.CurrentFocus() == table.AsPanel()
+		if table != nil {
+			count = table.SelectionCount()
+			if rows := table.SelectedRows(false); len(rows) == 1 {
+				selected = rows[0].Data().Name
+			}
+		}
+	})
+	c.Equal("Claws", name, "the trait is synced")
+	c.True(focused, "the focus is on the list of modifiers, as rebuilt")
+	c.Equal(1, count, "with one modifier selected")
+	c.Equal("Sharp", selected, "the one that was")
+
+	var oldWeapons *unison.Table[*Node[*gurps.Weapon]]
+	var oldID tid.TID
+	screen.Do(func() {
+		e.editorData.Name = "Claws (changed)"
+		oldWeapons = e.meleeWeapons.table
+		oldWeapons.RequestFocus()
+		oldWeapons.SelectByIndex(1)
+		focused = wnd.CurrentFocus() == oldWeapons.AsPanel()
+		if rows := oldWeapons.SelectedRows(false); len(rows) == 1 {
+			oldID = rows[0].Data().TID
+		}
+	})
+	c.True(focused, "precondition: the list of weapons holds the focus")
+	c.True(oldID != "", "precondition: with its second weapon selected")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var usage string
+	var replaced, second bool
+	screen.Do(func() {
+		name = e.editorData.Name
+		table := e.meleeWeapons.table
+		focused = table != oldWeapons && wnd.CurrentFocus() == table.AsPanel()
+		count = table.SelectionCount()
+		second = table.IsRowSelected(1)
+		if rows := table.SelectedRows(false); len(rows) == 1 {
+			usage = rows[0].Data().Usage
+			replaced = rows[0].Data().TID != oldID
+		}
+	})
+	c.Equal("Claws", name, "the trait is synced again")
+	c.True(focused, "the focus is on the list of weapons, as rebuilt")
+	c.Equal(1, count, "with one weapon selected")
+	c.True(second, "the second")
+	c.Equal("Swung", usage)
+	c.True(replaced, "which is the library's weapon in place of the one that was selected")
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestEditorSyncKeepsSectionsAsTheyWere verifies that a sync shows the sections of rows as they were before it, each
+// collapsed or expanded as the user left it rather than as a new section starts out, with the same row open, so that
+// the field in that row that held the focus gets it back.
+func TestEditorSyncKeepsSectionsAsTheyWere(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	// Prerequisites, so that their section starts out collapsed, and no features, so that theirs starts out expanded.
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		trait := gurps.NewTraitPrereq()
+		trait.NameCriteria.Qualifier = "Magery"
+		lib.Prereq = gurps.NewPrereqList()
+		lib.Prereq.Prereqs = gurps.Prereqs{trait}
+		lib.Prereq = lib.Prereq.CloneAsPrereqList(nil)
+	}, nil)
+	sections := func() (prereqs *prereqPanel, features *featuresPanel) {
+		if panels := uxtest.PanelsOfType[*prereqPanel](e.content); len(panels) == 1 {
+			prereqs = panels[0]
+		}
+		if panels := uxtest.PanelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+			features = panels[0]
+		}
+		return prereqs, features
+	}
+	var oldPrereqs *prereqPanel
+	var oldFeatures *featuresPanel
+	screen.Do(func() { oldPrereqs, oldFeatures = sections() })
+	if oldPrereqs == nil || oldFeatures == nil {
+		t.Fatal("the editor must have a prerequisites section and a features section")
+	}
+	screen.Do(func() {
+		c.True(oldPrereqs.collapse.collapsed, "precondition: the prerequisites start out collapsed")
+		c.False(oldFeatures.collapse.collapsed, "precondition: the features start out expanded")
+		oldPrereqs.collapse.toggle()
+		oldFeatures.collapse.toggle()
+	})
+	screen.Do(func() { oldPrereqs.toggle("r.0") })
+	var field *unison.Panel
+	screen.Do(func() {
+		if field = oldPrereqs.FindRefKey("r.0:name"); field != nil {
+			field.RequestFocus()
+		}
+	})
+	if field == nil {
+		t.Fatal("the open prerequisite must have a name field")
+	}
+	var focused bool
+	screen.Do(func() { focused = wnd.CurrentFocus() == field })
+	c.True(focused, "precondition: the prerequisite's name field holds the focus")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		c.Equal("Claws", e.editorData.Name, "the trait is synced")
+		prereqs, features := sections()
+		if prereqs == nil || features == nil || prereqs == oldPrereqs || features == oldFeatures {
+			t.Error("the sync must rebuild both sections")
+			return
+		}
+		c.False(prereqs.collapse.collapsed, "the prerequisites stay expanded")
+		c.Equal("r.0", prereqs.open, "with the same row open")
+		rebuilt := prereqs.FindRefKey("r.0:name")
+		c.True(rebuilt != nil && rebuilt != field && wnd.CurrentFocus() == rebuilt,
+			"and the focus on its rebuilt name field")
+		c.True(features.collapse.collapsed, "the features stay collapsed")
+		c.NotNil(features.FindRefKey(sectionSummaryKey), "showing their paragraph")
+	})
+	screen.Click(screen.PanelCenter(e.cancelButton))
 }

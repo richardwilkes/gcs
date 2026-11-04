@@ -220,3 +220,35 @@ func TestPrereqListEvaluate(t *testing.T) {
 	}, visited, "a script that runs out of time has failed")
 	c.Equal(int64(1), abandonedScripts(e)-stopped, "each script runs once, and none in a skipped list does")
 }
+
+// TestNewPrereqCriteriaHashAndKeys checks that the hash follows the new fields, and that their nameable keys are found.
+func TestNewPrereqCriteriaHashAndKeys(t *testing.T) {
+	c := check.New(t)
+	list := newPrereqListRequiringTrait("Magery")
+	base := Hash64(list)
+	list.Not = true
+	c.NotEqual(base, Hash64(list), "negating a list changes its hash")
+	equipped := NewEquippedEquipmentPrereq()
+	base = Hash64(equipped)
+	equipped.Not = true
+	c.NotEqual(base, Hash64(equipped), "negating an equipment prerequisite changes its hash")
+
+	trait := NewTraitPrereq()
+	trait.NameCriteria.Qualifier = "Magery"
+	trait.TagsCriteria = textCriteria(criteria.IsText, "@Tag@")
+	trait.ModifierNameCriteria = textCriteria(criteria.IsText, "@Name@")
+	trait.ModifierNotesCriteria = textCriteria(criteria.IsText, "@Notes@")
+	trait.ModifierTagsCriteria = textCriteria(criteria.IsText, "@ModTag@")
+	keys := make(map[string]string)
+	trait.FillWithNameableKeys(keys, nil)
+	for _, key := range []string{"Tag", "Name", "Notes", "ModTag"} {
+		_, found := keys[key]
+		c.True(found, "the trait's %s key is found", key)
+	}
+	skill := NewSkillPrereq()
+	skill.TagsCriteria = textCriteria(criteria.IsText, "@SkillTag@")
+	keys = make(map[string]string)
+	skill.FillWithNameableKeys(keys, nil)
+	_, found := keys["SkillTag"]
+	c.True(found, "the skill's tag key is found")
+}

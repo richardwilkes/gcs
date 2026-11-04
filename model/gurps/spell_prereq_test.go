@@ -654,3 +654,37 @@ func TestSpellPrereqTagAndCollegeMatchAsLists(t *testing.T) {
 		c.True(counts(mixed, criteria.IsNotText, "Necromantic, Holy", 1), "%v: is not, comma-separated", subType)
 	}
 }
+
+// TestSpellPrereqLevel checks that only spells at the level a spell prerequisite asks for count toward its quantity.
+func TestSpellPrereqLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	fireSpell := func(name string, level int) *Spell {
+		sp := NewSpell(e, nil, false)
+		sp.Name = name
+		sp.College = CollegeList{"Fire"}
+		sp.Points = fxp.One
+		sp.LevelData.Level = fxp.FromInteger(level)
+		e.Spells = append(e.Spells, sp)
+		return sp
+	}
+	ignite := fireSpell("Ignite Fire", 12)
+	create := fireSpell("Create Fire", 15)
+	fireball := fireSpell("Fireball", 16)
+	c.Equal(fxp.Twelve, ignite.LevelData.Level, "precondition: Ignite Fire is at level 12")
+	c.Equal(fxp.FromInteger(15), create.LevelData.Level, "precondition: Create Fire is at level 15")
+	c.Equal(fxp.FromInteger(16), fireball.LevelData.Level, "precondition: Fireball is at level 16")
+
+	p := NewSpellPrereq()
+	p.SubType = spellcmp.College
+	p.QualifierCriteria = textCriteria(criteria.IsText, "Fire")
+	p.SamePowerSource = false
+	p.QuantityCriteria = numberCriteria(criteria.AtLeastNumber, fxp.FromInteger(2))
+	c.True(p.Satisfied(e, nil, nil, "", nil), "two spells count at any level")
+	p.LevelCriteria = numberCriteria(criteria.AtLeastNumber, fxp.FromInteger(15))
+	c.True(p.Satisfied(e, nil, nil, "", nil), "two spells are at level 15 or more")
+	p.LevelCriteria = numberCriteria(criteria.AtLeastNumber, fxp.FromInteger(16))
+	c.False(p.Satisfied(e, nil, nil, "", nil), "only one spell is at level 16 or more")
+	c.Equal("Knows at least 2 spells whose college is Fire at level at least 16",
+		p.Describe(nil, nil, func(s string) string { return s }))
+}

@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // showInTestWindow opens a window of the given width holding the panels, one per row, each filling the width. The
@@ -286,4 +288,91 @@ func fullyVisible(p *unison.Panel) bool {
 // is what the injection methods take.
 func screenPoint(wnd *unison.Window, pt geom.Point) geom.Point {
 	return pt.Add(wnd.ContentRect().Point)
+}
+
+// The context menu tests ask for a menu every way a user can -- a right-click, shift+F10, the Menu key and a screen
+// reader's request -- and check that the menu each opens is the one the panel builds. A headless session uses in-window
+// menus, so an open one can be seen with uxtest.OpenMenuPopup and closed with Escape.
+
+// contextMenuTitles returns the titles of the items of the popup menu open in wnd, without the separators, or nil when
+// none is open. An in-window menu item draws its title rather than holding it in a panel, so the titles are read from
+// the menu's accessibility description; the test ends if accessibility support is off, since every check of the titles
+// would otherwise fail as though no menu had opened.
+func contextMenuTitles(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) []string {
+	t.Helper()
+	var items []*unison.Panel
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
+	if len(items) == 0 {
+		return nil
+	}
+	if screen.AccessibilityTree(wnd) == nil {
+		t.Fatal("accessibility support must be on for the menu's items to be read")
+	}
+	titles := make([]string, 0, len(items))
+	for _, item := range items {
+		if node := screen.AccessibilityNodeFor(item); node != nil && node.Role == role.MenuItem {
+			titles = append(titles, node.Name)
+		}
+	}
+	return titles
+}
+
+// closeContextMenu closes the popup menu open in wnd the way a user would, with Escape, and checks that it has gone.
+func closeContextMenu(c check.Checker, screen *unison.HeadlessScreen, wnd *unison.Window) {
+	c.Helper()
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	var open bool
+	screen.Do(func() { open = uxtest.OpenMenuPopup(wnd) != nil })
+	c.False(open, "Escape must close the menu")
+}
+
+// cellScreenPoint brings the given row into view and returns the middle of its cell in the given column on the screen,
+// ending the test if the cell cannot be brought into view.
+func cellScreenPoint[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window,
+	table *unison.Table[*Node[T]], row, columnID int,
+) geom.Point {
+	t.Helper()
+	var pt geom.Point
+	var visible bool
+	screen.Do(func() {
+		table.ScrollRowIntoView(row)
+		table.ValidateScrollRoot()
+		frame := table.CellFrame(row, table.ColumnIndexForID(columnID))
+		rootPt := table.PointToRoot(frame.Center())
+		visible = rootPt.In(visibleRect(table.AsPanel()))
+		pt = screenPoint(wnd, rootPt)
+	})
+	if !visible {
+		t.Fatalf("row %d of the list must be in view to be clicked", row)
+	}
+	return pt
+}
+
+// dialogButton returns the dialog's button for the given modal response, failing the test if it has none.
+func dialogButton(t *testing.T, screen *unison.HeadlessScreen, dialog *unison.Dialog, response int) *unison.Button {
+	t.Helper()
+	var button *unison.Button
+	screen.Do(func() { button = dialog.Button(response) })
+	if button == nil {
+		t.Fatalf("the dialog has no button for response %d", response)
+	}
+	return button
+}
+
+// chooseOpenMenuItem clicks the item with the title in the popup menu open in wnd, failing the test if there is none.
+// An in-window menu item draws its title rather than holding it, so the item is found through its accessibility node.
+func chooseOpenMenuItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, title string) {
+	t.Helper()
+	var items []*unison.Panel
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
+	if screen.AccessibilityTree(wnd) == nil {
+		t.Fatal("accessibility support must be on for the menu's items to be read")
+	}
+	for _, item := range items {
+		if node := screen.AccessibilityNodeFor(item); node != nil && node.Role == role.MenuItem && node.Name == title {
+			screen.Click(screen.PanelCenter(item))
+			return
+		}
+	}
+	t.Fatalf("no %q item in the open menu", title)
 }

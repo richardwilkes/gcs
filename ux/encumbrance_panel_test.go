@@ -87,3 +87,18 @@ func TestEncumbrancePanelSpeaksTheCurrentLevel(t *testing.T) {
 	panel.levels[0].Accessibility.Callback(node)
 	c.NotNil(node.Text, "a row that is not current keeps its drawn text")
 }
+
+// The encumbrance block finds the current level when it is synced rather than as it is drawn, so a block built for a
+// character who is already encumbered has to find it as it is built.
+func TestEncumbrancePanelStartsAtTheCurrentLevel(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	// Basic lift at ST 10 is 20 lb, so 30 lb is Light.
+	eq := gurps.NewEquipment(entity, nil, false)
+	eq.BaseWeight = "30 lb"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, eq)
+	entity.Recalculate()
+	panel := NewEncumbrancePanel(entity)
+	c.Equal(int(encumbrance.Light), panel.current, "the block starts at the character's level without a sync")
+	c.False(panel.overloaded)
+}

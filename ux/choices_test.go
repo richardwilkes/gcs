@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -185,4 +186,47 @@ func TestChoiceQualifierMinimum(t *testing.T) {
 	weight, ok := field.(*WeightField)
 	c.True(ok, "a weight is entered with its units")
 	c.Equal(fxp.Weight(0), weight.Min(), "a weight may not be less than nothing")
+}
+
+// TestChoiceQualifierUndoAfterTypeChange verifies that undoing an edit made to a choice's qualifier before its type was
+// changed can't leave the choice asking for something its new type forbids. The edit belongs to the field the type
+// change replaced, whose own limits were those of the old type.
+func TestChoiceQualifierUndoAfterTypeChange(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	trait := gurps.NewTraitChoiceContainer(nil, nil)
+	trait.TemplatePicker.Type = picker.Points
+	trait.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
+	trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(-10)
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{trait}
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	screen.Do(func() {
+		template := newTestTemplateDockable("Template", data)
+		DisplayNewDockable(template)
+		e = EditTrait(template, trait)
+	})
+	c.NotNil(e)
+	var field *DecimalField
+	var typePopup *unison.PopupMenu[picker.Type]
+	screen.Do(func() {
+		for _, one := range uxtest.PanelsOfType[*DecimalField](e.AsPanel()) {
+			if one.Min() == fxp.Min {
+				field = one
+			}
+		}
+		for _, one := range uxtest.PanelsOfType[*unison.PopupMenu[picker.Type]](e.AsPanel()) {
+			typePopup = one
+		}
+	})
+	c.NotNil(field, "a points choice must offer a qualifier that may be less than nothing")
+	c.NotNil(typePopup)
+	screen.Do(func() { field.SetText("-5") })
+	c.Equal(fxp.FromInteger(-5), e.editorData.TemplatePicker.Qualifier.Qualifier)
+	screen.Do(func() { typePopup.Select(picker.Count) })
+	c.Equal(fxp.Int(0), e.editorData.TemplatePicker.Qualifier.Qualifier, "a count may not be less than nothing")
+	screen.Do(func() { e.UndoManager().Undo() })
+	c.Equal(picker.Count, e.editorData.TemplatePicker.Type)
+	c.Equal(fxp.Int(0), e.editorData.TemplatePicker.Qualifier.Qualifier,
+		"undoing the earlier edit must not make the count less than nothing")
 }
