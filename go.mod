@@ -3,7 +3,7 @@ module github.com/richardwilkes/gcs/v5
 go 1.27.3
 
 require (
-	github.com/dop251/goja v0.0.0-20261031103838-cf2ff0ec0b31
+	github.com/dop251/goja v0.0.0-20261105002551-2413f2132ac8
 	github.com/go-git/go-billy/v6 v6.0.0-beta.1
 	github.com/go-git/go-git/v6 v6.0.0-beta.1
 	github.com/google/uuid v1.6.0
@@ -11,7 +11,7 @@ require (
 	github.com/richardwilkes/pdfview v0.8.1
 	github.com/richardwilkes/rpgtools v1.14.0
 	github.com/richardwilkes/toolbox/v2 v2.22.0
-	github.com/richardwilkes/unison v0.121.0
+	github.com/richardwilkes/unison v0.121.1
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/yuin/goldmark v1.8.7
@@ -30,15 +30,15 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/dlclark/regexp2/v2 v2.12.0 // indirect
-	github.com/ebitengine/purego v0.11.2 // indirect
+	github.com/ebitengine/purego v0.11.3 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
-	github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88 // indirect
+	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.4.1 // indirect
+	github.com/klauspost/cpuid/v2 v2.4.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.73 // indirect
 	github.com/pjbgf/sha1cd v0.7.0 // indirect

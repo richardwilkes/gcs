@@ -897,8 +897,14 @@ func TestScriptEvalSemantics(t *testing.T) {
 	_, err = runScript(0, "return 1;\nfoo(;")
 	c.HasError(err)
 	c.Contains(err.Error(), "SyntaxError")
-	c.Contains(err.Error(), "Line 2:5")
 	c.NotContains(err.Error(), illegalReturnMessage)
+	syntaxErr, ok := errors.AsType[*goja.CompilerSyntaxError](err)
+	c.True(ok && syntaxErr.File != nil, "expected a syntax error with a position, got %v", err)
+	if ok && syntaxErr.File != nil {
+		pos := syntaxErr.File.Position(syntaxErr.Offset)
+		c.Equal(2, pos.Line)
+		c.Equal(5, pos.Column)
+	}
 }
 
 // Covers the shared resolution path: text the parser accepts is returned as it stands, anything else is run as a script
