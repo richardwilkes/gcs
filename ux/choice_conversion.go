@@ -187,8 +187,12 @@ func convertContainerKind[T gurps.Node[T]](data T, kind containerKind) {
 	}
 }
 
-// containerKindConvertibleSelection returns the selected rows' data that can be converted to the given kind.
+// containerKindConvertibleSelection returns the selected rows' data that can be converted to the given kind, or nothing
+// for a table in a view that refuses changes (see inReadOnlyView).
 func containerKindConvertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], kind containerKind) []T {
+	if inReadOnlyView(table) {
+		return nil
+	}
 	var list []T
 	for _, row := range table.SelectedRows(false) {
 		data := row.Data()

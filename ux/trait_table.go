@@ -38,9 +38,9 @@ func NewTraitTableDockable(filePath string, traits []*gurps.Trait) *TableDockabl
 		func(path string) error { return gurps.SaveTraits(provider.TraitList(), path) },
 		NewTraitItemID, NewTraitContainerItemID)
 	// Organizing moves rows around, which unison.Table.ApplyFilter says must not be done while a filter is applied, so
-	// the command is turned off while one is, as Delete and Duplicate are.
+	// the command is turned off while one is, or while the list is locked, as Delete and Duplicate are.
 	d.InstallCmdHandlers(OrganizeTraitsItemID,
-		func(_ any) bool { return !d.table.IsFiltered() },
+		func(_ any) bool { return rowsChangeable(d.table) },
 		func(_ any) { organizeTraits(d, d.table) })
 	return d
 }

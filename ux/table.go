@@ -459,10 +459,10 @@ func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo 
 
 // selectionToDelete returns the nodes behind the table's selected rows that a deletion removes, which leaves out the
 // granted rows, once the editors open on them and on what they hold, other than on the granted rows within them, have
-// been closed. Nothing is returned when the table has no provider, no selection or a filter applied, or when one of the
-// editors stays open.
+// been closed. Nothing is returned when the table has no provider, no selection or rows that may not be changed (see
+// rowsChangeable), or when one of the editors stays open.
 func selectionToDelete[T gurps.Node[T]](table *unison.Table[*Node[T]]) []T {
-	if _, ok := any(table.Model).(TableProvider[T]); !ok || !HasSelectionAndNotFiltered(table) {
+	if _, ok := any(table.Model).(TableProvider[T]); !ok || !hasChangeableSelection(table) {
 		return nil
 	}
 	sel := table.SelectedRows(true)
@@ -547,7 +547,7 @@ func grantedWithin[T gurps.Node[T]](node T) []T {
 // DuplicateSelection duplicates the selected nodes in the table, other than the granted rows, whose copies no grant
 // would claim.
 func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
+	if provider, ok := any(table.Model).(TableProvider[T]); ok && hasChangeableSelection(table) {
 		undo := beginTableUndo(table, i18n.Text("Duplicate Selection"), nil, nil)
 		var zero T
 		needSet := false
@@ -602,15 +602,21 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	}
 }
 
-// HasSelectionAndNotFiltered returns true if the table has a selection and is not filtered.
-func HasSelectionAndNotFiltered[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	return !table.IsFiltered() && table.HasSelection()
+// rowsChangeable returns true if the table's rows may be added, removed, rearranged or changed: it is not filtered and
+// is not in a view that refuses changes, such as a locked list (see inReadOnlyView).
+func rowsChangeable[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+	return !table.IsFiltered() && !inReadOnlyView(table)
 }
 
-// hasUngrantedSelection returns true if the table is not filtered and has a selected row a grant didn't put there,
-// since the commands that change rows pass over granted ones.
+// hasChangeableSelection returns true if the table has a selection and its rows may be changed (see rowsChangeable).
+func hasChangeableSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+	return rowsChangeable(table) && table.HasSelection()
+}
+
+// hasUngrantedSelection returns true if the table's rows may be changed and it has a selected row a grant didn't put
+// there, since the commands that change rows pass over granted ones.
 func hasUngrantedSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	if !HasSelectionAndNotFiltered(table) {
+	if !hasChangeableSelection(table) {
 		return false
 	}
 	return slices.ContainsFunc(table.SelectedRows(false), func(row *Node[T]) bool { return !gurps.IsGranted(row.Data()) })
@@ -630,9 +636,9 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 
 // applyToSelectedRows applies the given change to the data behind each of the selected rows, other than those a grant
 // put there, as a single undoable edit with the given title, then reports the change by rebuilding the table's owner.
-// Nothing is done when the table has no selection or is filtered (see HasSelectionAndNotFiltered).
+// Nothing is done when the table has no selection or its rows may not be changed (see hasChangeableSelection).
 func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTitle string, apply func(T)) {
-	if !HasSelectionAndNotFiltered(table) {
+	if !hasChangeableSelection(table) {
 		return
 	}
 	var zero T
@@ -715,10 +721,15 @@ func currentRowIndex[T unison.TableRowConstraint[T]](table *unison.Table[T]) int
 
 // DisableSorting disables the sorting capability in the table headers.
 func DisableSorting[T unison.TableRowConstraint[T]](headers []unison.TableColumnHeader[T]) []unison.TableColumnHeader[T] {
+	setColumnsSortable(headers, false)
+	return headers
+}
+
+// setColumnsSortable sets whether the table headers can be sorted on, keeping their sort order and direction.
+func setColumnsSortable[T unison.TableRowConstraint[T]](headers []unison.TableColumnHeader[T], sortable bool) {
 	for _, header := range headers {
 		state := header.SortState()
-		state.Sortable = false
+		state.Sortable = sortable
 		header.SetSortState(state)
 	}
-	return headers
 }

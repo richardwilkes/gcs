@@ -142,7 +142,7 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 		originalDrawOverCallback := table.DrawOverCallback
 		var altDropTargetIndexes []int
 		table.CanAcceptDropCallback = func(di drag.Info) bool {
-			if table.Enabled() && !table.IsFiltered() && di.HasDataType(altDataType.UTI) {
+			if table.Enabled() && di.HasDataType(altDataType.UTI) {
 				return true
 			}
 			return originalDragCallbacks.CanAcceptDropCallback(di)
@@ -229,6 +229,12 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 				}
 			}
 		}
+	}
+	// The window delivers no drag to a table that declines it, so this refuses every drop, alternate ones included,
+	// while the rows may not be changed, leaving the table enabled so that its rows can still be dragged out.
+	canAccept := table.CanAcceptDropCallback
+	table.CanAcceptDropCallback = func(di drag.Info) bool {
+		return rowsChangeable(table) && canAccept(di)
 	}
 }
 

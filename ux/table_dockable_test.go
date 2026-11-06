@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -781,4 +782,216 @@ func TestTableDockableKeepsItsRowsAcrossAGlobalSettingsSync(t *testing.T) {
 
 	d.SheetSettingsUpdated(nil, gurps.SheetSettingsAttributesPart, true)
 	c.True(d.table.RowFromIndex(0) != row, "a change needing a full rebuild must rebuild the list")
+}
+
+// TestTableDockableLockState verifies that a list opened from a file starts locked only while the setting asks for it,
+// that a new list starts unlocked whatever the setting, that the lock button toggles the lock and shows its state, and
+// that opening the file again starts over from the setting.
+func TestTableDockableLockState(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	p := filepath.Join(t.TempDir(), "library"+gurps.TraitsExt)
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{newFilterTestTrait("Alertness")}, p))
+	open := func() *TableDockable[*gurps.Trait] {
+		t.Helper()
+		dockable, err := NewTraitTableDockableFromFile(p)
+		c.NoError(err)
+		d, ok := dockable.(*TableDockable[*gurps.Trait])
+		if !ok {
+			t.Fatal("a trait list file must open as a trait list")
+		}
+		return d
+	}
+	checkLocked := func(d *TableDockable[*gurps.Trait], want bool, what string) {
+		t.Helper()
+		c.Equal(want, d.locked, "%s: the lock", what)
+		c.Equal(want, d.lockButtonGroup.Selected(d.lockButton), "%s: the button is selected while locked", what)
+		c.Equal(!want, d.lockButton.HideBase, "%s: the button shows its base while locked", what)
+	}
+
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialListLocked, false)
+	checkLocked(open(), false, "a file opened with the setting off")
+
+	gurps.GlobalSettings().General.InitialListLocked = true
+	d := open()
+	checkLocked(d, true, "a file opened with the setting on")
+	checkLocked(NewTraitTableDockable("new"+gurps.TraitsExt, nil), false, "a new list with the setting on")
+	d.lockButton.Click()
+	checkLocked(d, false, "a click on the button")
+	d.lockButton.Click()
+	checkLocked(d, true, "another click on the button")
+	d.lockButton.Click()
+	checkLocked(open(), true, "the file opened again after its list was unlocked")
+}
+
+// TestTableDockableLockedListRefusesChanges verifies that every command, drop and undo that would change a list's file
+// is refused while the list is locked and offered again once it is unlocked, while what only reads the list, or writes
+// it to another file, stays on, as does the table, so that its rows can still be selected and dragged out.
+func TestTableDockableLockedListRefusesChanges(t *testing.T) {
+	c := check.New(t)
+	traits := newFilterTestTraitDockable(t)
+	traits.table.SelectByIndex(0)
+	traits.undoMgr.Add(&unison.UndoEdit[int]{ID: unison.NextUndoID(), EditName: "Change"})
+	equipment := NewEquipmentTableDockable("test"+gurps.EquipmentExt,
+		[]*gurps.Equipment{gurps.NewEquipment(nil, nil, false)})
+	equipment.table.SelectByIndex(0)
+	modifiers := NewTraitModifierTableDockable("test"+gurps.TraitModifiersExt,
+		[]*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, true)})
+	modifiers.table.SelectByIndex(0)
+	modifierDrag := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	for _, one := range []struct {
+		name        string
+		list        interface{ setLocked(locked bool) }
+		check       func() bool
+		whileLocked bool
+	}{
+		{"New Trait", traits, func() bool { return traits.CanPerformCmd(nil, NewTraitItemID) }, false},
+		{"Delete", traits, func() bool { return traits.CanPerformCmd(nil, unison.DeleteItemID) }, false},
+		{"Organize Traits", traits, func() bool { return traits.CanPerformCmd(nil, OrganizeTraitsItemID) }, false},
+		{"a modifier drop", traits, func() bool { return traits.table.CanAcceptDropCallback(modifierDrag) }, false},
+		{"Undo", traits, func() bool {
+			mgr := unison.UndoManagerFor(traits.table)
+			return mgr != nil && mgr.CanUndo()
+		}, false},
+		{"Convert to Container", equipment, func() bool {
+			return equipment.CanPerformCmd(nil, ConvertToContainerItemID)
+		}, false},
+		{"Increment Quantity", equipment, func() bool {
+			return equipment.table.CanPerformCmd(nil, IncrementItemID)
+		}, false},
+		{"Convert to Choice", modifiers, func() bool {
+			return modifiers.CanPerformCmd(nil, ConvertToChoiceContainerItemID)
+		}, false},
+		{"Open Editor", traits, func() bool { return traits.CanPerformCmd(nil, OpenEditorItemID) }, true},
+		{"Save As", traits, func() bool { return traits.CanPerformCmd(nil, SaveAsItemID) }, true},
+		{"the table", traits, traits.table.Enabled, true},
+	} {
+		c.True(one.check(), "%s: on while unlocked", one.name)
+		one.list.setLocked(true)
+		c.Equal(one.whileLocked, one.check(), "%s: while locked", one.name)
+		one.list.setLocked(false)
+		c.True(one.check(), "%s: on again once unlocked", one.name)
+	}
+}
+
+// TestTableDockableLockLeavesScaleUndoable verifies that a list's scale, which isn't part of its file, stays undoable
+// while the list is locked, and that once it is unlocked, Undo takes back the scale change made while locked before
+// the one made before locking.
+func TestTableDockableLockLeavesScaleUndoable(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	initial := d.scale
+	undo := func(want int, what string) {
+		t.Helper()
+		mgr := unison.UndoManagerFor(d.table)
+		c.True(mgr != nil && mgr.CanUndo(), "%s: Undo must be on", what)
+		if mgr != nil {
+			mgr.Undo()
+		}
+		c.Equal(want, d.scale, "%s: Undo must restore the scale", what)
+	}
+	d.PerformCmd(nil, Scale200ItemID)
+	d.setLocked(true)
+	d.PerformCmd(nil, Scale300ItemID)
+	undo(200, "while locked")
+	d.PerformCmd(nil, Scale400ItemID)
+	d.setLocked(false)
+	undo(200, "once unlocked")
+	undo(initial, "after that")
+}
+
+// TestTableDockableLockedListKeepsItsRowOrder verifies that no sort can reorder a locked list's file: a press on a
+// column header is refused, and clearing a filter while a sort is in force, which re-sorts an unlocked list, leaves the
+// rows in their order. The sort is kept, so it applies again once the list is unlocked.
+func TestTableDockableLockedListKeepsItsRowOrder(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	names := func() []string {
+		rows := d.provider.RootData()
+		list := make([]string, 0, len(rows))
+		for _, one := range rows {
+			list = append(list, one.Name)
+		}
+		return list
+	}
+	col := d.table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+	press := func() bool {
+		req := accessibility.ActionRequest{Key: col, Action: accessibility.Press}
+		return d.tableHeader.PerformAccessibilityAction(req)
+	}
+	refilter := func() {
+		d.filterField.SetText("fur")
+		d.filterField.SetText("")
+	}
+	unsorted := names()
+	sorted := slices.Clone(unsorted)
+	slices.Reverse(sorted)
+	d.tableHeader.ColumnHeaders[col].SetSortState(unison.SortState{Order: 0, Sortable: true})
+
+	d.setLocked(true)
+	refilter()
+	c.Equal(unsorted, names(), "clearing a filter must not re-sort a locked list")
+	c.False(press(), "a header press must be refused while locked")
+	c.Equal(unsorted, names(), "the refused press must leave the rows in their order")
+
+	d.setLocked(false)
+	refilter()
+	c.Equal(sorted, names(), "clearing a filter must re-sort an unlocked list by the sort kept from before")
+	c.True(press(), "a header press must be taken once unlocked")
+	c.Equal(unsorted, names(), "pressing the sorted column must flip its direction")
+}
+
+// TestTableDockableLockingClosesEditors verifies that locking or unlocking a list closes the editors opened from it
+// first: canceling the save prompt of one with changes leaves the list unlocked and the editor open, saving applies the
+// changes before the list locks, and unlocking closes the read-only editor, so that the row's editor opens editable.
+func TestTableDockableLockingClosesEditors(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	var d *TableDockable[*gurps.Trait]
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	trait := newFilterTestTrait("Alertness")
+	isOpen := func(dockable unison.Dockable) bool {
+		return slices.ContainsFunc(AllDockables(), func(one unison.Dockable) bool {
+			return one.AsPanel().Self == dockable
+		})
+	}
+	screen.Do(func() {
+		d = NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{trait})
+		DisplayNewDockable(d)
+		e = EditTrait(d, trait)
+		e.editorData.LocalNotes = "Keen"
+	})
+	// The click prompts, so it is posted rather than run through Do, which would wait for the prompt to return.
+	clickLockAndAnswer := func(response int) {
+		t.Helper()
+		screen.Post(d.lockButton.Click)
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, response)))
+	}
+
+	clickLockAndAnswer(unison.ModalResponseCancel)
+	screen.Do(func() {
+		c.False(d.locked, "canceling the prompt must leave the list unlocked")
+		c.False(d.lockButtonGroup.Selected(d.lockButton), "and the button unlatched")
+		c.True(isOpen(e), "and the editor open")
+		c.Equal("", trait.LocalNotes, "with its changes pending")
+	})
+
+	clickLockAndAnswer(unison.ModalResponseOK)
+	screen.Do(func() {
+		c.True(d.locked, "saving at the prompt must let the list lock")
+		c.False(isOpen(e), "once the editor has closed")
+		c.Equal("Keen", trait.LocalNotes, "having applied its changes")
+		e = EditTrait(d, trait)
+		c.True(e.readOnly, "an editor opened from a locked list must be read-only")
+	})
+
+	screen.Post(d.lockButton.Click)
+	screen.Sync()
+	screen.Do(func() {
+		c.False(d.locked, "a click must unlock the list without a prompt")
+		c.False(isOpen(e), "closing the read-only editor")
+		c.False(EditTrait(d, trait).readOnly, "so that the row's editor opens editable")
+	})
 }

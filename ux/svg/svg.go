@@ -192,6 +192,10 @@ var (
 	linkData string
 	Link     = unison.MustSVGFromContentString(linkData)
 
+	//go:embed lock.svg
+	lockData string
+	Lock     = unison.MustSVGFromContentString(lockData)
+
 	//go:embed markdown_file.svg
 	markdownFileData string
 	MarkdownFile     = unison.MustSVGFromContentString(markdownFileData)

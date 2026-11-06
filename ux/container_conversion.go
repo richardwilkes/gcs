@@ -137,8 +137,12 @@ func ConvertToNonContainer[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 
 // convertibleSelection returns the selected rows' data that can be converted in the given direction: to a container
 // when toContainer is true, to a non-container otherwise. Converting to a container includes turning a container of
-// another kind into one holding things in its own right (see physicalContainerConvertible).
+// another kind into one holding things in its own right (see physicalContainerConvertible). Nothing is returned for a
+// table in a view that refuses changes (see inReadOnlyView).
 func convertibleSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], toContainer bool) []T {
+	if inReadOnlyView(table) {
+		return nil
+	}
 	var list []T
 	for _, row := range table.SelectedRows(false) {
 		data := row.Data()

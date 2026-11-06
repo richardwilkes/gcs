@@ -79,7 +79,8 @@ func TestCursorSizeValidation(t *testing.T) {
 // TestUpdateCheckSettings verifies the app and library update check settings and the focus for reading setting: new
 // settings start at the default, an out-of-range update check is reset rather than left to produce nonsense, a
 // settings file written before these settings existed loads as the default, chosen values survive a save/load round
-// trip, validating or loading hands focus for reading to unison, and the default doesn't bloat the saved file.
+// trip, validating or loading hands focus for reading to unison, and the defaults, list locking's too, don't bloat the
+// saved file.
 func TestUpdateCheckSettings(t *testing.T) {
 	c := check.New(t)
 
@@ -133,6 +134,7 @@ func TestUpdateCheckSettings(t *testing.T) {
 	c.NotContains(string(data), "app_update_check", "the default app update check isn't written")
 	c.NotContains(string(data), "library_update_check", "the default library update check isn't written")
 	c.NotContains(string(data), "focus_for_reading", "the default focus for reading isn't written")
+	c.NotContains(string(data), "initial_list_locked", "the default list locking isn't written")
 }
 
 // TestInitialSheetPaginatedDefaultsToOn verifies that sheets open as pages unless the user has turned that off: new

@@ -442,30 +442,43 @@ func TestRevealRowForDataScrollsOnlyTheEditedRow(t *testing.T) {
 	c.Equal(0, len(scroller.rects), "an item the table does not display must not cause any scrolling")
 }
 
-// TestReadOnlyEditor checks that an editor opened from a read-only one is read-only too, and that it leaves on only what
-// reads or opens its rows, through rebuilds, offers no substitutions, no change to its source and no new items, has a
-// modifier table whose rows open but don't change, and never reports a change to apply.
+// TestReadOnlyEditor checks that an editor opened from a read-only one or from a locked list is read-only too, and that
+// it leaves on only what reads or opens its rows, through rebuilds, offers no substitutions, no change to its source
+// and no new items, has a modifier table whose rows open but don't change, and never reports a change to apply.
 func TestReadOnlyEditor(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	screen.Do(func() {
+		newAlly := func(owner gurps.DataOwner) *gurps.Trait {
+			trait := gurps.NewTrait(owner, nil, false)
+			trait.Name = "Ally (@Who@)"
+			trait.CanLevel = true
+			trait.Levels = fxp.One
+			trait.Source = testSource
+			trait.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(owner, nil, false)}
+			return trait
+		}
 		sheet := newTestSheetForTemplate(t)
 		entity := sheet.Entity()
 		host := gurps.NewTrait(entity, nil, false)
-		trait := gurps.NewTrait(entity, nil, false)
-		trait.Name = "Ally (@Who@)"
-		trait.CanLevel = true
-		trait.Levels = fxp.One
-		trait.Source = testSource
-		modifier := gurps.NewTraitModifier(entity, nil, false)
-		trait.Modifiers = []*gurps.TraitModifier{modifier}
+		trait := newAlly(entity)
 		entity.Traits = []*gurps.Trait{host, trait}
 		sheet.Rebuild(true)
 		DisplayNewDockable(sheet)
 		hostEditor := EditTrait(sheet, host)
 		hostEditor.makeReadOnly()
-		for _, e := range []*editor[*gurps.Trait, *gurps.TraitEditData]{EditTrait(sheet, trait), EditTrait(hostEditor, trait)} {
-			c.Equal(e.owner == hostEditor, e.readOnly)
+		listTrait := newAlly(nil)
+		list := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{listTrait})
+		DisplayNewDockable(list)
+		list.setLocked(true)
+		// Each editor is opened only once the one before it has been checked, since an editor that shares its slice of
+		// the dock with a later one is hidden behind it, which disables it.
+		for _, one := range []struct {
+			owner  Rebuildable
+			target *gurps.Trait
+		}{{sheet, trait}, {hostEditor, trait}, {list, listTrait}} {
+			e := EditTrait(one.owner, one.target)
+			c.Equal(e.owner != sheet, e.readOnly)
 			live := func() int {
 				return len(uxtest.PanelsMatching(e.content, func(p *unison.Panel) bool {
 					_, toggle := p.Self.(*sectionToggle)
@@ -488,7 +501,7 @@ func TestReadOnlyEditor(t *testing.T) {
 			c.Equal(!e.readOnly, table.CanPerformCmd(nil, unison.DeleteItemID), "Delete")
 			e.editorData.Name = "Enemy"
 			c.Equal(!e.readOnly, e.Modified(), "a change to apply")
-			e.editorData.Name = trait.Name
+			e.editorData.Name = one.target.Name
 		}
 	})
 }

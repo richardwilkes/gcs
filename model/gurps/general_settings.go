@@ -107,6 +107,8 @@ type GeneralSettings struct {
 	// rather than one continuous page. Unlike the printed pages, they show an empty list that can be added to, so they
 	// can break elsewhere.
 	InitialSheetPaginated bool `json:"initial_sheet_paginated"`
+	// InitialListLocked is whether a list file opens locked against changes. A new list always opens unlocked.
+	InitialListLocked bool `json:"initial_list_locked,omitzero"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.

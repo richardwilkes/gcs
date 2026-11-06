@@ -47,7 +47,7 @@ func (p *editorListPanel[T]) init(self unison.Paneler, cmdRoot Rebuildable, owne
 		HGrab:  true,
 	})
 	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, geom.Size{}, geom.NewUniformInsets(1), false))
-	p.table = newEditorTable(p.AsPanel(), provider, !inReadOnlyEditor(cmdRoot))
+	p.table = newEditorTable(p.AsPanel(), provider, !inReadOnlyView(cmdRoot))
 	p.table.RefKey = refKey
 }
 
@@ -203,6 +203,6 @@ func followEditedModifiers[M gurps.Node[M]](r *editedModifierReplacements, list 
 // installNewItemHandler makes the command create a new item of the given variant in this panel's table. The handler is
 // installed on cmdRoot, the editor holding the panel, which the creation is also undone and rebuilt through.
 func (p *editorListPanel[T]) installNewItemHandler(cmdRoot Rebuildable, id int, variant ItemVariant) {
-	cmdRoot.AsPanel().InstallCmdHandlers(id, func(_ any) bool { return !inReadOnlyEditor(cmdRoot) },
+	cmdRoot.AsPanel().InstallCmdHandlers(id, func(_ any) bool { return !inReadOnlyView(cmdRoot) },
 		func(_ any) { p.provider.CreateItem(cmdRoot, p.table, variant) })
 }

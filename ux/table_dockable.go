@@ -34,6 +34,7 @@ var (
 	_ gurps.Hashable               = &TableDockable[*gurps.Trait]{}
 	_ listFilterObserver           = &TableDockable[*gurps.Trait]{}
 	_ gurps.SheetSettingsResponder = &TableDockable[*gurps.Trait]{}
+	_ readOnlyView                 = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -51,7 +52,15 @@ type TableDockable[T gurps.Node[T]] struct {
 	scroll           *unison.ScrollPanel
 	tableHeader      *unison.TableHeader[*Node[T]]
 	table            *unison.Table[*Node[T]]
+	lockButton       *unison.Button
+	lockButtonGroup  *unison.Group
+	scaleField       *PercentageField
 	scale            int
+	locked           bool
+	// lockedUndoMgr records the scale changes made while the list is locked, and scaleAtLock is the scale field's state
+	// when it was locked (see applyLocked).
+	lockedUndoMgr *unison.UndoManager
+	scaleAtLock   *unison.FieldState
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
@@ -138,11 +147,11 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 		}
 		if variant != -1 {
 			// Creating an item inserts a row, which unison.Table.ApplyHierarchicalFilter forbids while a filter is
-			// applied, so the command is disabled then, as Delete, Duplicate and the move commands are. Left on, the
-			// insert would clear the filter, open an editor on the new row and then have the rebuild that follows
-			// re-filter the row out from under that editor.
+			// applied, so the command is disabled then, and while the list is locked, as Delete, Duplicate and the move
+			// commands are. Left on under a filter, the insert would clear the filter, open an editor on the new row
+			// and then have the rebuild that follows re-filter the row out from under that editor.
 			d.InstallCmdHandlers(id,
-				func(_ any) bool { return !d.table.IsFiltered() },
+				func(_ any) bool { return rowsChangeable(d.table) },
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
@@ -170,8 +179,11 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 
 	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
-	AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
+	d.scaleField = AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, false, d.scroll)
+	d.lockButton, d.lockButtonGroup = newLatchingButton(svg.Lock, i18n.Text("Lock against changes"), d.toggleLocked)
+	setLatched(d.lockButton, d.lockButtonGroup, d.locked)
+	toolbar.AddChild(d.lockButton)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.noteToggleButton)
 	toolbar.AddChild(sizeToFitButton)
@@ -211,9 +223,70 @@ func (d *TableDockable[T]) Entity() *gurps.Entity {
 	return nil
 }
 
-// UndoManager implements unison.UndoManagerProvider.
+// UndoManager implements unison.UndoManagerProvider. A locked list offers one for the scale changes made while it is
+// locked, which keeps the changes to its rows out of reach of Undo and Redo and their history for when it is unlocked.
 func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
+	if d.locked {
+		return d.lockedUndoMgr
+	}
 	return d.undoMgr
+}
+
+// markLoadedFromFile implements fileLoadable. A list opened from a file starts locked when the settings call for it,
+// while a new list, which is never marked as loaded, starts unlocked.
+func (d *TableDockable[T]) markLoadedFromFile() {
+	d.fileBackedPanel.markLoadedFromFile()
+	if gurps.GlobalSettings().General.InitialListLocked {
+		d.applyLocked(true)
+	}
+}
+
+// isReadOnly implements readOnlyView.
+func (d *TableDockable[T]) isReadOnly() bool {
+	return d.locked
+}
+
+func (d *TableDockable[T]) toggleLocked() {
+	d.setLocked(!d.locked)
+}
+
+// setLocked locks or unlocks the list, once the editors opened from it have closed: when locking, so that none can
+// apply changes later, and when unlocking, so that the read-only ones aren't reused for their rows. Canceling the
+// close of one leaves the lock as it was, though the editors closed before it with Save have applied their changes.
+func (d *TableDockable[T]) setLocked(locked bool) {
+	if locked != d.locked && CloseGroup(d) {
+		d.applyLocked(locked)
+		return
+	}
+	// A click has already latched the button, so it has to show the state that stays in force.
+	setLatched(d.lockButton, d.lockButtonGroup, d.locked)
+}
+
+// applyLocked puts the lock state in force. Sorting reorders the file's contents, so it is turned off while locked,
+// which stops the re-sort that follows clearing a filter as well as header clicks. The sort order is kept for when it
+// is turned back on. The scale isn't part of the file, so its changes stay undoable while locked, in a history of
+// their own; on unlocking, their net change joins the list's history as a single edit.
+func (d *TableDockable[T]) applyLocked(locked bool) {
+	if locked == d.locked {
+		return
+	}
+	d.locked = locked
+	if locked {
+		d.lockedUndoMgr = unison.NewUndoManager(200, func(err error) { errs.Log(err) })
+		d.scaleAtLock = d.scaleField.GetFieldState()
+	} else {
+		d.lockedUndoMgr = nil
+		if d.scaleField.parse(d.scaleAtLock.Text) != d.scale {
+			recordTargetUndo(d.scaleField, nil, "", d.scaleField.undoTitle, unison.NextUndoID(), d.scaleAtLock,
+				d.scaleField.GetFieldState(),
+				func(self *PercentageField, state *unison.FieldState) { self.setWithoutUndo(state, true) })
+		}
+		d.scaleAtLock = nil
+	}
+	setColumnsSortable(d.tableHeader.ColumnHeaders, !locked)
+	// The column headers aren't children of the table header, which draws them, so their own redraws reach nothing.
+	d.tableHeader.MarkForRedraw()
+	setLatched(d.lockButton, d.lockButtonGroup, locked)
 }
 
 // MarkModified implements ModifiableRoot.

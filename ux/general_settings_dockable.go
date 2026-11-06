@@ -185,6 +185,8 @@ func (d *generalSettingsDockable) createListsSection(content *unison.Panel) {
 			}
 		})
 	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled, the page reference column on character sheets, loot sheets, and templates will display more than one page reference when there is room, rather than always collapsing to a single reference. Standalone lists are unaffected, since their columns can be resized directly.`))
+	box = d.addGeneralCheckBox(section, i18n.Text("Lock list files when opened"), &gs.InitialListLocked, nil)
+	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled, list files open locked, so that nothing changes them until they are unlocked with the lock button in their toolbar. A new list opens unlocked, and lists already open keep their state.`))
 	title := i18n.Text("Max Auto Column Width")
 	d.maxAutoColWidthField = NewIntegerField(nil, "", title,
 		func() int { return gurps.GlobalSettings().General.MaximumAutoColWidth },

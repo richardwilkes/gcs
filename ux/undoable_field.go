@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"cmp"
+
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 )
@@ -53,6 +55,9 @@ type undoableField[T comparable] struct {
 	marksModified     bool
 	// skipUndo leaves undo to the setter, which records its changes some other way.
 	skipUndo bool
+	// editUndoID, while not unison.NoUndoID, replaces the field's own undo ID for the change being recorded; see
+	// setTextAsEdit.
+	editUndoID int64
 }
 
 // init sets the field up to edit the value the accessors reach, on behalf of self, the field embedding it.
@@ -135,10 +140,19 @@ func (f *undoableField[T]) withoutUndo() *unison.Field {
 	return f.Field
 }
 
+// setTextAsEdit gives the field the text, as SetFieldValue does, but records the change under undoID rather than under
+// the field's own undo ID, which unison.Field.SetText leaves as it is, so that the undo manager merges the change into
+// the edit before it only when that edit was recorded under the same ID.
+func (f *undoableField[T]) setTextAsEdit(text string, undoID int64) {
+	f.editUndoID = undoID
+	defer func() { f.editUndoID = unison.NoUndoID }()
+	SetFieldValue(f.Field, text)
+}
+
 func (f *undoableField[T]) modified(before, after *unison.FieldState) {
 	if !f.skipUndo {
-		recordTargetUndo(f.self, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
-			func(self undoableFieldSelf, data *unison.FieldState) { self.setWithoutUndo(data, true) })
+		recordTargetUndo(f.self, f.targetMgr, f.targetKey, f.undoTitle, cmp.Or(f.editUndoID, f.CurrentUndoID()), before,
+			after, func(self undoableFieldSelf, data *unison.FieldState) { self.setWithoutUndo(data, true) })
 	}
 	f.adjustForText()
 }

@@ -100,8 +100,11 @@ func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 }
 
 // canAdjustSelection returns true if any selected row other than a granted one, which changes only with its grant,
-// yields an adjustable target via extract.
+// yields an adjustable target via extract. It is false for a table in a view that refuses changes (see inReadOnlyView).
 func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
+	if inReadOnlyView(table) {
+		return false
+	}
 	for _, row := range table.SelectedRows(false) {
 		if _, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
 			return true

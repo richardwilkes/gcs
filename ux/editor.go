@@ -31,6 +31,7 @@ var (
 	_ GroupedCloser              = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ Owned                      = &editor[*gurps.Note, *gurps.NoteEditData]{}
+	_ readOnlyView               = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
 // The data of every kind of item whose editor gets the Set Substitutions button, which relies on it.
@@ -88,10 +89,11 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 		preApplyCallback: preApplyCallback,
 	}
 	e.Self = e
-	// An editor opened from a read-only one, such as for one of its modifiers, is read-only too. This is known before
-	// the content is built, since its tables are built without the commands that change them in a read-only editor.
+	// An editor opened from a read-only one, such as for one of its modifiers, or from a locked list is read-only too.
+	// This is known before the content is built, since its tables are built without the commands that change them in a
+	// read-only editor.
 	ro, ok := any(target).(interface{ ReadOnly() bool })
-	e.readOnly = (ok && ro.ReadOnly()) || inReadOnlyEditor(owner)
+	e.readOnly = (ok && ro.ReadOnly()) || inReadOnlyView(owner)
 
 	e.beforeData = newEditorData[N, D](target)
 	e.editorData = newEditorData[N, D](target)
@@ -191,10 +193,16 @@ func (e *editor[N, D]) isReadOnly() bool {
 	return e.readOnly
 }
 
-// inReadOnlyEditor returns true if the panel is within an editor that only shows its target.
-func inReadOnlyEditor(panel unison.Paneler) bool {
-	e := unison.AncestorOrSelf[interface{ isReadOnly() bool }](panel)
-	return e != nil && e.isReadOnly()
+// readOnlyView is a view that can refuse every change to what it shows: an editor that only shows its target, or a
+// locked list.
+type readOnlyView interface {
+	isReadOnly() bool
+}
+
+// inReadOnlyView returns true if the panel is within a view that refuses changes just now (see readOnlyView).
+func inReadOnlyView(panel unison.Paneler) bool {
+	v := unison.AncestorOrSelf[readOnlyView](panel)
+	return v != nil && v.isReadOnly()
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {

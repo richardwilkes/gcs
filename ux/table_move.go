@@ -181,11 +181,11 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 
 // selectionToMove returns what the move commands work from: the table's provider, the data behind the selected rows,
 // in table order, and the selection itself, which decides which siblings a row may move past. It reports false when the
-// table has no provider, has nothing selected, or is filtered, since a filtered table's rows may not be modified.
+// table has no provider or no selected rows that may be changed (see hasChangeableSelection).
 func selectionToMove[T gurps.Node[T]](table *unison.Table[*Node[T]]) (provider TableProvider[T], items []T,
 	selected map[tid.TID]bool, ok bool,
 ) {
-	if provider, ok = any(table.Model).(TableProvider[T]); !ok || !HasSelectionAndNotFiltered(table) {
+	if provider, ok = any(table.Model).(TableProvider[T]); !ok || !hasChangeableSelection(table) {
 		return nil, nil, nil, false
 	}
 	var zero T

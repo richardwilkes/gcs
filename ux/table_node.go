@@ -915,7 +915,7 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		node.Checked = check.FromBool(c.Checked)
 	}
 	toggle := func(mods mod.Modifiers) {
-		if inReadOnlyEditor(label) {
+		if inReadOnlyView(label) {
 			return
 		}
 		c.Checked = !c.Checked
