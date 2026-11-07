@@ -63,20 +63,34 @@ type adjustmentKey struct {
 	limitation stlimit.Option
 }
 
-// forEachThresholdFeatureList calls fn with the features of the current threshold of each pool that has any, in the
-// order the sheet lists the pools, along with the threshold and the pool's definition. A pool's current threshold is
-// only found when one of its thresholds has features, since finding it runs their scripts. While the prerequisites of
-// an item carrying a grant are judged, the thresholds are those they see; see Attribute.CurrentThreshold. A threshold
-// has no switch, so whether its features are switchable is ignored.
+// forEachThresholdFeatureList calls fn with the features the current threshold of each pool applies, leaving out those
+// ThresholdIgnores flags, in the order the sheet lists the pools, along with the threshold and the pool's definition,
+// for each pool whose threshold applies any. A pool's current threshold is only found when one of its thresholds has
+// features, since finding it runs their scripts. While the prerequisites of an item carrying a grant are judged, the
+// thresholds are those they see; see Attribute.CurrentThreshold. A threshold has no switch, so whether its features
+// are switchable is ignored.
 func (e *Entity) forEachThresholdFeatureList(fn func(t *PoolThreshold, def *AttributeDef, list Features)) {
+	var defs *AttributeDefs
 	for _, attr := range e.Attributes.List() {
 		def := attr.AttributeDef()
 		if def == nil || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) ||
 			!slices.ContainsFunc(def.Thresholds, func(t *PoolThreshold) bool { return len(t.Features) != 0 }) {
 			continue
 		}
-		if t := attr.CurrentThreshold(); t != nil && len(t.Features) != 0 {
-			fn(t, def, t.Features)
+		t := attr.CurrentThreshold()
+		if t == nil || len(t.Features) == 0 {
+			continue
+		}
+		if defs == nil {
+			defs = AttributeDefsFor(e)
+		}
+		list := t.Features
+		ignored := func(f Feature) bool { return ThresholdIgnores(defs, f) }
+		if slices.ContainsFunc(list, ignored) {
+			list = slices.DeleteFunc(slices.Clone(list), ignored)
+		}
+		if len(list) != 0 {
+			fn(t, def, list)
 		}
 	}
 }
@@ -135,14 +149,12 @@ func (e *Entity) currentAdjustmentFor(id string, limitation stlimit.Option, tool
 	return adj
 }
 
-// collectThresholdFeatures collects into the feature lists the features of the pools' current thresholds that a
-// threshold may hold; see forEachThresholdFeatureList.
+// collectThresholdFeatures collects into the feature lists the features the pools' current thresholds apply; see
+// forEachThresholdFeatureList.
 func (e *Entity) collectThresholdFeatures(into *features) {
 	e.forEachThresholdFeatureList(func(t *PoolThreshold, def *AttributeDef, list Features) {
 		for _, f := range list {
-			if f.FeatureType().AllowedInThreshold() {
-				e.processFeature(into, t, def, f, nil)
-			}
+			e.processFeature(into, t, def, f, nil)
 		}
 	})
 }
@@ -349,16 +361,18 @@ func (e *Entity) addSourceAdjustments(id string, limitation stlimit.Option, tool
 }
 
 // scriptAttributeRef matches an attribute read in a script as "$id", capturing the ID, or as entity.attribute("id"),
-// capturing the ID or name given it in whichever kind of quotes holds it; see Attributes.Find.
-var scriptAttributeRef = regexp.MustCompile(`\$(\w+)|\bentity\s*\.\s*attribute\s*\(\s*(?:"([^"]*)"|'([^']*)'|` +
-	"`([^`]*)`" + `)\s*\)`)
+// capturing the ID or name given it in whichever kind of quotes holds it (see Attributes.Find), along with the member
+// read from it, such as "current" or "maximum", capturing its name when there is one.
+var scriptAttributeRef = regexp.MustCompile(`(?:\$(\w+)|\bentity\s*\.\s*attribute\s*\(\s*(?:"([^"]*)"|'([^']*)'|` +
+	"`([^`]*)`" + `)\s*\))(?:\s*\??\.\s*(\w+))?`)
 
 // currentSources returns the IDs of the attributes whose current values, rather than their maximums, the value with the
 // given ID and limitation is figured from: for ST under a limitation, the attribute standing in for that ST or, without
 // one, ST (see strengthFor); for Move and Dodge without an attribute standing in for them, Basic Move and Basic Speed
-// (see Move and Dodge); for an attribute other than a pool standing in for any of those, each attribute its base reads
-// as "$id" or entity.attribute("id"), either of which gives the current value there (see Attribute.Current); and for
-// anything else, none.
+// (see Move and Dodge); for an attribute, each attribute its base reads as "$id.current" or
+// entity.attribute("id").current, and for one other than a pool standing in for any of those, each it reads as "$id"
+// or entity.attribute("id") too, either of which gives the current value there (see Attribute.Current), but not as
+// "$id.maximum" or entity.attribute("id").maximum; and for anything else, none.
 func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 	if limitation != stlimit.None {
 		var standIn string
@@ -386,11 +400,21 @@ func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 		}
 	}
 	def := e.ResolveAttributeDef(id)
-	if def == nil || def.Type == attribute.Pool || def.Type == attribute.PoolRef || !baseReadsCurrents(id) {
+	if def == nil {
 		return nil
 	}
+	readsCurrents := baseReadsCurrents(id) && def.Type != attribute.Pool && def.Type != attribute.PoolRef
 	var ids []string
 	for _, match := range scriptAttributeRef.FindAllStringSubmatch(def.Base, -1) {
+		switch match[5] {
+		case "current":
+		case "", "valueOf":
+			if !readsCurrents {
+				continue
+			}
+		default:
+			continue
+		}
 		var attr *Attribute
 		if match[1] != "" {
 			attr = e.ResolveAttribute(match[1])

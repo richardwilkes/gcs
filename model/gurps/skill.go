@@ -677,9 +677,21 @@ func (s *Skill) IsLeveled() bool {
 	return !s.Container()
 }
 
-// CurrentLevel implements LeveledOwner.
+// CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base the level of an
+// enabled skill is computed afresh, since the recorded one holds what alters current values alone (see
+// Entity.atBaseWhile), unless that computation is already under way for the skill, as when a per-level amount leads
+// back to it, which then reads the recorded one.
 func (s *Skill) CurrentLevel() fxp.Int {
-	return s.LevelData.Level
+	e := EntityFromNode(s)
+	if e == nil || e.atBase == 0 || s.Container() || !s.Enabled() || e.baseLevelReads[s] {
+		return s.LevelData.Level
+	}
+	if e.baseLevelReads == nil {
+		e.baseLevelReads = make(map[*Skill]bool)
+	}
+	e.baseLevelReads[s] = true
+	defer delete(e.baseLevelReads, s)
+	return s.CalculateLevel(nil).Level
 }
 
 // RelativeLevel returns the adjusted relative level as a string.

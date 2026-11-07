@@ -232,6 +232,9 @@ type Entity struct {
 	atBase       int
 	baseFeatures *features
 	baseDefaults map[baseDefaultKey]*SkillDefault
+	// baseLevelReads holds the skills whose levels Skill.CurrentLevel is computing at base. It guards the call stack,
+	// so discardCaches leaves it alone.
+	baseLevelReads map[*Skill]bool
 }
 
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
@@ -757,28 +760,83 @@ func (e *Entity) markContradictedTraits(verdicts [][]traitPrereqVerdict, cyclic 
 }
 
 // recalculationPass recomputes every derived value once, each in turn from those it is built on: the features in
-// effect, along with the missing-equipment penalties that the previous pass's judgment of the skill and spell
-// prerequisites earned; the prerequisites of the skills and spells, which decide the penalties for the next pass; the
-// skill and spell levels; and the prerequisites of the traits and equipment, which read those levels. Whatever reads a
-// value before the pass has recomputed it, such as a skill default resolved against the other skills' levels or a
-// script reading a level from anywhere, sees the previous pass's and is a pass behind until the next one, which is why
-// passes repeat until one changes nothing; see recalculateUntilSettled. The penalties are put in place before anything
-// in the pass is judged, rather than as each skill or spell is judged, so that everything in the pass sees the same set
-// of them: a script computes the level it reads from the penalties in place as it runs, so one judged early in the
-// walk would otherwise see fewer than one judged late, with nothing to prompt a further pass to put that right. The
-// caches are discarded first, so that nothing in the pass is computed from a variable, lift or script result the
-// previous pass cached, except for the results kept for the reason discardCaches gives, and again once the features of
-// the pools' thresholds are in place; see processThresholdFeatures.
+// effect, along with what the grants give (see collectFeaturesAndApplyGrants) and the missing-equipment penalties that
+// the previous pass's judgment of the skill and spell prerequisites earned; the prerequisites of the skills and spells,
+// which decide the penalties for the next pass; the skill and spell levels; and the prerequisites of the traits and
+// equipment, which read those levels. Whatever reads a value before the pass has recomputed it, such as a skill default
+// resolved against the other skills' levels or a script reading a level from anywhere, sees the previous pass's and is
+// a pass behind until the next one, which is why passes repeat until one changes nothing; see recalculateUntilSettled.
+// The penalties are put in place before anything in the pass is judged, rather than as each skill or spell is judged,
+// so that everything in the pass sees the same set of them: a script computes the level it reads from the penalties in
+// place as it runs, so one judged early in the walk would otherwise see fewer than one judged late, with nothing to
+// prompt a further pass to put that right.
 func (e *Entity) recalculationPass() {
-	e.discardCaches(true)
-	e.processFeatures()
-	e.applyGrants()
+	e.collectFeaturesAndApplyGrants()
 	e.applyEquipmentPenalties()
 	e.processSkillAndSpellPrereqs()
 	e.UpdateSkills()
 	e.UpdateSpells()
 	e.processTraitPrereqs()
 	e.processEquipmentPrereqs()
+}
+
+// maxFeatureSweeps caps the sweeps collectFeaturesAndApplyGrants makes without coming back to what an earlier one left.
+const maxFeatureSweeps = 8
+
+// collectFeaturesAndApplyGrants collects the features in effect and applies the grants, sweeping again while applying
+// them changes what they give, so that the pass collects the features of the items its grants put in effect, and not
+// those of the items they take out of it. A grant a pool's threshold holds is in effect while the pool is at the
+// threshold, which rests on the features collected, so collecting those of its item a pass late would have the
+// prerequisites judged in between see the pool at the threshold without them, or away from it with them, as no settled
+// sheet does, and their verdicts could then cycle where the data settles. The sweeps end once one leaves what the
+// grants give as it found it. Where none does, as with a threshold granting an item that lifts the pool out of it, one
+// more sweep follows the first to come back to what an earlier one left, or the sweeps stop at maxFeatureSweeps having
+// come back to none, either way leaving what the grants give other than the pass found it, so that the passes see the
+// data never settle; see recalculateUntilSettled. Every sweep counts the carriers' prerequisites as met or not as the
+// first does, since they are judged only later in the pass; see grantCarrierUnmet. The caches are discarded before
+// each sweep, so that nothing in it is computed from a variable, lift or script result the previous pass or sweep
+// cached, except for the results kept for the reason discardCaches gives, and again once the features of the pools'
+// thresholds are in place; see processThresholdFeatures.
+func (e *Entity) collectFeaturesAndApplyGrants() {
+	carriersJudged := e.grantCarriersJudged
+	seen := []uint64{e.grantsFingerprint()}
+	repeated := false
+	for {
+		e.grantCarriersJudged = carriersJudged
+		e.discardCaches(true)
+		e.processFeatures()
+		e.applyGrants()
+		fingerprint := e.grantsFingerprint()
+		if repeated || fingerprint == seen[len(seen)-1] {
+			return
+		}
+		repeated = slices.Contains(seen, fingerprint)
+		if !repeated && len(seen) == maxFeatureSweeps {
+			return
+		}
+		seen = append(seen, fingerprint)
+	}
+}
+
+// grantsFingerprint fingerprints what the grants gave every trait, skill and spell, as derivedState does.
+func (e *Entity) grantsFingerprint() uint64 {
+	h := xxh3.New()
+	Traverse(func(t *Trait) bool {
+		t.grant.hash(h)
+		hashGrantDetails(h, t)
+		return false
+	}, false, false, e.Traits...)
+	Traverse(func(s *Skill) bool {
+		s.grant.hash(h)
+		hashGrantDetails(h, s)
+		return false
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		s.grant.hash(h)
+		hashGrantDetails(h, s)
+		return false
+	}, false, true, e.Spells...)
+	return h.Sum64()
 }
 
 // settleOnCanonicalCycleState makes further passes until the sheet is in the canonical state of a cycle the passes
@@ -1300,8 +1358,23 @@ func (e *Entity) processTraitPrereqs() {
 	// sheet disables is likewise found whether the sheet would leave it enabled, were it given its details by the grant
 	// giving them as a carrier's prerequisites see it, which is how those prerequisites see it; see
 	// Trait.enabledForPrereqsOf. The maximum level the sheet enforces is kept for the prerequisites that see a grant
-	// give the trait another level than it has; see Trait.disabledForPrereqsOf.
+	// give the trait another level than it has; see Trait.disabledForPrereqsOf. A granted trait whose grant is not in
+	// effect, which a pool threshold's grant gives, is judged as well while the sheet enforces trait prerequisites,
+	// since a carrier's prerequisites may see the pool at that threshold (see Entity.grantsAsJudged), but only for
+	// whether the sheet would disable it, were its prerequisites checked, and for the maximum level it enforces, which
+	// is how those prerequisites see it; it gets no verdict or reason of its own.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
+	var thresholdGranted map[grantHolder]bool
+	if enforce {
+		for i := range e.grantPlans {
+			if _, ok := e.grantPlans[i].source.owner.(*PoolThreshold); ok {
+				if thresholdGranted == nil {
+					thresholdGranted = make(map[grantHolder]bool)
+				}
+				thresholdGranted[e.grantPlans[i].row()] = true
+			}
+		}
+	}
 	var verdicts []traitPrereqVerdict
 	var disabledIfChecked, enabledAsJudged []bool
 	var enforcedMaxLevels []fxp.Int
@@ -1312,7 +1385,8 @@ func (e *Entity) processTraitPrereqs() {
 		ifChecked := false
 		asJudged := false
 		var enforcedMax fxp.Int
-		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
+		judgeable := !t.IsDisabled() && (t.parent == nil || t.parent.Enabled())
+		if judgeable && !t.grantNotInEffect() {
 			unmet := false
 			if t.grant.prereqsChecked() {
 				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
@@ -1342,6 +1416,9 @@ func (e *Entity) processTraitPrereqs() {
 					asJudged = (judged.bypass || !unmet) && (maximum <= 0 || judged.detail.amount() <= maximum)
 				}
 			}
+		} else if judgeable && thresholdGranted[t] {
+			ifChecked = e.evaluatePrereqs(t.Prereq, t, nil) != ""
+			enforcedMax = t.ResolvedMaxLevels()
 		}
 		verdicts = append(verdicts, verdict)
 		disabledIfChecked = append(disabledIfChecked, ifChecked)

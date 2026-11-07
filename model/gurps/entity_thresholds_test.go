@@ -78,7 +78,8 @@ func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 }
 
 // TestEntityThresholdFeaturesTakeEffect verifies that the other kinds of feature a threshold holds take effect while
-// the pool is at it, naming the threshold and its pool as their source, and not otherwise.
+// the pool is at it, naming the threshold and its pool as their source, and not otherwise, save one the threshold
+// ignores, such as a reaction per level, which never does.
 func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -88,7 +89,11 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	reaction := NewReactionBonus()
 	reaction.Situation = "from everyone"
 	reaction.Amount = -fxp.One
-	tired.Features = append(tired.Features, newSkillBonusTo("Brawling", fxp.Two), reaction)
+	perLevel := NewReactionBonus()
+	perLevel.Situation = "from strangers"
+	perLevel.Amount = -fxp.One
+	perLevel.PerLevel = true
+	tired.Features = append(tired.Features, newSkillBonusTo("Brawling", fxp.Two), reaction, perLevel)
 	e.Recalculate()
 	level := brawling.CalculateLevel(nil).Level
 	c.Equal(0, len(e.Reactions()), "no reaction while Tiring")

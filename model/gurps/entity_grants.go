@@ -968,8 +968,8 @@ func (e *Entity) grantCarrierUnmet(owner fmt.Stringer) bool {
 // it is not in effect, making the item the one it gives (see takeGrantDetails), so that the item is in effect
 // whichever of them is listed first. The merges follow, so that they find the items in effect whatever the order.
 func (e *Entity) applyGrants() {
-	// What the last pass gave an item is taken back, whether or not the item is still planned for. It is kept until
-	// now so that a recalculation starts from the derived state the last one left.
+	// What the grants were last applied to give an item is taken back, whether or not the item is still planned for.
+	// It is kept until now so that a recalculation starts from the derived state the last one left.
 	for _, holder := range e.grantHolders {
 		holder.grants().reset()
 	}

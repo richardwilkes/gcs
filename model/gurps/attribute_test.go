@@ -276,9 +276,11 @@ func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
 }
 
 // TestAttributeBonusTooltipThresholdSources verifies that the bonuses of a pool's current threshold are listed after
-// the items' in each section, named for the threshold and its pool, that a pool lists none, and that the tooltip of a
-// value figured from the current values of attributes, such as lifting ST, Move, Dodge or an attribute standing in for
-// one, lists after its own bonuses those altering only the current value of each such attribute, under its name.
+// the items' in each section, named for the threshold and its pool, that a pool lists none, that a bonus the threshold
+// ignores, such as one per level, is not listed, and that the tooltip of a value figured from the current values of
+// attributes, such as lifting ST, Move, Dodge, an attribute standing in for one or one whose base reads them as
+// "$id.current", lists after its own bonuses those altering only the current value of each such attribute, under its
+// name, and names none whose maximum alone it reads.
 func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -290,7 +292,9 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		newMultiplier(BasicSpeedID, fxp.Half))
 	hp := NewAttributeBonus(HitPointsID)
 	hp.Amount = -fxp.Two
-	tired.Features = append(tired.Features, hp)
+	perLevel := newAttrBonus(StrengthID, fxp.Two)
+	perLevel.PerLevel = true
+	tired.Features = append(tired.Features, hp, perLevel)
 	e.SheetSettings.Attributes.Set[StrikingStrengthID] = &AttributeDef{
 		DefID: StrikingStrengthID,
 		Type:  attribute.Integer,
@@ -298,6 +302,13 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		Base:  "$st",
 	}
 	e.Attributes.Set[StrikingStrengthID] = NewAttribute(e, StrikingStrengthID, len(e.Attributes.Set))
+	e.SheetSettings.Attributes.Set["might"] = &AttributeDef{
+		DefID: "might",
+		Type:  attribute.Integer,
+		Name:  "Might",
+		Base:  "$st.current",
+	}
+	e.Attributes.Set["might"] = NewAttribute(e, "might", len(e.Attributes.Set))
 	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nTired (FP) [-1]\nFor lifting only:\nLifting Harness [+3]\nTired (FP) [×0.5]",
@@ -311,10 +322,20 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		e.CurrentAdjustmentTooltip(MoveID, stlimit.None))
 	c.Equal("Tired (FP) [×0.5]\nBasic Speed:\nTired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
 	c.Equal("", e.CurrentAdjustmentTooltip(DexterityID, stlimit.None))
-	for _, base := range []string{`entity.attribute("st")`, `entity.attribute('Strength')`} {
-		e.SheetSettings.Attributes.Set[StrikingStrengthID].Base = base
+	c.Equal("Includes modifiers from:\nST:\nTired (FP) [-1]", e.Attributes.Set["might"].BonusTooltip(),
+		"an attribute whose base reads another's current value names what alters it")
+	for _, one := range []struct {
+		base string
+		want string
+	}{
+		{`entity.attribute("st")`, "Includes modifiers from:\nST:\nTired (FP) [-1]"},
+		{`entity.attribute('Strength')`, "Includes modifiers from:\nST:\nTired (FP) [-1]"},
+		{`$st.maximum`, ""},
+		{`entity.attribute("st").maximum`, ""},
+	} {
+		e.SheetSettings.Attributes.Set[StrikingStrengthID].Base = one.base
 		e.Recalculate()
-		c.Equal("Includes modifiers from:\nST:\nTired (FP) [-1]", e.Attributes.Set[StrikingStrengthID].BonusTooltip(),
-			"a stand-in whose base reads the attribute as %s names it too", base)
+		c.Equal(one.want, e.Attributes.Set[StrikingStrengthID].BonusTooltip(), "a stand-in whose base reads ST as %s",
+			one.base)
 	}
 }

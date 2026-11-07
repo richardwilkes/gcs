@@ -91,7 +91,8 @@ type Trait struct {
 	prereqsUnmet bool
 	// disabledIfChecked is whether Entity.processTraitPrereqs last found that the sheet would disable this trait for
 	// its unmet prerequisites, which the grant giving its details treats as met, had that grant checked them, as the
-	// one giving its details as a carrier's prerequisites see it does; see disabledForPrereqsOf. It is never saved.
+	// one giving its details as a carrier's prerequisites see it does, or, for a trait a pool threshold's grant not in
+	// effect put on the sheet, were it in effect with them checked; see disabledForPrereqsOf. It is never saved.
 	disabledIfChecked bool
 	// enforcedMaxLevels is the maximum level Entity.processTraitPrereqs last found for this trait, when the sheet
 	// disables a trait above its maximum, or zero. A carrier's prerequisites see the trait disabled when the level it
@@ -522,7 +523,8 @@ func (t *Trait) enabledForPrereqsOf(exclude any) bool {
 // it is caught in a contradiction among the prerequisites: given its details by the grant giving them as exclude's
 // prerequisites see it (see grantState.viewFor and Entity.grantsAsJudged), the trait has a level above the maximum the
 // sheet enforces (see enforcedMaxLevels), or that grant checks its unmet prerequisites, which the grant giving its
-// details treated as met when it was last judged, and the sheet would then disable it (see disabledIfChecked).
+// details treated as met when it was last judged, or which no grant in effect gave it then, and the sheet would then
+// disable it (see disabledIfChecked).
 func (t *Trait) disabledForPrereqsOf(exclude any) bool {
 	if exclude == nil || t.prereqContradicted || (t.enforcedMaxLevels <= 0 && !t.disabledIfChecked) {
 		return false
