@@ -1282,7 +1282,8 @@ func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 
 // TestFeaturesPanelThresholdOffers checks that a threshold's features offer only what a threshold can use: the types it
 // may hold, grants among them, no per-level amount nor switch unless a feature already has one, and no selection of
-// the weapon of the item holding a skill bonus.
+// the weapon of the item holding a skill bonus; that a feature another panel holds is copied in only when the
+// threshold wouldn't ignore it; and that one it holds that it ignores says so and can't be duplicated.
 func TestFeaturesPanelThresholdOffers(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -1296,12 +1297,45 @@ func TestFeaturesPanelThresholdOffers(t *testing.T) {
 	p := newThresholdFeaturesPanel(entity, thresh, func() *gurps.AttributeDefs { return defs })
 	c.Equal(feature.ThresholdTypes, p.featureTypesList())
 	c.True(p.takesGrants(), "grants can be dropped on it")
-	otherFeatures := gurps.Features{gurps.NewCostReduction(gurps.StrengthID), gurps.NewGrant(feature.GrantTrait)}
-	other := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &otherFeatures, false)
-	_, f := p.foreignFeature(&rowDrag{panel: other.AsPanel(), path: "0"})
-	c.Nil(f, "a cost reduction can't be copied in")
-	_, f = p.foreignFeature(&rowDrag{panel: other.AsPanel(), path: "1"})
-	c.NotNil(f, "but a grant can be")
+	perLevel := gurps.NewAttributeBonus(gurps.StrengthID)
+	perLevel.PerLevel = true
+	skillThisWeapon := gurps.NewSkillBonus()
+	skillThisWeapon.SelectionType = skillsel.ThisWeapon
+	weaponThisWeapon := gurps.NewWeaponBonus(feature.WeaponBonus)
+	weaponThisWeapon.SelectionType = wsel.ThisWeapon
+	thisArmor := gurps.NewDRBonus()
+	thisArmor.Locations = nil
+	for _, one := range []struct {
+		feature gurps.Feature
+		name    string
+		copies  bool
+	}{
+		{feature: gurps.NewCostReduction(gurps.StrengthID), name: "a cost reduction"},
+		{feature: perLevel, name: "an amount per level"},
+		{feature: gurps.NewAttributeBonus(gurps.FatiguePointsID), name: "a bonus to a pool"},
+		{feature: gurps.NewAttributeBonus(gurps.SizeModifierID), name: "a bonus to the size modifier"},
+		{feature: skillThisWeapon, name: "a skill bonus to this weapon"},
+		{feature: weaponThisWeapon, name: "a weapon bonus to this weapon"},
+		{feature: thisArmor, name: "a DR bonus to this armor"},
+		{feature: gurps.NewAttributeBonus(gurps.StrengthID), name: "an attribute bonus", copies: true},
+		{feature: gurps.NewGrant(feature.GrantTrait), name: "a grant", copies: true},
+	} {
+		otherFeatures := gurps.Features{one.feature}
+		other := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &otherFeatures, false)
+		_, f := p.foreignFeature(&rowDrag{panel: other.AsPanel(), path: "0"})
+		c.Equal(one.copies, f != nil, "%s can be copied in: %v", one.name, one.copies)
+	}
+	p.setView(rowsView{})
+	for i, ignored := range []bool{false, true} {
+		path := strconv.Itoa(i)
+		entries := p.moreEntries(path)
+		duplicate := slices.IndexFunc(entries, func(e menuEntry) bool { return e.Label == "Duplicate" })
+		c.True(duplicate >= 0 && entries[duplicate].Disabled == ignored, "row %s can't be duplicated: %v", path,
+			ignored)
+		sentence, ok := p.FindRefKey(path + keySentence).Self.(*sentenceButton)
+		c.True(ok && strings.HasSuffix(sentence.plainText(), "; a pool threshold ignores it") == ignored,
+			"row %s says the threshold ignores it: %v", path, ignored)
+	}
 
 	for _, one := range []struct {
 		path string

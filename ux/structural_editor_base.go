@@ -122,13 +122,24 @@ func (s *structuralEditorBase[T]) editStructure(title string, mutate func(), foc
 	}
 }
 
-// sync rebuilds the content from the model, preserving the keyboard focus and the scroll position across the rebuild.
+// sync rebuilds the content from the model, preserving the keyboard focus and the scroll position across the rebuild,
+// and having each keyed section built take over from the one it replaces (see keyedSection). Focus held within a
+// section goes back to the widget with the same key within the section built in its place, or to the first content
+// when there is none, since another section may have a widget with that key.
 func (s *structuralEditorBase[T]) sync() {
 	focusRefKey := s.targetMgr.CurrentFocusRef()
+	focusSection := s.focusedSection()
 	scrollRoot := s.content.ScrollRoot()
 	h, v := scrollRoot.Position()
+	sections := keyedSections(s.content)
 	s.content.RemoveAllChildren()
 	s.buildContent()
+	built := keyedSections(s.content)
+	for key, section := range built {
+		if old, ok := sections[key]; ok {
+			section.takeOver(old)
+		}
+	}
 	p := s.editor.AsPanel()
 	p.MarkForLayoutRecursively()
 	p.MarkForRedraw()
@@ -136,8 +147,55 @@ func (s *structuralEditorBase[T]) sync() {
 	if root, ok := p.Self.(ModifiableRoot); ok {
 		root.MarkModified(nil)
 	}
-	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.content)
+	section, sectionBuilt := built[focusSection]
+	switch {
+	case focusSection == "":
+		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.content)
+	case sectionBuilt:
+		NewTargetMgr(section).ReacquireFocus(focusRefKey, s.toolbar, s.content)
+	default:
+		FocusFirstContent(s.toolbar, s.content)
+	}
 	scrollRoot.SetPosition(h, v)
+}
+
+// keyedSection is a part of an editor's content, found by its reference key, whose widgets are keyed apart from the
+// rest of the content, so that other such parts may use the same keys, as the features of each pool threshold do.
+type keyedSection interface {
+	unison.Paneler
+	// takeOver has the section, newly built by sync, show what the one with its reference key that it replaces showed.
+	takeOver(old keyedSection)
+}
+
+// keyedSections returns the keyed sections within the panel, by their reference keys.
+func keyedSections(panel *unison.Panel) map[string]keyedSection {
+	sections := make(map[string]keyedSection)
+	panel.HasInSelfOrDescendants(func(one *unison.Panel) bool {
+		if section, ok := one.Self.(keyedSection); ok && one.RefKey != "" {
+			sections[one.RefKey] = section
+		}
+		return false
+	})
+	return sections
+}
+
+// focusedSection returns the reference key of the innermost keyed section holding the keyboard focus within the
+// content, or "" when the focus is in none.
+func (s *structuralEditorBase[T]) focusedSection() string {
+	wnd := s.content.Window()
+	if wnd == nil {
+		return ""
+	}
+	var key string
+	for panel := wnd.Focus(); panel != nil; panel = panel.Parent() {
+		if panel == s.content {
+			return key
+		}
+		if _, ok := panel.Self.(keyedSection); ok && panel.RefKey != "" && key == "" {
+			key = panel.RefKey
+		}
+	}
+	return ""
 }
 
 // focusOn gives the keyboard focus to the widget with the given reference key and scrolls it into view. editStructure

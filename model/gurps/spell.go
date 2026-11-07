@@ -752,13 +752,15 @@ func (s *Spell) restsOnSkill() bool {
 }
 
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses on the
-// sheet, or for a Ritual Magic spell the level before its own bonuses from the best ritual skill it may rest on, held
-// to the highest that skill's level allows before them (see techniquePointsForLevel), or zero when none do.
+// sheet from the base of its attribute, which what alters the attribute's current value alone leaves as it is (see
+// Entity.resolveAttributeMaximumForPrereqs), or for a Ritual Magic spell the level before its own bonuses from the best
+// ritual skill it may rest on, held to the highest that skill's level allows before them (see
+// techniquePointsForLevel), or zero when none do.
 func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	if s.IsRitualMagic() {
 		return techniquePointsForLevel(level, s.Difficulty.Difficulty, s.ritualMagicBases(e)...)
 	}
-	attr := e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute)
+	attr := e.resolveAttributeMaximumForPrereqs(s.Difficulty.Attribute)
 	if attr == fxp.Min {
 		return 0
 	}

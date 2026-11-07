@@ -221,39 +221,39 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
 	case "ST":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.StrengthID).String())
+		ex.writeAttribute(gurps.StrengthID, (*gurps.Attribute).Maximum)
 	case "DX":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.DexterityID).String())
+		ex.writeAttribute(gurps.DexterityID, (*gurps.Attribute).Maximum)
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.IntelligenceID).String())
+		ex.writeAttribute(gurps.IntelligenceID, (*gurps.Attribute).Maximum)
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HealthID).String())
+		ex.writeAttribute(gurps.HealthID, (*gurps.Attribute).Maximum)
 	case "FP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
+		ex.writeAttribute(fpAttrID, (*gurps.Attribute).Current)
 	case "BASIC_FP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(fpAttrID).String())
+		ex.writeAttribute(fpAttrID, (*gurps.Attribute).Maximum)
 	case "HP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HitPointsID).String())
+		ex.writeAttribute(gurps.HitPointsID, (*gurps.Attribute).Current)
 	case "BASIC_HP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HitPointsID).String())
+		ex.writeAttribute(gurps.HitPointsID, (*gurps.Attribute).Maximum)
 	case "WILL":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("will").String())
+		ex.writeAttribute("will", (*gurps.Attribute).Maximum)
 	case "FRIGHT_CHECK":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("fright_check").String())
+		ex.writeAttribute("fright_check", (*gurps.Attribute).Maximum)
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.BasicSpeedID).String())
+		ex.writeAttribute(gurps.BasicSpeedID, (*gurps.Attribute).Maximum)
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.BasicMoveID).String())
+		ex.writeAttribute(gurps.BasicMoveID, (*gurps.Attribute).Maximum)
 	case "PERCEPTION":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("per").String())
+		ex.writeAttribute("per", (*gurps.Attribute).Maximum)
 	case "VISION":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("vision").String())
+		ex.writeAttribute("vision", (*gurps.Attribute).Maximum)
 	case "HEARING":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("hearing").String())
+		ex.writeAttribute("hearing", (*gurps.Attribute).Maximum)
 	case "TASTE_SMELL":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("taste_smell").String())
+		ex.writeAttribute("taste_smell", (*gurps.Attribute).Maximum)
 	case "TOUCH":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum("touch").String())
+		ex.writeAttribute("touch", (*gurps.Attribute).Maximum)
 	case "THRUST":
 		ex.writeEncodedText(gurps.Roller.Format(ex.entity.Thrust()))
 	case "SWING":
@@ -488,6 +488,14 @@ func (ex *legacyExporter) emitKey(key string) error {
 
 func (ex *legacyExporter) unidentifiedKey(key string) {
 	ex.writeEncodedText(fmt.Sprintf(`Unidentified key: %q`, key))
+}
+
+// writeAttribute writes the value that value gives for the attribute with the given ID, or nothing when the sheet's
+// attribute set has no such attribute.
+func (ex *legacyExporter) writeAttribute(attrID string, value func(*gurps.Attribute) fxp.Int) {
+	if attr, ok := ex.entity.Attributes.Set[attrID]; ok && attr.AttributeDef() != nil {
+		ex.writeEncodedText(value(attr).String())
+	}
 }
 
 func splitIntoMap(in, prefix string, m map[string]bool) {

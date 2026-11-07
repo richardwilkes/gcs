@@ -88,14 +88,29 @@ func TestThresholdFeaturesUndoAfterRebuild(t *testing.T) {
 
 // TestThresholdFeaturesOfferTheEditedAttributes checks that a threshold's features offer the attributes being edited,
 // even one the sheet and the defaults lack, with Move, Dodge, Parry and Block, but neither the size modifier nor the
-// pools, and that a new attribute bonus names the attribute last chosen for a threshold, or the first offered when that
-// one isn't.
+// pools, that their sentences, collapsed or not, name an attribute as those definitions do, and that a new attribute
+// bonus names the attribute last chosen for a threshold, or the first offered when that one isn't.
 func TestThresholdFeaturesOfferTheEditedAttributes(t *testing.T) {
 	c := check.New(t)
-	d := newTestThresholdDockable(testAttrDefs("st", "zz", "hp"), nil)
+	d := newTestThresholdDockable(testAttrDefs("st", "zz", "hp"), gurps.Features{gurps.NewAttributeBonus("zz")})
 	p := thresholdFeaturesPanel(c, d)
 	if p == nil {
 		return
+	}
+	for _, view := range []struct {
+		key       string
+		text      string
+		collapsed bool
+	}{
+		{key: sectionSummaryKey, text: "+1 to ZZ.", collapsed: true},
+		{key: "0" + keySentence, text: "+1 to ZZ"},
+	} {
+		p.setView(rowsView{collapsed: view.collapsed})
+		sentence, ok := p.FindRefKey(view.key).Self.(*sentenceButton)
+		c.True(ok, "the panel shows the sentence keyed %s", view.key)
+		if ok {
+			c.Equal(view.text, sentence.plainText(), "collapsed: %v", view.collapsed)
+		}
 	}
 	choices, _ := p.attributeChoices("", gurps.StrengthID)
 	keys := make([]string, 0, len(choices))
@@ -246,6 +261,102 @@ func TestThresholdGrantItemEditorFollowsItsThreshold(t *testing.T) {
 				open = len(AllMatchingDockables(isTraitEditor))
 			})
 			c.Equal(1, open, "a click on the grant brings its editor forward rather than opening another")
+		})
+	}
+}
+
+// TestThresholdFeaturesKeepTheirViewAcrossRebuilds checks that once the attribute settings rebuild their content, each
+// threshold's features are shown as they were, collapsed or not and with the same row open, with the "as a %" of a
+// weapon damage bonus still suspended, and that the focus held within one threshold's features stays within that
+// threshold's rather than going to the widget with the same key in another's.
+func TestThresholdFeaturesKeepTheirViewAcrossRebuilds(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		prepare func(d *attributeSettingsDockable) // what precedes the focus, if anything
+		rebuild func(d *attributeSettingsDockable)
+		focus   bool // whether the focus is expected to stay, rather than going where the rebuild puts it
+	}{
+		{name: "add threshold", rebuild: func(d *attributeSettingsDockable) {
+			uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
+		}},
+		{name: "undo", focus: true, prepare: func(d *attributeSettingsDockable) {
+			uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
+		}, rebuild: func(d *attributeSettingsDockable) { d.undoMgr.Undo() }},
+		{name: "type change", focus: true, rebuild: func(d *attributeSettingsDockable) {
+			attrDefPanel(d, 0).applyAttributeType(attribute.Decimal)
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			damage := gurps.NewWeaponBonus(feature.WeaponBonus)
+			damage.Percent = true
+			var d *attributeSettingsDockable
+			screen.Do(func() {
+				defs := testAttrDefs("st", "hp")
+				def := defs.Set["hp"]
+				def.Type = attribute.Pool
+				def.Thresholds = []*gurps.PoolThreshold{
+					{State: "Reeling", Features: gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID)}},
+					{State: "Tiring", Features: gurps.Features{damage}},
+				}
+				d = newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+			})
+			// thresholdFeatures returns the panels of the first and second thresholds' features.
+			thresholdFeatures := func() (reeling, tiring *featuresPanel) {
+				screen.Do(func() {
+					if panels := uxtest.PanelsOfType[*featuresPanel](d.AsPanel()); len(panels) > 1 {
+						reeling, tiring = panels[0], panels[1]
+					}
+				})
+				c.NotNil(tiring, "each threshold has a features panel")
+				return reeling, tiring
+			}
+			setAmount := func(p *featuresPanel, text string) {
+				screen.Do(func() {
+					p.setView(rowsView{open: "0"})
+					field, ok := p.FindRefKey("0:amount").Self.(*StringField)
+					c.True(ok, "the damage bonus amount is a text field")
+					if ok {
+						field.SetText(text)
+					}
+				})
+			}
+			_, p := thresholdFeatures()
+			if p == nil {
+				return
+			}
+			setAmount(p, "+1d")
+			c.False(damage.Percent, "precondition: dice suspend the percentage")
+			if tc.prepare != nil {
+				screen.Do(func() { tc.prepare(d) })
+			}
+			if _, p = thresholdFeatures(); p == nil {
+				return
+			}
+			screen.Do(func() {
+				p.FindRefKey(sectionToggleKey).RequestFocus()
+				tc.rebuild(d)
+			})
+			reeling, p := thresholdFeatures()
+			if p == nil {
+				return
+			}
+			screen.Do(func() {
+				c.Equal(rowsView{open: "0"}, p.view(), "the second threshold's features are shown as they were")
+				c.Equal(rowsView{collapsed: true}, reeling.view(), "and so are the first's")
+				if tc.focus {
+					focus := d.Window().Focus()
+					c.True(focus != nil && focus.RefKey == sectionToggleKey && unison.AncestorIsOrSelf(focus, p.AsPanel()),
+						"the focus stays on the second threshold's features title bar")
+				}
+			})
+			setAmount(p, "+10")
+			bonus, ok := (*p.features)[0].(*gurps.WeaponBonus)
+			c.True(ok && bonus.Percent, "the percentage comes back once the dice go")
 		})
 	}
 }

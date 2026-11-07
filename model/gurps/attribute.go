@@ -140,8 +140,11 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 
 // BonusTooltip returns a description of the bonuses currently being applied to this attribute, or an empty string if
 // there are none. In each section, the bonuses that alter only the current value follow those that make up the
-// maximum; a pool, which they don't alter, lists none. Strength bonuses limited to striking, lifting or throwing are
-// listed in sections of their own, since they don't alter the attribute's value.
+// maximum; a pool, which they don't alter, lists none. The first section is followed, for an attribute standing in for
+// Striking ST, Lifting ST, Throwing ST, Dodge or Move, by those that alter only the current values of the attributes
+// its current value is figured from, under a heading naming each; see Entity.addSourceAdjustments. Strength bonuses
+// limited to striking, lifting or throwing are listed in sections of their own, since they don't alter the attribute's
+// value.
 func (a *Attribute) BonusTooltip() string {
 	if a.Entity == nil {
 		return ""
@@ -156,6 +159,7 @@ func (a *Attribute) BonusTooltip() string {
 	}
 	var buffer xbytes.InsertBuffer
 	add(stlimit.None, &buffer)
+	a.Entity.addSourceAdjustments(a.AttrID, stlimit.None, &buffer)
 	if a.AttrID == StrengthID {
 		var limited xbytes.InsertBuffer
 		for _, limitation := range stlimit.Options {

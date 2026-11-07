@@ -2418,6 +2418,28 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		c.Equal(fxp.Ten, e.ResolveAttributeCurrent(DexterityID), "and the sheet is no longer Tired")
 	})
 
+	// So are the skills a threshold alters: FP 3 of 10 is Tired, which here takes 2 from Brawling 12, so the FP the
+	// carrier's grant adds, which would lift the sheet out of it, is never in effect.
+	t.Run("skill altered by the pool threshold as the prerequisites see it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		tired := poolThreshold(e, FatiguePointsID, "Tired")
+		tired.Features = append(tired.Features, newSkillBonusTo("Brawling", -fxp.Two))
+		brawling := addSkill(e, "Brawling", fxp.Four) // DX+2, so 12
+		vigor := newGrantLeveledTrait("Vigor", fxp.One)
+		bonus := NewAttributeBonus(FatiguePointsID)
+		bonus.Amount = fxp.Five
+		vigor.Features = Features{bonus}
+		training := addTraitWithFeatures(e, "Training", newTraitGrant(vigor, fxp.One, grantmerge.Ignore))
+		training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.Eleven)
+		e.Recalculate()
+		c.False(e.Unsettled())
+		c.NotEqual("", training.UnsatisfiedReason, "Brawling is 10 without the grant")
+		c.Equal(fxp.Three, e.ResolveAttributeCurrent(FatiguePointsID), "so the grant is not in effect")
+		c.Equal(fxp.Ten, brawling.LevelData.Level, "and the sheet stays Tired")
+	})
+
 	// Nor is a weapon as a script run for the prerequisites resolves it, without the skill the grant puts on the sheet,
 	// what the sheet then shows, though the script runs on its own after the recalculation, as the editor's preview runs
 	// it; and the script sees the weapon so even once the sheet has resolved it.
@@ -3061,6 +3083,22 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 					goggles(e, nil, agile(fxp.One, false))
 					addSkill(e, "Brawling", fxp.One)
 					training := addTraitWithFeatures(e, "Training", agile(fxp.Two, true))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, met: true, want: 10,
+				row: func(e *Entity) any { return e.ResolveAttributeCurrent(DexterityID).AsInteger[int]() },
+			},
+			{
+				name: "putting a trait there whose prerequisites the other grant bypasses, which multiplies DX too",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					doubled := func(g *Grant) *Grant {
+						g.Trait.Features = append(g.Trait.Features, newMultiplier(DexterityID, fxp.Two))
+						return g
+					}
+					goggles(e, nil, doubled(agile(fxp.One, false)))
+					addSkill(e, "Brawling", fxp.One)
+					training := addTraitWithFeatures(e, "Training", doubled(agile(fxp.Two, true)))
 					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
 					return training
 				}, met: true, want: 10,
@@ -4012,9 +4050,12 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		// 10 otherwise, where Karate and Ritual Magic, both IQ/Hard at 4 points, are at 10.
 		halfStat bool
 		// bonus is a skill bonus to the item, which comes before a technique's limit.
-		bonus  fxp.Int
-		level  fxp.Int
-		points fxp.Int
+		bonus fxp.Int
+		// tiredIQ, when set, is what the Tired threshold, which the sheet's FP is at, gives IQ, which alters only its
+		// current value and not the base the points rest on.
+		tiredIQ fxp.Int
+		level   fxp.Int
+		points  fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -4029,6 +4070,8 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		},
 		{name: "attribute missing", item: unresolved, level: fxp.Ten, points: 0},
 		{name: "spell", item: spell, level: fxp.Ten, points: fxp.Four},
+		{name: "skill while a threshold lowers IQ", item: hard, tiredIQ: -fxp.Two, level: fxp.Ten, points: fxp.Four},
+		{name: "spell while a threshold lowers IQ", item: spell, tiredIQ: -fxp.Two, level: fxp.Ten, points: fxp.Four},
 		{name: "skill at half-stat", item: hard, halfStat: true, level: fxp.Twelve, points: fxp.Four},
 		{
 			name: "spell at half-stat, which spells don't use", item: spell, halfStat: true, level: fxp.Twelve,
@@ -4081,6 +4124,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 				c.Fatalf("%s: the item has no name", tc.name)
 			}
 			addTraitWithFeatures(e, "Bonus", newSkillBonusTo(holder.rawName(), tc.bonus))
+		}
+		if tc.tiredIQ != 0 {
+			tired := poolThreshold(e, FatiguePointsID, "Tired")
+			tired.Features = append(tired.Features, newAttrBonus(IntelligenceID, tc.tiredIQ))
+			e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
 		}
 		e.Recalculate()
 		c.Equal(tc.points, tc.item.pointsForBaseLevel(e, tc.level), tc.name)

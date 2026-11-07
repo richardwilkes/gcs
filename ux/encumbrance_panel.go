@@ -30,18 +30,20 @@ var _ unison.ColorProvider = &encRowColor{}
 // EncumbrancePanel holds the contents of the encumbrance block on the sheet.
 type EncumbrancePanel struct {
 	unison.Panel
-	entity *gurps.Entity
-	header *unison.Label
-	row    []unison.Paneler
-	levels []*NonEditablePageField
-	moves  []*NonEditablePageField
-	dodges []*NonEditablePageField
-	// moveAdjustments and dodgeAdjustments hold the lines naming the bonuses that adjust Move and Dodge that the
-	// tooltips of their fields were last built with.
-	moveAdjustments  string
-	dodgeAdjustments string
-	current          int
-	overloaded       bool
+	entity   *gurps.Entity
+	header   *unison.Label
+	row      []unison.Paneler
+	levels   []*NonEditablePageField
+	maxLoads []*NonEditablePageField
+	moves    []*NonEditablePageField
+	dodges   []*NonEditablePageField
+	// maxLoadAdjustments, moveAdjustments and dodgeAdjustments hold the lines naming the bonuses that adjust lifting
+	// ST, which Max Load is figured from, Move and Dodge that the tooltips of their fields were last built with.
+	maxLoadAdjustments string
+	moveAdjustments    string
+	dodgeAdjustments   string
+	current            int
+	overloaded         bool
 }
 
 // NewEncumbrancePanel creates a new encumbrance panel.
@@ -110,7 +112,9 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		if i == 0 {
 			p.addSeparator()
 		}
-		p.AddChild(p.createMaxCarryField(enc, rowColor))
+		maxLoad := p.createMaxCarryField(enc, rowColor)
+		p.maxLoads = append(p.maxLoads, maxLoad)
+		p.AddChild(maxLoad)
 		if i == 0 {
 			p.addSeparator()
 		}
@@ -136,10 +140,12 @@ func (p *EncumbrancePanel) Sync() {
 
 // syncCurrent updates the current level and overload state, and has a screen reader speak the current row's number and
 // name as the current level, since the marker beside the row is an undescribed image and overload is shown only by
-// color. The tooltips of the Move and Dodge fields are rebuilt when the bonuses that adjust those values change.
+// color. The tooltips of the Max Load, Move and Dodge fields are rebuilt when the bonuses that adjust lifting ST, Move
+// and Dodge change.
 func (p *EncumbrancePanel) syncCurrent() {
-	p.syncAdjustments(p.moves, &p.moveAdjustments, gurps.MoveID, moveTooltip)
-	p.syncAdjustments(p.dodges, &p.dodgeAdjustments, gurps.DodgeID, dodgeTooltip)
+	p.syncAdjustments(p.maxLoads, &p.maxLoadAdjustments, gurps.StrengthID, stlimit.LiftingOnly, maxCarryTooltip)
+	p.syncAdjustments(p.moves, &p.moveAdjustments, gurps.MoveID, stlimit.None, moveTooltip)
+	p.syncAdjustments(p.dodges, &p.dodgeAdjustments, gurps.DodgeID, stlimit.None, dodgeTooltip)
 	p.current = int(p.entity.EncumbranceLevel(false))
 	p.overloaded = p.entity.WeightCarried(false) > p.entity.MaximumCarry(encumbrance.ExtraHeavy)
 	for i, name := range p.row {
@@ -153,10 +159,10 @@ func (p *EncumbrancePanel) syncCurrent() {
 	}
 }
 
-// syncAdjustments rebuilds the tooltips of the fields, one per encumbrance level, when the lines naming the bonuses that
-// adjust the value with the given ID differ from those in last, which is then updated.
-func (p *EncumbrancePanel) syncAdjustments(fields []*NonEditablePageField, last *string, id string, tooltip func(encumbrance.Level) string) {
-	adjustments := p.entity.CurrentAdjustmentTooltip(id, stlimit.None)
+// syncAdjustments rebuilds the tooltips of the fields, one per encumbrance level, when the lines naming the bonuses
+// that adjust the value with the given ID and ST limitation differ from those in last, which is then updated.
+func (p *EncumbrancePanel) syncAdjustments(fields []*NonEditablePageField, last *string, id string, limitation stlimit.Option, tooltip func(encumbrance.Level) string) {
+	adjustments := p.entity.CurrentAdjustmentTooltip(id, limitation)
 	if adjustments == *last {
 		return
 	}
@@ -211,7 +217,7 @@ func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *
 		return p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc))
 	})
 	field.OnBackgroundInk = rowColor
-	field.Tooltip = newWrappedTooltip(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level", enc.String()))
+	field.Tooltip = newWrappedTooltip(maxCarryTooltip(enc))
 	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
@@ -231,6 +237,10 @@ func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *enc
 	field.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: 4}))
 	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
+}
+
+func maxCarryTooltip(enc encumbrance.Level) string {
+	return i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level", enc.String())
 }
 
 func moveTooltip(enc encumbrance.Level) string {

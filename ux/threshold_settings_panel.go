@@ -91,7 +91,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 // createFeatures returns the panel that edits the threshold's features. The dockable replaces its content after each
 // change to its structure, so undo and redo of an edit made in the panel apply to whichever panel then shows the
 // threshold's features, which is found by its reference key, as do the editors open on the items of its grants (see
-// followGrantItemEditors).
+// followGrantItemEditors), and that panel takes over how this one was shown (see featuresPanel.takeOver).
 func (p *thresholdSettingsPanel) createFeatures() *featuresPanel {
 	d := p.pool.dockable
 	features := newThresholdFeaturesPanel(d.Entity(), p.threshold, func() *gurps.AttributeDefs { return d.model })

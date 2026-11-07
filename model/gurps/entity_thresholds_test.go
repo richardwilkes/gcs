@@ -18,9 +18,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestCurrentAdjustmentApply verifies the order and rounding of a current adjustment: the amount is added first, floored
-// for a whole value, and then each factor is applied in turn, rounding to the nearest whole number after each, so that
-// halving twice rounds up twice.
+// TestCurrentAdjustmentApply verifies the order and rounding of a current adjustment: the amount is added first,
+// floored for a whole value, and then each factor is applied in turn, rounding to the nearest whole number after each,
+// so that halving twice rounds up twice.
 func TestCurrentAdjustmentApply(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {

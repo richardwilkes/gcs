@@ -103,13 +103,15 @@ func TestEncumbrancePanelStartsAtTheCurrentLevel(t *testing.T) {
 	c.False(panel.overloaded)
 }
 
-// TestEncumbrancePanelNamesMoveAndDodgeAdjustments verifies that the tooltips of the Move and Dodge fields name the pool
-// thresholds adjusting those values, and that Sync rebuilds them as the thresholds come and go.
-func TestEncumbrancePanelNamesMoveAndDodgeAdjustments(t *testing.T) {
+// TestEncumbrancePanelNamesAdjustments verifies that the tooltips of the Max Load, Move and Dodge fields name the pool
+// thresholds adjusting the lifting ST, Move and Dodge they show, and that Sync rebuilds them as the thresholds come and
+// go.
+func TestEncumbrancePanelNamesAdjustments(t *testing.T) {
 	c := check.New(t)
 	e := tiredEntity(t)
 	panel := NewEncumbrancePanel(e)
 	for i := range encumbrance.Levels {
+		c.Contains(tooltipText(panel.maxLoads[i].Tooltip), "Adjusted by:\nTired (FP) [×0.5]")
 		c.Contains(tooltipText(panel.moves[i].Tooltip), "Adjusted by:\nTired (FP) [×0.5]")
 		c.Contains(tooltipText(panel.dodges[i].Tooltip), "Adjusted by:\nTired (FP) [×0.5]")
 	}
@@ -118,6 +120,7 @@ func TestEncumbrancePanelNamesMoveAndDodgeAdjustments(t *testing.T) {
 	e.Recalculate()
 	panel.Sync()
 	for i := range encumbrance.Levels {
+		c.NotContains(tooltipText(panel.maxLoads[i].Tooltip), "Tired", "rested, lifting ST is not adjusted")
 		c.NotContains(tooltipText(panel.moves[i].Tooltip), "Tired", "rested, Move is not adjusted")
 		c.NotContains(tooltipText(panel.dodges[i].Tooltip), "Tired", "rested, Dodge is not adjusted")
 	}

@@ -233,7 +233,8 @@ type exportedEncumbrance struct {
 }
 
 // exportedAttribute is an attribute as the templates see it. Value is the maximum, which the points buy, and Current is
-// the value in play, which the pools' thresholds may alter; the two are the same for an attribute nothing alters.
+// the value in play, which the bonuses of the pools' thresholds and any multiplying attribute bonus may alter; the two
+// are the same for an attribute nothing alters.
 type exportedAttribute struct {
 	ID           string
 	Name         string

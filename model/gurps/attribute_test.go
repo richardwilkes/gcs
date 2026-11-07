@@ -276,23 +276,39 @@ func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
 }
 
 // TestAttributeBonusTooltipThresholdSources verifies that the bonuses of a pool's current threshold are listed after
-// the items' in each section, named for the threshold and its pool, and that a pool lists none.
+// the items' in each section, named for the threshold and its pool, that a pool lists none, and that the tooltip of a
+// value figured from the current values of attributes, such as lifting ST, Move, Dodge or an attribute standing in for
+// one, lists after its own bonuses those altering only the current value of each such attribute, under its name.
 func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	st := e.Attributes.Set[StrengthID]
 	newAttrBonusTrait(e, "Lifting Harness", StrengthID, fxp.Three, stlimit.LiftingOnly)
+	newAttrBonusTrait(e, "Fleet", MoveID, fxp.Two, stlimit.None)
 	tired := poolThreshold(e, FatiguePointsID, "Tired")
-	tired.Features = append(tired.Features, newAttrBonus(StrengthID, -fxp.One))
+	tired.Features = append(tired.Features, newAttrBonus(StrengthID, -fxp.One), newMultiplier(BasicMoveID, fxp.Half),
+		newMultiplier(BasicSpeedID, fxp.Half))
 	hp := NewAttributeBonus(HitPointsID)
 	hp.Amount = -fxp.Two
 	tired.Features = append(tired.Features, hp)
+	e.SheetSettings.Attributes.Set[StrikingStrengthID] = &AttributeDef{
+		DefID: StrikingStrengthID,
+		Type:  attribute.Integer,
+		Name:  "Striking ST",
+		Base:  "$st",
+	}
+	e.Attributes.Set[StrikingStrengthID] = NewAttribute(e, StrikingStrengthID, len(e.Attributes.Set))
 	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nTired (FP) [-1]\nFor lifting only:\nLifting Harness [+3]\nTired (FP) [×0.5]",
 		st.BonusTooltip(), "the threshold's bonuses follow the items' in each section")
 	c.Equal("", e.Attributes.Set[HitPointsID].BonusTooltip(), "a pool lists no threshold bonus, which doesn't alter it")
-	c.Equal("Tired (FP) [×0.5]", e.CurrentAdjustmentTooltip(StrengthID, stlimit.LiftingOnly))
-	c.Equal("Tired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
+	c.Equal("Includes modifiers from:\nST:\nTired (FP) [-1]", e.Attributes.Set[StrikingStrengthID].BonusTooltip(),
+		"a stand-in names what alters the current value of the attribute its base reads")
+	c.Equal("Lifting Harness [+3]\nTired (FP) [×0.5]\nST:\nTired (FP) [-1]",
+		e.CurrentAdjustmentTooltip(StrengthID, stlimit.LiftingOnly))
+	c.Equal("Fleet [+2]\nTired (FP) [×0.5]\nBasic Move:\nTired (FP) [×0.5]",
+		e.CurrentAdjustmentTooltip(MoveID, stlimit.None))
+	c.Equal("Tired (FP) [×0.5]\nBasic Speed:\nTired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
 	c.Equal("", e.CurrentAdjustmentTooltip(DexterityID, stlimit.None))
 }

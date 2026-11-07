@@ -467,3 +467,16 @@ func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 	c.Equal("Kit||||2 lb|5|\nRope|1|5|2 lb|2 lb|5|\n", runLegacyExport(t, c, e,
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
 }
+
+// TestLegacyExportLeavesAMissingAttributeEmpty verifies that the fixed attribute keys, which name attributes of the
+// standard set, emit nothing for a sheet whose attribute set lacks the attribute rather than an out-of-range sentinel.
+func TestLegacyExportLeavesAMissingAttributeEmpty(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	const tmpl = "@ST|@DX|@IQ|@HT|@FP|@BASIC_FP|@HP|@BASIC_HP|@WILL|@FRIGHT_CHECK|@BASIC_SPEED|@BASIC_MOVE|@PERCEPTION|" +
+		"@VISION|@HEARING|@TASTE_SMELL|@TOUCH"
+	c.Equal("10|10|10|10|10|10|10|10|10|10|5|5|10|10|10|10|10", runLegacyExport(t, c, e, tmpl))
+	clear(e.SheetSettings.Attributes.Set)
+	clear(e.Attributes.Set)
+	c.Equal("||||||||||||||||", runLegacyExport(t, c, e, tmpl))
+}

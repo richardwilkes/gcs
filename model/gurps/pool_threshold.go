@@ -62,7 +62,10 @@ var legacyThresholdOps = []struct {
 }
 
 // featuresForLegacyOps returns the features that do what the given operations did: halve Move, Dodge or, for lifting
-// only, ST. Keys are matched ignoring case, as they were, and unknown ones are dropped.
+// only, ST. Keys are matched ignoring case, as they were, and unknown ones are dropped. By design, the multipliers
+// stack, one for each pool at such a threshold, whereas older versions of GCS, which read the operations written back
+// for them (see MarshalJSONTo), halve Move and Dodge at most twice and ST at most once, so a sheet with more pools than
+// that at such thresholds gives different values there.
 func featuresForLegacyOps(ops []string) Features {
 	var list Features
 	for _, op := range legacyThresholdOps {
@@ -83,9 +86,9 @@ func featuresForLegacyOps(ops []string) Features {
 // TODO: Stop writing the legacy operations once older versions of GCS no longer need to load files saved by this one.
 //
 // The operations a threshold held before it held features are written alongside the features while those are exactly
-// what the operations convert to (see legacyOps), so that older versions of GCS, which read only the operations, load
-// a file saved by this one without losing what its thresholds do. Once the features are changed by anything other
-// than that conversion, the operations no longer describe them and are left out.
+// what the operations convert to, in any order (see legacyOps), so that older versions of GCS, which read only the
+// operations, load a file saved by this one without losing what its thresholds do. Once the features are changed by
+// anything other than that conversion or a reordering of it, the operations no longer describe them and are left out.
 func (p *PoolThreshold) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if ops := p.legacyOps(); len(ops) != 0 {
 		return json.MarshalEncode(enc, &struct {
@@ -97,7 +100,8 @@ func (p *PoolThreshold) MarshalJSONTo(enc *jsontext.Encoder) error {
 }
 
 // legacyOps returns the keys of the operations the threshold's features are the conversion of (see
-// featuresForLegacyOps), or nil when they aren't exactly that.
+// featuresForLegacyOps), in any order, since the order of those features changes nothing they do, or nil when they
+// aren't exactly that.
 func (p *PoolThreshold) legacyOps() []string {
 	if len(p.Features) == 0 || len(p.Features) > len(legacyThresholdOps) {
 		return nil
@@ -111,17 +115,23 @@ func (p *PoolThreshold) legacyOps() []string {
 			ops = append(ops, op.key)
 		}
 	}
-	if len(ops) == 0 || featuresHash(featuresForLegacyOps(ops)) != featuresHash(p.Features) {
+	if len(ops) == 0 || !slices.Equal(featureHashes(featuresForLegacyOps(ops)), featureHashes(p.Features)) {
 		return nil
 	}
 	return ops
 }
 
-// featuresHash returns a hash of the features.
-func featuresHash(list Features) uint64 {
-	h := xxh3.New()
-	hashList(h, list)
-	return h.Sum64()
+// featureHashes returns the hash of each of the features, sorted, so that the same features in any order give the
+// same hashes.
+func featureHashes(list Features) []uint64 {
+	hashes := make([]uint64, 0, len(list))
+	for _, f := range list {
+		h := xxh3.New()
+		f.Hash(h)
+		hashes = append(hashes, h.Sum64())
+	}
+	slices.Sort(hashes)
+	return hashes
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom. Data written before thresholds held features has its operations

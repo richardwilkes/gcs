@@ -33,8 +33,8 @@ func describeFeatures(list Features) []string {
 // TestPoolThresholdLegacyOpsBecomeFeatures verifies that the operations a threshold held before it held features are
 // converted to the features that do the same, in a fixed order, matching keys ignoring case and dropping unknown ones,
 // that features given outright are kept instead, and that the threshold is written back with the features along with
-// the operations they are the conversion of, in that order, for older versions to read, and with no operations when
-// they aren't.
+// the operations they are the conversion of in any order, after the features, for older versions to read, and with no
+// operations when they aren't.
 func TestPoolThresholdLegacyOpsBecomeFeatures(t *testing.T) {
 	c := check.New(t)
 	const move = "×0.5 to Move"
@@ -67,6 +67,12 @@ func TestPoolThresholdLegacyOpsBecomeFeatures(t *testing.T) {
 			`{"state":"Tired","value":"0","features":[{"type":"attribute_bonus","attribute":"dodge","multiply":true,"amount":0.5}]}`,
 			[]string{dodge},
 			`["halve_dodge"]`,
+		},
+		{
+			"features that are the conversion of operations, in another order",
+			`{"state":"Tired","value":"0","features":[{"type":"attribute_bonus","attribute":"dodge","multiply":true,"amount":0.5},{"type":"attribute_bonus","attribute":"move","multiply":true,"amount":0.5}]}`,
+			[]string{dodge, move},
+			`["halve_move","halve_dodge"]`,
 		},
 		{
 			"features that are more than that",

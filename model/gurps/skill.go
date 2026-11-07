@@ -1191,7 +1191,18 @@ func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization
 // (see Entity.resolveAttributeCurrentForPrereqs), halved when the sheet uses half-stat defaults, or fxp.Min when it
 // can't be resolved.
 func skillAttributeLevel(e *Entity, attrID string) fxp.Int {
-	level := e.resolveAttributeCurrentForPrereqs(attrID)
+	return halvedForHalfStatDefaults(e, e.resolveAttributeCurrentForPrereqs(attrID))
+}
+
+// skillAttributeBase is skillAttributeLevel for the attribute's maximum, its base, which the points a skill's level
+// costs rest on, rather than its current value; see Entity.resolveAttributeMaximumForPrereqs.
+func skillAttributeBase(e *Entity, attrID string) fxp.Int {
+	return halvedForHalfStatDefaults(e, e.resolveAttributeMaximumForPrereqs(attrID))
+}
+
+// halvedForHalfStatDefaults returns the attribute level, halved when the sheet uses half-stat defaults, unless it is
+// fxp.Min.
+func halvedForHalfStatDefaults(e *Entity, level fxp.Int) fxp.Int {
 	if level != fxp.Min && e.SheetSettings.UseHalfStatDefaults {
 		level = level.Div(fxp.Two).Floor() + fxp.Five
 	}
@@ -1212,14 +1223,15 @@ func (s *Skill) restsOnSkill() bool {
 }
 
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the skill, at its adjusted difficulty, the
-// level before bonuses and defaults on the sheet, or for a technique the level before its own bonuses, held to the
-// highest its limit allows before them (see techniquePointsForLevel), or zero when none do.
+// level before bonuses and defaults on the sheet from the base of its attribute, which what alters the attribute's
+// current value alone leaves as it is (see skillAttributeBase), or for a technique the level before its own bonuses,
+// held to the highest its limit allows before them (see techniquePointsForLevel), or zero when none do.
 func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	ad := s.AdjustedDifficulty()
 	if s.IsTechnique() {
 		return techniquePointsForLevel(level, ad.Difficulty, s.techniqueBase(e))
 	}
-	attr := skillAttributeLevel(e, ad.Attribute)
+	attr := skillAttributeBase(e, ad.Attribute)
 	if attr == fxp.Min {
 		return 0
 	}

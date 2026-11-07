@@ -174,6 +174,10 @@ type Entity struct {
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
 	judgedThresholds map[*Attribute]*PoolThreshold
+	// judgedFeatures holds the feature lists the bonuses are read from as the prerequisites being judged see the sheet,
+	// while the item judged carries a grant: without the features of any threshold, for while the thresholds are found,
+	// and with those of the thresholds they see; see bonusFeatures.
+	judgedFeatures [2]*features
 	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
 	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
 	judgedPoints map[*grantReprice]fxp.Int
@@ -852,7 +856,7 @@ func (e *Entity) processFeatures() {
 	e.currentAdjustments = nil
 	e.forEachActiveFeatureList(func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features) {
 		for _, f := range list {
-			e.processFeature(owner, mod, f, leveled)
+			e.processFeature(&e.features, owner, mod, f, leveled)
 		}
 	})
 	// A trait the sheet disabled that the prerequisites of a carrier see enabled (see Trait.enabledForPrereqsOf) has
@@ -866,7 +870,7 @@ func (e *Entity) processFeatures() {
 			forEachActiveTraitFeatureList(t, func(mod fmt.Stringer, leveled LeveledOwner, list Features) {
 				for _, f := range list {
 					if _, ok := f.(*DRBonus); !ok {
-						e.processFeature(t, mod, f, leveled)
+						e.processFeature(&e.features, t, mod, f, leveled)
 					}
 				}
 			})
@@ -884,7 +888,7 @@ func (e *Entity) processFeatures() {
 				if bonus, ok := f.(*SkillBonus); ok {
 					bonus.selfControlOf = t
 				}
-				e.processFeature(t, nil, f, t)
+				e.processFeature(&e.features, t, nil, f, t)
 			}
 		}
 	}
@@ -986,13 +990,13 @@ func forEachActiveEquipmentFeatureList(eqp *Equipment, fn func(mod fmt.Stringer,
 	}, true, true, eqp.Modifiers...)
 }
 
-// processFeature collects a feature into the entity's feature lists. The owner is the primary item the feature came
-// from (a trait, skill, spell, or piece of equipment) and the sub-owner, when present, is the modifier of that item
-// carrying the feature, or the owner is the threshold of a pool and the sub-owner the pool's definition; together they
-// name the source in tooltips. The leveled owner is the node whose level drives a per-level amount: the modifier
-// itself for trait modifiers, which can have levels of their own, and the primary item for equipment modifiers, which
-// cannot; a threshold has none.
-func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
+// processFeature collects a feature into the feature lists, which are the entity's own but for the view of them
+// bonusFeatures builds. The owner is the primary item the feature came from (a trait, skill, spell, or piece of
+// equipment) and the sub-owner, when present, is the modifier of that item carrying the feature, or the owner is the
+// threshold of a pool and the sub-owner the pool's definition; together they name the source in tooltips. The leveled
+// owner is the node whose level drives a per-level amount: the modifier itself for trait modifiers, which can have
+// levels of their own, and the primary item for equipment modifiers, which cannot; a threshold has none.
+func (e *Entity) processFeature(into *features, owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
 		bonus.SetSubOwner(subOwner)
@@ -1005,41 +1009,41 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	switch actual := f.(type) {
 	case *AttributeBonus:
 		if _, fromThreshold := owner.(*PoolThreshold); fromThreshold || actual.Multiply {
-			e.features.currentAttributeBonuses = append(e.features.currentAttributeBonuses, actual)
+			into.currentAttributeBonuses = append(into.currentAttributeBonuses, actual)
 		} else {
-			e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
+			into.attributeBonuses = append(into.attributeBonuses, actual)
 		}
 	case *CostReduction:
-		e.features.costReductions = append(e.features.costReductions, ownedCostReduction{CostReduction: actual, owner: owner})
+		into.costReductions = append(into.costReductions, ownedCostReduction{CostReduction: actual, owner: owner})
 	case *EquipmentMaxUsesBonus:
-		e.features.maxUsesBonuses = append(e.features.maxUsesBonuses, actual)
+		into.maxUsesBonuses = append(into.maxUsesBonuses, actual)
 	case *DRBonus:
 		if len(actual.Locations) == 0 { // "this armor"
-			e.expandThisArmorDRBonus(owner, subOwner, leveledOwner, actual)
+			e.expandThisArmorDRBonus(into, owner, subOwner, leveledOwner, actual)
 		} else {
-			e.features.drBonuses = append(e.features.drBonuses, actual)
+			into.drBonuses = append(into.drBonuses, actual)
 		}
 	case *SkillBonus:
-		e.features.skillBonuses = append(e.features.skillBonuses, actual)
+		into.skillBonuses = append(into.skillBonuses, actual)
 	case *SkillPointBonus:
-		e.features.skillPointBonuses = append(e.features.skillPointBonuses, actual)
+		into.skillPointBonuses = append(into.skillPointBonuses, actual)
 	case *SpellBonus:
-		e.features.spellBonuses = append(e.features.spellBonuses, actual)
+		into.spellBonuses = append(into.spellBonuses, actual)
 	case *SpellPointBonus:
-		e.features.spellPointBonuses = append(e.features.spellPointBonuses, actual)
+		into.spellPointBonuses = append(into.spellPointBonuses, actual)
 	case *TraitBonus:
-		e.features.traitBonuses = append(e.features.traitBonuses, actual)
+		into.traitBonuses = append(into.traitBonuses, actual)
 	case *TraitMaxLevelBonus:
-		e.features.traitMaxLevelBonuses = append(e.features.traitMaxLevelBonuses, actual)
+		into.traitMaxLevelBonuses = append(into.traitMaxLevelBonuses, actual)
 	case *WeaponBonus:
-		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
+		into.weaponBonuses = append(into.weaponBonuses, actual)
 	case *SelectorOverride:
-		e.features.selectorOverrides = append(e.features.selectorOverrides, actual)
+		into.selectorOverrides = append(into.selectorOverrides, actual)
 	case *Grant:
-		if e.features.grants == nil {
-			e.features.grants = make(map[*Grant]bool)
+		if into.grants == nil {
+			into.grants = make(map[*Grant]bool)
 		}
-		e.features.grants[actual] = true
+		into.grants[actual] = true
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *TitleNote, *ReactionBonus:
 		// Not collected at this stage
 	case *UnknownFeature:
@@ -1081,8 +1085,8 @@ func (e *Entity) defenseLevel(defenseID string, skillLevel fxp.Int) fxp.Int {
 // and those of its enabled modifiers -- a hood that adds DR to the skull makes the skull part of what "this armor"
 // covers, no matter which of the two the bonus itself came from. Exactly one copy is emitted, so a location named by
 // more than one of those DR bonuses still receives the amount just once. If the owner isn't a piece of equipment, the
-// bonus is dropped, since there is nothing for it to attach to.
-func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
+// bonus is dropped, since there is nothing for it to attach to. The copy is collected into the feature lists given.
+func (e *Entity) expandThisArmorDRBonus(into *features, owner, subOwner fmt.Stringer, leveledOwner LeveledOwner, src *DRBonus) {
 	eqp, ok := owner.(*Equipment)
 	if !ok {
 		return
@@ -1118,7 +1122,7 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 	bonus.SetOwner(owner)
 	bonus.SetSubOwner(subOwner)
 	bonus.SetLeveledOwner(leveledOwner)
-	e.features.drBonuses = append(e.features.drBonuses, bonus)
+	into.drBonuses = append(into.drBonuses, bonus)
 }
 
 // unsatisfiedReasonPrefix separates the individual reasons within an UnsatisfiedReason.
@@ -1616,11 +1620,13 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // sheet is left out of the bonuses, attributes and skill defaults they read, as the rows themselves are left out (see
 // excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
-// grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
-// except, when exclude carries a grant, the script prerequisites themselves and the scripts giving the attributes their
-// bases and the pools their thresholds while the prerequisites read them, which run afresh, with the rows left out
-// hidden from them too (see excludedWhileJudging), unless already stopped once for running too long as those
-// prerequisites see the sheet; see ScriptPrereq.Evaluate, attributeForPrereqs and Attribute.CurrentThreshold.
+// grants. When exclude carries a grant, the bonuses of the pools' thresholds are those of the thresholds as those
+// prerequisites see the pools; see bonusFeatures. Scripts see the sheet whole, since what they compute is kept for the
+// rest of the pass (see resolveScript), except, when exclude carries a grant, the script prerequisites themselves and
+// the scripts giving the attributes their bases and the pools their thresholds while the prerequisites read them, which
+// run afresh, with the rows left out hidden from them too (see excludedWhileJudging), unless already stopped once for
+// running too long as those prerequisites see the sheet; see ScriptPrereq.Evaluate, attributeForPrereqs and
+// Attribute.CurrentThreshold.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil || exclude == e.judging {
 		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked and
@@ -1629,10 +1635,13 @@ func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 		return
 	}
 	saved, savedDefaults, savedThresholds, savedPoints := e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints
+	savedFeatures := e.judgedFeatures
 	e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = exclude, nil, nil, nil
+	e.judgedFeatures = [2]*features{}
 	defer func() {
 		e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = saved, savedDefaults, savedThresholds,
 			savedPoints
+		e.judgedFeatures = savedFeatures
 	}()
 	fn()
 }
@@ -1737,7 +1746,7 @@ func (e *Entity) addDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 			break
 		}
 	}
-	for _, one := range e.features.drBonuses {
+	for _, one := range e.bonusFeatures().drBonuses {
 		if armorOnly {
 			if _, ok := one.Owner().(*Equipment); !ok {
 				continue
@@ -1756,7 +1765,7 @@ func (e *Entity) addDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses that apply; see SkillBonus.applies.
 func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.bonusFeatures().skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.Name &&
 			bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1768,7 +1777,7 @@ func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization stri
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
 func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e, e.features.skillPointBonuses, tooltip,
+	return sumBonuses(e, e.bonusFeatures().skillPointBonuses, tooltip,
 		func(bonus *SkillPointBonus, replacements map[string]string) bool {
 			return bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1793,19 +1802,19 @@ func sumSpellBonuses[T spellMatcher](e *Entity, list []T, name, powerSource stri
 
 // SpellBonusFor returns the total bonus for the matching spell bonuses that apply; see SpellBonus.applies.
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e, e.features.spellBonuses, tooltip, func(bonus *SpellBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.bonusFeatures().spellBonuses, tooltip, func(bonus *SpellBonus, replacements map[string]string) bool {
 		return bonus.MatchesSpell(replacements, name, powerSource, colleges, tags) && bonus.applies()
 	})
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e, e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumSpellBonuses(e, e.bonusFeatures().spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // TraitBonusFor returns the total bonus for the matching trait bonuses.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e, e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.bonusFeatures().traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
 		return bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})
@@ -1819,7 +1828,7 @@ func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damag
 	// it has matched on everything else.
 	var rsl fxp.Int
 	rslResolved := false
-	for _, bonus := range e.features.weaponBonuses {
+	for _, bonus := range e.bonusFeatures().weaponBonuses {
 		if bonus.SelectionType != wsel.WithRequiredSkill || e.bonusExcluded(bonus) {
 			continue
 		}
@@ -1847,7 +1856,7 @@ func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damag
 // hasWeaponBonusesBySkill reports whether any of the entity's weapon bonuses selects weapons by the skill they are
 // used with, which is the only reason to find out what skill that is.
 func (e *Entity) hasWeaponBonusesBySkill() bool {
-	for _, bonus := range e.features.weaponBonuses {
+	for _, bonus := range e.bonusFeatures().weaponBonuses {
 		if bonus.SelectionType == wsel.WithRequiredSkill {
 			return true
 		}
@@ -1876,7 +1885,7 @@ func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 // addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given weapon, usage,
 // damage type and tags to add. The bonuses bonusExcluded leaves out are passed over.
 func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier, damageType string, tagsQualifier []string, add func(*WeaponBonus)) {
-	for _, bonus := range e.features.weaponBonuses {
+	for _, bonus := range e.bonusFeatures().weaponBonuses {
 		if bonus.SelectionType == wsel.WithName && !e.bonusExcluded(bonus) {
 			replacements := bonusReplacements(bonus)
 			if w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
@@ -1892,7 +1901,7 @@ func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier, damageType 
 // NamedWeaponSkillBonusesFor returns the skill bonuses that select weapons by name and match the given weapon, usage,
 // damage type and tags.
 func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
-	return collectBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return collectBonuses(e, e.bonusFeatures().skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.WeaponsWithName &&
 			w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, usage) &&
@@ -2356,6 +2365,20 @@ func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 		return e.ResolveAttributeCurrent(attrID)
 	}
 	return e.attributeForPrereqs(attr, true)
+}
+
+// resolveAttributeMaximumForPrereqs is resolveAttributeCurrentForPrereqs for the attribute's maximum, its base, rather
+// than its current value: the value the given ID resolves to (see Attributes.Maximum), or, while the prerequisites of
+// an item carrying a grant are judged, the attribute's maximum as they see it (see attributeForPrereqs).
+func (e *Entity) resolveAttributeMaximumForPrereqs(attrID string) fxp.Int {
+	if e == nil {
+		return fxp.Min
+	}
+	attr, ok := e.Attributes.Set[attrID]
+	if !ok || !e.carriesGrant(e.judging) {
+		return e.Attributes.Maximum(attrID)
+	}
+	return e.attributeForPrereqs(attr, false)
 }
 
 // attributeForPrereqs returns the attribute's current value, or its maximum, as the prerequisites being judged see it:
