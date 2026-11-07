@@ -102,7 +102,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	addLabelAndTargetedPopup(content, p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"), "",
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.Types...)
+		attribute.Types...).withoutUndo()
 
 	if !p.def.IsSeparator() {
 		label := NewFieldLeadingLabel(i18n.Text("Placement"), false)
@@ -234,18 +234,21 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
+// applyAttributeType changes the attribute's type in a single undo edit of the whole set of definitions, since the
+// change may add a threshold or clear the fields a separator has no use for, which undoing it must bring back.
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
-	p.def.Type = attrType
-	if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
-		threshold := gurps.NewPoolThreshold()
-		threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
-		p.def.Thresholds = append(p.def.Thresholds, threshold)
-	} else if p.def.IsSeparator() {
-		p.def.FullName = ""
-		p.def.Base = ""
-		p.def.CostPerPoint = 0
-		p.def.CostAdjPercentPerSM = 0
-		p.def.Thresholds = nil
-	}
-	p.dockable.sync()
+	p.dockable.editStructure(i18n.Text("Attribute Type"), func() {
+		p.def.Type = attrType
+		if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
+			threshold := gurps.NewPoolThreshold()
+			threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
+			p.def.Thresholds = append(p.def.Thresholds, threshold)
+		} else if p.def.IsSeparator() {
+			p.def.FullName = ""
+			p.def.Base = ""
+			p.def.CostPerPoint = 0
+			p.def.CostAdjPercentPerSM = 0
+			p.def.Thresholds = nil
+		}
+	}, "")
 }

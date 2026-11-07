@@ -338,6 +338,42 @@ func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
 	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions are untouched throughout")
 }
 
+// TestAttributeTypeChangeIsUndoable verifies that changing an attribute's type through its popup is a single undo edit
+// of the whole set of definitions, so that undoing a change to a separator brings back what the change cleared.
+func TestAttributeTypeChangeIsUndoable(t *testing.T) {
+	c := check.New(t)
+	d := newTestAttributeSettingsDockable()
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	fp := d.model.Set[gurps.FatiguePointsID]
+	c.Equal(attribute.Pool, fp.Type)
+	c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
+	before := fp.Clone()
+	beforeHash := gurps.Hash64(d.model)
+	rowsBefore := len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel()))
+
+	widgetFor[*Popup[attribute.Type]](t, d, fp.KeyPrefix+"type").Select(attribute.PoolSeparator)
+	fp = d.model.Set[gurps.FatiguePointsID]
+	c.Equal(attribute.PoolSeparator, fp.Type, "the popup writes the model")
+	c.Equal("", fp.Base, "a separator has no base")
+	c.Nil(fp.Thresholds, "a separator has no thresholds")
+	c.Equal("Undo Attribute Type", d.undoMgr.UndoTitle())
+
+	d.undoMgr.Undo()
+	fp = d.model.Set[gurps.FatiguePointsID]
+	c.Equal(attribute.Pool, fp.Type, "undo restores the type")
+	c.Equal(before.FullName, fp.FullName, "undo restores the full name")
+	c.Equal(before.Base, fp.Base, "undo restores the base")
+	c.Equal(before.CostPerPoint, fp.CostPerPoint, "undo restores the cost per point")
+	c.Equal(thresholdStates(before), thresholdStates(fp), "undo restores the thresholds")
+	c.Equal(beforeHash, gurps.Hash64(d.model), "undo restores the definitions exactly")
+	c.False(d.undoMgr.CanUndo(), "the type change is a single edit")
+	c.Equal(rowsBefore, len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())),
+		"the panels are rebuilt from the restored definitions")
+
+	d.undoMgr.Redo()
+	c.Equal(attribute.PoolSeparator, d.model.Set[gurps.FatiguePointsID].Type, "redo changes the type again")
+}
+
 // testAttrDefs returns a set of integer attribute definitions with the given IDs, in that order.
 func testAttrDefs(ids ...string) *gurps.AttributeDefs {
 	defs := &gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)}

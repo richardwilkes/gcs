@@ -56,6 +56,12 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 	return p
 }
 
+// withoutUndo has the popup leave undo to its setter, returning the popup.
+func (p *Popup[T]) withoutUndo() *Popup[T] {
+	p.undoID = unison.NoUndoID
+	return p
+}
+
 func (p *Popup[T]) setWithoutUndo(item T) {
 	callback := p.SelectionChangedCallback
 	p.SelectionChangedCallback = nil
