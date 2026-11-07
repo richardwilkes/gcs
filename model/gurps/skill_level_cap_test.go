@@ -367,7 +367,7 @@ func TestSkillLevelCapReferences(t *testing.T) {
 				riposte.SetDataOwner(e)
 				e.Skills = append(e.Skills, riposte)
 				return []LevelCap{refCap(levelcap.Skill, "Riposte", 0)},
-					func(uncapped fxp.Int) fxp.Int { return defenseLevelFromSkill(uncapped, 0) }, "Riposte"
+					defenseLevelFromSkill, "Riposte"
 			},
 			target:  levelcap.Skills,
 			restsOn: "Riposte",

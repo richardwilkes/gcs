@@ -1254,26 +1254,29 @@ func TestRecordedDefaultSurvivesCriteriaBeingDropped(t *testing.T) {
 }
 
 // TestDefenseLevelFromSkill verifies the conversion of a skill level into a defense level: half the skill level,
-// rounded down, plus three, plus the defense bonus.
+// rounded down, plus three.
 func TestDefenseLevelFromSkill(t *testing.T) {
 	c := check.New(t)
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve, 0), "12 / 2 + 3")
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen, 0), "an odd skill level rounds down")
-	c.Equal(fxp.Eleven, defenseLevelFromSkill(fxp.Thirteen, fxp.Two), "the defense bonus is added after the halving")
-	c.Equal(fxp.Six, defenseLevelFromSkill(fxp.Nine, -fxp.One), "a negative defense bonus is applied as well")
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve), "12 / 2 + 3")
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen), "an odd skill level rounds down")
 }
 
-// TestEntityDefenseBonus verifies that the entity hands back the bonus for the named defense and nothing for any
-// other ID.
-func TestEntityDefenseBonus(t *testing.T) {
+// TestEntityDefenseLevel verifies that the entity applies its bonus to the named defense after the halving, along with
+// what the thresholds and multipliers do to that defense, and nothing to any other ID.
+func TestEntityDefenseLevel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	e.ParryBonus = fxp.Two
-	e.BlockBonus = fxp.Three
-	c.Equal(fxp.Two, e.defenseBonus(ParryID), "parry")
-	c.Equal(fxp.Three, e.defenseBonus(BlockID), "block")
-	c.Equal(fxp.Int(0), e.defenseBonus(DodgeID), "dodge is not a skill-derived defense")
-	c.Equal(fxp.Int(0), e.defenseBonus(SkillID), "a skill default has no defense bonus")
+	e.BlockBonus = -fxp.One
+	c.Equal(fxp.Eleven, e.defenseLevel(ParryID, fxp.Thirteen), "the parry bonus is added after the halving")
+	c.Equal(fxp.Six, e.defenseLevel(BlockID, fxp.Nine), "a negative block bonus is applied as well")
+	c.Equal(fxp.Nine, e.defenseLevel(DodgeID, fxp.Thirteen), "dodge is not a skill-derived defense")
+	c.Equal(fxp.Nine, e.defenseLevel(SkillID, fxp.Thirteen), "a skill default has no defense bonus")
+	e.currentAdjustments = map[adjustmentKey]currentAdjustment{
+		{id: ParryID}: {bonus: fxp.One, factors: []fxp.Int{fxp.Half}},
+	}
+	c.Equal(fxp.Six, e.defenseLevel(ParryID, fxp.Thirteen), "the threshold's amount is added and then the halving applied")
+	c.Equal(fxp.Six, e.defenseLevel(BlockID, fxp.Nine), "block is left alone")
 }
 
 // TestSkillDefaultDefenseLevels verifies that parry and block defaults convert the best matching skill's level into a
@@ -1294,9 +1297,9 @@ func TestSkillDefaultDefenseLevels(t *testing.T) {
 	parry.DefaultType = ParryID
 	block := newSkillDefaultTo("Broadsword", "", false, fxp.Two)
 	block.DefaultType = BlockID
-	c.Equal(defenseLevelFromSkill(level, fxp.One)+fxp.Two, parry.SkillLevel(e, nil, false, nil, false),
+	c.Equal(defenseLevelFromSkill(level)+fxp.One+fxp.Two, parry.SkillLevel(e, nil, false, nil, false),
 		"parry applies the parry bonus and then the default's modifier")
-	c.Equal(defenseLevelFromSkill(level, fxp.Two)+fxp.Two, block.SkillLevel(e, nil, false, nil, false),
+	c.Equal(defenseLevelFromSkill(level)+fxp.Two+fxp.Two, block.SkillLevel(e, nil, false, nil, false),
 		"block applies the block bonus and then the default's modifier")
 	c.Equal(parry.SkillLevel(e, nil, false, nil, false), parry.SkillLevelFast(e, nil, false, nil, false),
 		"the fast parry path agrees with the full one")

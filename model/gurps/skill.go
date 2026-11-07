@@ -1419,7 +1419,7 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 			}
 		}
 		if level != fxp.Min {
-			level = defenseLevelFromSkill(level, e.defenseBonus(t))
+			level = e.defenseLevel(t, level)
 		}
 	} else if level = def.SkillLevelFast(e, replacements, true, nil, false); level != fxp.Min {
 		// Take the modifier back out, as we wanted the base, not the final value. An unresolved level stays fxp.Min.

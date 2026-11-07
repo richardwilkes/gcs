@@ -174,7 +174,7 @@ func extraEffortST(st fxp.Int, extraEffortPenalty int) fxp.Int {
 
 // ThrowerStats is what a character sheet supplies about a thrower.
 type ThrowerStats struct {
-	ST               fxp.Int // The ST the distance is worked out from: the lifting ST without its lifting-only bonus.
+	ST               fxp.Int // The ST the distance is worked out from; see gurps.Entity.LiftingStrengthForThrowing.
 	StrikingST       fxp.Int
 	ThrowingIndex    int // The index into ThrowingTiers of the character's level in Throwing.
 	ThrowingArtIndex int // The index into ThrowingArtTiers of the character's level in Throwing Art.
@@ -183,7 +183,7 @@ type ThrowerStats struct {
 // ThrowerStatsFromEntity reads the thrower's numbers from the sheet's character. The entity must not be nil.
 func ThrowerStatsFromEntity(entity *gurps.Entity) ThrowerStats {
 	return ThrowerStats{
-		ST:               (entity.LiftingStrength() - entity.LiftingStrengthBonus).Max(0),
+		ST:               entity.LiftingStrengthForThrowing().Max(0),
 		StrikingST:       entity.StrikingStrength().Max(0),
 		ThrowingIndex:    throwingTierIndex(entity, "Throwing", fxp.One),
 		ThrowingArtIndex: throwingTierIndex(entity, "Throwing Art", 0),

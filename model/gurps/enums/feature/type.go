@@ -17,6 +17,9 @@ var SelectableTypes []Type
 // ContainedWeightReduction.
 var SelectableTypesWithoutContainedWeightReduction []Type
 
+// ThresholdTypes holds the values a pool threshold's features may have; see AllowedInThreshold.
+var ThresholdTypes []Type
+
 func init() {
 	SelectableTypes = make([]Type, 0, len(Types)-1)
 	SelectableTypesWithoutContainedWeightReduction = make([]Type, 0, len(Types)-2)
@@ -28,6 +31,25 @@ func init() {
 		if one != ContainedWeightReduction {
 			SelectableTypesWithoutContainedWeightReduction = append(SelectableTypesWithoutContainedWeightReduction, one)
 		}
+		if one.AllowedInThreshold() {
+			ThresholdTypes = append(ThresholdTypes, one)
+		}
+	}
+}
+
+// AllowedInThreshold returns true if a pool threshold's features may be of this type: the bonuses, the weapon bonuses
+// and the grants. A threshold is no item, so what rests on being one -- cost reductions, selector overrides, title
+// notes, contained weight reductions and the max-level and max-uses bonuses -- is left out.
+func (enum Type) AllowedInThreshold() bool {
+	if enum.IsWeaponBonus() {
+		return true
+	}
+	switch enum {
+	case AttributeBonus, ConditionalModifier, DRBonus, ReactionBonus, SkillBonus, SkillPointBonus, SpellBonus,
+		SpellPointBonus, TraitBonus, GrantTrait, GrantSkill, GrantSpell:
+		return true
+	default:
+		return false
 	}
 }
 

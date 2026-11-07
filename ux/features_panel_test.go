@@ -43,6 +43,13 @@ const testSkullID = "skull"
 // rebuilds run and its edits can be undone. The panel is expanded, as most tests look at its rows; see
 // TestFeaturesPanelStartingState for how it starts out.
 func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) (*featuresPanel, *sentenceUndoHost) {
+	return showFeaturesPanelOf(t, screen, func() *featuresPanel {
+		return newFeaturesPanel(entity, owner, features, forEquipmentModifier)
+	})
+}
+
+// showFeaturesPanelOf is showFeaturesPanel for the panel create returns.
+func showFeaturesPanelOf(t *testing.T, screen *unison.HeadlessScreen, create func() *featuresPanel) (*featuresPanel, *sentenceUndoHost) {
 	var p *featuresPanel
 	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
@@ -54,7 +61,7 @@ func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurp
 			}
 			return true
 		}
-		p = newFeaturesPanel(entity, owner, features, forEquipmentModifier)
+		p = create()
 		// Expanded ahead of showing, so that the window is sized for the rows.
 		if p.collapse.collapsed {
 			p.collapse.toggle()
@@ -1270,6 +1277,93 @@ func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 	screen.Do(func() {
 		c.Equal(feature.ContainedWeightReduction.String(), featuresPopup[featureTypeEntry](c, containerPanel, "0:type").Text())
 		c.Equal(feature.ContainedWeightReduction.String(), featuresPopup[featureTypeEntry](c, itemPanel, "0:type").Text())
+	})
+}
+
+// TestFeaturesPanelThresholdOffers checks that a threshold's features offer only what a threshold can use: the types it
+// may hold, grants among them, no per-level amount nor switch unless a feature already has one, and no selection of
+// the weapon of the item holding a skill bonus.
+func TestFeaturesPanelThresholdOffers(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	plain := gurps.NewAttributeBonus(gurps.StrengthID)
+	leveled := gurps.NewAttributeBonus(gurps.DexterityID)
+	leveled.PerLevel = true
+	leveled.SetSwitchable(true)
+	thresh := &gurps.PoolThreshold{}
+	thresh.Features = gurps.Features{plain, leveled, gurps.NewSkillBonus()}
+	defs := gurps.FactoryAttributeDefs()
+	p := newThresholdFeaturesPanel(entity, thresh, func() *gurps.AttributeDefs { return defs })
+	c.Equal(feature.ThresholdTypes, p.featureTypesList())
+	c.True(p.takesGrants(), "grants can be dropped on it")
+	otherFeatures := gurps.Features{gurps.NewCostReduction(gurps.StrengthID), gurps.NewGrant(feature.GrantTrait)}
+	other := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &otherFeatures, false)
+	_, f := p.foreignFeature(&rowDrag{panel: other.AsPanel(), path: "0"})
+	c.Nil(f, "a cost reduction can't be copied in")
+	_, f = p.foreignFeature(&rowDrag{panel: other.AsPanel(), path: "1"})
+	c.NotNil(f, "but a grant can be")
+
+	for _, one := range []struct {
+		path string
+		on   bool
+	}{
+		{path: "0"},
+		{path: "1", on: true},
+	} {
+		p.setView(rowsView{open: one.path})
+		c.Equal(one.on, p.FindRefKey(one.path+":perlevel") != nil, "row %s offers per level only when on", one.path)
+		c.Equal(one.on, p.FindRefKey(one.path+":switchable"+keyChip) != nil, "row %s shows switchable only when on",
+			one.path)
+		c.Nil(p.FindRefKey(one.path+":add switchable"), "row %s offers no switchable pill", one.path)
+	}
+	p.setView(rowsView{open: "2"})
+	popup := featuresPopup[skillsel.Type](c, p, "2:selection")
+	if popup != nil {
+		for i := range popup.ItemCount() {
+			item, _ := popup.ItemAt(i)
+			c.NotEqual(skillsel.ThisWeapon, item, "a skill bonus can't select this weapon")
+		}
+	}
+}
+
+// TestFeaturesPanelAttributeBonusOperation checks that a threshold's attribute bonus can be switched to a multiplier,
+// as one step to undo, which resets its amount to a factor of 1 that isn't per level, and that an item's attribute
+// bonus offers the switch only when it already multiplies.
+func TestFeaturesPanelAttributeBonusOperation(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.Amount = fxp.Two
+	bonus.PerLevel = true
+	thresh := &gurps.PoolThreshold{}
+	thresh.Features = gurps.Features{bonus}
+	defs := gurps.FactoryAttributeDefs()
+	p, host := showFeaturesPanelOf(t, screen, func() *featuresPanel {
+		return newThresholdFeaturesPanel(entity, thresh, func() *gurps.AttributeDefs { return defs })
+	})
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		if popup := featuresPopup[bool](c, p, "0:operation"); popup != nil {
+			popup.Select(true)
+		}
+	})
+	c.True(bonus.Multiply, "the bonus multiplies")
+	c.Equal(fxp.One, bonus.Amount, "by a factor of 1")
+	c.False(bonus.PerLevel, "which isn't per level")
+	c.Equal("Undo Add or Multiply", host.mgr.UndoTitle())
+
+	multiplier := gurps.NewAttributeBonus(gurps.StrengthID)
+	multiplier.Multiply = true
+	features := gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID), multiplier}
+	screen.Do(func() {
+		item := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &features, false)
+		for i, want := range []bool{false, true} {
+			path := strconv.Itoa(i)
+			item.setView(rowsView{open: path})
+			c.Equal(want, item.FindRefKey(path+":operation") != nil, "an item's row %s offers the switch: %v", path,
+				want)
+		}
 	})
 }
 

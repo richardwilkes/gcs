@@ -80,6 +80,17 @@ func (d *attributeSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
+// String implements Rebuildable, naming the dockable as the editors of the items its thresholds grant name where they
+// were opened from.
+func (d *attributeSettingsDockable) String() string {
+	return d.Title()
+}
+
+// Rebuild implements Rebuildable, rebuilding the content from the model.
+func (d *attributeSettingsDockable) Rebuild(_ bool) {
+	d.sync()
+}
+
 // addToToolbar adds the Add Attribute button after the standard buttons.
 func (d *attributeSettingsDockable) addToToolbar(toolbar *unison.Panel) {
 	toolbar.AddChild(NewToolbarSeparator())
@@ -142,6 +153,7 @@ func (d *attributeSettingsDockable) buildContent() {
 		d.content.AddChild(newAttrDefSettingsPanel(d, def))
 	}
 	d.adjustDeleteButtons()
+	followGrantItemEditors(d)
 }
 
 // adjustDeleteButtons enables the delete button of every attribute panel unless only one attribute remains, in which

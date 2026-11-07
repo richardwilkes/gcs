@@ -837,13 +837,16 @@ func (n *Node[T]) newGrantedMark(c *gurps.CellData, f unison.Font, foreground un
 }
 
 // selectGrantingItem selects the item, the carrier of a grant, in the sheet holding the table, opening the containers
-// holding it and bringing it into view.
+// holding it and bringing it into view. For a pool threshold, it shows the sheet's attribute settings, where the
+// threshold is edited.
 func selectGrantingItem[T gurps.Node[T]](table *unison.Table[*Node[T]], item any) {
 	sheet := unison.Ancestor[*Sheet](liveTable(table))
 	if sheet == nil {
 		return
 	}
 	switch one := item.(type) {
+	case *gurps.PoolThreshold:
+		ShowAttributeSettings(sheet)
 	case *gurps.Trait:
 		selectAndReveal(sheet, sheet.Traits, one)
 	case *gurps.Skill:
