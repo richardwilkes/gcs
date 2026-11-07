@@ -250,9 +250,11 @@ type Entity struct {
 	// at base. It guards the call stack, so discardCaches leaves it alone.
 	baseLevelReads map[LeveledOwner]bool
 	// untouchedByThresholds is set while the bonuses given a pool or the size modifier, which the pools' thresholds
-	// never alter, are totalled, and cleared while those given anything else are within such a total, so that the levels
-	// of the traits that the per-level amounts of the first read leave out the trait bonuses those thresholds hold; see
-	// AttributeBonusFor. It guards the call stack, so discardCaches leaves it alone.
+	// never alter, are totalled, and while the scripts giving a pool its base and its thresholds run, so that the
+	// levels of the traits that anything found meanwhile reads, such as the per-level amounts of those bonuses or of
+	// the bonuses of the attributes those scripts read, leave out the trait bonuses those thresholds hold; see
+	// untouchedByThresholdsWhile, thresholdTraitBonusesLeftOut and TraitBonusFor. It guards the call stack, so
+	// discardCaches leaves it alone.
 	untouchedByThresholds bool
 }
 
@@ -1679,8 +1681,9 @@ func (e *Entity) strengthFor(attrID string, limitation stlimit.Option, amounts b
 // current value of ST or, before it takes them, of the attribute standing in for ST under the limitation: the ST
 // bonuses under the limitation are added and the sum floored, and then what the current thresholds and multipliers
 // given ST under it do is applied; see currentAdjustment. With amounts unset, the multipliers alone are applied. With
-// forPrereqs set, those bonuses are the ones the prerequisites being judged see (see JudgingPrereqsOf), and in a
-// computation at base, the ones it sees (see atBaseWhile).
+// forPrereqs set, those bonuses are the ones the prerequisites being judged see (see JudgingPrereqsOf), in a
+// computation at base, the ones it sees (see atBaseWhile), and while a pool's base or thresholds are found, those
+// without what the trait bonuses those thresholds hold add (see thresholdTraitBonusesLeftOut).
 func (e *Entity) limitedStrength(value fxp.Int, limitation stlimit.Option, forPrereqs, amounts bool) fxp.Int {
 	var adj currentAdjustment
 	if forPrereqs {
@@ -1692,7 +1695,7 @@ func (e *Entity) limitedStrength(value fxp.Int, limitation stlimit.Option, forPr
 	switch {
 	case !amounts:
 		adj.bonus = 0
-	case forPrereqs || e.atBase > 0:
+	case forPrereqs || e.atBase > 0 || e.thresholdTraitBonusesLeftOut():
 		bonus = e.AttributeBonusFor(StrengthID, limitation, nil).Floor()
 	case limitation == stlimit.StrikingOnly:
 		bonus = e.StrikingStrengthBonus
@@ -1796,15 +1799,12 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 // maximum, as the prerequisites being judged see them, if any; see bonusFeatures and bonusExcluded. Multipliers and the
 // bonuses of the pools' thresholds alter only its current value and are left out; see currentAdjustmentFor. For a pool
 // or the size modifier, which those thresholds never alter, a per-level amount reads the level of a trait without the
-// trait bonuses they hold, so that a pool's threshold never feeds back into the pool; see TraitBonusFor.
+// trait bonuses they hold, as does everything a pool's base and thresholds read, so that a pool's threshold never feeds
+// back into the pool; see untouchedByThresholdsWhile.
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
-	def := e.ResolveAttributeDef(attributeID)
-	untouched := attributeID == SizeModifierID ||
-		(def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef))
-	if untouched != e.untouchedByThresholds {
-		saved := e.untouchedByThresholds
-		e.untouchedByThresholds = untouched
-		defer func() { e.untouchedByThresholds = saved }()
+	if def := e.ResolveAttributeDef(attributeID); attributeID == SizeModifierID ||
+		(def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef)) {
+		defer e.untouchedByThresholdsWhile()()
 	}
 	var total fxp.Int
 	for _, one := range e.bonusFeatures().attributeBonuses {
@@ -2034,7 +2034,8 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 }
 
 // TraitBonusFor returns the total bonus for the matching trait bonuses, leaving out those the pools' thresholds hold
-// while the bonuses given a pool or the size modifier are totalled; see AttributeBonusFor.
+// while the bonuses given a pool or the size modifier are totalled, or a pool's base or thresholds are found; see
+// untouchedByThresholds.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	return sumBonuses(e, e.bonusFeatures().traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
 		return (!e.untouchedByThresholds || !ownedByThreshold(bonus.Owner())) &&
@@ -2312,10 +2313,11 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 }
 
 // EncumbranceLevel returns the current Encumbrance level. While the prerequisites of an item carrying a grant are
-// judged, it is the level they see, from the Basic Lift they see (see BasicLift), and at base, the level from the
-// Basic Lift there, neither of which is taken from the cache or kept in it; see atBaseWhile.
+// judged, it is the level they see, from the Basic Lift they see (see BasicLift), at base, the level from the Basic
+// Lift there (see atBaseWhile), and while a pool's base or thresholds are found, the level from the Basic Lift they
+// see (see thresholdTraitBonusesLeftOut), none of which is taken from the cache or kept in it.
 func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
-	if e.carriesGrant(e.judging) || e.atBase > 0 {
+	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
 		return e.encumbranceLevelCarrying(e.WeightCarried(forSkills))
 	}
 	if forSkills {
@@ -2354,13 +2356,14 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 // weight of every carried item and the encumbrance block asks for it whenever it is synced, but like the encumbrance
 // level derived from it, it is neither taken from the cache nor kept in it while the prerequisites of an item carrying
 // a grant are judged, as a weight script run for a script prerequisite then sees the sheet as those prerequisites do
-// (see resolveScript), nor at base, as a weight script then sees the sheet there (see atBaseWhile).
+// (see resolveScript), nor at base, as a weight script then sees the sheet there (see atBaseWhile), nor while a pool's
+// base or thresholds are found, as a weight script then sees the sheet as they do (see thresholdTraitBonusesLeftOut).
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	i := 0
 	if forSkills {
 		i = 1
 	}
-	afresh := e.carriesGrant(e.judging) || e.atBase > 0
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut()
 	if !afresh && e.weightCarriedCached[i] {
 		return e.weightCarriedCache[i]
 	}
@@ -2420,10 +2423,11 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 
 // BasicLift returns the entity's Basic Lift. While the prerequisites of an item carrying a grant are judged, it is the
 // Basic Lift they see, from the lifting ST without the bonuses from what the grant put on the sheet (see
-// JudgingPrereqsOf), and at base, the one from the lifting ST there (see atBaseWhile), neither of which is taken from
-// the cache or kept in it.
+// JudgingPrereqsOf), at base, the one from the lifting ST there (see atBaseWhile), and while a pool's base or
+// thresholds are found, the one from the lifting ST they see (see thresholdTraitBonusesLeftOut), none of which is
+// taken from the cache or kept in it.
 func (e *Entity) BasicLift() fxp.Weight {
-	if e.carriesGrant(e.judging) || e.atBase > 0 {
+	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
 		return e.BasicLiftForST(e.LiftingStrength())
 	}
 	if e.basicLiftCache != -1 {
@@ -2504,9 +2508,11 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	}
 	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
 	// it leaves out what the attribute has at any other time (see attributeForPrereqs and ScriptPrereq.Evaluate), nor
-	// is one read at base, which leaves out what alters its current value alone (see atBaseWhile).
+	// is one read at base, which leaves out what alters its current value alone (see atBaseWhile), nor one read while
+	// a pool's base or thresholds are found without the trait bonuses those thresholds hold (see
+	// thresholdTraitBonusesLeftOut).
 	forPrereqs := e.scriptsForPrereqs > 0
-	cacheable := !forPrereqs && e.atBase == 0
+	cacheable := !forPrereqs && e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()
 	if v, ok := e.variableCache[variableName]; ok && cacheable {
 		return v
 	}

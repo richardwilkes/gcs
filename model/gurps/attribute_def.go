@@ -216,10 +216,14 @@ func (a *AttributeDef) AllowsDecimal() bool {
 	return a.Type == attribute.Decimal || a.Type == attribute.DecimalRef
 }
 
-// BaseValue returns the resolved base value.
+// BaseValue returns the resolved base value. That of a pool is found with the levels of the traits leaving out the
+// trait bonuses the pools' thresholds hold, which never alter a pool; see Entity.untouchedByThresholds.
 func (a *AttributeDef) BaseValue(attr *Attribute) fxp.Int {
 	if a.IsSeparator() {
 		return 0
+	}
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
+		defer attr.Entity.untouchedByThresholdsWhile()()
 	}
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), a.Base)
 }

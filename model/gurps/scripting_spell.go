@@ -67,14 +67,15 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 // scriptSpellLevel returns the spell's level for a script, recalculated so that it is current. While the script runs
 // for the prerequisites of an item carrying grants, the level is computed as those prerequisites see it, without what
 // the grants gave the spell, and is not recorded, since the sheet has the level with them; see Spell.levelForPrereqsOf.
-// One computed at base, which leaves out what alters current values alone, is not recorded either; see
-// Entity.atBaseWhile.
+// One computed at base, which leaves out what alters current values alone, is not recorded either (see
+// Entity.atBaseWhile), nor is one computed while a pool's base or thresholds are found without the trait bonuses those
+// thresholds hold; see Entity.thresholdTraitBonusesLeftOut.
 func scriptSpellLevel(spell *Spell) Level {
 	if entity := EntityFromNode(spell); entity != nil {
 		if entity.carriesGrant(entity.judging) {
 			return spell.calculateLevelExcept(entity.judging, spell.adjustedPointsExcept(entity.judging, nil))
 		}
-		if entity.atBase > 0 {
+		if entity.atBase > 0 || entity.thresholdTraitBonusesLeftOut() {
 			return spell.CalculateLevel()
 		}
 	}

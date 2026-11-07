@@ -116,10 +116,12 @@ func (a *Attribute) Maximum() fxp.Int {
 }
 
 // bonus returns Bonus or, in a computation at base, the total of the bonuses it sees given the attribute, which leaves
-// out what the pools' thresholds put in effect; see Entity.atBaseWhile.
+// out what the pools' thresholds put in effect (see Entity.atBaseWhile), and, while a pool's base or thresholds are
+// found, the total without what the trait bonuses those thresholds hold add to it; see
+// Entity.thresholdTraitBonusesLeftOut.
 func (a *Attribute) bonus() fxp.Int {
 	e := a.Entity
-	if e == nil || e.atBase == 0 {
+	if e == nil || (e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()) {
 		return a.Bonus
 	}
 	bonus := e.AttributeBonusFor(a.AttrID, stlimit.None, nil)

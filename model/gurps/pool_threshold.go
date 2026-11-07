@@ -222,8 +222,10 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 	return &clone
 }
 
-// Threshold returns the threshold value for the given attribute.
+// Threshold returns the threshold value for the given attribute, found with the levels of the traits leaving out the
+// trait bonuses the pools' thresholds hold, as the pool's base is; see AttributeDef.BaseValue.
 func (p *PoolThreshold) Threshold(attr *Attribute) fxp.Int {
+	defer attr.Entity.untouchedByThresholdsWhile()()
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), p.Value)
 }
 

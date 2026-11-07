@@ -109,11 +109,12 @@ func (e *Entity) forEachThresholdFeatureList(fn func(t *PoolThreshold, def *Attr
 // with what the previous pass left. The caches are discarded before the thresholds are found and once the adjustments
 // are in place, since what the scripts cached was computed without them. Found outside a recalculation, a pool whose
 // thresholds alter what it reads may be found at another threshold. A trait bonus a threshold holds raises the level
-// the per-level bonuses of the trait read, whenever they are read, save those given a pool or the size modifier (see
-// AttributeBonusFor), so the totals totalBonuses recorded are recorded again once one is collected. The parry and
-// block tooltips are built here, so that they name these bonuses too. A grant a threshold holds is collected here as
-// well, and so is in effect while the pool is at the threshold; the rows it puts on the sheet are there whether or not
-// it is, as for any grant (see forEachGrant).
+// the per-level bonuses of the trait read, whenever they are read, save while the bonuses given a pool or the size
+// modifier are totalled or a pool's base or thresholds are found (see untouchedByThresholds), so the totals
+// totalBonuses recorded are recorded again once one is collected. The parry and block tooltips are built here, so that
+// they name these bonuses too. A grant a threshold holds is collected here as well, and so is in effect while the pool
+// is at the threshold; the rows it puts on the sheet are there whether or not it is, as for any grant (see
+// forEachGrant).
 func (e *Entity) processThresholdFeatures() {
 	if e.recordCurrentAdjustments() {
 		e.discardCaches(true)
@@ -283,6 +284,30 @@ func (e *Entity) rowsGrantedByThresholdsAlone() map[grantHolder]bool {
 func ownedByThreshold(owner fmt.Stringer) bool {
 	_, ok := owner.(*PoolThreshold)
 	return ok
+}
+
+// untouchedByThresholdsWhile enters the view in which the levels of the traits leave out the trait bonuses the pools'
+// thresholds hold, unless already in it, and returns what leaves it; see Entity.untouchedByThresholds. e may be nil.
+func (e *Entity) untouchedByThresholdsWhile() func() {
+	if e == nil || e.untouchedByThresholds {
+		return func() {}
+	}
+	e.untouchedByThresholds = true
+	return func() { e.untouchedByThresholds = false }
+}
+
+// thresholdTraitBonusesLeftOut returns true while, in the view untouchedByThresholdsWhile enters, the lists the bonuses
+// are read from (see bonusFeatures) hold a trait bonus a pool's threshold holds, which that view leaves out and a
+// computation at base never sees, so that what is found in it may differ from what the sheet has. The bonuses of the
+// attributes and of the limited STs are then totalled afresh, the results of the scripts and the level caps and
+// defaults resolved are kept apart from those found otherwise, the variables, Basic Lift, encumbrance, carried weight
+// and weapons are neither taken from the caches nor kept in them, and the levels of the skills and spells that scripts
+// read are not recorded. e may be nil.
+func (e *Entity) thresholdTraitBonusesLeftOut() bool {
+	return e != nil && e.untouchedByThresholds && e.atBase == 0 &&
+		slices.ContainsFunc(e.bonusFeatures().traitBonuses, func(bonus *TraitBonus) bool {
+			return ownedByThreshold(bonus.Owner())
+		})
 }
 
 // featuresWithout returns a copy of the feature lists without the features whose owners dropped reports. Each list is

@@ -82,7 +82,8 @@ func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 // the pool is at it, naming the threshold and its pool as their source, and not otherwise, save one the threshold
 // ignores, such as a reaction per level, which never does. A trait bonus raises the level that the trait's per-level
 // attribute bonus reads, which the attribute's value follows, save that of a pool or the size modifier, which a
-// threshold never alters, so that the pool stays at the threshold whose features apply.
+// threshold never alters, even through an attribute a pool's base reads, so that the pool stays at the threshold whose
+// features apply.
 func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -120,6 +121,7 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c.Equal(fxp.Four, lifting.CurrentLevel(), "the trait bonus takes effect while Tired")
 	c.Equal(fxp.FromInteger(14), st.Maximum(), "ST follows the level the trait bonus raises")
 	c.Equal(fxp.Twelve, fp.Maximum(), "FP doesn't follow it")
+	c.Equal(fxp.Twelve, e.Attributes.Maximum(HitPointsID), "nor does HP, whose base reads ST")
 	c.Equal("Tired", fp.CurrentThreshold().State, "so FP stays at the threshold whose features apply")
 	c.Equal(2, e.Profile.AdjustedSizeModifier(), "nor does the size modifier")
 	c.Equal(fxp.FromInteger(14), st.Current())

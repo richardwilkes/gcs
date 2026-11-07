@@ -1040,11 +1040,11 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged, the
 // edits previewed, or the computation at base runs, apart from those found otherwise, and reused only for the same
 // skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a pool's
-// threshold is found for those prerequisites (see judgedDefaultKey), so that the answers are those of picking afresh
-// every time, while a pick beneath a skill weighing several defaults is not made again for each of them, and so on down
-// every chain. The picks are still as many as the distinct excludes a skill is reached with, which double with each
-// member of a set of skills with points that default to one another, so judging stays fast only while such a set stays
-// small.
+// threshold is found for those prerequisites, and the trait bonuses they hold while a pool's base or thresholds are
+// found (see judgedDefaultKey), so that the answers are those of picking afresh every time, while a pick beneath a
+// skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
+// as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
+// points that default to one another, so judging stays fast only while such a set stays small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
 	atBase := e != nil && e.atBase > 0
@@ -1095,13 +1095,15 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 }
 
 // judgedDefaultKey identifies the default Skill.defaultExcept picks for a skill with the levels taken with a set of
-// excludes, which it holds as their names sorted and joined, and whether it is picked while a pool's threshold is found
-// for the prerequisites being judged, which see the sheet without what the thresholds do meanwhile; see
-// Attribute.CurrentThreshold.
+// excludes, which it holds as their names sorted and joined, whether it is picked while a pool's threshold is found
+// for the prerequisites being judged, which see the sheet without what the thresholds do meanwhile (see
+// Attribute.CurrentThreshold), and whether it is picked while a pool's base or thresholds are found without the trait
+// bonuses those thresholds hold (see Entity.thresholdTraitBonusesLeftOut).
 type judgedDefaultKey struct {
 	skill     *Skill
 	excludes  string
 	searching bool
+	untouched bool
 }
 
 // baseDefaultKey identifies the default Skill.defaultExcept picks for a skill at base, which rests as well on the item
@@ -1115,7 +1117,12 @@ type baseDefaultKey struct {
 // the sheet is seen now.
 func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
 	e := EntityFromNode(s)
-	return judgedDefaultKey{skill: s, excludes: excludesKey(excludes), searching: e != nil && e.judgedThresholdSearches > 0}
+	return judgedDefaultKey{
+		skill:     s,
+		excludes:  excludesKey(excludes),
+		searching: e != nil && e.judgedThresholdSearches > 0,
+		untouched: e.thresholdTraitBonusesLeftOut(),
+	}
 }
 
 // excludesKey returns the excludes as a string that is the same for any two sets of the same names: the names sorted

@@ -23,6 +23,7 @@ import (
 type undoableFieldSelf interface {
 	unison.Paneler
 	Syncer
+	SetText(text string)
 	gainedFocus()
 	lostFocus()
 	setWithoutUndo(state *unison.FieldState, focus bool)
@@ -139,13 +140,18 @@ func (f *undoableField[T]) withoutUndo() *unison.Field {
 	return f.Field
 }
 
-// setTextAsEdit gives the field the text, as SetFieldValue does, but records the change under undoID rather than under
-// the field's own undo ID, which unison.Field.SetText leaves as it is, so that the undo manager merges the change into
-// the edit before it only when that edit was recorded under the same ID.
+// setTextAsEdit gives the field the text through the embedding field's SetText, marking it for layout as SetFieldValue
+// does if its text changes, but records the change under undoID rather than under the field's own undo ID, which
+// SetText leaves as it is, so that the undo manager merges the change into the edit before it only when that edit was
+// recorded under the same ID.
 func (f *undoableField[T]) setTextAsEdit(text string, undoID int64) {
 	f.editUndoID = undoID
 	defer func() { f.editUndoID = unison.NoUndoID }()
-	SetFieldValue(f.Field, text)
+	before := f.Text()
+	f.self.SetText(text)
+	if f.Text() != before {
+		MarkForLayoutWithinDockable(f)
+	}
 }
 
 func (f *undoableField[T]) modified(before, after *unison.FieldState) {
