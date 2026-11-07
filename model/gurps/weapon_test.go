@@ -387,27 +387,30 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 // the parry and block calculations that are the same for both.
 type defenseUnderTest struct {
 	name          string
-	ownID         string // the default type that resolves directly to this defense
-	otherID       string // the default type of the other defense
-	distinctBonus int    // the bonus newDefenseTestWeaponWithBonuses(c, 2, 1) gives this defense
+	ownID         string       // the default type that resolves directly to this defense
+	otherID       string       // the default type of the other defense
+	distinctBonus int          // the bonus newDefenseTestWeaponWithBonuses(c, 2, 1) gives this defense
+	bonusType     feature.Type // the type of a weapon bonus to this defense
 	resolve       func(w *gurps.Weapon) string
 	setModifier   func(w *gurps.Weapon, modifier fxp.Int)
 }
 
 var (
-	parryUnderTest = defenseUnderTest{
+	parryUnderTest = &defenseUnderTest{
 		name:          "parry",
 		ownID:         gurps.ParryID,
 		otherID:       gurps.BlockID,
 		distinctBonus: 2,
+		bonusType:     feature.WeaponParryBonus,
 		resolve:       func(w *gurps.Weapon) string { return w.ResolvedParry(nil).String() },
 		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Parry.Modifier = modifier },
 	}
-	blockUnderTest = defenseUnderTest{
+	blockUnderTest = &defenseUnderTest{
 		name:          "block",
 		ownID:         gurps.BlockID,
 		otherID:       gurps.ParryID,
 		distinctBonus: 1,
+		bonusType:     feature.WeaponBlockBonus,
 		resolve:       func(w *gurps.Weapon) string { return w.ResolvedBlock(nil).String() },
 		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Block.Modifier = modifier },
 	}
@@ -415,7 +418,7 @@ var (
 
 // runDefenseResolveTests runs the resolution regression tests shared by the parry and block calculations against the
 // given defense.
-func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
+func runDefenseResolveTests(t *testing.T, d *defenseUnderTest) {
 	t.Helper()
 	allDefaultTypes := []string{gurps.SkillID, d.ownID, d.otherID}
 
@@ -543,6 +546,41 @@ func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
 			c.Equal(expected, d.resolve(w), "%q default uses the %s bonus", defaultType, d.name)
 		}
+	})
+
+	// A multiplier to the defense applies after every amount added to it, the weapon's own modifier, the default's
+	// modifier and the weapon bonuses included, as AttributeBonus.Multiply has it.
+	t.Run("MultiplierAfterWeaponAmounts", func(t *testing.T) {
+		c := check.New(t)
+		w := newDefenseTestWeapon(c)
+		e := w.Entity()
+		halved := gurps.NewTrait(e, nil, false)
+		halved.Name = "Halved Defenses"
+		multiplier := gurps.NewAttributeBonus(d.ownID)
+		multiplier.Multiply = true
+		multiplier.Amount = fxp.Half
+		halved.Features = gurps.Features{multiplier}
+		e.Traits = append(e.Traits, halved)
+		owner, ok := w.Owner.(*gurps.Trait)
+		c.True(ok, "the test weapon should be owned by a trait")
+		bonus := gurps.NewWeaponBonus(d.bonusType)
+		bonus.SelectionType = wsel.ThisWeapon
+		bonus.Amount = fxp.One
+		owner.Features = append(owner.Features, bonus)
+		d.setModifier(w, fxp.Two)
+		e.Recalculate()
+
+		// (14/2 + 3 + 1 + 2 + 1) × 0.5, rounded, not (14/2 + 3 + 1) × 0.5, rounded, + 2 + 1.
+		for _, defaultType := range allDefaultTypes {
+			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
+			c.Equal("7", d.resolve(w), "%q default", defaultType)
+		}
+
+		// The default's modifier is one of those amounts too: (14/2 + 3 + 1 + 2 + 1 - 2) × 0.5, rounded.
+		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
+		w.Defaults[0].Modifier = -fxp.Two
+		e.DiscardCaches()
+		c.Equal("6", d.resolve(w), "%s-type default with a modifier", d.name)
 	})
 }
 

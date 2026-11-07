@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -79,11 +80,18 @@ func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 
 // TestEntityThresholdFeaturesTakeEffect verifies that the other kinds of feature a threshold holds take effect while
 // the pool is at it, naming the threshold and its pool as their source, and not otherwise, save one the threshold
-// ignores, such as a reaction per level, which never does.
+// ignores, such as a reaction per level, which never does. A trait bonus raises the level that the trait's per-level
+// attribute bonus reads, which the attribute's value follows.
 func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	brawling := addSkill(e, "Brawling", fxp.One)
+	stPerLevel := newAttrBonus(StrengthID, fxp.One)
+	stPerLevel.PerLevel = true
+	lifting := addTraitWithFeatures(e, "Lifting", stPerLevel)
+	lifting.CanLevel = true
+	lifting.Levels = fxp.Two
+	st := e.Attributes.Set[StrengthID]
 	tired := poolThreshold(e, FatiguePointsID, "Tired")
 	c.NotNil(tired)
 	reaction := NewReactionBonus()
@@ -93,14 +101,21 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	perLevel.Situation = "from strangers"
 	perLevel.Amount = -fxp.One
 	perLevel.PerLevel = true
-	tired.Features = append(tired.Features, newSkillBonusTo("Brawling", fxp.Two), reaction, perLevel)
+	tired.Features = append(tired.Features, newSkillBonusTo("Brawling", fxp.Two), reaction, perLevel,
+		newTraitBonusTo("Lifting", fxp.Two))
 	e.Recalculate()
 	level := brawling.CalculateLevel(nil).Level
 	c.Equal(0, len(e.Reactions()), "no reaction while Tiring")
+	c.Equal(fxp.Twelve, st.Maximum(), "ST from Lifting 2 while Tiring")
 
 	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
 	e.Recalculate()
 	c.Equal(level+fxp.Two, brawling.CalculateLevel(nil).Level, "the skill bonus takes effect while Tired")
+	c.Equal(fxp.Four, lifting.CurrentLevel(), "the trait bonus takes effect while Tired")
+	c.Equal(fxp.FromInteger(14), st.Maximum(), "ST follows the level the trait bonus raises")
+	c.Equal(fxp.FromInteger(14), st.Current())
+	c.Equal("Includes modifiers from:\nLifting 4 [+4 (+1 per level)]\nFor lifting only:\nTired (FP) [×0.5]",
+		st.BonusTooltip())
 	reactions := e.Reactions()
 	c.Equal(1, len(reactions), "the reaction takes effect while Tired")
 	c.Equal("from everyone", reactions[0].From)
@@ -129,4 +144,43 @@ func TestEntityMoveBonus(t *testing.T) {
 	c.Equal(fxp.Int(0), e.MoveBonus, "a move attribute carries the bonus itself")
 	c.Equal(fxp.Six, e.Attributes.Maximum(MoveID))
 	c.Equal(6, e.Move(encumbrance.No))
+}
+
+// TestEntityPoolThresholdSeesItemMultipliers verifies that the sheet, and the prerequisites of an item carrying a
+// grant, find the threshold of a pool whose base reads an attribute's current value with the multipliers the items give
+// that attribute in place, as the pool's state and value are shown, so that the features applied are those of the
+// threshold shown.
+func TestEntityPoolThresholdSeesItemMultipliers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTraitWithFeatures(e, "Hardy", newMultiplier(HealthID, fxp.Two))
+	training := addTraitWithFeatures(e, "Training", newTraitGrant(newGrantLeveledTrait("Skilled", fxp.One), fxp.One,
+		grantmerge.Ignore))
+	training.Prereq = NewPrereqList()
+	dx := NewAttributePrereq(e)
+	dx.Parent = training.Prereq
+	dx.Which = DexterityID
+	training.Prereq.Prereqs = append(training.Prereq.Prereqs, dx)
+	weak := NewPoolThreshold()
+	weak.State = "Weak"
+	weak.Value = "5"
+	weak.Features = Features{newAttrBonus(DexterityID, -fxp.Three)}
+	ok := NewPoolThreshold()
+	ok.State = "OK"
+	ok.Value = "$stam"
+	e.SheetSettings.Attributes.Set["stam"] = &AttributeDef{
+		DefID:      "stam",
+		Type:       attribute.Pool,
+		Name:       "Stam",
+		Base:       "$ht.current",
+		Thresholds: []*PoolThreshold{weak, ok},
+	}
+	stam := NewAttribute(e, "stam", len(e.Attributes.Set))
+	stam.Damage = fxp.Seven
+	e.Attributes.Set["stam"] = stam
+	e.Recalculate()
+	c.Equal(fxp.Thirteen, stam.Current(), "Stam rests on HT's current value of 20")
+	c.Equal("OK", stam.CurrentThreshold().State)
+	c.Equal(fxp.Ten, e.Attributes.Current(DexterityID), "Weak's penalty is not applied while the pool shows OK")
+	c.Equal("", training.UnsatisfiedReason, "nor while the prerequisites see the pool")
 }

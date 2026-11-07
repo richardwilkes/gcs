@@ -95,7 +95,8 @@ func updateSkillLevelForScript(entity *Entity, skill *Skill) Level {
 // scriptSkillLevel returns the skill's level for a script, recalculated so that it is current. While the script runs
 // for the prerequisites of an item carrying grants, the level is computed as those prerequisites see it, without what
 // the grants gave the skill, and is not recorded, since the sheet has the level with them; see Skill.levelForPrereqsOf.
-// Nor is one computed at base, which leaves out what alters current values alone; see Entity.atBaseWhile.
+// One computed at base, which leaves out what alters current values alone, is not recorded either; see
+// Entity.atBaseWhile.
 func scriptSkillLevel(entity *Entity, skill *Skill) Level {
 	if entity.carriesGrant(entity.judging) {
 		return skill.calculateLevelExcept(entity.judging, nil)

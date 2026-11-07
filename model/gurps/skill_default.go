@@ -588,16 +588,17 @@ func (s *SkillDefault) asDefense(defenseID string) *SkillDefault {
 }
 
 // defenseLevelFast returns the defense level for a defense-type default (one whose Type() is ParryID or BlockID),
-// folding skillAdj into the named skill's level before the halving that turns it into a defense level, to which the
-// entity's defense adjustment is then applied (see Entity.defenseLevel). A caller holding a skill-level adjustment --
-// a minimum-ST penalty or a bonus aimed at this weapon's skill -- cannot simply add it to SkillLevelFast()'s result,
-// since at defense scale it would count for twice what it does on the skill-type default path.
-func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]string, skillAdj fxp.Int) fxp.Int {
+// folding skillAdj into the named skill's level before the halving that turns it into a defense level, to which adj,
+// what the entity does to the defense, is then applied (see Entity.defenseAdjustment). A caller holding a skill-level
+// adjustment -- a minimum-ST penalty or a bonus aimed at this weapon's skill -- cannot simply add it to
+// SkillLevelFast()'s result, since at defense scale it would count for twice what it does on the skill-type default
+// path.
+func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]string, skillAdj fxp.Int, adj currentAdjustment) fxp.Int {
 	best := s.bestFast(entity, replacements, false, nil)
 	if best == fxp.Min {
 		return fxp.Min
 	}
-	return s.finalLevel(entity.defenseLevel(s.Type(), best+skillAdj))
+	return s.finalLevel(adj.apply(defenseLevelFromSkill(best+skillAdj), true))
 }
 
 // defenseLevelFromSkill converts a skill level into the level of the parry or block that skill provides before the

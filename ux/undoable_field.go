@@ -108,7 +108,6 @@ func (f *undoableField[T]) gainedFocus() {
 // disabled: that field was only being read, and reformatting could clamp a value nobody edited.
 func (f *undoableField[T]) lostFocus() {
 	f.hasFocus = false
-	f.useGet = true
 	if !f.focusedForReading || f.Enabled() {
 		f.SetText(f.format(f.parse(f.Text())))
 	}

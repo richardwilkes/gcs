@@ -100,12 +100,21 @@ func (d *undoableSettingsDockable[T]) addToStartToolbar(toolbar *unison.Panel) {
 
 	addHelpButton(toolbar, d.spec.helpLink)
 
+	// The editors that close with the dockable, such as those open on the items pool thresholds grant, edit objects
+	// within the pending model, so both buttons close them first and leave the dockable as it is if one of them stays
+	// open: Apply asks about their changes before applying the model, and Discard asks whether to discard them.
 	d.applyButton, d.cancelButton = newApplyCancelButtons(toolbar, false,
 		func() bool {
+			if !CloseGroup(d) {
+				return false
+			}
 			d.spec.apply()
 			return true
 		},
 		func() {
+			if !closeSubEditorsForDiscard(d) {
+				return
+			}
 			d.promptForSave = false
 			d.AttemptClose()
 		})

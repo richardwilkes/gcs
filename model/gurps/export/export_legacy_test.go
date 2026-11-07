@@ -468,15 +468,26 @@ func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
 }
 
-// TestLegacyExportLeavesAMissingAttributeEmpty verifies that the fixed attribute keys, which name attributes of the
-// standard set, emit nothing for a sheet whose attribute set lacks the attribute rather than an out-of-range sentinel.
-func TestLegacyExportLeavesAMissingAttributeEmpty(t *testing.T) {
+// TestLegacyExportLeavesAMissingAttributeOrThresholdEmpty verifies that the fixed attribute and pool threshold keys,
+// which name attributes and threshold states of the standard set, emit nothing for a sheet whose attribute set lacks
+// them rather than an out-of-range sentinel.
+func TestLegacyExportLeavesAMissingAttributeOrThresholdEmpty(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
 	const tmpl = "@ST|@DX|@IQ|@HT|@FP|@BASIC_FP|@HP|@BASIC_HP|@WILL|@FRIGHT_CHECK|@BASIC_SPEED|@BASIC_MOVE|@PERCEPTION|" +
 		"@VISION|@HEARING|@TASTE_SMELL|@TOUCH"
+	const thresholdTmpl = "@TIRED|@FP_COLLAPSE|@UNCONSCIOUS|@REELING|@HP_COLLAPSE|@DEATH_CHECK_1|@DEATH_CHECK_2|" +
+		"@DEATH_CHECK_3|@DEATH_CHECK_4|@DEAD"
 	c.Equal("10|10|10|10|10|10|10|10|10|10|5|5|10|10|10|10|10", runLegacyExport(t, c, e, tmpl))
+	c.Equal("3|0|-10|3|0|-10|-20|-30|-40|-50", runLegacyExport(t, c, e, thresholdTmpl))
+	for _, id := range []string{fpAttrID, gurps.HitPointsID} {
+		for _, one := range e.SheetSettings.Attributes.Set[id].Thresholds {
+			one.State = "Renamed " + one.State
+		}
+	}
+	c.Equal("|||||||||", runLegacyExport(t, c, e, thresholdTmpl))
 	clear(e.SheetSettings.Attributes.Set)
 	clear(e.Attributes.Set)
 	c.Equal("||||||||||||||||", runLegacyExport(t, c, e, tmpl))
+	c.Equal("|||||||||", runLegacyExport(t, c, e, thresholdTmpl))
 }

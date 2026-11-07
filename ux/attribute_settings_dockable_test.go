@@ -340,44 +340,53 @@ func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
 }
 
 // TestAttributeTypeChangeIsUndoable verifies that changing an attribute's type through its popup is a single undo edit
-// of the whole set of definitions, so that undoing a change to a separator brings back what the change cleared.
+// of the whole set of definitions, so that undoing a change from a pool to a separator or to another type without
+// thresholds brings back what the change cleared: the thresholds, and for a separator the fields it has no use for.
 func TestAttributeTypeChangeIsUndoable(t *testing.T) {
-	c := check.New(t)
-	d := newTestAttributeSettingsDockable()
-	initTestSettingsContent(&d.undoableSettingsDockable)
-	fp := d.model.Set[gurps.FatiguePointsID]
-	c.Equal(attribute.Pool, fp.Type)
-	c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
-	before := fp.Clone()
-	beforeHash := gurps.Hash64(d.model)
-	rowsBefore := len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel()))
+	for _, attrType := range []attribute.Type{attribute.PoolSeparator, attribute.Integer} {
+		t.Run(attrType.Key(), func(t *testing.T) {
+			c := check.New(t)
+			d := newTestAttributeSettingsDockable()
+			initTestSettingsContent(&d.undoableSettingsDockable)
+			fp := d.model.Set[gurps.FatiguePointsID]
+			c.Equal(attribute.Pool, fp.Type)
+			c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
+			before := fp.Clone()
+			beforeHash := gurps.Hash64(d.model)
+			rowsBefore := len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel()))
 
-	widgetFor[*Popup[attribute.Type]](t, d, fp.KeyPrefix+"type").Select(attribute.PoolSeparator)
-	fp = d.model.Set[gurps.FatiguePointsID]
-	c.Equal(attribute.PoolSeparator, fp.Type, "the popup writes the model")
-	c.Equal("", fp.Base, "a separator has no base")
-	c.Nil(fp.Thresholds, "a separator has no thresholds")
-	c.Equal("Undo Attribute Type", d.undoMgr.UndoTitle())
+			widgetFor[*Popup[attribute.Type]](t, d, fp.KeyPrefix+"type").Select(attrType)
+			fp = d.model.Set[gurps.FatiguePointsID]
+			c.Equal(attrType, fp.Type, "the popup writes the model")
+			if fp.IsSeparator() {
+				c.Equal("", fp.Base, "a separator has no base")
+			} else {
+				c.Equal(before.Base, fp.Base, "only a separator loses its base")
+			}
+			c.Nil(fp.Thresholds, "a type other than a pool has no thresholds")
+			c.Equal("Undo Attribute Type", d.undoMgr.UndoTitle())
 
-	d.undoMgr.Undo()
-	fp = d.model.Set[gurps.FatiguePointsID]
-	c.Equal(attribute.Pool, fp.Type, "undo restores the type")
-	c.Equal(before.FullName, fp.FullName, "undo restores the full name")
-	c.Equal(before.Base, fp.Base, "undo restores the base")
-	c.Equal(before.CostPerPoint, fp.CostPerPoint, "undo restores the cost per point")
-	c.Equal(thresholdStates(before), thresholdStates(fp), "undo restores the thresholds")
-	c.Equal(beforeHash, gurps.Hash64(d.model), "undo restores the definitions exactly")
-	c.False(d.undoMgr.CanUndo(), "the type change is a single edit")
-	c.Equal(rowsBefore, len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())),
-		"the panels are rebuilt from the restored definitions")
+			d.undoMgr.Undo()
+			fp = d.model.Set[gurps.FatiguePointsID]
+			c.Equal(attribute.Pool, fp.Type, "undo restores the type")
+			c.Equal(before.FullName, fp.FullName, "undo restores the full name")
+			c.Equal(before.Base, fp.Base, "undo restores the base")
+			c.Equal(before.CostPerPoint, fp.CostPerPoint, "undo restores the cost per point")
+			c.Equal(thresholdStates(before), thresholdStates(fp), "undo restores the thresholds")
+			c.Equal(beforeHash, gurps.Hash64(d.model), "undo restores the definitions exactly")
+			c.False(d.undoMgr.CanUndo(), "the type change is a single edit")
+			c.Equal(rowsBefore, len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())),
+				"the panels are rebuilt from the restored definitions")
 
-	d.undoMgr.Redo()
-	c.Equal(attribute.PoolSeparator, d.model.Set[gurps.FatiguePointsID].Type, "redo changes the type again")
+			d.undoMgr.Redo()
+			c.Equal(attrType, d.model.Set[gurps.FatiguePointsID].Type, "redo changes the type again")
+		})
+	}
 }
 
 // TestThresholdFeaturesFollowAttributeEdits verifies that the features of a threshold name an attribute as the
-// definitions being edited do once the attribute is renamed, given another ID or deleted, none of which rebuilds the
-// content: in the summary of those naming it, and in the attribute popup of an open row, even of a feature naming
+// definitions being edited do once the attribute is renamed, given another ID, deleted or added, none of which rebuilds
+// the content: in the summary of those naming it, and in the attribute popup of an open row, even of a feature naming
 // another attribute; and that the field edited, which lies outside them, keeps the focus as they are rebuilt.
 func TestThresholdFeaturesFollowAttributeEdits(t *testing.T) {
 	const ignored = "+1 to zz; a pool threshold ignores it."
@@ -418,6 +427,11 @@ func TestThresholdFeaturesFollowAttributeEdits(t *testing.T) {
 		{
 			name: "delete", bonus: "zz", view: rowsView{collapsed: true}, shown: summary, before: "+1 to ZZ.",
 			after: ignored, edit: func(_ check.Checker, p *attrDefSettingsPanel) { p.deleteAttrDef() },
+		},
+		{
+			name: "add", bonus: "a", view: rowsView{collapsed: true}, shown: summary,
+			before: "+1 to a; a pool threshold ignores it.", after: "+1 to .", // The new attribute has no name yet.
+			edit: func(_ check.Checker, p *attrDefSettingsPanel) { p.dockable.addAttribute("Add Attribute") },
 		},
 		{
 			name: "open row", bonus: gurps.StrengthID, view: rowsView{open: "0"}, focus: "name", edit: rename,

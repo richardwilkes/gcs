@@ -241,20 +241,23 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 }
 
 // applyAttributeType changes the attribute's type in a single undo edit of the whole set of definitions, since the
-// change may add a threshold or clear the fields a separator has no use for, which undoing it must bring back.
+// change may add a threshold, drop the thresholds of a type that has none, as copying the definitions would (see
+// gurps.AttributeDef.Clone), or clear the fields a separator has no use for, all of which undoing it must bring back.
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 	p.dockable.editStructure(i18n.Text("Attribute Type"), func() {
 		p.def.Type = attrType
-		if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
+		if p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef {
+			p.def.Thresholds = nil
+		} else if len(p.def.Thresholds) == 0 {
 			threshold := gurps.NewPoolThreshold()
 			threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
 			p.def.Thresholds = append(p.def.Thresholds, threshold)
-		} else if p.def.IsSeparator() {
+		}
+		if p.def.IsSeparator() {
 			p.def.FullName = ""
 			p.def.Base = ""
 			p.def.CostPerPoint = 0
 			p.def.CostAdjPercentPerSM = 0
-			p.def.Thresholds = nil
 		}
 	}, "")
 }

@@ -233,8 +233,8 @@ type exportedEncumbrance struct {
 }
 
 // exportedAttribute is an attribute as the templates see it. Value is the maximum, which the points buy, and Current is
-// the value in play, which the bonuses of the pools' thresholds and any multiplying attribute bonus may alter; the two
-// are the same for an attribute nothing alters.
+// the value in play as gurps.Attribute.Current works it out: a pool's maximum less its damage, or another attribute's
+// maximum as the bonuses of the pools' current thresholds and any multiplying attribute bonus alter it.
 type exportedAttribute struct {
 	ID           string
 	Name         string

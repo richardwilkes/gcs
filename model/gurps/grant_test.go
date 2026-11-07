@@ -4156,6 +4156,9 @@ func TestGrantSetLevelPoints(t *testing.T) {
 	limit := -fxp.Three
 	capped.TechniqueLimitModifier = &limit
 	tiredIQ := newAttrBonus(IntelligenceID, -fxp.Two)
+	trained := newGrantLeveledTrait("Trained", fxp.One)
+	trained.Features = Features{newSkillBonusTo("Karate", fxp.Two), newSkillBonusTo("Ritual Magic", fxp.Two)}
+	tiredTrained := newTraitGrant(trained, fxp.One, grantmerge.Ignore)
 	for _, tc := range []struct {
 		name string
 		item grantLeveler
@@ -4175,8 +4178,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		// with perLevelSpell set, of Shield, an IQ/Hard spell at 10.
 		perLevel      fxp.Int
 		perLevelSpell bool
-		level         fxp.Int
-		points        fxp.Int
+		// smart, when set, adds Smart, a trait at level 2 giving +1 IQ per level, which raises Karate and Ritual
+		// Magic to 12.
+		smart  bool
+		level  fxp.Int
+		points fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -4223,6 +4229,19 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			name: "technique while a threshold lowers the spell whose per-level bonus raises the skill it rests on",
 			item: kicking, perLevel: fxp.One, perLevelSpell: true, tired: tiredIQ, level: fxp.FromInteger(19),
 			points: fxp.Two,
+		},
+		{
+			name: "technique while a threshold grants a trait whose bonus raises the skill it rests on", item: kicking,
+			tired: tiredTrained, level: fxp.Nine, points: fxp.Two,
+		},
+		{
+			name: "ritual magic while a threshold grants a trait whose bonus raises the skill it rests on", item: bless,
+			tired: tiredTrained, level: fxp.Nine, points: fxp.Three,
+		},
+		{name: "technique resting on a trait's per-level bonus", item: kicking, smart: true, level: fxp.Eleven, points: fxp.Two},
+		{
+			name: "technique while a threshold raises the trait whose per-level bonus raises the skill it rests on",
+			item: kicking, smart: true, tired: newTraitBonusTo("Smart", fxp.Two), level: fxp.Eleven, points: fxp.Two,
 		},
 		{name: "Average technique", item: averageKicking, level: fxp.Nine, points: fxp.One},
 		{name: "technique above its limit", item: kicking, level: fxp.Twelve, points: fxp.Three},
@@ -4284,6 +4303,13 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			} else {
 				addSkill(e, "Focus", fxp.One).Features = Features{bonus}
 			}
+		}
+		if tc.smart {
+			iq := newAttrBonus(IntelligenceID, fxp.One)
+			iq.PerLevel = true
+			smart := addTraitWithFeatures(e, "Smart", iq)
+			smart.CanLevel = true
+			smart.Levels = fxp.Two
 		}
 		if tc.tired != nil {
 			tired := poolThreshold(e, FatiguePointsID, "Tired")

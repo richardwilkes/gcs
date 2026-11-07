@@ -103,6 +103,14 @@ func newSkillBonusTo(name string, amount fxp.Int) *SkillBonus {
 	return bonus
 }
 
+// newTraitBonusTo returns a bonus of the given levels to the trait with the given name.
+func newTraitBonusTo(name string, amount fxp.Int) *TraitBonus {
+	bonus := NewTraitBonus()
+	bonus.NameCriteria.Qualifier = name
+	bonus.Amount = amount
+	return bonus
+}
+
 // logCountingHandler counts the records at or above its level and prints nothing, so a test can observe whether
 // something was logged without depending on the log's textual format, and can silence what it expects to be logged.
 type logCountingHandler struct {

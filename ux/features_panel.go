@@ -931,14 +931,15 @@ func (p *featuresPanel) operation(parent *unison.Panel, path string, one *gurps.
 }
 
 // attributeChoices returns the attributes the panel offers, each after the prefix, and the one with the current key,
-// which is added as such when it isn't one of them. A threshold's features offer those of the definitions being edited
-// along with Move, but neither the size modifier nor the pools.
+// which is added as such when it isn't one of them. An item's features offer the attributes its sheet, or without one
+// the defaults, define, along with the size modifier, Move, Dodge, Parry and Block. A threshold's offer those of the
+// definitions being edited along with Move, Dodge, Parry and Block, but neither the size modifier nor the pools.
 func (p *featuresPanel) attributeChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
 	if p.forThreshold() {
 		return gurps.AttributeChoicesFor(p.thresholdDefs(), prefix, gurps.ThresholdAttributeFlags, current)
 	}
-	return gurps.AttributeChoices(p.entity, prefix, gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag,
-		current)
+	return gurps.AttributeChoices(p.entity, prefix,
+		gurps.SizeFlag|gurps.MoveFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag, current)
 }
 
 // newAttributeID returns the attribute a new feature names: the one last chosen, or for a threshold's features, when

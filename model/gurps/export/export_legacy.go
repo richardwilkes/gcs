@@ -289,25 +289,25 @@ func (ex *legacyExporter) emitKey(key string) error {
 		}
 		ex.writeEncodedText(best)
 	case "TIRED":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "tired").String())
+		ex.writePoolThreshold(fpAttrID, "tired")
 	case "FP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "collapse").String())
+		ex.writePoolThreshold(fpAttrID, "collapse")
 	case "UNCONSCIOUS":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "unconscious").String())
+		ex.writePoolThreshold(fpAttrID, "unconscious")
 	case "REELING":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "reeling").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "reeling")
 	case "HP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "collapse").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "collapse")
 	case "DEATH_CHECK_1":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #1").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #1")
 	case "DEATH_CHECK_2":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #2").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #2")
 	case "DEATH_CHECK_3":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #3").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #3")
 	case "DEATH_CHECK_4":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #4").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #4")
 	case "DEAD":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dead").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dead")
 	case "BASIC_LIFT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.BasicLift()))
 	case "ONE_HANDED_LIFT":
@@ -495,6 +495,14 @@ func (ex *legacyExporter) unidentifiedKey(key string) {
 func (ex *legacyExporter) writeAttribute(attrID string, value func(*gurps.Attribute) fxp.Int) {
 	if attr, ok := ex.entity.Attributes.Set[attrID]; ok && attr.AttributeDef() != nil {
 		ex.writeEncodedText(value(attr).String())
+	}
+}
+
+// writePoolThreshold writes the value of the pool's threshold with the given state, or nothing when the pool or the
+// threshold is missing.
+func (ex *legacyExporter) writePoolThreshold(attrID, state string) {
+	if value := ex.entity.Attributes.PoolThreshold(attrID, state); value != fxp.Min {
+		ex.writeEncodedText(value.String())
 	}
 }
 

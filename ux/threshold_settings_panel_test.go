@@ -334,20 +334,21 @@ func TestThresholdFeaturesKeepTheirViewAcrossRebuilds(t *testing.T) {
 			if tc.prepare != nil {
 				screen.Do(func() { tc.prepare(d) })
 			}
-			if _, p = thresholdFeatures(); p == nil {
-				return
-			}
-			screen.Do(func() {
-				p.FindRefKey(sectionToggleKey).RequestFocus()
-				tc.rebuild(d)
-			})
 			reeling, p := thresholdFeatures()
 			if p == nil {
 				return
 			}
 			screen.Do(func() {
+				reeling.setView(rowsView{}) // Expanded, as it doesn't start out.
+				p.FindRefKey(sectionToggleKey).RequestFocus()
+				tc.rebuild(d)
+			})
+			if reeling, p = thresholdFeatures(); p == nil {
+				return
+			}
+			screen.Do(func() {
 				c.Equal(rowsView{open: "0"}, p.view(), "the second threshold's features are shown as they were")
-				c.Equal(rowsView{collapsed: true}, reeling.view(), "and so are the first's")
+				c.Equal(rowsView{}, reeling.view(), "and so are the first's")
 				if tc.focus {
 					focus := d.Window().Focus()
 					c.True(focus != nil && focus.RefKey == sectionToggleKey && unison.AncestorIsOrSelf(focus, p.AsPanel()),

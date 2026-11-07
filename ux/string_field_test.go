@@ -17,10 +17,11 @@ import (
 )
 
 // TestStringFieldSyncWhileFocusedKeepsEdit verifies that a Sync() arriving while the field has the focus leaves the
-// text the user is working on alone, while one arriving once the focus is gone replaces it with the stored value's
-// rendering. The field decides this from its own focus callbacks, not from Panel.Focused(), which is false whenever
-// the window is inactive even though the field still holds the focus: a sync in that state used to replace a
-// half-typed tag list with its normalized rendering, moving the caret out from under the user.
+// text the user is working on alone, even when the focus has left and come back with no sync in between, while one
+// arriving once the focus is gone replaces it with the stored value's rendering. The field decides this from its own
+// focus callbacks, not from Panel.Focused(), which is false whenever the window is inactive even though the field
+// still holds the focus: a sync in that state used to replace a half-typed tag list with its normalized rendering,
+// moving the caret out from under the user.
 func TestStringFieldSyncWhileFocusedKeepsEdit(t *testing.T) {
 	c := check.New(t)
 	var tags []string
@@ -40,4 +41,11 @@ func TestStringFieldSyncWhileFocusedKeepsEdit(t *testing.T) {
 	f.Sync()
 	c.Equal("one, tw", f.Text(), "syncing once the focus is gone shows the stored value's rendering")
 	c.Equal([]string{"one", "tw"}, tags, "the rendering is what the field parses back to")
+
+	f.gainedFocus()
+	f.lostFocus()
+	f.gainedFocus()
+	f.SetText("one,tw,th")
+	f.Sync()
+	c.Equal("one,tw,th", f.Text(), "syncing once the focus is back must not either, with no sync since it left")
 }

@@ -97,27 +97,26 @@ func (e *Entity) forEachThresholdFeatureList(fn func(t *PoolThreshold, def *Attr
 
 // processThresholdFeatures collects the features of the pools' current thresholds once those of the items are in place,
 // since a pool's maximum, and so its threshold, rests on the bonuses the items give, and records what those thresholds
-// and every multiplier do to each value, passing over, as AttributeBonusFor does, the bonuses bonusExcluded leaves out;
-// see currentAdjustment. The thresholds are found while no value carries such an adjustment, so a pool whose base or
-// thresholds read a value they alter is found without the alteration rather than with what the previous pass left, and
-// the caches are discarded once the adjustments are in place, since what those scripts cached was computed without
-// them. Found outside a recalculation, such a pool's threshold may differ. The parry and block tooltips are built here,
-// so that they name these bonuses too. A grant a threshold holds is collected here as well, and so is in effect while
-// the pool is at the threshold; the rows it puts on the sheet are there whether or not it is, as for any grant (see
-// forEachGrant).
+// and every multiplier do to each value; see recordCurrentAdjustments. The thresholds are found while the values carry
+// what the items' multipliers do to them alone, so that a pool whose base or thresholds read a value is found with the
+// value the sheet shows unless the thresholds alter it, in which case it is found without that alteration rather than
+// with what the previous pass left. The caches are discarded before the thresholds are found and once the adjustments
+// are in place, since what the scripts cached was computed without them. Found outside a recalculation, a pool whose
+// thresholds alter what it reads may be found at another threshold. A trait bonus a threshold holds raises the level
+// the per-level bonuses of the trait read, whenever they are read, so the totals totalBonuses recorded are recorded
+// again once one is collected. The parry and block tooltips are built here, so that they name these bonuses too. A
+// grant a threshold holds is collected here as well, and so is in effect while the pool is at the threshold; the rows
+// it puts on the sheet are there whether or not it is, as for any grant (see forEachGrant).
 func (e *Entity) processThresholdFeatures() {
-	e.collectThresholdFeatures(&e.features)
-	adjustments := make(map[adjustmentKey]currentAdjustment)
-	for _, one := range e.features.currentAttributeBonuses {
-		if e.bonusExcluded(one) {
-			continue
-		}
-		key := adjustmentKey{id: one.Attribute, limitation: one.ActualLimitation()}
-		adj := adjustments[key]
-		adj.add(one)
-		adjustments[key] = adj
+	if e.recordCurrentAdjustments() {
+		e.discardCaches(true)
 	}
-	e.currentAdjustments = adjustments
+	traitBonuses := len(e.features.traitBonuses)
+	e.collectThresholdFeatures(&e.features)
+	if len(e.features.traitBonuses) != traitBonuses {
+		e.totalBonuses()
+	}
+	e.recordCurrentAdjustments()
 	var tooltip xbytes.InsertBuffer
 	e.AttributeBonusFor(ParryID, stlimit.None, &tooltip)
 	e.currentAdjustmentFor(ParryID, stlimit.None, &tooltip)
@@ -129,15 +128,33 @@ func (e *Entity) processThresholdFeatures() {
 	e.discardCaches(true)
 }
 
+// recordCurrentAdjustments records what the bonuses collected so far that alter current values alone do to each value,
+// passing over, as AttributeBonusFor does, those bonusExcluded leaves out, and returns whether they do anything; see
+// currentAdjustment.
+func (e *Entity) recordCurrentAdjustments() bool {
+	adjustments := make(map[adjustmentKey]currentAdjustment)
+	for _, one := range e.features.currentAttributeBonuses {
+		if e.bonusExcluded(one) {
+			continue
+		}
+		key := adjustmentKey{id: one.Attribute, limitation: one.ActualLimitation()}
+		adj := adjustments[key]
+		adj.add(one)
+		adjustments[key] = adj
+	}
+	e.currentAdjustments = adjustments
+	return len(adjustments) != 0
+}
+
 // currentAdjustmentFor returns what the bonuses that alter current values alone do to the value with the given ID and
 // limitation (see currentAdjustment), adding each to the tooltip, which may be nil, and passing over those
 // bonusExcluded leaves out. While the prerequisites of an item carrying a grant are judged, the bonuses of the
-// thresholds are taken from the thresholds as those prerequisites see the pools, and none at all, nor any multiplier,
-// while those thresholds are being found, as the sheet's own are found without any; see bonusFeatures,
+// thresholds are taken from the thresholds as those prerequisites see the pools, and none of theirs while those
+// thresholds are being found, as the sheet's own are found with the items' multipliers alone; see bonusFeatures,
 // Attribute.CurrentThreshold and processThresholdFeatures. A computation at base gets none at all; see atBaseWhile.
 func (e *Entity) currentAdjustmentFor(id string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) currentAdjustment {
 	var adj currentAdjustment
-	if e.atBase > 0 || (e.judgedThresholdSearches > 0 && e.carriesGrant(e.judging)) {
+	if e.atBase > 0 {
 		return adj
 	}
 	for _, one := range e.bonusFeatures().currentAttributeBonuses {
@@ -174,16 +191,17 @@ const (
 // threshold that what the grant put on the sheet brought the sheet to, along with those of the items the grants of
 // those thresholds put in effect (see collectGrantedFeaturesAsJudged), or with none at all while those thresholds are
 // being found, as the sheet's own are found without them; see Attribute.CurrentThreshold. A computation at base sees
-// none either, since they alter only the sheet's current state; see atBaseWhile. Each is built once while the same
-// prerequisites are judged, or the same computation at base runs, since their view of the sheet holds still meanwhile;
-// see JudgingPrereqsOf. The grants they hold are not those the sheet applies, and so are left out.
+// none either, since they alter only the sheet's current state, nor those of the items the thresholds' grants alone put
+// in effect; see atBaseWhile and featuresAtBase. Each is built once while the same prerequisites are judged, or the
+// same computation at base runs, since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. The grants
+// they hold are not those the sheet applies, and so are left out.
 func (e *Entity) bonusFeatures() *features {
 	if !e.carriesGrant(e.judging) {
 		if e.atBase == 0 {
 			return &e.features
 		}
 		if e.baseFeatures == nil {
-			base := featuresWithoutThresholds(&e.features)
+			base := e.featuresAtBase()
 			e.baseFeatures = &base
 		}
 		return e.baseFeatures
@@ -198,12 +216,15 @@ func (e *Entity) bonusFeatures() *features {
 	if judged := e.judgedFeatures[view]; judged != nil {
 		return judged
 	}
-	judged := featuresWithoutThresholds(&e.features)
+	var judged features
+	if view == featuresAtBase {
+		judged = e.featuresAtBase()
+	} else {
+		judged = featuresWithout(&e.features, ownedByThreshold)
+	}
 	judged.grants = nil
-	if view != featuresWhileSearching {
-		if view == featuresAsJudged {
-			e.collectThresholdFeatures(&judged)
-		}
+	if view == featuresAsJudged {
+		e.collectThresholdFeatures(&judged)
 		// Finding what the grants of the thresholds give may read bonuses, which then see the lists as built so far.
 		e.judgedFeatures[view] = &judged
 		e.collectGrantedFeaturesAsJudged(&judged)
@@ -212,23 +233,73 @@ func (e *Entity) bonusFeatures() *features {
 	return &judged
 }
 
-// featuresWithoutThresholds returns a copy of the feature lists without the features of the pools' thresholds, each
-// list clipped, so that adding to the copy never writes into the original.
-func featuresWithoutThresholds(list *features) features {
+// featuresAtBase returns a copy of the sheet's feature lists as a computation at base sees them (see atBaseWhile):
+// without the features of the pools' thresholds, nor those of the items in effect only because the thresholds' grants
+// put them there; see rowsGrantedByThresholdsAlone. Each list is clipped, so that adding to the copy never writes into
+// the original.
+func (e *Entity) featuresAtBase() features {
+	rows := e.rowsGrantedByThresholdsAlone()
+	return featuresWithout(&e.features, func(owner fmt.Stringer) bool {
+		if ownedByThreshold(owner) {
+			return true
+		}
+		holder, ok := owner.(grantHolder)
+		return ok && rows[holder]
+	})
+}
+
+// rowsGrantedByThresholdsAlone returns the items grants put on the sheet whose features the sheet's lists hold that a
+// grant of a pool's threshold puts in effect and no other grant in effect can put on the sheet.
+func (e *Entity) rowsGrantedByThresholdsAlone() map[grantHolder]bool {
+	var byThresholds, byOthers map[grantHolder]bool
+	for i := range e.grantPlans {
+		plan := &e.grantPlans[i]
+		row := plan.row()
+		if !e.features.grantedRows[row] || !plan.grant.putsItemOnSheet() || !e.grantInEffect(plan) {
+			continue
+		}
+		if ownedByThreshold(plan.source.owner) {
+			if byThresholds == nil {
+				byThresholds = make(map[grantHolder]bool)
+			}
+			byThresholds[row] = true
+		} else {
+			if byOthers == nil {
+				byOthers = make(map[grantHolder]bool)
+			}
+			byOthers[row] = true
+		}
+	}
+	for row := range byOthers {
+		delete(byThresholds, row)
+	}
+	return byThresholds
+}
+
+// ownedByThreshold returns true if the owner of a feature is a pool's threshold.
+func ownedByThreshold(owner fmt.Stringer) bool {
+	_, ok := owner.(*PoolThreshold)
+	return ok
+}
+
+// featuresWithout returns a copy of the feature lists without the features whose owners dropped reports, but for the
+// cost reductions, which no threshold holds, each list clipped, so that adding to the copy never writes into the
+// original.
+func featuresWithout(list *features, dropped func(owner fmt.Stringer) bool) features {
 	result := *list
-	result.attributeBonuses = withoutThresholdFeatures(result.attributeBonuses)
+	result.attributeBonuses = withoutFeaturesOf(result.attributeBonuses, dropped)
 	result.costReductions = slices.Clip(result.costReductions)
-	result.drBonuses = withoutThresholdFeatures(result.drBonuses)
-	result.maxUsesBonuses = withoutThresholdFeatures(result.maxUsesBonuses)
-	result.skillBonuses = withoutThresholdFeatures(result.skillBonuses)
-	result.skillPointBonuses = withoutThresholdFeatures(result.skillPointBonuses)
-	result.spellBonuses = withoutThresholdFeatures(result.spellBonuses)
-	result.spellPointBonuses = withoutThresholdFeatures(result.spellPointBonuses)
-	result.traitBonuses = withoutThresholdFeatures(result.traitBonuses)
-	result.traitMaxLevelBonuses = withoutThresholdFeatures(result.traitMaxLevelBonuses)
-	result.weaponBonuses = withoutThresholdFeatures(result.weaponBonuses)
-	result.selectorOverrides = withoutThresholdFeatures(result.selectorOverrides)
-	result.currentAttributeBonuses = withoutThresholdFeatures(result.currentAttributeBonuses)
+	result.drBonuses = withoutFeaturesOf(result.drBonuses, dropped)
+	result.maxUsesBonuses = withoutFeaturesOf(result.maxUsesBonuses, dropped)
+	result.skillBonuses = withoutFeaturesOf(result.skillBonuses, dropped)
+	result.skillPointBonuses = withoutFeaturesOf(result.skillPointBonuses, dropped)
+	result.spellBonuses = withoutFeaturesOf(result.spellBonuses, dropped)
+	result.spellPointBonuses = withoutFeaturesOf(result.spellPointBonuses, dropped)
+	result.traitBonuses = withoutFeaturesOf(result.traitBonuses, dropped)
+	result.traitMaxLevelBonuses = withoutFeaturesOf(result.traitMaxLevelBonuses, dropped)
+	result.weaponBonuses = withoutFeaturesOf(result.weaponBonuses, dropped)
+	result.selectorOverrides = withoutFeaturesOf(result.selectorOverrides, dropped)
+	result.currentAttributeBonuses = withoutFeaturesOf(result.currentAttributeBonuses, dropped)
 	return result
 }
 
@@ -277,17 +348,14 @@ func (e *Entity) collectGrantedFeaturesAsJudged(into *features) {
 	}
 }
 
-// withoutThresholdFeatures returns the list without the features a pool's threshold holds, clipped, so that adding to
-// what it returns never writes into the list.
-func withoutThresholdFeatures[T interface{ Owner() fmt.Stringer }](list []T) []T {
-	fromThreshold := func(one T) bool {
-		_, ok := one.Owner().(*PoolThreshold)
-		return ok
-	}
-	if !slices.ContainsFunc(list, fromThreshold) {
+// withoutFeaturesOf returns the list without the features whose owners dropped reports, clipped, so that adding to what
+// it returns never writes into the list.
+func withoutFeaturesOf[T interface{ Owner() fmt.Stringer }](list []T, dropped func(owner fmt.Stringer) bool) []T {
+	drop := func(one T) bool { return dropped(one.Owner()) }
+	if !slices.ContainsFunc(list, drop) {
 		return slices.Clip(list)
 	}
-	return slices.DeleteFunc(slices.Clone(list), fromThreshold)
+	return slices.DeleteFunc(slices.Clone(list), drop)
 }
 
 // sheetAdjustment returns what the current thresholds and multipliers do to the value with the given ID and

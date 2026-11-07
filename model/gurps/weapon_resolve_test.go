@@ -125,7 +125,7 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 
 // TestWeaponParryResolve runs the resolution regression tests shared by both defenses against the parry and the block.
 func TestWeaponParryResolve(t *testing.T) {
-	for _, d := range []defenseUnderTest{parryUnderTest, blockUnderTest} {
+	for _, d := range []*defenseUnderTest{parryUnderTest, blockUnderTest} {
 		t.Run(d.name, func(t *testing.T) { runDefenseResolveTests(t, d) })
 	}
 }

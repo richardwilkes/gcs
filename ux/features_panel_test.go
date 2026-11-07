@@ -1416,6 +1416,21 @@ func TestFeaturesPanelAttributeBonusOperation(t *testing.T) {
 	})
 }
 
+// TestFeaturesPanelItemAttributeBonusOffersMove checks that an item's attribute bonus on a sheet that defines no move
+// attribute offers Move, which such a bonus still alters (see gurps.Entity.Move), and shows one to Move as such.
+func TestFeaturesPanelItemAttributeBonusOffersMove(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	_, defined := gurps.AttributeDefsFor(entity).Set[gurps.MoveID]
+	c.False(defined, "precondition: the sheet defines no move attribute")
+	features := gurps.Features{gurps.NewAttributeBonus(gurps.MoveID)}
+	p := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &features, false)
+	p.setView(rowsView{open: "0"})
+	if popup := featuresPopup[*gurps.AttributeChoice](c, p, "0:attribute"); popup != nil {
+		c.Equal("to Move", popup.Text(), "the bonus to Move shows as such")
+	}
+}
+
 // TestFeaturesPanelSelectorFieldChange checks that choosing another field for a selector override resets its value to
 // the field's first, and clears the weapon criteria when the field belongs to traits, which have no weapons.
 func TestFeaturesPanelSelectorFieldChange(t *testing.T) {

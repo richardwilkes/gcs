@@ -112,7 +112,21 @@ func (a *Attribute) AttributeDef() *AttributeDef {
 
 // Maximum returns the maximum value of a pool or the adjusted attribute value for other types.
 func (a *Attribute) Maximum() fxp.Int {
-	return a.maximumWithBonus(a.Bonus)
+	return a.maximumWithBonus(a.bonus())
+}
+
+// bonus returns Bonus or, in a computation at base, the total of the bonuses it sees given the attribute, which leaves
+// out what the pools' thresholds put in effect; see Entity.atBaseWhile.
+func (a *Attribute) bonus() fxp.Int {
+	e := a.Entity
+	if e == nil || e.atBase == 0 {
+		return a.Bonus
+	}
+	bonus := e.AttributeBonusFor(a.AttrID, stlimit.None, nil)
+	if def := a.AttributeDef(); def != nil && !def.AllowsDecimal() {
+		bonus = bonus.Floor()
+	}
+	return bonus
 }
 
 // maximumWithBonus is Maximum with the given bonus in place of the attribute's own.
@@ -144,7 +158,9 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 // the current values of others, as "$id.current" does anywhere and "$id" does for one standing in for Striking ST,
 // Lifting ST, Throwing ST, Dodge or Move, by those that alter only the current values of those attributes, under a
 // heading naming each; see Entity.addSourceAdjustments. Strength bonuses limited to striking, lifting or throwing are
-// listed in sections of their own, since they don't alter the attribute's value.
+// listed in sections of their own, since they don't alter the attribute's value. An attribute standing in for Striking
+// ST, Lifting ST or Throwing ST lists in the first section, after its own, those ST is given under the same
+// limitation, which its current value takes; see Current.
 func (a *Attribute) BonusTooltip() string {
 	if a.Entity == nil {
 		return ""
@@ -159,6 +175,10 @@ func (a *Attribute) BonusTooltip() string {
 	}
 	var buffer xbytes.InsertBuffer
 	add(stlimit.None, &buffer)
+	if limitation := a.strengthLimitation(); limitation != stlimit.None {
+		a.Entity.AttributeBonusFor(StrengthID, limitation, &buffer)
+		a.Entity.currentAdjustmentFor(StrengthID, limitation, &buffer)
+	}
 	a.Entity.addSourceAdjustments(a.AttrID, stlimit.None, &buffer)
 	if a.AttrID == StrengthID {
 		var limited xbytes.InsertBuffer
@@ -194,17 +214,21 @@ func (a *Attribute) NameMatches(name string) bool {
 // Current returns the current value. That of a pool is its maximum less the damage taken. That of any other attribute
 // is its maximum with the amounts the pools' current thresholds give it added, then multiplied by each multiplier given
 // it in turn, rounded to whole after each unless the attribute allows decimals; see Entity.processThresholdFeatures.
+// That of one standing in for Striking ST, Lifting ST or Throwing ST then takes the bonuses ST is given under the same
+// limitation, as the ST the sheet works out without it does, so that it is the ST in use; see Entity.limitedStrength.
 // Scripts read it as "$id.current"; "$id", the attributes derived from it and its point cost use the maximum, except
 // that the current value of an attribute standing in for Striking ST, Lifting ST, Throwing ST, Dodge or Move starts
 // from its base with each attribute the base reads as "$id" giving its current value, as the value the sheet works out
 // without such an attribute starts from the current value of ST, Basic Speed or Basic Move; see baseReadsCurrents.
 func (a *Attribute) Current() fxp.Int {
-	return a.currentWith(a.Bonus, false)
+	return a.currentWith(a.bonus(), false, true)
 }
 
 // currentWith is Current with the given bonus in place of the attribute's own and, with forPrereqs set, with the pools'
-// thresholds as the prerequisites being judged see them; see Entity.currentAdjustmentFor.
-func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs bool) fxp.Int {
+// thresholds as the prerequisites being judged see them; see Entity.currentAdjustmentFor. With limitedAmounts unset, an
+// attribute standing in for Striking ST, Lifting ST or Throwing ST takes, of the bonuses ST is given under the same
+// limitation, the multipliers alone; see Entity.LiftingStrengthForThrowing.
+func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs, limitedAmounts bool) fxp.Int {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
 		return 0
@@ -224,7 +248,36 @@ func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs bool) fxp.Int {
 	} else {
 		adj = a.Entity.sheetAdjustment(a.AttrID, stlimit.None)
 	}
-	return adj.apply(value, !def.AllowsDecimal())
+	value = adj.apply(value, !def.AllowsDecimal())
+	if limitation := strengthLimitationOf(a.AttrID); limitation != stlimit.None {
+		value = a.Entity.limitedStrength(value, limitation, forPrereqs, limitedAmounts)
+	}
+	return value
+}
+
+// strengthLimitation returns the limitation of the ST bonuses the attribute's current value takes (see Current): that
+// of the Striking ST, Lifting ST or Throwing ST it stands in for, unless it is a pool, and stlimit.None otherwise.
+func (a *Attribute) strengthLimitation() stlimit.Option {
+	def := a.AttributeDef()
+	if def == nil || def.IsSeparator() || def.Type == attribute.Pool || def.Type == attribute.PoolRef {
+		return stlimit.None
+	}
+	return strengthLimitationOf(a.AttrID)
+}
+
+// strengthLimitationOf returns the limitation of the ST bonuses that the Striking ST, Lifting ST or Throwing ST an
+// attribute with the given ID stands in for takes, or stlimit.None for any other ID.
+func strengthLimitationOf(attrID string) stlimit.Option {
+	switch attrID {
+	case StrikingStrengthID:
+		return stlimit.StrikingOnly
+	case LiftingStrengthID:
+		return stlimit.LiftingOnly
+	case ThrowingStrengthID:
+		return stlimit.ThrowingOnly
+	default:
+		return stlimit.None
+	}
 }
 
 // baseReadsCurrents reports whether the attribute with the given ID stands in for a value that the sheet works out,
@@ -254,9 +307,10 @@ func (a *Attribute) maximumReadingCurrents(bonus fxp.Int) fxp.Int {
 // CurrentThreshold returns the current PoolThreshold, if any. While the prerequisites of an item carrying a grant are
 // judged, it is the one they see: the pool's current value is taken without the bonuses from what the grant put on the
 // sheet, the scripts giving the thresholds run as those prerequisites see the sheet, and the values they read carry no
-// current adjustment, as the sheet's own search sees none (see Entity.processThresholdFeatures). It is then found only
-// once while they are judged, since their view of the sheet holds still meanwhile and the Basic Lift every skill level
-// with an encumbrance penalty reads asks for it; see Entity.JudgingPrereqsOf.
+// current adjustment but what the items' multipliers do, as the sheet's own search sees (see
+// Entity.processThresholdFeatures). It is then found only once while they are judged, since their view of the sheet
+// holds still meanwhile and the Basic Lift every skill level with an encumbrance penalty reads asks for it; see
+// Entity.JudgingPrereqsOf.
 func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() || len(def.Thresholds) == 0 {
