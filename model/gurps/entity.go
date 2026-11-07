@@ -117,6 +117,11 @@ type ownedCostReduction struct {
 	owner fmt.Stringer
 }
 
+// Owner returns the item the cost reduction came from.
+func (c ownedCostReduction) Owner() fmt.Stringer {
+	return c.owner
+}
+
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
 type Entity struct {
 	EntityData
@@ -244,11 +249,11 @@ type Entity struct {
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
 // alters current values alone: the current adjustments, and the features and grants of the pools' thresholds, along
 // with the features of the items those grants alone put in effect (see currentAdjustmentFor, sheetAdjustment,
-// bonusFeatures and grantsAsJudged), with the bonuses totalled afresh from what it sees (see Attribute.bonus), as what
-// a level set on a technique or Ritual Magic spell costs is found, so that its points don't change with the state the
-// pools are in. Nothing it finds is taken from the caches or kept in them, unless kept apart from what is found
-// otherwise, and the levels the skills and spells recorded are computed afresh, since they hold what it leaves out. e
-// may be nil.
+// bonusFeatures and grantsAsJudged), with the bonuses and cost reductions totalled afresh from what it sees (see
+// Attribute.bonus and Attribute.PointCost), as what a level set on a technique or Ritual Magic spell costs is found, so
+// that its points don't change with the state the pools are in. Nothing it finds is taken from the caches or kept in
+// them, unless kept apart from what is found otherwise, and the levels the skills and spells recorded are computed
+// afresh, since they hold what it leaves out. e may be nil.
 func (e *Entity) atBaseWhile() func() {
 	if e == nil {
 		return func() {}

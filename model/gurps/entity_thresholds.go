@@ -282,13 +282,12 @@ func ownedByThreshold(owner fmt.Stringer) bool {
 	return ok
 }
 
-// featuresWithout returns a copy of the feature lists without the features whose owners dropped reports, but for the
-// cost reductions, which are all kept: no threshold holds one, though the items featuresAtBase drops may. Each list is
+// featuresWithout returns a copy of the feature lists without the features whose owners dropped reports. Each list is
 // clipped, so that adding to the copy never writes into the original.
 func featuresWithout(list *features, dropped func(owner fmt.Stringer) bool) features {
 	result := *list
 	result.attributeBonuses = withoutFeaturesOf(result.attributeBonuses, dropped)
-	result.costReductions = slices.Clip(result.costReductions)
+	result.costReductions = withoutFeaturesOf(result.costReductions, dropped)
 	result.drBonuses = withoutFeaturesOf(result.drBonuses, dropped)
 	result.maxUsesBonuses = withoutFeaturesOf(result.maxUsesBonuses, dropped)
 	result.skillBonuses = withoutFeaturesOf(result.skillBonuses, dropped)

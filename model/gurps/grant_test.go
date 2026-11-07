@@ -4161,6 +4161,10 @@ func TestGrantSetLevelPoints(t *testing.T) {
 	tiredTrained := newTraitGrant(trained, fxp.One, grantmerge.Ignore)
 	large := newGrantLeveledTrait("Large", fxp.One)
 	large.Features = Features{newAttrBonus(SizeModifierID, fxp.Two)}
+	cheapST := newGrantLeveledTrait("Cheap ST", fxp.One)
+	halfST := NewCostReduction(StrengthID)
+	halfST.Percentage = fxp.Fifty
+	cheapST.Features = Features{halfST}
 	newSmart := func() *Trait {
 		iq := newAttrBonus(IntelligenceID, fxp.One)
 		iq.PerLevel = true
@@ -4195,8 +4199,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		smart bool
 		// sizedIQ, when set, makes IQ's base 10 plus the size modifier, which is 0 at base.
 		sizedIQ bool
-		level   fxp.Int
-		points  fxp.Int
+		// pricedIQ, when set, makes IQ's base a tenth of the points spent on attributes, and raises ST by 10, whose
+		// 100 points make IQ 10 at base.
+		pricedIQ bool
+		level    fxp.Int
+		points   fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -4267,6 +4274,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			item: kicking, sizedIQ: true, tired: newTraitGrant(large, fxp.One, grantmerge.Ignore), level: fxp.Nine,
 			points: fxp.Two,
 		},
+		{
+			name: "technique while a threshold grants a trait whose cost reduction lowers the points IQ rests on",
+			item: kicking, pricedIQ: true, tired: newTraitGrant(cheapST, fxp.One, grantmerge.Ignore), level: fxp.Nine,
+			points: fxp.Two,
+		},
 		{name: "Average technique", item: averageKicking, level: fxp.Nine, points: fxp.One},
 		{name: "technique above its limit", item: kicking, level: fxp.Twelve, points: fxp.Three},
 		{name: "technique resting on a missing attribute", item: sanity, level: fxp.Nine, points: 0},
@@ -4333,6 +4345,10 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		}
 		if tc.sizedIQ {
 			e.SheetSettings.Attributes.Set[IntelligenceID].Base = "10 + entity.sizeModifier"
+		}
+		if tc.pricedIQ {
+			e.SheetSettings.Attributes.Set[IntelligenceID].Base = "Math.floor(entity.points.attributes / 10)"
+			e.Attributes.Set[StrengthID].Adjustment = fxp.Ten
 		}
 		if tc.tired != nil {
 			tired := poolThreshold(e, FatiguePointsID, "Tired")

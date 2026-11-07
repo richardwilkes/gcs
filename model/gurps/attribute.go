@@ -352,8 +352,8 @@ func (a *Attribute) thresholdFor(def *AttributeDef, cur fxp.Int) *PoolThreshold 
 
 // PointCost returns the number of points spent on this Attribute. While the prerequisites of an item carrying a grant
 // are judged, it is the cost they see, without the size modifier bonuses and cost reductions from what the grant put on
-// the sheet (see Entity.JudgingPrereqsOf), and in a computation at base, the size modifier is the one it sees; see
-// Entity.sizeModifier.
+// the sheet (see Entity.JudgingPrereqsOf), and in a computation at base, the cost with the size modifier and cost
+// reductions it sees; see Entity.sizeModifier and Entity.atBaseWhile.
 func (a *Attribute) PointCost() fxp.Int {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
@@ -363,7 +363,7 @@ func (a *Attribute) PointCost() fxp.Int {
 	costReduction := a.CostReduction
 	if e := a.Entity; e != nil {
 		sm = e.sizeModifier()
-		if e.carriesGrant(e.judging) {
+		if e.carriesGrant(e.judging) || e.atBase > 0 {
 			costReduction = e.CostReductionFor(a.AttrID)
 		}
 	}
