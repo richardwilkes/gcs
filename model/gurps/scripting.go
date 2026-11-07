@@ -305,6 +305,9 @@ type scriptResolveKey struct {
 	// judged is the item whose prerequisites were being judged when the script ran as they see the sheet, and nil when
 	// it ran as the rest of the sheet sees it; see resolveScript.
 	judged any
+	// currents is set when the script read each attribute as "$id" for its current value; see
+	// Entity.scriptReadsCurrents.
+	currents bool
 }
 
 // scriptResolveResult is what a resolution produced, along with whether it produced it. A script GCS stopped part way
@@ -683,6 +686,9 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		defer func() { entity.judging = judging }()
 	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
+	if entity != nil {
+		key.currents = entity.scriptReadsCurrents()
+	}
 	if forPrereqs {
 		key.judged = entity.judging
 	}

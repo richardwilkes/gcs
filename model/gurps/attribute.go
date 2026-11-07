@@ -190,7 +190,10 @@ func (a *Attribute) NameMatches(name string) bool {
 // Current returns the current value. That of a pool is its maximum less the damage taken. That of any other attribute
 // is its maximum with the amounts the pools' current thresholds give it added, then multiplied by each multiplier given
 // it in turn, rounded to whole after each unless the attribute allows decimals; see Entity.processThresholdFeatures.
-// Scripts read it as "$id.current"; "$id", the attributes derived from it and its point cost use the maximum.
+// Scripts read it as "$id.current"; "$id", the attributes derived from it and its point cost use the maximum, except
+// that the current value of an attribute standing in for Striking ST, Lifting ST, Throwing ST, Dodge or Move starts
+// from its base with each attribute the base reads as "$id" giving its current value, as the value the sheet works out
+// without such an attribute starts from the current value of ST, Basic Speed or Basic Move; see baseReadsCurrents.
 func (a *Attribute) Current() fxp.Int {
 	return a.currentWith(a.Bonus, false)
 }
@@ -202,9 +205,14 @@ func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs bool) fxp.Int {
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	maximum := a.maximumWithBonus(bonus)
 	if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
-		return maximum - a.Damage
+		return a.maximumWithBonus(bonus) - a.Damage
+	}
+	var value fxp.Int
+	if baseReadsCurrents(a.AttrID) {
+		value = a.maximumReadingCurrents(bonus)
+	} else {
+		value = a.maximumWithBonus(bonus)
 	}
 	var adj currentAdjustment
 	if forPrereqs {
@@ -212,7 +220,31 @@ func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs bool) fxp.Int {
 	} else {
 		adj = a.Entity.sheetAdjustment(a.AttrID, stlimit.None)
 	}
-	return adj.apply(maximum, !def.AllowsDecimal())
+	return adj.apply(value, !def.AllowsDecimal())
+}
+
+// baseReadsCurrents reports whether the attribute with the given ID stands in for a value that the sheet works out,
+// when it doesn't define the attribute, from the current value of another: Striking ST, Lifting ST and Throwing ST from
+// ST's, Dodge from Basic Speed's and Move from Basic Move's. The base such an attribute's current value starts from reads
+// each attribute as "$id" for its current value; see Current.
+func baseReadsCurrents(attrID string) bool {
+	switch attrID {
+	case StrikingStrengthID, LiftingStrengthID, ThrowingStrengthID, DodgeID, MoveID:
+		return true
+	default:
+		return false
+	}
+}
+
+// maximumReadingCurrents is maximumWithBonus with the script giving the base reading each attribute as "$id" for its
+// current value rather than its maximum; see Entity.scriptReadsCurrents. The scripts that one runs in turn, including
+// those giving the bases of the attributes it reads, read maximums as usual.
+func (a *Attribute) maximumReadingCurrents(bonus fxp.Int) fxp.Int {
+	e := a.Entity
+	saved := e.currentsDepth
+	e.currentsDepth = e.scriptResolvingDepth + 1
+	defer func() { e.currentsDepth = saved }()
+	return a.maximumWithBonus(bonus)
 }
 
 // CurrentThreshold returns the current PoolThreshold, if any. While the prerequisites of an item carrying a grant are

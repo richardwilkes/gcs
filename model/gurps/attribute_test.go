@@ -13,6 +13,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -188,6 +190,7 @@ func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 		{"multiplier from an item", StrengthID, Features{newMultiplier(StrengthID, fxp.Two)}, true, 0, fxp.Ten, fxp.FromInteger(20)},
 		{"pool left alone", HitPointsID, Features{newMultiplier(HitPointsID, fxp.Half), NewAttributeBonus(HitPointsID)}, false, fxp.Seven, fxp.Ten, fxp.Ten},
 		{"not at the threshold", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Six, fxp.Ten, fxp.Ten},
+		{"derived from another's maximum", "will", Features{newMultiplier(IntelligenceID, fxp.Half)}, false, fxp.Seven, fxp.Ten, fxp.Ten},
 	} {
 		e := NewEntity()
 		if one.fromItem {
@@ -201,6 +204,65 @@ func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 		attr := e.Attributes.Set[one.attrID]
 		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.name)
 		c.Equal(one.current, attr.Current(), "%s: current", one.name)
+		c.Equal(one.maximum.String(), e.ResolveVariable(one.attrID), "%s: $%s", one.name, one.attrID)
+		c.Equal(one.current.String(), e.ResolveVariable(one.attrID+".current"), "%s: $%s.current", one.name, one.attrID)
+	}
+}
+
+// TestAttributeCurrentOfStandInReadsCurrents verifies that the current value of an attribute standing in for Striking
+// ST, Lifting ST, Dodge or Move rests on the current values of the attributes its base reads as "$id", but not on those
+// that their own bases read, so that the sheet gets from it what it gets without it, while its maximum, which scripts
+// read as "$id", rests on their maximums.
+func TestAttributeCurrentOfStandInReadsCurrents(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name    string
+		attrID  string
+		base    string
+		source  string
+		value   func(e *Entity) int
+		maximum fxp.Int
+		current fxp.Int
+	}{
+		{
+			"striking ST", StrikingStrengthID, "$st", StrengthID,
+			func(e *Entity) int { return e.StrikingStrength().AsInteger[int]() }, fxp.Ten, fxp.Five,
+		},
+		{
+			"lifting ST", LiftingStrengthID, "$st", StrengthID,
+			func(e *Entity) int { return e.LiftingStrength().AsInteger[int]() }, fxp.Ten, fxp.Five,
+		},
+		{
+			"dodge", DodgeID, "Math.floor($basic_speed) + 3", BasicSpeedID,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three,
+		},
+		{
+			"dodge, from a Basic Speed derived from DX's maximum", DodgeID, "Math.floor($basic_speed) + 3", DexterityID,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four,
+		},
+		{
+			"move", MoveID, "$basic_move", BasicMoveID,
+			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two,
+		},
+	} {
+		e := NewEntity()
+		tired := poolThreshold(e, FatiguePointsID, "Tired")
+		tired.Features = append(tired.Features, newMultiplier(one.source, fxp.Half))
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		e.Recalculate()
+		want := one.value(e)
+		e.SheetSettings.Attributes.Set[one.attrID] = &AttributeDef{
+			DefID: one.attrID,
+			Type:  attribute.Integer,
+			Name:  one.name,
+			Base:  one.base,
+		}
+		e.Attributes.Set[one.attrID] = NewAttribute(e, one.attrID, len(e.Attributes.Set))
+		e.Recalculate()
+		attr := e.Attributes.Set[one.attrID]
+		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.name)
+		c.Equal(one.current, attr.Current(), "%s: current", one.name)
+		c.Equal(want, one.value(e), "%s: as without the attribute", one.name)
 		c.Equal(one.maximum.String(), e.ResolveVariable(one.attrID), "%s: $%s", one.name, one.attrID)
 		c.Equal(one.current.String(), e.ResolveVariable(one.attrID+".current"), "%s: $%s.current", one.name, one.attrID)
 	}

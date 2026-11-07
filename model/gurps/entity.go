@@ -202,6 +202,10 @@ type Entity struct {
 	// the sheet reads does while its own thresholds are found; see currentAdjustmentFor. It guards the call stack, so
 	// discardCaches leaves it alone.
 	judgedThresholdSearches int
+	// currentsDepth is the depth scriptResolvingDepth takes while the script giving the base of an attribute is run for
+	// its current value as Attribute.maximumReadingCurrents runs it, or 0; see scriptReadsCurrents. It guards the call
+	// stack, so discardCaches leaves it alone.
+	currentsDepth int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1495,7 +1499,9 @@ func (e *Entity) sizeModifierForPrereqs() int {
 }
 
 // derivedStrength returns the floored sum of the bonus and the current value, as current resolves it, of the dedicated
-// strength attribute with the given ID, or of ST (never less than 0) when the sheet doesn't define that attribute.
+// strength attribute with the given ID, or of ST (never less than 0) when the sheet doesn't define that attribute. The
+// former's base reads ST's current value as "$st", so that what alters ST's current value alone alters both alike; see
+// Attribute.Current.
 func (e *Entity) derivedStrength(attrID string, bonus fxp.Int, current func(attrID string) fxp.Int) fxp.Int {
 	var st fxp.Int
 	if e.ResolveAttribute(attrID) != nil {
@@ -1895,9 +1901,10 @@ func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string,
 	})
 }
 
-// Move returns the current Move value for the given Encumbrance: the current value of the sheet's move attribute or,
-// without one, Basic Move (never below 0) plus MoveBonus with what the current thresholds and multipliers do to Move
-// applied (see currentAdjustment), then reduced for the encumbrance, which leaves at least 1 while the move is above 0.
+// Move returns the current Move value for the given Encumbrance: the current value of the sheet's move attribute,
+// whose base reads Basic Move's current value as "$basic_move" (see Attribute.Current), or, without one, the current
+// Basic Move (never below 0) plus MoveBonus with what the current thresholds and multipliers do to Move applied (see
+// currentAdjustment), then reduced for the encumbrance, which leaves at least 1 while the move is above 0.
 func (e *Entity) Move(enc encumbrance.Level) int {
 	var initialMove fxp.Int
 	if e.ResolveAttribute(MoveID) != nil {
@@ -2041,11 +2048,12 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 	return list
 }
 
-// Dodge returns the current Dodge value for the given Encumbrance: the current value of the sheet's dodge attribute
-// or, without one, Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with what the current
-// thresholds and multipliers do to Dodge applied (see currentAdjustment), then less the encumbrance penalty, but never
-// below 1. While the prerequisites of an item carrying a grant are judged, it is the Dodge they see, without the
-// bonuses from what the grant put on the sheet and with the thresholds as they see them; see JudgingPrereqsOf.
+// Dodge returns the current Dodge value for the given Encumbrance: the current value of the sheet's dodge attribute,
+// whose base reads Basic Speed's current value as "$basic_speed" (see Attribute.Current), or, without one, the current
+// Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with what the current thresholds and
+// multipliers do to Dodge applied (see currentAdjustment), then less the encumbrance penalty, but never below 1. While
+// the prerequisites of an item carrying a grant are judged, it is the Dodge they see, without the bonuses from what the
+// grant put on the sheet and with the thresholds as they see them; see JudgingPrereqsOf.
 func (e *Entity) Dodge(enc encumbrance.Level) int {
 	current, bonus := e.ResolveAttributeCurrent, e.DodgeBonus
 	if e.carriesGrant(e.judging) {
@@ -2288,6 +2296,14 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	}
 	e.variableCache[variableName] = result
 	return result
+}
+
+// scriptReadsCurrents reports whether the script running reads each attribute as "$id" for its current value rather
+// than its maximum, which only the script giving the base of an attribute standing in for Striking ST, Lifting ST,
+// Throwing ST, Dodge or Move does, while that base is evaluated for the attribute's current value; see
+// Attribute.maximumReadingCurrents.
+func (e *Entity) scriptReadsCurrents() bool {
+	return e.currentsDepth != 0 && e.currentsDepth == e.scriptResolvingDepth
 }
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.

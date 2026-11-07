@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -3395,6 +3396,21 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			bonus := NewAttributeBonus(StrengthID)
 			bonus.Amount = fxp.Five
 			strong.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.strikingStrength >= 15 ? "" : "Too weak"`)
+			return training, e.StrikingStrength
+		}, level: fxp.Ten},
+		{name: "multiplier from a granted trait to ST read by a script as a striking ST attribute", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			e.SheetSettings.Attributes.Set[StrikingStrengthID] = &AttributeDef{
+				DefID: StrikingStrengthID,
+				Type:  attribute.Integer,
+				Name:  "Striking ST",
+				Base:  "$st",
+			}
+			e.Attributes.Set[StrikingStrengthID] = NewAttribute(e, StrikingStrengthID, len(e.Attributes.Set))
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			strong.Features = Features{newMultiplier(StrengthID, fxp.Two)}
 			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
 			training.Prereq = NewPrereqList()
 			addScriptPrereq(training.Prereq, `entity.strikingStrength >= 15 ? "" : "Too weak"`)

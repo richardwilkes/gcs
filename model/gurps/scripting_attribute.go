@@ -67,7 +67,11 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	}
 	m["valueOf"] = func() goja.Value {
 		return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-			return resolveAttributeForScript(r, attr, attr.AttrID)
+			id := attr.AttrID
+			if attr.Entity != nil && attr.Entity.scriptReadsCurrents() {
+				id += ".current"
+			}
+			return resolveAttributeForScript(r, attr, id)
 		})
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
