@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -149,4 +150,102 @@ func TestThresholdFeatureRowKeysStayApartFromAttributeKeys(t *testing.T) {
 	field := stPanel.FindRefKey(st.KeyPrefix + "name")
 	c.NotNil(field, "precondition: the attribute has a name field")
 	c.True(d.targetMgr.Find(st.KeyPrefix+"name") == field, "the attribute's key finds its own name field")
+}
+
+// TestThresholdGrantItemEditorFollowsItsThreshold checks that the editor open on the item of a threshold's grant
+// follows the threshold across a change that replaces the dockable's model with a copy, so that what it applies lands
+// in the model the dockable holds and a click on the grant brings it forward rather than opening another, and that it
+// closes, without asking, once the change takes the threshold away, after which undoing the change and then what the
+// editor applied restores the item in the model the dockable holds.
+func TestThresholdGrantItemEditorFollowsItsThreshold(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		change func(d *attributeSettingsDockable)
+		kept   bool // whether the threshold is still there after the change
+	}{
+		{name: "undo", kept: true, change: func(d *attributeSettingsDockable) {
+			uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
+			d.undoMgr.Undo()
+		}},
+		{name: "reset", change: func(d *attributeSettingsDockable) { d.reset() }},
+		{name: "delete attribute", change: func(d *attributeSettingsDockable) {
+			for _, one := range uxtest.PanelsOfType[*attrDefSettingsPanel](d.AsPanel()) {
+				if one.def.DefID == "hp" {
+					one.deleteAttrDef()
+				}
+			}
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			g := gurps.NewGrant(feature.GrantTrait)
+			g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+			isTraitEditor := func(one unison.Dockable) bool {
+				_, ok := one.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+				return ok
+			}
+			var d *attributeSettingsDockable
+			screen.Do(func() {
+				defs := testAttrDefs("st", "hp")
+				def := defs.Set["hp"]
+				def.Type = attribute.Pool
+				def.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", Features: gurps.Features{g}}}
+				d = newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				p := thresholdFeaturesPanel(c, d)
+				p.editGrantedItem(grantAt(t, p, 0))
+			})
+			// itemName returns the name of the item given by the threshold's grant in the model the dockable holds.
+			itemName := func() string {
+				var name string
+				screen.Do(func() {
+					def := d.model.Set["hp"]
+					if def == nil || len(def.Thresholds) == 0 || len(def.Thresholds[0].Features) == 0 {
+						return
+					}
+					if one, isGrant := def.Thresholds[0].Features[0].(*gurps.Grant); isGrant {
+						name = one.ItemName()
+					}
+				})
+				return name
+			}
+			nested := uxtest.SoleEditor[*editor[*gurps.Trait, *gurps.TraitEditData]](t, screen, isTraitEditor)
+			screen.Do(func() {
+				nested.editorData.Name = "Dark Vision"
+				nested.apply()
+			})
+			c.Equal("Dark Vision", itemName(), "precondition: the editor applies to the grant")
+			screen.Do(func() {
+				nested.editorData.Name = "Blindsight"
+				nested.MarkModified(nil)
+				tc.change(d)
+			})
+			var open, windows int
+			screen.Do(func() {
+				open = len(AllMatchingDockables(isTraitEditor))
+				windows = len(unison.Windows())
+			})
+			if !tc.kept {
+				c.Equal(0, open, "the editor closes along with the threshold")
+				c.Equal(1, windows, "nothing asks about its changes: %v", wnd.Title())
+				screen.Do(d.undoMgr.Undo)
+				c.Equal("Dark Vision", itemName(), "precondition: undo brings the threshold back")
+				screen.Do(d.undoMgr.Undo)
+				c.Equal("Night Vision", itemName(), "undoing what the editor applied restores the item")
+				return
+			}
+			c.Equal(1, open, "the editor stays open on the threshold's grant")
+			screen.Do(nested.apply)
+			c.Equal("Blindsight", itemName(), "the edit lands in the model the dockable holds")
+			screen.Do(func() {
+				p := thresholdFeaturesPanel(c, d)
+				p.editGrantedItem(grantAt(t, p, 0))
+				open = len(AllMatchingDockables(isTraitEditor))
+			})
+			c.Equal(1, open, "a click on the grant brings its editor forward rather than opening another")
+		})
+	}
 }

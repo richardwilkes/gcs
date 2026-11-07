@@ -153,6 +153,7 @@ func (d *attributeSettingsDockable) buildContent() {
 		d.content.AddChild(newAttrDefSettingsPanel(d, def))
 	}
 	d.adjustDeleteButtons()
+	followGrantItemEditors(d)
 }
 
 // adjustDeleteButtons enables the delete button of every attribute panel unless only one attribute remains, in which

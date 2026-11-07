@@ -62,6 +62,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 func (p *attrDefSettingsPanel) deleteAttrDef() {
 	p.RemoveFromParent()
 	p.dockable.adjustDeleteButtons()
+	followGrantItemEditors(p.dockable)
 	undo := p.dockable.prepareUndo(i18n.Text("Delete Attribute"))
 	delete(p.dockable.model.Set, p.def.DefID)
 	p.dockable.finishAndPostUndo(undo)
