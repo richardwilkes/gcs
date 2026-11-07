@@ -48,7 +48,9 @@ func NewPoolThreshold() *PoolThreshold {
 }
 
 // legacyThresholdOps lists the keys of the operations a threshold held before it held features, each with the
-// attribute it halved and, for ST, the limitation it halved it under.
+// attribute it halved and, for ST, the limitation it halved it under. The lifting-only multiplier that halve_st
+// becomes reaches everything that reads the lifting ST, not only the Basic Lift the flag halved; that is intended,
+// see LiftingStrength.
 var legacyThresholdOps = []struct {
 	key        string
 	attrID     string

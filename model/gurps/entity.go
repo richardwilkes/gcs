@@ -1443,8 +1443,14 @@ func (e *Entity) StrikingStrength() fxp.Int {
 	return e.strengthFor(StrikingStrengthID, stlimit.StrikingOnly, e.StrikingStrengthBonus)
 }
 
-// LiftingStrength returns the adjusted ST for lifting purposes. While the prerequisites of an item carrying a grant
-// are judged, it is the ST they see; see strengthFor.
+// LiftingStrength returns the adjusted ST for lifting purposes. While the prerequisites of an item carrying a grant are
+// judged, it is the ST they see; see strengthFor.
+//
+// The thresholds' lifting-only ST multipliers, such as the ×0.5 the Tired threshold holds and the old halve_st flag
+// converts to (see featuresForLegacyOps), are built into this value on purpose, where the flag halved only Basic Lift:
+// lifting thrust and swing, weapons whose damage uses lifting ST, the minimum-ST check of non-muscle-powered ranged
+// weapons, the jumping calculator and the liftingStrength script value are meant to see the halved ST as well. Note
+// that nothing in GURPS rules-as-written uses lifting thrust or swing damage, so its inclusion was a judgement call.
 func (e *Entity) LiftingStrength() fxp.Int {
 	return e.strengthFor(LiftingStrengthID, stlimit.LiftingOnly, e.LiftingStrengthBonus)
 }
