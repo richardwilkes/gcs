@@ -475,19 +475,14 @@ func (t *TraitModifier) CurrentLevel() fxp.Int {
 	return 0
 }
 
-// String implements fmt.Stringer. A leveled modifier shows its level as CurrentLevel does, or, when it or its trait is
-// disabled, the level it would have were both enabled, as a disabled trait does.
+// String implements fmt.Stringer. A modifier with its own levels shows them; one that takes its level from its trait
+// doesn't, since the trait already shows it.
 func (t *TraitModifier) String() string {
 	var buffer strings.Builder
 	buffer.WriteString(t.NameWithReplacements())
-	if t.IsLeveled() {
-		level := t.Levels
-		if t.UseLevelFromTrait {
-			// A leveled modifier taking its level from its trait has one; see isLeveledForTrait.
-			level = t.trait.internalCurrentLevel(nil)
-		}
+	if t.IsLeveled() && !t.UseLevelFromTrait {
 		buffer.WriteByte(' ')
-		buffer.WriteString(level.Max(fxp.One).String())
+		buffer.WriteString(t.Levels.Max(fxp.One).String())
 	}
 	return buffer.String()
 }

@@ -740,14 +740,14 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	c.Equal("\nInnate Attack 3 (Targeting 2) [+2 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip names the modifier with its level and agrees with the amount applied")
 
-	// A "use level from owner" modifier reports the trait's level, and the bonus scales by that.
+	// A "use level from owner" modifier's bonus scales by the trait's level, which the trait already shows.
 	mod.Levels = 0
 	mod.UseLevelFromTrait = true
 	e.Recalculate()
 	tooltip.Reset()
 	c.Equal("6", w.ResolvedAccuracy(&tooltip).String(),
 		"a modifier that takes the trait's level of 3 raises Acc 3 to 6")
-	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to accuracy]", tooltip.String(),
+	c.Equal("\nInnate Attack 3 (Targeting) [+3 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip agrees with the amount applied when the level comes from the trait")
 }
 
