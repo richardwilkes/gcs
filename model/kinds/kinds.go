@@ -26,6 +26,7 @@ const (
 	NavigatorDirectory           = '2'
 	NavigatorFile                = '3'
 	Note                         = 'n'
+	PoolThreshold                = 'l'
 	NoteContainer                = 'N'
 	Reaction                     = 'x'
 	ReactionContainer            = 'X'

@@ -28,6 +28,11 @@ type AttributeBonus struct {
 	FeatureSwitch
 	Limitation stlimit.Option `json:"limitation,omitzero"`
 	Attribute  string         `json:"attribute"`
+	// Multiply makes Amount a factor the attribute's current value is multiplied by, after every amount added to it,
+	// rather than an amount added, and PerLevel doesn't apply to it. A multiplier leaves alone the value scripts read as
+	// "$id", that derived attributes and point costs rest on, and does nothing to a pool or the size modifier; see
+	// Attribute.Current.
+	Multiply bool `json:"multiply,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -71,13 +76,28 @@ func (a *AttributeBonus) SetLeveledOwner(owner LeveledOwner) {
 
 // AddToTooltip implements Bonus.
 func (a *AttributeBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
+	if a.Multiply {
+		a.addAmountToTooltip(a.factorText(), buffer)
+		return
+	}
 	a.basicAddToTooltip(&a.LeveledAmount, buffer)
 }
 
-// Describe implements Feature. The attribute is named as the entity, which may be nil, defines it.
+// factorText returns the multiplier as text, such as "×0.5".
+func (a *AttributeBonus) factorText() string {
+	return fxp.MultiplicationSign + a.Amount.String()
+}
+
+// Describe implements Feature. The attribute is named as the entity, which may be nil, defines it. A multiplier is
+// described as its factor, such as "×0.5".
 func (a *AttributeBonus) Describe(entity *Entity, _ map[string]string, em func(string) string) string {
-	text := describeAmount(a.Amount.StringWithSign(), a.PerLevel, em) + i18n.Text(" to ") +
-		em(attributeTitle(entity, a.Attribute))
+	var amount string
+	if a.Multiply {
+		amount = em(a.factorText())
+	} else {
+		amount = describeAmount(a.Amount.StringWithSign(), a.PerLevel, em)
+	}
+	text := amount + i18n.Text(" to ") + em(attributeTitle(entity, a.Attribute))
 	if limitation := a.ActualLimitation(); limitation != stlimit.None {
 		text += " " + limitation.String()
 	}
@@ -94,5 +114,6 @@ func (a *AttributeBonus) Hash(h hash.Hash) {
 	xhash.Bool(h, a.Switchable)
 	xhash.Num8(h, a.Limitation)
 	xhash.StringWithLen(h, a.Attribute)
+	xhash.Bool(h, a.Multiply)
 	a.LeveledAmount.Hash(h)
 }

@@ -232,3 +232,94 @@ func TestAttrPanelPointsFieldsAreSpokenAsPoints(t *testing.T) {
 	c.Nil(node.Text, "the drawn text must be withheld from the node")
 	c.Equal("20 points", node.Name)
 }
+
+// tiredEntity returns a new entity whose FP are damaged to 7 of 10, which puts them in the Tired threshold, with the
+// given features added to those the factory definitions give that threshold.
+func tiredEntity(t *testing.T, features ...gurps.Feature) *gurps.Entity {
+	t.Helper()
+	e := gurps.NewEntity()
+	var tired *gurps.PoolThreshold
+	for _, one := range e.SheetSettings.Attributes.Set[gurps.FatiguePointsID].Thresholds {
+		if one.State == "Tired" {
+			tired = one
+		}
+	}
+	if tired == nil {
+		t.Fatal("the factory FP definition must have a Tired threshold")
+	}
+	tired.Features = append(tired.Features, features...)
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	return e
+}
+
+// TestAttrPanelShowsAdjustedCurrentValue verifies that the value field of an attribute held away from its maximum by a
+// pool threshold shows the current value in adjustedInk, names the maximum in its tooltip and spoken name, and puts
+// the maximum in place for editing, and that all of that goes once the threshold no longer applies.
+func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
+	c := check.New(t)
+	halveST := gurps.NewAttributeBonus(gurps.StrengthID)
+	halveST.Multiply = true
+	halveST.Amount = fxp.Half
+	e := tiredEntity(t, halveST)
+	panel := NewPrimaryAttrPanel(e, NewTargetMgr(unison.NewPanel()))
+	field, ok := panel.valueFields[gurps.StrengthID].(*IntegerField)
+	c.True(ok, "the ST value field must be an integer field")
+	dx, ok := panel.valueFields[gurps.DexterityID].(*IntegerField)
+	c.True(ok, "the DX value field must be an integer field")
+	normalInk := dx.OnEditableInk
+	c.NotEqual(adjustedInk, normalInk, "an attribute left alone is drawn in the normal ink")
+	spokenName := func() string {
+		node := &accessibility.Node{Name: "ST"}
+		field.Accessibility.Callback(node)
+		return node.Name
+	}
+
+	c.Equal("5", field.Text(), "the current value shows while the field is not being edited")
+	c.Equal(adjustedInk, field.OnEditableInk, "the adjusted value is drawn in adjustedInk")
+	tip := tooltipText(field.Tooltip)
+	c.Contains(tip, "Adjusted from 10", "the tooltip names the maximum")
+	c.Contains(tip, "Tired (FP) [×0.5]", "the tooltip names the threshold")
+	c.Equal("ST, adjusted from 10", spokenName())
+
+	field.gainedFocus()
+	c.Equal("10", field.Text(), "the maximum is what is edited")
+	field.lostFocus()
+	c.Equal("5", field.Text(), "the current value returns once the focus is lost")
+
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = 0
+	e.Recalculate()
+	DeepSync(panel)
+	c.Equal("10", field.Text(), "rested, the current value is the maximum")
+	c.Equal(normalInk, field.OnEditableInk, "rested, the value is drawn in the normal ink")
+	c.NotContains(tooltipText(field.Tooltip), "Tired", "rested, the tooltip no longer names the threshold")
+	c.Equal("ST", spokenName(), "rested, the spoken name is just the attribute's")
+}
+
+// TestAttrPanelPoolStateListsThresholdFeatures verifies that the state of a pool whose current threshold has features
+// is drawn in adjustedInk, with those features listed in its tooltip after the explanation.
+func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
+	c := check.New(t)
+	e := tiredEntity(t)
+	panel := NewPointPoolsPanel(e, NewTargetMgr(unison.NewPanel()))
+	label := panel.stateLabels[gurps.FatiguePointsID]
+	c.NotNil(label, "the FP state label must be tracked")
+	stateInk := func() unison.Ink {
+		var ink unison.Ink
+		label.Text.AdjustDecorations(func(d *unison.TextDecoration) { ink = d.OnBackgroundInk })
+		return ink
+	}
+	c.Equal("[TIRED]", strings.ToUpper(label.Text.String()))
+	c.Equal(adjustedInk, stateInk(), "a threshold with features is drawn in adjustedInk")
+	md := findMarkdown(label.Tooltip)
+	c.NotNil(md, "the tooltip must hold the explanation")
+	content := string(md.ContentBytes())
+	c.Contains(content, "Move, Dodge and ST are halved", "the explanation leads the tooltip")
+	c.Contains(content, "- ×0.5 to ", "the features are listed after it")
+
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Two
+	e.Recalculate()
+	panel.Sync()
+	c.Equal("[TIRING]", strings.ToUpper(label.Text.String()))
+	c.NotEqual(adjustedInk, stateInk(), "a threshold without features is drawn in the normal ink")
+}

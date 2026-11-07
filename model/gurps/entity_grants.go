@@ -182,8 +182,9 @@ func grantLink(node any) **GrantedBy {
 }
 
 // forEachGrant calls fn with every grant on the sheet, in sheet order, whether in effect or not, along with the ID of
-// the item or modifier carrying it and what carries it. Grants carried by an item or modifier the user has disabled,
-// or by a granted item, are skipped.
+// the item, modifier or pool threshold carrying it and what carries it. Grants carried by an item or modifier the user
+// has disabled, or by a granted item, are skipped. The thresholds of the pools come last, every one of them, since
+// whether the pool is at a threshold is for each pass to decide; see processThresholdFeatures.
 func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Grant)) {
 	each := func(grantor tid.TID, source grantSource, list Features) {
 		for _, f := range list {
@@ -230,6 +231,11 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
+	for _, def := range e.SheetSettings.Attributes.List(true) {
+		for _, t := range def.Thresholds {
+			each(t.TID, grantSource{owner: t, subOwner: def}, t.Features)
+		}
+	}
 }
 
 // reconcileGrants brings the items grants put on the sheet in line with its grants, before the recalculation passes, so
@@ -886,7 +892,8 @@ func grantedFor(owner, node any) bool {
 // grantCarrierUnmet returns true if the item carrying a grant has prerequisites that are not met, which leaves its
 // grants out of effect, as a switch turned off does, with the items they put on the sheet staying there dimmed. Until a
 // pass of this recalculation has judged them, they count as met. A trait above its maximum level, which records that
-// along with any unmet prerequisite, keeps its grants in effect, as it does its other features.
+// along with any unmet prerequisite, keeps its grants in effect, as it does its other features. A pool threshold has no
+// prerequisites; its grants are in effect while the pool is at it (see processThresholdFeatures).
 func (e *Entity) grantCarrierUnmet(owner fmt.Stringer) bool {
 	if !e.grantCarriersJudged {
 		return false

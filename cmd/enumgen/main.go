@@ -1782,31 +1782,6 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
-		Pkg:  "model/gurps/enums/threshold",
-		Name: "op",
-		Desc: "holds an operation to apply when a pool threshold is hit",
-		Values: []*enumValue{
-			{
-				Key: "unknown",
-				Alt: "Unknown",
-			},
-			{
-				Key: "halve_move",
-				Alt: "Halve Move (round up)",
-			},
-			{
-				Key: "halve_dodge",
-				Alt: "Halve Dodge (round up)",
-			},
-			{
-				Name:   "HalveST",
-				Key:    "halve_st",
-				String: "Halve Strength",
-				Alt:    "Halve Strength (round up; does not affect HP and damage)",
-			},
-		},
-	},
-	{
 		Pkg:  "model/gurps/enums/updatecheck",
 		Name: "option",
 		Desc: "holds how often to check for updates",

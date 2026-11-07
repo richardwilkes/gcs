@@ -24,7 +24,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
@@ -34,7 +33,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -106,6 +104,9 @@ type features struct {
 	weaponBonuses        []*WeaponBonus
 	selectorOverrides    []*SelectorOverride
 	grants               map[*Grant]bool
+	// currentAttributeBonuses holds the attribute bonuses that alter current values alone: every multiplier, and every
+	// bonus of a pool's current threshold; attributeBonuses holds the rest. See currentAdjustment.
+	currentAttributeBonuses []*AttributeBonus
 }
 
 // ownedCostReduction is a cost reduction along with the item it came from.
@@ -117,10 +118,13 @@ type ownedCostReduction struct {
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
 type Entity struct {
 	EntityData
-	LiftingStrengthBonus           fxp.Int
-	StrikingStrengthBonus          fxp.Int
-	ThrowingStrengthBonus          fxp.Int
-	DodgeBonus                     fxp.Int
+	LiftingStrengthBonus  fxp.Int
+	StrikingStrengthBonus fxp.Int
+	ThrowingStrengthBonus fxp.Int
+	DodgeBonus            fxp.Int
+	// MoveBonus is the total of the bonuses the items in effect give Move while the sheet defines no move attribute;
+	// see Move.
+	MoveBonus                      fxp.Int
 	ParryBonus                     fxp.Int
 	ParryBonusTooltip              string
 	BlockBonus                     fxp.Int
@@ -190,6 +194,14 @@ type Entity struct {
 	// levelCapEdit holds the skill or spell an editor previews the level of, with the copy of it holding the edits,
 	// while that level is held to the level caps, so that the references match it as edited; see matchLevelCapsAs.
 	levelCapEdit levelCapEdit
+	// currentAdjustments holds what the current thresholds of the pools and the multipliers do to the sheet's values,
+	// as processThresholdFeatures recorded it; a value with no entry is left alone.
+	currentAdjustments map[adjustmentKey]currentAdjustment
+	// judgedThresholdSearches is the depth of the searches in progress for a pool's threshold as the prerequisites
+	// being judged see it. While one runs, nothing those prerequisites read carries a current adjustment, as nothing
+	// the sheet reads does while its own thresholds are found; see currentAdjustmentFor. It guards the call stack, so
+	// discardCaches leaves it alone.
+	judgedThresholdSearches int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -293,6 +305,7 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 		StrikingStrengthBonus fxp.Int    `json:"striking_st_bonus,omitzero"`
 		ThrowingStrengthBonus fxp.Int    `json:"throwing_st_bonus,omitzero"`
 		DodgeBonus            fxp.Int    `json:"dodge_bonus,omitzero"`
+		MoveBonus             fxp.Int    `json:"move_bonus,omitzero"`
 		ParryBonus            fxp.Int    `json:"parry_bonus,omitzero"`
 		BlockBonus            fxp.Int    `json:"block_bonus,omitzero"`
 		Move                  []int      `json:"move"`
@@ -311,6 +324,7 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 			StrikingStrengthBonus: e.StrikingStrengthBonus,
 			ThrowingStrengthBonus: e.ThrowingStrengthBonus,
 			DodgeBonus:            e.DodgeBonus,
+			MoveBonus:             e.MoveBonus,
 			ParryBonus:            e.ParryBonus,
 			BlockBonus:            e.BlockBonus,
 			Move:                  make([]int, len(encumbrance.Levels)),
@@ -701,7 +715,8 @@ func (e *Entity) markContradictedTraits(verdicts [][]traitPrereqVerdict, cyclic 
 // of them: a script computes the level it reads from the penalties in place as it runs, so one judged early in the
 // walk would otherwise see fewer than one judged late, with nothing to prompt a further pass to put that right. The
 // caches are discarded first, so that nothing in the pass is computed from a variable, lift or script result the
-// previous pass cached, except for the results kept for the reason discardCaches gives.
+// previous pass cached, except for the results kept for the reason discardCaches gives, and again once the features of
+// the pools' thresholds are in place; see processThresholdFeatures.
 func (e *Entity) recalculationPass() {
 	e.discardCaches(true)
 	e.processFeatures()
@@ -825,8 +840,12 @@ func (e *Entity) EnsureAttachments() {
 	SetDataOwnerAll(e, e.Notes)
 }
 
+// processFeatures collects the features in effect and records what they do to the attributes, the size modifier and
+// the defenses: first those of the items, then, from the thresholds the pools are found at with those in place, those
+// of the thresholds; see processThresholdFeatures.
 func (e *Entity) processFeatures() {
 	e.features = features{}
+	e.currentAdjustments = nil
 	e.forEachActiveFeatureList(func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features) {
 		for _, f := range list {
 			e.processFeature(owner, mod, f, leveled)
@@ -893,12 +912,14 @@ func (e *Entity) processFeatures() {
 	} else {
 		e.DodgeBonus = 0
 	}
-	var tooltip xbytes.InsertBuffer
-	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, &tooltip).Floor()
-	e.ParryBonusTooltip = tooltip.String()
-	tooltip.Reset()
-	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, &tooltip).Floor()
-	e.BlockBonusTooltip = tooltip.String()
+	if e.ResolveAttribute(MoveID) == nil {
+		e.MoveBonus = e.AttributeBonusFor(MoveID, stlimit.None, nil).Floor()
+	} else {
+		e.MoveBonus = 0
+	}
+	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, nil).Floor()
+	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, nil).Floor()
+	e.processThresholdFeatures()
 }
 
 // forEachActiveFeatureList calls fn with each list of features currently in effect on the entity: those of every
@@ -908,8 +929,9 @@ func (e *Entity) processFeatures() {
 // the primary item is on. The owner is the primary item and mod is the modifier carrying the list, or nil when the list
 // is the item's own. The leveled owner is the node whose level drives a per-level amount: the modifier itself for trait
 // modifiers, which can have levels of their own, and the equipment for equipment modifiers, which cannot. Everything
-// that gathers features from the entity goes through this walk, so they all agree on which features are in effect;
-// processFeatures alone adds those of a trait that only the prerequisites of a carrier see enabled, for them to read.
+// that gathers features from the entity goes through this walk, so they all agree on which features are in effect.
+// processFeatures also adds those of a trait that only the prerequisites of a carrier see enabled, for them to read,
+// and, like gatherConditionalModifiers, those of the pools' current thresholds; see forEachThresholdFeatureList.
 func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
 	Traverse(func(t *Trait) bool {
 		forEachActiveTraitFeatureList(t, func(mod fmt.Stringer, leveled LeveledOwner, list Features) {
@@ -962,9 +984,10 @@ func forEachActiveEquipmentFeatureList(eqp *Equipment, fn func(mod fmt.Stringer,
 
 // processFeature collects a feature into the entity's feature lists. The owner is the primary item the feature came
 // from (a trait, skill, spell, or piece of equipment) and the sub-owner, when present, is the modifier of that item
-// carrying the feature; together they name the source in tooltips. The leveled owner is the node whose level drives a
-// per-level amount: the modifier itself for trait modifiers, which can have levels of their own, and the primary item
-// for equipment modifiers, which cannot.
+// carrying the feature, or the owner is the threshold of a pool and the sub-owner the pool's definition; together they
+// name the source in tooltips. The leveled owner is the node whose level drives a per-level amount: the modifier
+// itself for trait modifiers, which can have levels of their own, and the primary item for equipment modifiers, which
+// cannot; a threshold has none.
 func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveledOwner LeveledOwner) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
@@ -977,7 +1000,11 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	}
 	switch actual := f.(type) {
 	case *AttributeBonus:
-		e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
+		if _, fromThreshold := owner.(*PoolThreshold); fromThreshold || actual.Multiply {
+			e.features.currentAttributeBonuses = append(e.features.currentAttributeBonuses, actual)
+		} else {
+			e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
+		}
 	case *CostReduction:
 		e.features.costReductions = append(e.features.costReductions, ownedCostReduction{CostReduction: actual, owner: owner})
 	case *EquipmentMaxUsesBonus:
@@ -1018,20 +1045,30 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	}
 }
 
-// defenseBonus returns the entity's bonus for ParryID or BlockID, and zero for any other ID. While the prerequisites
-// of an item carrying a grant are judged, the bonus is the one they see, without the bonuses from what the grant put on
-// the sheet; see JudgingPrereqsOf.
-func (e *Entity) defenseBonus(defenseID string) fxp.Int {
+// defenseAdjustment returns what the entity does to the parry or block defenseID names, and nothing for any other ID:
+// the bonus the items in effect give it, along with what the current thresholds and multipliers do to it. While the
+// prerequisites of an item carrying a grant are judged, it is what they see, without the bonuses from what the grant
+// put on the sheet; see JudgingPrereqsOf.
+func (e *Entity) defenseAdjustment(defenseID string) currentAdjustment {
 	if defenseID != ParryID && defenseID != BlockID {
-		return 0
+		return currentAdjustment{}
 	}
-	if e.carriesGrant(e.judging) {
-		return e.AttributeBonusFor(defenseID, stlimit.None, nil).Floor()
+	adj := e.adjustmentFor(defenseID, stlimit.None)
+	switch {
+	case e.carriesGrant(e.judging):
+		adj.bonus += e.AttributeBonusFor(defenseID, stlimit.None, nil).Floor()
+	case defenseID == ParryID:
+		adj.bonus += e.ParryBonus
+	default:
+		adj.bonus += e.BlockBonus
 	}
-	if defenseID == ParryID {
-		return e.ParryBonus
-	}
-	return e.BlockBonus
+	return adj
+}
+
+// defenseLevel returns the level of the parry or block defenseID names that a skill at skillLevel provides: the level
+// defenseLevelFromSkill gives it, with defenseAdjustment's bonus added and its multipliers applied, rounded to whole.
+func (e *Entity) defenseLevel(defenseID string, skillLevel fxp.Int) fxp.Int {
+	return e.defenseAdjustment(defenseID).apply(defenseLevelFromSkill(skillLevel), true)
 }
 
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
@@ -1419,15 +1456,30 @@ func (e *Entity) ThrowingStrength() fxp.Int {
 }
 
 // strengthFor returns the adjusted ST that StrikingStrength, LiftingStrength or ThrowingStrength returns, given the ID
-// of its dedicated strength attribute, the limitation of the ST bonuses it adds and their total. While the
-// prerequisites of an item carrying a grant are judged, the ST and those bonuses are taken without the bonuses from
-// what the grant put on the sheet; see JudgingPrereqsOf.
+// of its dedicated strength attribute, the limitation of the ST bonuses it adds and their total, with what the current
+// thresholds and multipliers given ST under the same limitation do to it applied after; see currentAdjustment. While
+// the prerequisites of an item carrying a grant are judged, the ST and those bonuses are taken without the bonuses
+// from what the grant put on the sheet; see JudgingPrereqsOf.
 func (e *Entity) strengthFor(attrID string, limitation stlimit.Option, bonus fxp.Int) fxp.Int {
 	if e.carriesGrant(e.judging) {
-		return e.derivedStrength(attrID, e.AttributeBonusFor(StrengthID, limitation, nil).Floor(),
-			e.resolveAttributeCurrentForPrereqs)
+		return e.currentAdjustmentFor(StrengthID, limitation, nil).apply(e.derivedStrength(attrID,
+			e.AttributeBonusFor(StrengthID, limitation, nil).Floor(), e.resolveAttributeCurrentForPrereqs), true)
 	}
-	return e.derivedStrength(attrID, bonus, e.ResolveAttributeCurrent)
+	return e.sheetAdjustment(StrengthID, limitation).apply(e.derivedStrength(attrID, bonus, e.ResolveAttributeCurrent),
+		true)
+}
+
+// LiftingStrengthForThrowing returns the lifting ST a throw's distance is worked out from: LiftingStrength without the
+// amounts limited to lifting added to it, from items or thresholds, but with the multipliers limited to lifting applied.
+// While the prerequisites of an item carrying a grant are judged, it is the ST they see.
+func (e *Entity) LiftingStrengthForThrowing() fxp.Int {
+	adj := e.adjustmentFor(StrengthID, stlimit.LiftingOnly)
+	adj.bonus = 0
+	current := e.ResolveAttributeCurrent
+	if e.carriesGrant(e.judging) {
+		current = e.resolveAttributeCurrentForPrereqs
+	}
+	return adj.apply(e.derivedStrength(LiftingStrengthID, 0, current), true)
 }
 
 // sizeModifierForPrereqs returns the adjusted size modifier as the prerequisites being judged see it: with the bonuses
@@ -1518,7 +1570,9 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 	return e.SheetSettings.DamageProgression.Swing(st)
 }
 
-// AttributeBonusFor returns the bonus for the given attribute.
+// AttributeBonusFor returns the total of the amounts the items in effect add to the given attribute, which make up its
+// maximum. Multipliers and the bonuses of the pools' thresholds alter only its current value and are left out; see
+// currentAdjustmentFor.
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
@@ -1835,16 +1889,16 @@ func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string,
 	})
 }
 
-// Move returns the current Move value for the given Encumbrance.
+// Move returns the current Move value for the given Encumbrance: the current value of the sheet's move attribute or,
+// without one, Basic Move (never below 0) plus MoveBonus with what the current thresholds and multipliers do to Move
+// applied (see currentAdjustment), then reduced for the encumbrance, which leaves at least 1 while the move is above 0.
 func (e *Entity) Move(enc encumbrance.Level) int {
 	var initialMove fxp.Int
 	if e.ResolveAttribute(MoveID) != nil {
 		initialMove = e.ResolveAttributeCurrent(MoveID)
 	} else {
-		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
-	}
-	if divisor := 2 * min(CountThresholdOpMet(threshold.HalveMove, e.Attributes), 2); divisor > 0 {
-		initialMove = initialMove.Div(fxp.FromInteger(divisor)).Ceil()
+		initialMove = e.sheetAdjustment(MoveID, stlimit.None).apply((e.ResolveAttributeCurrent(BasicMoveID).Max(0) +
+			e.MoveBonus).Max(0), true)
 	}
 	move := initialMove.Mul(fxp.Ten + fxp.Two.Mul(enc.Penalty())).Div(fxp.Ten).Floor()
 	if move < fxp.One {
@@ -1981,8 +2035,11 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 	return list
 }
 
-// Dodge returns the current Dodge value for the given Encumbrance. While the prerequisites of an item carrying a grant
-// are judged, it is the Dodge they see, without the bonuses from what the grant put on the sheet; see JudgingPrereqsOf.
+// Dodge returns the current Dodge value for the given Encumbrance: the current value of the sheet's dodge attribute
+// or, without one, Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with what the current
+// thresholds and multipliers do to Dodge applied (see currentAdjustment), then less the encumbrance penalty, but never
+// below 1. While the prerequisites of an item carrying a grant are judged, it is the Dodge they see, without the
+// bonuses from what the grant put on the sheet and with the thresholds as they see them; see JudgingPrereqsOf.
 func (e *Entity) Dodge(enc encumbrance.Level) int {
 	current, bonus := e.ResolveAttributeCurrent, e.DodgeBonus
 	if e.carriesGrant(e.judging) {
@@ -1993,11 +2050,8 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 		// The dodge attribute carries the bonuses to Dodge itself.
 		dodge = current(DodgeID)
 	} else {
-		dodge = current(BasicSpeedID).Max(0) + fxp.Three + bonus
-	}
-	divisor := 2 * min(CountThresholdOpMet(threshold.HalveDodge, e.Attributes), 2)
-	if divisor > 0 {
-		dodge = dodge.Div(fxp.FromInteger(divisor)).Ceil()
+		dodge = e.adjustmentFor(DodgeID, stlimit.None).apply((current(BasicSpeedID).Max(0) + fxp.Three + bonus).Floor(),
+			true)
 	}
 	return (dodge + enc.Penalty()).Max(fxp.One).AsInteger[int]()
 }
@@ -2123,21 +2177,13 @@ func (e *Entity) BasicLift() fxp.Weight {
 	return e.basicLiftCache
 }
 
-// BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
+// BasicLiftForST returns the entity's Basic Lift as if their lifting ST was the given value, under the sheet's damage
+// progression. It applies no multiplier, since LiftingStrength already carries those limited to lifting.
 func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
-	st = st.Floor()
-	if IsThresholdOpMet(threshold.HalveST, e.Attributes) {
-		st = st.Div(fxp.Two)
-		if st != st.Floor() {
-			st = st.Floor() + fxp.One
-		}
-	}
 	return BasicLiftForST(st, e.SheetSettings.DamageProgression)
 }
 
-// BasicLiftForST returns the Basic Lift for the given ST under the given damage progression (BX17), for a character
-// that is not on a sheet. A sheet's character has its own BasicLiftForST, which also honors any threshold that halves
-// its ST.
+// BasicLiftForST returns the Basic Lift for the given ST under the given damage progression (BX17).
 func BasicLiftForST(st fxp.Int, damageProgression progression.Option) fxp.Weight {
 	st = st.Floor()
 	if st < fxp.One {
@@ -2193,7 +2239,8 @@ func (e *Entity) skillLevelResolutionKey(name, specialization, optionalSpecializ
 	return name + "\u0000" + specialization + "\u0000" + optionalSpecialization
 }
 
-// ResolveVariable resolves a variable to a value.
+// ResolveVariable resolves a variable to a value: an attribute's ID to its maximum, its ID followed by ".current" to its
+// current value (see Attribute.Current) and "sm" to the adjusted size modifier.
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
 		slog.Error("attempt to resolve variable via itself", "name", variableName)
@@ -2223,7 +2270,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		slog.Error("no such variable definition", "name", variableName)
 		return ""
 	}
-	current := (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current"
+	current := len(parts) > 1 && parts[1] == "current"
 	if forPrereqs {
 		return e.attributeForPrereqs(attr, current).String()
 	}
@@ -2275,8 +2322,9 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 
 // resolveAttributeCurrentForPrereqs is ResolveAttributeCurrent as the prerequisites being judged see the attribute:
 // with the bonuses from what the grants of the item judged put on the sheet left out (see JudgingPrereqsOf), where its
-// own bonus holds them until the next pass. The skill and spell levels read it as well, so that a level computed while
-// prerequisites are judged leaves those bonuses out too, and it is ResolveAttributeCurrent at any other time.
+// own bonus holds them until the next pass, and with the pools' thresholds as those prerequisites see them. The skill
+// and spell levels read it as well, so that a level computed while prerequisites are judged leaves those bonuses out
+// too, and it is ResolveAttributeCurrent at any other time.
 func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 	if e == nil || !e.carriesGrant(e.judging) {
 		return e.ResolveAttributeCurrent(attrID)
@@ -2290,10 +2338,10 @@ func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 
 // attributeForPrereqs returns the attribute's current value, or its maximum, as the prerequisites being judged see it:
 // with the bonuses from what the grants of the item judged put on the sheet left out, of it and of every attribute its
-// base is derived from, which the script giving its base reads this way through ResolveVariable while this runs. The
-// script sees the item judged and its result is not kept, since it is computed with those bonuses left out, unless the
-// script was stopped before it could answer, which is kept apart from the result the rest of the sheet gets from it;
-// see resolveScript.
+// base is derived from, which the script giving its base reads this way through ResolveVariable while this runs, and
+// with the pools' thresholds as those prerequisites see them (see currentAdjustmentFor). The script sees the item
+// judged and its result is not kept, since it is computed with those bonuses left out, unless the script was stopped
+// before it could answer, which is kept apart from the result the rest of the sheet gets from it; see resolveScript.
 func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
 	e.scriptsForPrereqs++
 	defer func() { e.scriptsForPrereqs-- }()
@@ -2302,7 +2350,7 @@ func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
 		bonus = bonus.Floor()
 	}
 	if current {
-		return attr.currentWithBonus(bonus)
+		return attr.currentWith(bonus, true)
 	}
 	return attr.maximumWithBonus(bonus)
 }
@@ -2447,8 +2495,8 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 	// Not permitted
 }
 
-// gatherConditionalModifiers walks the entity's active features, collecting conditional modifiers (or reactions) into
-// the root rows of the table that shows them. namespace is that table's block key. collectFromList extracts the
+// gatherConditionalModifiers walks the entity's active features and those of the pools' current thresholds, collecting
+// conditional modifiers (or reactions) into the root rows of the table that shows them. namespace is that table's block key. collectFromList extracts the
 // relevant bonuses from a feature list into the collector, and perTrait, if non-nil, contributes any additional
 // modifiers for each enabled trait (used for self-control reaction penalties). keep, if non-nil, selects the modifiers
 // to retain; it is applied before they are filed under their groups, so that a group emptied by it is dropped too.
@@ -2462,6 +2510,9 @@ func (e *Entity) gatherConditionalModifiers(
 	collector := newCondModCollector(e.ID, namespace)
 	e.forEachActiveFeatureList(func(owner, _ fmt.Stringer, _ LeveledOwner, list Features) {
 		collectFromList(conditionalModifierSource(owner), list, collector)
+	})
+	e.forEachThresholdFeatureList(func(t *PoolThreshold, def *AttributeDef, list Features) {
+		collectFromList(i18n.Text("from %s (%s)", t.State, def), list, collector)
 	})
 	if perTrait != nil {
 		Traverse(func(t *Trait) bool {

@@ -221,13 +221,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
 	case "ST":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.StrengthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.StrengthID).String())
 	case "DX":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.DexterityID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.DexterityID).String())
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.IntelligenceID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.IntelligenceID).String())
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HealthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HealthID).String())
 	case "FP":
 		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
 	case "BASIC_FP":
@@ -237,23 +237,23 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BASIC_HP":
 		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HitPointsID).String())
 	case "WILL":
-		ex.writeEncodedText(ex.entity.Attributes.Current("will").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("will").String())
 	case "FRIGHT_CHECK":
-		ex.writeEncodedText(ex.entity.Attributes.Current("fright_check").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("fright_check").String())
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicSpeedID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.BasicSpeedID).String())
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicMoveID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.BasicMoveID).String())
 	case "PERCEPTION":
-		ex.writeEncodedText(ex.entity.Attributes.Current("per").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("per").String())
 	case "VISION":
-		ex.writeEncodedText(ex.entity.Attributes.Current("vision").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("vision").String())
 	case "HEARING":
-		ex.writeEncodedText(ex.entity.Attributes.Current("hearing").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("hearing").String())
 	case "TASTE_SMELL":
-		ex.writeEncodedText(ex.entity.Attributes.Current("taste_smell").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("taste_smell").String())
 	case "TOUCH":
-		ex.writeEncodedText(ex.entity.Attributes.Current("touch").String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum("touch").String())
 	case "THRUST":
 		ex.writeEncodedText(gurps.Roller.Format(ex.entity.Thrust()))
 	case "SWING":
@@ -1151,6 +1151,8 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, kind int) {
 			case ex.processAttributeKey(key, def, attr):
 			case key == "VALUE":
 				ex.writeEncodedText(attr.Maximum().String())
+			case key == "CURRENT":
+				ex.writeEncodedText(attr.Current().String())
 			default:
 				ex.unidentifiedKey(key)
 			}

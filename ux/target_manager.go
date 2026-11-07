@@ -40,10 +40,11 @@ func NewTargetMgr(root unison.Paneler) *TargetMgr {
 	return &TargetMgr{root: root.AsPanel()}
 }
 
-// NextPrefix returns the next unique prefix to use.
+// NextPrefix returns the next unique prefix to use. It starts with "#", so that the keys it begins never match those of
+// the sentence rows within the same panels, which start with a row's index, such as "3:name".
 func (t *TargetMgr) NextPrefix() string {
 	t.lastID++
-	return strconv.Itoa(t.lastID) + ":"
+	return "#" + strconv.Itoa(t.lastID) + ":"
 }
 
 // Find searches the tree of panels starting at the root, looking for a specific refKey.

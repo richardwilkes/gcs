@@ -159,3 +159,78 @@ func TestAttributeBonusTooltipWithoutEntity(t *testing.T) {
 	c := check.New(t)
 	c.Equal("", NewAttribute(nil, StrengthID, 0).BonusTooltip(), "a detached attribute has no tooltip")
 }
+
+// TestAttributeCurrentCarriesThresholdEffects verifies that the bonuses of a pool's current threshold, and multipliers
+// wherever they come from, alter an attribute's current value alone: its maximum, which scripts read as "$id" and the
+// attributes derived from it rest on, stays as it is, amounts are added before factors are applied, the result is
+// rounded to whole unless the attribute allows decimals, a pool is left alone, and nothing changes while the pool is
+// at another threshold.
+func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name     string
+		attrID   string
+		features Features
+		fromItem bool
+		damage   fxp.Int
+		maximum  fxp.Int
+		current  fxp.Int
+	}{
+		{"amount added", DexterityID, Features{NewAttributeBonus(DexterityID)}, false, fxp.Seven, fxp.Ten, fxp.Eleven},
+		{
+			"amount before factor", DexterityID,
+			Features{newAttrBonus(DexterityID, fxp.Two), newMultiplier(DexterityID, fxp.Half)},
+			false, fxp.Seven,
+			fxp.Ten, fxp.Six,
+		},
+		{"product rounded for a whole attribute", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Seven, fxp.Ten, fxp.Five},
+		{"fraction kept for a decimal attribute", BasicSpeedID, Features{newMultiplier(BasicSpeedID, fxp.Half)}, false, fxp.Seven, fxp.Five, fxp.TwoAndAHalf},
+		{"multiplier from an item", StrengthID, Features{newMultiplier(StrengthID, fxp.Two)}, true, 0, fxp.Ten, fxp.FromInteger(20)},
+		{"pool left alone", HitPointsID, Features{newMultiplier(HitPointsID, fxp.Half), NewAttributeBonus(HitPointsID)}, false, fxp.Seven, fxp.Ten, fxp.Ten},
+		{"not at the threshold", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Six, fxp.Ten, fxp.Ten},
+	} {
+		e := NewEntity()
+		if one.fromItem {
+			addTraitWithFeatures(e, "Item", one.features...)
+		} else {
+			tired := poolThreshold(e, FatiguePointsID, "Tired")
+			tired.Features = append(tired.Features, one.features...)
+		}
+		e.Attributes.Set[FatiguePointsID].Damage = one.damage
+		e.Recalculate()
+		attr := e.Attributes.Set[one.attrID]
+		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.name)
+		c.Equal(one.current, attr.Current(), "%s: current", one.name)
+		c.Equal(one.maximum.String(), e.ResolveVariable(one.attrID), "%s: $%s", one.name, one.attrID)
+		c.Equal(one.current.String(), e.ResolveVariable(one.attrID+".current"), "%s: $%s.current", one.name, one.attrID)
+	}
+}
+
+// newAttrBonus returns an attribute bonus adding the given amount to the given attribute.
+func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
+	bonus := NewAttributeBonus(attrID)
+	bonus.Amount = amount
+	return bonus
+}
+
+// TestAttributeBonusTooltipThresholdSources verifies that the bonuses of a pool's current threshold are listed after
+// the items' in each section, named for the threshold and its pool, and that a pool lists none.
+func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	st := e.Attributes.Set[StrengthID]
+	newAttrBonusTrait(e, "Lifting Harness", StrengthID, fxp.Three, stlimit.LiftingOnly)
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	tired.Features = append(tired.Features, newAttrBonus(StrengthID, -fxp.One))
+	hp := NewAttributeBonus(HitPointsID)
+	hp.Amount = -fxp.Two
+	tired.Features = append(tired.Features, hp)
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	c.Equal("Includes modifiers from:\nTired (FP) [-1]\nFor lifting only:\nLifting Harness [+3]\nTired (FP) [×0.5]",
+		st.BonusTooltip(), "the threshold's bonuses follow the items' in each section")
+	c.Equal("", e.Attributes.Set[HitPointsID].BonusTooltip(), "a pool lists no threshold bonus, which doesn't alter it")
+	c.Equal("Tired (FP) [×0.5]", e.CurrentAdjustmentTooltip(StrengthID, stlimit.LiftingOnly))
+	c.Equal("Tired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
+	c.Equal("", e.CurrentAdjustmentTooltip(DexterityID, stlimit.None))
+}

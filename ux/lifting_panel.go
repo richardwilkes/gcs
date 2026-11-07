@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -21,7 +22,12 @@ import (
 // LiftingPanel holds the contents of the lifting block on the sheet.
 type LiftingPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	entity   *gurps.Entity
+	fields   []*NonEditablePageField
+	tooltips []string
+	// adjustments holds the lines naming the bonuses that adjust lifting ST that the tooltips of the fields were last
+	// built with.
+	adjustments string
 }
 
 // NewLiftingPanel creates a new lifting panel.
@@ -76,11 +82,27 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 			return p.entity.SheetSettings.DefaultWeightUnits.Format(one.get())
 		}), one.title, one.tooltip)
 	}
+	p.Sync()
 	return p
+}
+
+// Sync implements Syncer. The fields keep their own values current, so this rebuilds their tooltips when the bonuses
+// that adjust lifting ST, which those values are figured from, change.
+func (p *LiftingPanel) Sync() {
+	adjustments := p.entity.CurrentAdjustmentTooltip(gurps.StrengthID, stlimit.LiftingOnly)
+	if adjustments == p.adjustments {
+		return
+	}
+	p.adjustments = adjustments
+	for i, field := range p.fields {
+		field.Tooltip = newWrappedTooltip(adjustedTooltip(p.tooltips[i], adjustments))
+	}
 }
 
 func (p *LiftingPanel) addFieldAndLabel(field *NonEditablePageField, title, tooltip string) {
 	field.Tooltip = newWrappedTooltip(tooltip)
+	p.fields = append(p.fields, field)
+	p.tooltips = append(p.tooltips, tooltip)
 	p.AddChild(field)
 	label := NewPageLabel(title)
 	label.Tooltip = newWrappedTooltip(tooltip)

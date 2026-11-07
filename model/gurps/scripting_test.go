@@ -944,6 +944,15 @@ func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
 	c.Equal("true", ResolveScript(e, ScriptSelfProvider{},
 		`entity.attribute("hp").maximum - entity.attribute("hp").current === 3`))
 
+	// An attribute that isn't a pool has a current value of its own once a threshold alters it.
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	tired.Features = append(tired.Features, newMultiplier(DexterityID, fxp.Half))
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	c.Equal("10", ResolveScript(e, ScriptSelfProvider{}, `$dx + 0`), "valueOf reports the maximum")
+	c.Equal("10", ResolveScript(e, ScriptSelfProvider{}, `$dx.maximum`))
+	c.Equal("5", ResolveScript(e, ScriptSelfProvider{}, `$dx.current`), "current carries the threshold's multiplier")
+
 	orphan := deferredNewScriptAttribute(&Attribute{AttrID: "hp"})
 	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.maximum"))
 	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.current"))

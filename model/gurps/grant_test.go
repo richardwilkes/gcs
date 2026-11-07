@@ -234,6 +234,47 @@ func TestGrantPutsTraitOnSheet(t *testing.T) {
 	c.True(nightVision == grantedOf(e.Traits)[0], "an unchanged grant leaves its item alone")
 }
 
+// TestGrantFromPoolThreshold verifies that a grant a pool threshold holds puts its item on the sheet, tied to the
+// threshold by its ID, in effect only while the pool is at the threshold, and that the item survives a save and a load
+// as the same row.
+func TestGrantFromPoolThreshold(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	c.True(tid.IsKindAndValid(tired.TID, kinds.PoolThreshold), "a factory threshold has an ID")
+	grant := newTraitGrant(newGrantLeveledTrait("Exhausted", fxp.One), fxp.One, grantmerge.Ignore)
+	tired.Features = append(tired.Features, grant)
+	e.Recalculate()
+	granted := grantedOf(e.Traits)
+	c.Equal(1, len(granted), "the row is on the sheet while the pool is not at the threshold")
+	exhausted := granted[0]
+	c.Equal(tired.TID, exhausted.Granted.Grantor)
+	c.Equal(grant.Key(), exhausted.Granted.Key)
+	c.False(exhausted.Enabled(), "but not in effect")
+	c.True(GrantingItem(exhausted) == tired, "the threshold carries the grant")
+	c.Equal("Granted by Tired (FP)\nThe grant is not in effect.", grantedByText(exhausted.Granted, &exhausted.grant, nil))
+
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	c.True(exhausted == grantedOf(e.Traits)[0], "the row is kept")
+	c.True(exhausted.Enabled(), "and in effect while the pool is at the threshold")
+	c.Equal("Granted by Tired (FP)", grantedByText(exhausted.Granted, &exhausted.grant, nil))
+
+	data, err := json.Marshal(e)
+	c.NoError(err)
+	var loaded Entity
+	c.NoError(json.Unmarshal(data, &loaded))
+	traits := grantedOf(loaded.Traits)
+	c.Equal(1, len(traits), "the loaded sheet has the row")
+	c.Equal(exhausted.TID, traits[0].TID, "as the one saved, since the threshold keeps its ID")
+	c.True(traits[0].Enabled())
+	c.Equal(len(e.Traits), len(loaded.Traits))
+
+	tired.Features = tired.Features[:len(tired.Features)-1]
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(e.Traits)), "the row goes with the grant")
+}
+
 func TestGrantNotInEffectKeepsItsItemDisabled(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -2348,6 +2389,32 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		c.False(e.Unsettled())
 		c.Equal("", tired.UnsatisfiedReason, "Dodge is 4 without the first carrier's grant")
 		c.Equal("", rested.UnsatisfiedReason, "Dodge is 8 with it, without the second carrier's grant")
+	})
+
+	// The attributes a threshold alters are seen as the threshold the prerequisites see alters them: FP 3 of 10 is
+	// Tired, which here takes 2 from DX, and the FP the carrier's grant adds lifts the sheet out of it.
+	t.Run("attribute altered by the pool threshold as the prerequisites see it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		tired := poolThreshold(e, FatiguePointsID, "Tired")
+		tired.Features = append(tired.Features, newAttrBonus(DexterityID, -fxp.Two))
+		vigor := newGrantLeveledTrait("Vigor", fxp.One)
+		bonus := NewAttributeBonus(FatiguePointsID)
+		bonus.Amount = fxp.Ten
+		vigor.Features = Features{bonus}
+		training := addTraitWithFeatures(e, "Training", newTraitGrant(vigor, fxp.One, grantmerge.Ignore))
+		training.Prereq = NewPrereqList()
+		p := NewAttributePrereq(e)
+		p.Parent = training.Prereq
+		p.Which = DexterityID
+		p.QualifierCriteria = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.Eight}
+		training.Prereq.Prereqs = append(training.Prereq.Prereqs, p)
+		e.Recalculate()
+		c.False(e.Unsettled())
+		c.Equal("", training.UnsatisfiedReason, "DX is 8 without the grant")
+		c.Equal(fxp.Thirteen, e.ResolveAttributeCurrent(FatiguePointsID), "so the grant is in effect")
+		c.Equal(fxp.Ten, e.ResolveAttributeCurrent(DexterityID), "and the sheet is no longer Tired")
 	})
 
 	// Nor is a weapon as a script run for the prerequisites resolves it, without the skill the grant puts on the sheet,

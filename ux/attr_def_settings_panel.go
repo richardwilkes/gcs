@@ -236,7 +236,9 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 	p.def.Type = attrType
 	if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
-		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
+		threshold := gurps.NewPoolThreshold()
+		threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
+		p.def.Thresholds = append(p.def.Thresholds, threshold)
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""
 		p.def.Base = ""
