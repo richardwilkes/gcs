@@ -262,13 +262,13 @@ func (e *Entity) collectGrantedFeaturesAsJudged(into *features) {
 				e.collectMerchantPenalty(into, one)
 			}
 		case *Skill:
-			if !one.Container() && one.Enabled() {
+			if one.Enabled() {
 				for _, f := range one.ActiveFeatures() {
 					e.processFeature(into, one, nil, f, one)
 				}
 			}
 		case *Spell:
-			if !one.Container() && one.Enabled() {
+			if one.Enabled() {
 				for _, f := range one.ActiveFeatures() {
 					e.processFeature(into, one, nil, f, one)
 				}

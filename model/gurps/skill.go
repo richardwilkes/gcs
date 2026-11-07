@@ -687,7 +687,7 @@ func (s *Skill) CurrentLevel() fxp.Int {
 		return s.LevelData.Level
 	}
 	if e.baseLevelReads == nil {
-		e.baseLevelReads = make(map[*Skill]bool)
+		e.baseLevelReads = make(map[LeveledOwner]bool)
 	}
 	e.baseLevelReads[s] = true
 	defer delete(e.baseLevelReads, s)

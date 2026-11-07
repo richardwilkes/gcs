@@ -232,9 +232,9 @@ type Entity struct {
 	atBase       int
 	baseFeatures *features
 	baseDefaults map[baseDefaultKey]*SkillDefault
-	// baseLevelReads holds the skills whose levels Skill.CurrentLevel is computing at base. It guards the call stack,
-	// so discardCaches leaves it alone.
-	baseLevelReads map[*Skill]bool
+	// baseLevelReads holds the skills and spells whose levels Skill.CurrentLevel and Spell.CurrentLevel are computing
+	// at base. It guards the call stack, so discardCaches leaves it alone.
+	baseLevelReads map[LeveledOwner]bool
 }
 
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
@@ -2681,11 +2681,12 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 }
 
 // gatherConditionalModifiers walks the entity's active features and those of the pools' current thresholds, collecting
-// conditional modifiers (or reactions) into the root rows of the table that shows them. namespace is that table's block key. collectFromList extracts the
-// relevant bonuses from a feature list into the collector, and perTrait, if non-nil, contributes any additional
-// modifiers for each enabled trait (used for self-control reaction penalties). keep, if non-nil, selects the modifiers
-// to retain; it is applied before they are filed under their groups, so that a group emptied by it is dropped too.
-// Reactions and ConditionalModifiers share this so their selection of nodes and merge ordering stay identical.
+// conditional modifiers (or reactions) into the root rows of the table that shows them. namespace is that table's block
+// key. collectFromList extracts the relevant bonuses from a feature list into the collector, and perTrait, if non-nil,
+// contributes any additional modifiers for each enabled trait (used for self-control reaction penalties). keep, if
+// non-nil, selects the modifiers to retain; it is applied before they are filed under their groups, so that a group
+// emptied by it is dropped too. Reactions and ConditionalModifiers share this so their selection of nodes and merge
+// ordering stay identical.
 func (e *Entity) gatherConditionalModifiers(
 	namespace string,
 	collectFromList func(source string, features Features, c *condModCollector),

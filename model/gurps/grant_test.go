@@ -4171,10 +4171,12 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		// FP at the Tired threshold, whose halving of lifting ST, which alters only its current value, makes that a
 		// Medium load, though no load at base.
 		burdened bool
-		// perLevel, when set, is a skill bonus to Karate of that much per level of Focus, a DX/Easy skill at 10.
-		perLevel fxp.Int
-		level    fxp.Int
-		points   fxp.Int
+		// perLevel, when set, is a skill bonus to Karate of that much per level of Focus, a DX/Easy skill at 10, or,
+		// with perLevelSpell set, of Shield, an IQ/Hard spell at 10.
+		perLevel      fxp.Int
+		perLevelSpell bool
+		level         fxp.Int
+		points        fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -4215,6 +4217,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		{
 			name: "technique while a threshold lowers the skill whose per-level bonus raises the skill it rests on",
 			item: kicking, perLevel: fxp.One, tired: newAttrBonus(DexterityID, -fxp.Two), level: fxp.FromInteger(19),
+			points: fxp.Two,
+		},
+		{
+			name: "technique while a threshold lowers the spell whose per-level bonus raises the skill it rests on",
+			item: kicking, perLevel: fxp.One, perLevelSpell: true, tired: tiredIQ, level: fxp.FromInteger(19),
 			points: fxp.Two,
 		},
 		{name: "Average technique", item: averageKicking, level: fxp.Nine, points: fxp.One},
@@ -4269,7 +4276,14 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		if tc.perLevel != 0 {
 			bonus := newSkillBonusTo("Karate", tc.perLevel)
 			bonus.PerLevel = true
-			addSkill(e, "Focus", fxp.One).Features = Features{bonus}
+			if tc.perLevelSpell {
+				shield := newHardSpell("Shield", fxp.Four)
+				shield.Features = Features{bonus}
+				shield.SetDataOwner(e)
+				e.Spells = append(e.Spells, shield)
+			} else {
+				addSkill(e, "Focus", fxp.One).Features = Features{bonus}
+			}
 		}
 		if tc.tired != nil {
 			tired := poolThreshold(e, FatiguePointsID, "Tired")
