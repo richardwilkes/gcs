@@ -23,6 +23,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
@@ -107,8 +108,11 @@ type features struct {
 	// bonus of a pool's current threshold; attributeBonuses holds the rest. See currentAdjustment.
 	currentAttributeBonuses []*AttributeBonus
 	// grantedRows holds the items grants put on the sheet whose features were collected, which happens while their
-	// grants are in effect as the last pass left them; see collectGrantedFeaturesAsJudged.
-	grantedRows map[grantHolder]bool
+	// grants are in effect as the last pass left them; see collectGrantedFeaturesAsJudged. plantedElsewhere holds those
+	// of them that a grant not held by a pool's threshold gave something then, which is in effect and puts its item on
+	// the sheet; see grantState.providers and rowsGrantedByThresholdsAlone.
+	grantedRows      map[grantHolder]bool
+	plantedElsewhere map[grantHolder]bool
 }
 
 // ownedCostReduction is a cost reduction along with the item it came from.
@@ -175,8 +179,9 @@ type Entity struct {
 	// read for them (see attributeForPrereqs), the pool thresholds found for them (see Attribute.CurrentThreshold) and
 	// the script prerequisites themselves (see ScriptPrereq.Evaluate); see resolveScript.
 	scriptsForPrereqs int
-	// judgedDefaults holds the defaults picked for the skills, by skill and excludes, as the prerequisites being judged
-	// see the sheet, while the item judged carries a grant; see Skill.defaultExcept.
+	// judgedDefaults holds the defaults picked for the skills, by skill, excludes and whether a pool's threshold was
+	// being found, as the prerequisites being judged see the sheet, while the item judged carries a grant; see
+	// Skill.defaultExcept and judgedDefaultKey.
 	judgedDefaults map[judgedDefaultKey]*SkillDefault
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
@@ -244,16 +249,21 @@ type Entity struct {
 	// baseLevelReads holds the skills and spells whose levels Skill.CurrentLevel and Spell.CurrentLevel are computing
 	// at base. It guards the call stack, so discardCaches leaves it alone.
 	baseLevelReads map[LeveledOwner]bool
+	// untouchedByThresholds is set while the bonuses given a pool or the size modifier, which the pools' thresholds
+	// never alter, are totalled, and cleared while those given anything else are within such a total, so that the levels
+	// of the traits that the per-level amounts of the first read leave out the trait bonuses those thresholds hold; see
+	// AttributeBonusFor. It guards the call stack, so discardCaches leaves it alone.
+	untouchedByThresholds bool
 }
 
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
 // alters current values alone: the current adjustments, and the features and grants of the pools' thresholds, along
 // with the features of the items those grants alone put in effect (see currentAdjustmentFor, sheetAdjustment,
 // bonusFeatures and grantsAsJudged), with the bonuses and cost reductions totalled afresh from what it sees (see
-// Attribute.bonus and Attribute.PointCost), as what a level set on a technique or Ritual Magic spell costs is found, so
-// that its points don't change with the state the pools are in. Nothing it finds is taken from the caches or kept in
-// them, unless kept apart from what is found otherwise, and the levels the skills and spells recorded are computed
-// afresh, since they hold what it leaves out. e may be nil.
+// Attribute.bonus and Attribute.PointCost), as what a level set on a skill or spell costs is found, so that its points
+// don't change with the state the pools are in. Nothing it finds is taken from the caches or kept in them, unless kept
+// apart from what is found otherwise, and the levels the skills and spells recorded are computed afresh, since they
+// hold what it leaves out. e may be nil.
 func (e *Entity) atBaseWhile() func() {
 	if e == nil {
 		return func() {}
@@ -982,6 +992,15 @@ func (e *Entity) processFeatures() {
 				e.features.grantedRows = make(map[grantHolder]bool)
 			}
 			e.features.grantedRows[holder] = true
+			if slices.ContainsFunc(holder.grants().providers, func(provider any) bool {
+				_, threshold := provider.(*PoolThreshold)
+				return !threshold
+			}) {
+				if e.features.plantedElsewhere == nil {
+					e.features.plantedElsewhere = make(map[grantHolder]bool)
+				}
+				e.features.plantedElsewhere[holder] = true
+			}
 		}
 	})
 	// A trait the sheet disabled that the prerequisites of a carrier see enabled (see Trait.enabledForPrereqsOf) has
@@ -1775,8 +1794,18 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 
 // AttributeBonusFor returns the total of the amounts the items in effect add to the given attribute, which make up its
 // maximum, as the prerequisites being judged see them, if any; see bonusFeatures and bonusExcluded. Multipliers and the
-// bonuses of the pools' thresholds alter only its current value and are left out; see currentAdjustmentFor.
+// bonuses of the pools' thresholds alter only its current value and are left out; see currentAdjustmentFor. For a pool
+// or the size modifier, which those thresholds never alter, a per-level amount reads the level of a trait without the
+// trait bonuses they hold, so that a pool's threshold never feeds back into the pool; see TraitBonusFor.
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
+	def := e.ResolveAttributeDef(attributeID)
+	untouched := attributeID == SizeModifierID ||
+		(def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef))
+	if untouched != e.untouchedByThresholds {
+		saved := e.untouchedByThresholds
+		e.untouchedByThresholds = untouched
+		defer func() { e.untouchedByThresholds = saved }()
+	}
 	var total fxp.Int
 	for _, one := range e.bonusFeatures().attributeBonuses {
 		if one.ActualLimitation() == limitation && one.Attribute == attributeID && !e.bonusExcluded(one) {
@@ -2004,10 +2033,12 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 	return sumSpellBonuses(e, e.bonusFeatures().spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
-// TraitBonusFor returns the total bonus for the matching trait bonuses.
+// TraitBonusFor returns the total bonus for the matching trait bonuses, leaving out those the pools' thresholds hold
+// while the bonuses given a pool or the size modifier are totalled; see AttributeBonusFor.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	return sumBonuses(e, e.bonusFeatures().traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
-		return bonus.NameCriteria.Matches(replacements, name) &&
+		return (!e.untouchedByThresholds || !ownedByThreshold(bonus.Owner())) &&
+			bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})
 }
@@ -2508,9 +2539,9 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	return result
 }
 
-// scriptReadsCurrents reports whether the script running reads each attribute as "$id" for its current value rather
-// than its maximum, which only the script giving the base of an attribute standing in for Striking ST, Lifting ST,
-// Throwing ST, Dodge or Move does, while that base is evaluated for the attribute's current value; see
+// scriptReadsCurrents reports whether the script running reads each attribute other than a pool as "$id" for its
+// current value rather than its maximum, which only the script giving the base of an attribute standing in for Striking
+// ST, Lifting ST, Throwing ST, Dodge or Move does, while that base is evaluated for the attribute's current value; see
 // Attribute.maximumReadingCurrents.
 func (e *Entity) scriptReadsCurrents() bool {
 	return e.currentsDepth != 0 && e.currentsDepth == e.scriptResolvingDepth

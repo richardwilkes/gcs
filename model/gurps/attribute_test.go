@@ -210,10 +210,11 @@ func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 }
 
 // TestAttributeCurrentOfStandInReadsCurrents verifies that the current value of an attribute standing in for Striking
-// ST, Lifting ST, Throwing ST, Dodge or Move rests on the current values of the attributes its base reads as "$id", but
-// not on those that their own bases read, and, for one standing in for a limited ST, takes the bonuses ST is given
-// under its limitation, such as the factory Tired threshold's lifting-only ×0.5, so that the sheet gets from it what it
-// gets without it, while its maximum, which scripts read as "$id", rests on their maximums.
+// ST, Lifting ST, Throwing ST, Dodge or Move rests on the current values of the attributes its base reads as "$id",
+// other than a pool's, which is what it has left, but not on those that their own bases read, and, for one standing in
+// for a limited ST, takes the bonuses ST is given under its limitation, such as the factory Tired threshold's
+// lifting-only ×0.5, so that the sheet gets from it what it gets without it, even for a Dodge or Move allowing decimals,
+// whose halving still rounds up, while its maximum, which scripts read as "$id", rests on their maximums.
 func TestAttributeCurrentOfStandInReadsCurrents(t *testing.T) {
 	c := check.New(t)
 	limited := func(amount fxp.Int, limitation stlimit.Option) Features {
@@ -230,34 +231,48 @@ func TestAttributeCurrentOfStandInReadsCurrents(t *testing.T) {
 		value   func(e *Entity) int
 		maximum fxp.Int
 		current fxp.Int
+		typ     attribute.Type
 	}{
 		{
 			"striking ST", StrikingStrengthID, "$st", StrengthID, limited(fxp.Two, stlimit.StrikingOnly),
-			func(e *Entity) int { return e.StrikingStrength().AsInteger[int]() }, fxp.Ten, fxp.Seven,
+			func(e *Entity) int { return e.StrikingStrength().AsInteger[int]() }, fxp.Ten, fxp.Seven, attribute.Integer,
 		},
 		{
 			"lifting ST", LiftingStrengthID, "$st", StrengthID, limited(fxp.Three, stlimit.LiftingOnly),
-			func(e *Entity) int { return e.LiftingStrength().AsInteger[int]() }, fxp.Ten, fxp.Four,
+			func(e *Entity) int { return e.LiftingStrength().AsInteger[int]() }, fxp.Ten, fxp.Four, attribute.Integer,
 		},
 		{
 			"lifting ST for throwing", LiftingStrengthID, "$st", StrengthID, limited(fxp.Three, stlimit.LiftingOnly),
 			func(e *Entity) int { return e.LiftingStrengthForThrowing().AsInteger[int]() }, fxp.Ten, fxp.Four,
+			attribute.Integer,
 		},
 		{
 			"throwing ST", ThrowingStrengthID, "$st", StrengthID, limited(fxp.One, stlimit.ThrowingOnly),
-			func(e *Entity) int { return e.ThrowingStrength().AsInteger[int]() }, fxp.Ten, fxp.Six,
+			func(e *Entity) int { return e.ThrowingStrength().AsInteger[int]() }, fxp.Ten, fxp.Six, attribute.Integer,
 		},
 		{
 			"dodge", DodgeID, "Math.floor($basic_speed) + 3", BasicSpeedID, nil,
-			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three, attribute.Integer,
+		},
+		{
+			"dodge allowing decimals", DodgeID, "Math.floor($basic_speed) + 3", BasicSpeedID, nil,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three, attribute.Decimal,
+		},
+		{
+			"dodge, from a pool's maximum", DodgeID, "Math.floor($fp / 2) + 3", DexterityID, nil,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four, attribute.Integer,
 		},
 		{
 			"dodge, from a Basic Speed derived from DX's maximum", DodgeID, "Math.floor($basic_speed) + 3", DexterityID,
-			nil, func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four,
+			nil, func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four, attribute.Integer,
 		},
 		{
 			"move", MoveID, "$basic_move", BasicMoveID, nil,
-			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two,
+			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two, attribute.Integer,
+		},
+		{
+			"move allowing decimals", MoveID, "$basic_move", BasicMoveID, nil,
+			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two, attribute.Decimal,
 		},
 	} {
 		e := NewEntity()
@@ -271,7 +286,7 @@ func TestAttributeCurrentOfStandInReadsCurrents(t *testing.T) {
 		want := one.value(e)
 		e.SheetSettings.Attributes.Set[one.attrID] = &AttributeDef{
 			DefID: one.attrID,
-			Type:  attribute.Integer,
+			Type:  one.typ,
 			Name:  one.name,
 			Base:  one.base,
 		}

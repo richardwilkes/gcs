@@ -248,7 +248,6 @@ type exportedAttribute struct {
 
 type exportedPool struct {
 	*exportedAttribute
-	Current fxp.Int
 	Maximum fxp.Int
 }
 
@@ -519,7 +518,6 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 			case gurps.PoolAttrKind:
 				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
-					Current:           attr.Current(),
 					Maximum:           attr.Maximum(),
 				}
 				data.Attributes.Pools = append(data.Attributes.Pools, p)

@@ -213,13 +213,15 @@ func (a *Attribute) NameMatches(name string) bool {
 
 // Current returns the current value. That of a pool is its maximum less the damage taken. That of any other attribute
 // is its maximum with the amounts the pools' current thresholds give it added, then multiplied by each multiplier given
-// it in turn, rounded to whole after each unless the attribute allows decimals; see Entity.processThresholdFeatures.
+// it in turn, rounded to whole after each unless the attribute allows decimals and stands in for neither Dodge nor
+// Move, which the sheet uses as whole numbers; see Entity.processThresholdFeatures.
 // That of one standing in for Striking ST, Lifting ST or Throwing ST then takes the bonuses ST is given under the same
 // limitation, as the ST the sheet works out without it does, so that it is the ST in use; see Entity.limitedStrength.
 // Scripts read it as "$id.current"; "$id", the attributes derived from it and its point cost use the maximum, except
 // that the current value of an attribute standing in for Striking ST, Lifting ST, Throwing ST, Dodge or Move starts
-// from its base with each attribute the base reads as "$id" giving its current value, as the value the sheet works out
-// without such an attribute starts from the current value of ST, Basic Speed or Basic Move; see baseReadsCurrents.
+// from its base with each attribute other than a pool the base reads as "$id" giving its current value, as the value
+// the sheet works out without such an attribute starts from the current value of ST, Basic Speed or Basic Move; see
+// baseReadsCurrents. A pool's current value is what it has left, so the base reads its maximum there still.
 func (a *Attribute) Current() fxp.Int {
 	return a.currentWith(a.bonus(), false, true)
 }
@@ -248,7 +250,10 @@ func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs, limitedAmounts bool) 
 	} else {
 		adj = a.Entity.sheetAdjustment(a.AttrID, stlimit.None)
 	}
-	value = adj.apply(value, !def.AllowsDecimal())
+	// Move and Dodge are whole wherever the sheet uses them, so a product for one standing in for either is rounded even
+	// when it allows decimals, so that a halving rounds up as it does without the attribute.
+	decimal := def.AllowsDecimal()
+	value = adj.applyRounding(value, !decimal, !decimal || a.AttrID == DodgeID || a.AttrID == MoveID)
 	if limitation := strengthLimitationOf(a.AttrID); limitation != stlimit.None {
 		value = a.Entity.limitedStrength(value, limitation, forPrereqs, limitedAmounts)
 	}
@@ -283,7 +288,7 @@ func strengthLimitationOf(attrID string) stlimit.Option {
 // baseReadsCurrents reports whether the attribute with the given ID stands in for a value that the sheet works out,
 // when it doesn't define the attribute, from the current value of another: Striking ST, Lifting ST and Throwing ST from
 // ST's, Dodge from Basic Speed's and Move from Basic Move's. The base such an attribute's current value starts from reads
-// each attribute as "$id" for its current value; see Current.
+// each attribute other than a pool as "$id" for its current value; see Current.
 func baseReadsCurrents(attrID string) bool {
 	switch attrID {
 	case StrikingStrengthID, LiftingStrengthID, ThrowingStrengthID, DodgeID, MoveID:
@@ -293,9 +298,9 @@ func baseReadsCurrents(attrID string) bool {
 	}
 }
 
-// maximumReadingCurrents is maximumWithBonus with the script giving the base reading each attribute as "$id" for its
-// current value rather than its maximum; see Entity.scriptReadsCurrents. The scripts that one runs in turn, including
-// those giving the bases of the attributes it reads, read maximums as usual.
+// maximumReadingCurrents is maximumWithBonus with the script giving the base reading each attribute other than a pool
+// as "$id" for its current value rather than its maximum; see Entity.scriptReadsCurrents. The scripts that one runs in
+// turn, including those giving the bases of the attributes it reads, read maximums as usual.
 func (a *Attribute) maximumReadingCurrents(bonus fxp.Int) fxp.Int {
 	e := a.Entity
 	saved := e.currentsDepth

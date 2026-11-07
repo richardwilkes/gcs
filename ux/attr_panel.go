@@ -56,8 +56,8 @@ type AttrPanel struct {
 	nameLabels  map[string]*unison.Label
 	valueFields map[string]unison.Paneler
 	stateLabels map[string]*unison.Label
-	// adjusters holds, for each non-pool attribute row, the function that shows whether its current value differs from
-	// its maximum; see trackAdjustment.
+	// adjusters holds, for each non-pool attribute row, the function that shows whether its current value is adjusted;
+	// see trackAdjustment.
 	adjusters map[string]func()
 }
 
@@ -383,10 +383,10 @@ func showCurrentWhileIdle[T xmath.Integer | xmath.Float](field *NumericField[T],
 }
 
 // trackAdjustment has the value field of a non-pool attribute's row drawn in adjustedInk, and spoken as adjusted from
-// the attribute's maximum, while the attribute's current value differs from that maximum, and returns the function that
-// brings the field up to date. setInk is called with the new state each time it changes.
+// the attribute's maximum, while the attribute's current value is adjusted (see adjustedFrom), and returns the function
+// that brings the field up to date. setInk is called with the new state each time it changes.
 func trackAdjustment(field unison.Paneler, attr *gurps.Attribute, setInk func(adjusted bool)) func() {
-	var from string // The maximum the current value differs from, or empty when it doesn't.
+	var from string // The maximum the current value is adjusted from, or empty when it isn't adjusted.
 	addAccessibilityCallback(field, func(node *accessibility.Node) {
 		if from != "" {
 			node.Name = i18n.Text("%s, adjusted from %s", node.Name, from)
@@ -399,14 +399,35 @@ func trackAdjustment(field unison.Paneler, attr *gurps.Attribute, setInk func(ad
 	})
 	return func() {
 		was := from != ""
-		from = ""
-		if maximum := attr.Maximum(); attr.Current() != maximum {
-			from = maximum.String()
-		}
+		from = adjustedFrom(attr)
 		if adjusted := from != ""; adjusted != was {
 			setInk(adjusted)
 		}
 	}
+}
+
+// adjustedFrom returns the maximum of a non-pool attribute as text if the pools' current thresholds or the multipliers
+// hold its current value away from the value it has without them, or an empty string if not. That value is the
+// maximum or, for an attribute standing in for Striking ST, Lifting ST or Throwing ST, the maximum with the ST bonuses
+// under the same limitation added and the sum floored, as gurps.Attribute.Current takes them, since those bonuses are
+// part of the ST in use rather than an adjustment of it.
+func adjustedFrom(attr *gurps.Attribute) string {
+	maximum := attr.Maximum()
+	unadjusted := maximum
+	if e := attr.Entity; e != nil {
+		switch attr.AttrID {
+		case gurps.StrikingStrengthID:
+			unadjusted = (maximum + e.StrikingStrengthBonus).Floor()
+		case gurps.LiftingStrengthID:
+			unadjusted = (maximum + e.LiftingStrengthBonus).Floor()
+		case gurps.ThrowingStrengthID:
+			unadjusted = (maximum + e.ThrowingStrengthBonus).Floor()
+		}
+	}
+	if attr.Current() == unadjusted {
+		return ""
+	}
+	return maximum.String()
 }
 
 // adjustableFieldInk returns a function that draws the field's text in adjustedInk, or in the inks it has now.
@@ -491,16 +512,16 @@ func (a *AttrPanel) updateBonusTooltips(id string, attr *gurps.Attribute) {
 }
 
 // bonusTooltipText returns the tooltip text for an attribute, or an empty string if it doesn't need one. A non-pool
-// attribute whose current value differs from its maximum leads with that maximum; the bonuses that adjust it are listed
-// after those that make up the maximum, among the modifiers BonusTooltip lists.
+// attribute whose current value is adjusted (see adjustedFrom) leads with its maximum; the bonuses that adjust it are
+// listed after those that make up the maximum, among the modifiers BonusTooltip lists.
 func (a *AttrPanel) bonusTooltipText(attr *gurps.Attribute) string {
 	var parts []string
 	if a.kind == gurps.PoolAttrKind {
 		if def := attr.AttributeDef(); def != nil && def.FullName != "" {
 			parts = append(parts, def.FullName)
 		}
-	} else if maximum := attr.Maximum(); attr.Current() != maximum {
-		parts = append(parts, i18n.Text("Adjusted from %s", maximum.String()))
+	} else if from := adjustedFrom(attr); from != "" {
+		parts = append(parts, i18n.Text("Adjusted from %s", from))
 	}
 	if tooltip := attr.BonusTooltip(); tooltip != "" {
 		parts = append(parts, tooltip)

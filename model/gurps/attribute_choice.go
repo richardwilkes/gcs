@@ -48,7 +48,8 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 
 // AttributeChoicesFor returns the attribute choices for the given definitions, along with the choice matching
 // currentKey; if none matches, an "unrecognized key" choice for it is appended. A defined dodge attribute is listed
-// only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is defined.
+// only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is defined. Neither
+// stand-in is added for a dodge or move attribute that NoPoolsFlag leaves out as a pool.
 func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix += " "
@@ -64,15 +65,16 @@ func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlag
 	addedDodge := false
 	addedMove := false
 	for _, def := range list {
-		switch {
-		case def.DefID == DodgeID:
+		switch def.DefID {
+		case DodgeID:
 			if flags&DodgeFlag == 0 {
 				continue
 			}
 			addedDodge = true
-		case def.DefID == MoveID:
+		case MoveID:
 			addedMove = true
-		case flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef):
+		}
+		if flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
 			continue
 		}
 		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.nameOrID()})

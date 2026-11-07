@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 )
 
 // newTestIntegerField returns an IntegerField backed by a local variable, along with a pointer to that variable, for
@@ -338,32 +339,67 @@ func TestNumericFieldSyncWhileFocusedKeepsEdit(t *testing.T) {
 }
 
 // TestNumericFieldSetTextWhileShowingDisplayText verifies that replacing the text of a field that is showing rounded
-// display text applies the new value and records an undo whose "before" state holds the exact value. Recording the
-// rounded text instead would make undo quietly round the character's weight. After the undo, the field holds the
-// exact text and is focused for editing, and the rounded text returns once the focus is lost.
+// display text, whether through SetText or by an assistive technology replacing the value or all of the text shown,
+// applies the new value and records an undo whose "before" state holds the exact value. Recording the rounded text
+// instead would make undo quietly round the character's weight. After the undo, the field holds the exact text and is
+// focused for editing, and the rounded text returns once the focus is lost.
 func TestNumericFieldSetTextWhileShowingDisplayText(t *testing.T) {
-	c := check.New(t)
-	f, value := newDisplayFormatWeightField(t)
-	root := newPageUndoRoot()
-	root.AddChild(f)
+	for _, one := range []struct {
+		name    string
+		replace func(f *WeightField) bool
+	}{
+		{
+			name: "SetText",
+			replace: func(f *WeightField) bool {
+				f.SetText("8 lb")
+				return true
+			},
+		},
+		{
+			name: "assistive technology setting the value",
+			replace: func(f *WeightField) bool {
+				return f.PerformAccessibilityAction(accessibility.ActionRequest{
+					Action: accessibility.SetValue,
+					Value:  "8 lb",
+				})
+			},
+		},
+		{
+			name: "assistive technology replacing all of the text shown",
+			replace: func(f *WeightField) bool {
+				return f.PerformAccessibilityAction(accessibility.ActionRequest{
+					Action: accessibility.ReplaceText,
+					End:    len([]rune(roundedWeightText)),
+					Value:  "8 lb",
+				})
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			f, value := newDisplayFormatWeightField(t)
+			root := newPageUndoRoot()
+			root.AddChild(f)
 
-	var beforeText string
-	modified := f.ModifiedCallback
-	f.ModifiedCallback = func(before, after *unison.FieldState) {
-		beforeText = before.Text
-		modified(before, after)
+			var beforeText string
+			modified := f.ModifiedCallback
+			f.ModifiedCallback = func(before, after *unison.FieldState) {
+				beforeText = before.Text
+				modified(before, after)
+			}
+
+			c.True(one.replace(f), "the replacement must be carried out")
+			c.Equal(exactWeightText, beforeText, `the undo "before" state must hold the exact text, not the rounded text`)
+			c.Equal("8 lb", f.Format(*value), "the new value must be applied")
+			c.True(root.mgr.CanUndo(), "replacing the text must record an undo edit")
+
+			root.mgr.Undo()
+			c.Equal(exactWeightText, f.Format(*value), "undo must restore every decimal place the value had")
+			c.Equal(exactWeightText, f.Text(), "undo puts the exact text into the field, which it focuses for editing")
+			f.lostFocus()
+			c.Equal(roundedWeightText, f.Text(), "the display rendering returns once the focus is lost")
+		})
 	}
-
-	f.SetText("8 lb")
-	c.Equal(exactWeightText, beforeText, `the undo "before" state must hold the exact text, not the rounded text`)
-	c.Equal("8 lb", f.Format(*value), "the typed value must be applied")
-	c.True(root.mgr.CanUndo(), "replacing the text must record an undo edit")
-
-	root.mgr.Undo()
-	c.Equal(exactWeightText, f.Format(*value), "undo must restore every decimal place the value had")
-	c.Equal(exactWeightText, f.Text(), "undo puts the exact text into the field, which it focuses for editing")
-	f.lostFocus()
-	c.Equal(roundedWeightText, f.Text(), "the display rendering returns once the focus is lost")
 }
 
 // TestNumericFieldSetTextWithIdenticalText covers the two ways SetText can be handed text the field already holds.

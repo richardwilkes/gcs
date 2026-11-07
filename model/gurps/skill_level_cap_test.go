@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
@@ -792,7 +793,8 @@ func TestSkillLevelCapSettles(t *testing.T) {
 }
 
 // TestSkillLevelCapSeenByPrerequisites verifies that a prerequisite on a skill's level is judged against the capped
-// level.
+// level, and that the prerequisites of an item carrying a grant judge it against the level the skill a cap rests on has
+// as they see the sheet, rather than as it is while a pool's threshold is found for them.
 func TestSkillLevelCapSeenByPrerequisites(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -806,6 +808,40 @@ func TestSkillLevelCapSeenByPrerequisites(t *testing.T) {
 	addTestLevelCap(e, levelcap.Skills, NewFixedLevelCap(nil, sk.LevelData.Level-fxp.One))
 	e.Recalculate()
 	c.NotEqual("", needs.UnsatisfiedReason, "the prerequisite is unmet once the level is capped below it")
+
+	// Tired gives DX +5, raising Running 17 to Jogging 15, which caps it. Finding Stam's threshold reads Running's
+	// level, which is found without Tired's bonus.
+	e = NewEntity()
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	tired.Features = append(tired.Features, newAttrBonus(DexterityID, fxp.Five))
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	addSkill(e, "Jogging", fxp.One)
+	running := addSkill(e, "Running", fxp.Four)
+	onRunning := addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Skill, "Jogging", 0))
+	onRunning.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Running"}
+	low := NewPoolThreshold()
+	low.State = "Low"
+	low.Value = `entity.findSkills("Running")[0].level - 100`
+	low.Features = Features{newAttrBonus(IntelligenceID, fxp.One)}
+	e.SheetSettings.Attributes.Set["stam"] = &AttributeDef{
+		DefID:      "stam",
+		Type:       attribute.Pool,
+		Name:       "Stam",
+		Base:       "10",
+		Thresholds: []*PoolThreshold{low},
+	}
+	e.Attributes.Set["stam"] = NewAttribute(e, "stam", len(e.Attributes.Set))
+	training := addTraitWithFeatures(e, "Training", newTraitGrant(newGrantLeveledTrait("Skilled", fxp.One), fxp.One,
+		grantmerge.Ignore))
+	training.Prereq = NewPrereqList()
+	dx := NewAttributePrereq(e)
+	dx.Parent = training.Prereq
+	dx.Which = DexterityID
+	training.Prereq.Prereqs = append(training.Prereq.Prereqs, dx)
+	addSkillPrereq(training.Prereq, "Running", fxp.FromInteger(15))
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(15), running.LevelData.Level, "Running is held to Jogging")
+	c.Equal("", training.UnsatisfiedReason, "the prerequisite sees Running held to Jogging as Tired raises it")
 }
 
 // TestSkillLevelCapSeenByDefaults verifies that a skill defaulting to a capped skill rests on the capped level.

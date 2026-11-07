@@ -139,9 +139,10 @@ func (a *AttributeDef) CombinedName() string {
 	return a.FullName + " (" + a.Name + ")"
 }
 
-// String implements fmt.Stringer, naming the attribute as tooltips name the pool whose threshold a bonus comes from.
+// String implements fmt.Stringer, naming the attribute as tooltips name the pool whose threshold a bonus comes from: by
+// its name, its full name or, while both are empty, its ID, as nameOrID does.
 func (a *AttributeDef) String() string {
-	return cmp.Or(a.Name, a.FullName)
+	return cmp.Or(a.Name, a.FullName, a.DefID)
 }
 
 // IsSeparator returns true if this is actually just a separator.

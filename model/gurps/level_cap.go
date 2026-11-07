@@ -398,13 +398,15 @@ func (c *ReferenceLevelCap) describeTarget(entity *Entity, em func(string) strin
 }
 
 // levelCapMemoKey identifies what a reference resolved to with a view of the sheet: the reference, the item whose
-// prerequisites were being judged, the excludes of the default chain and whether it was resolved at base (see
-// Entity.atBaseWhile); see Entity.levelCapMemo.
+// prerequisites were being judged, the excludes of the default chain, whether it was resolved at base (see
+// Entity.atBaseWhile) and whether it was resolved while a pool's threshold was found for those prerequisites (see
+// Attribute.CurrentThreshold); see Entity.levelCapMemo.
 type levelCapMemoKey struct {
-	ref      *ReferenceLevelCap
-	exclude  any
-	excludes string
-	base     bool
+	ref       *ReferenceLevelCap
+	exclude   any
+	excludes  string
+	base      bool
+	searching bool
 }
 
 // levelCapMemoEntry is what a reference resolved to, or that it couldn't be, along with the items matched while it was,
@@ -433,7 +435,13 @@ func (c *ReferenceLevelCap) resolve(r *levelCapResolver) (levelCapValue, bool) {
 	resolving := func(item any) bool { return e.levelCapsResolving[item] }
 	memo := e.recalculating > 0
 	if memo {
-		key = levelCapMemoKey{ref: c, exclude: r.exclude, excludes: excludesKey(r.excludes), base: e.atBase > 0}
+		key = levelCapMemoKey{
+			ref:       c,
+			exclude:   r.exclude,
+			excludes:  excludesKey(r.excludes),
+			base:      e.atBase > 0,
+			searching: e.judgedThresholdSearches > 0,
+		}
 		if entry, ok := e.levelCapMemo[key]; ok && !slices.ContainsFunc(entry.candidates, resolving) {
 			if e.levelCapCandidates != nil {
 				*e.levelCapCandidates = append(*e.levelCapCandidates, entry.candidates...)

@@ -305,7 +305,7 @@ type scriptResolveKey struct {
 	// judged is the item whose prerequisites were being judged when the script ran as they see the sheet, and nil when
 	// it ran as the rest of the sheet sees it; see resolveScript.
 	judged any
-	// currents is set when the script read each attribute as "$id" for its current value; see
+	// currents is set when the script read each attribute other than a pool as "$id" for its current value; see
 	// Entity.scriptReadsCurrents.
 	currents bool
 	// base is set when the script ran at base, which leaves out what alters current values alone; see

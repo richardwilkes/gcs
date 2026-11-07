@@ -18,7 +18,8 @@ import (
 )
 
 // TestAttributeChoicesForMoveAndPools verifies that MoveFlag adds a stand-in for Move only while the definitions have no
-// move attribute, which is listed whatever the flags, and that NoPoolsFlag leaves the pools out.
+// move attribute, which is listed whatever the flags, and that NoPoolsFlag leaves the pools out, a dodge or move pool
+// included, with no stand-in in its place.
 func TestAttributeChoicesForMoveAndPools(t *testing.T) {
 	c := check.New(t)
 	keys := func(defs *AttributeDefs, flags AttributeFlags) []string {
@@ -41,4 +42,10 @@ func TestAttributeChoicesForMoveAndPools(t *testing.T) {
 	c.Equal(1, len(slices.DeleteFunc(slices.Clone(list), func(k string) bool { return k != MoveID })),
 		"a defined move attribute is listed once, with no stand-in beside it")
 	c.True(slices.Contains(keys(defs, 0), MoveID), "and listed without the flag")
+
+	defs.Set[MoveID].Type = attribute.Pool
+	defs.Set[DodgeID] = &AttributeDef{DefID: DodgeID, Type: attribute.Pool, Name: "Dodge", Base: "8", Order: len(defs.Set)}
+	list = keys(defs, ThresholdAttributeFlags)
+	c.False(slices.Contains(list, MoveID), "a move pool is left out, with no stand-in for Move")
+	c.False(slices.Contains(list, DodgeID), "and so is a dodge pool, with no stand-in for Dodge")
 }

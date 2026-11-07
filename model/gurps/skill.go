@@ -1039,10 +1039,12 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // through: the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the
 // skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged, the
 // edits previewed, or the computation at base runs, apart from those found otherwise, and reused only for the same
-// skill with the same excludes, so that the answers are those of picking afresh every time, while a pick beneath a
-// skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
-// as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
-// points that default to one another, so judging stays fast only while such a set stays small.
+// skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a pool's
+// threshold is found for those prerequisites (see judgedDefaultKey), so that the answers are those of picking afresh
+// every time, while a pick beneath a skill weighing several defaults is not made again for each of them, and so on down
+// every chain. The picks are still as many as the distinct excludes a skill is reached with, which double with each
+// member of a set of skills with points that default to one another, so judging stays fast only while such a set stays
+// small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
 	atBase := e != nil && e.atBase > 0
@@ -1093,10 +1095,13 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 }
 
 // judgedDefaultKey identifies the default Skill.defaultExcept picks for a skill with the levels taken with a set of
-// excludes, which it holds as their names sorted and joined.
+// excludes, which it holds as their names sorted and joined, and whether it is picked while a pool's threshold is found
+// for the prerequisites being judged, which see the sheet without what the thresholds do meanwhile; see
+// Attribute.CurrentThreshold.
 type judgedDefaultKey struct {
-	skill    *Skill
-	excludes string
+	skill     *Skill
+	excludes  string
+	searching bool
 }
 
 // baseDefaultKey identifies the default Skill.defaultExcept picks for a skill at base, which rests as well on the item
@@ -1106,9 +1111,11 @@ type baseDefaultKey struct {
 	judged any
 }
 
-// newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes.
+// newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes, as
+// the sheet is seen now.
 func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
-	return judgedDefaultKey{skill: s, excludes: excludesKey(excludes)}
+	e := EntityFromNode(s)
+	return judgedDefaultKey{skill: s, excludes: excludesKey(excludes), searching: e != nil && e.judgedThresholdSearches > 0}
 }
 
 // excludesKey returns the excludes as a string that is the same for any two sets of the same names: the names sorted
@@ -1258,14 +1265,16 @@ func (s *Skill) restsOnSkill() bool {
 }
 
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the skill, at its adjusted difficulty, the
-// level before bonuses and defaults on the sheet from the base of its attribute, which what alters the attribute's
-// current value alone leaves as it is (see skillAttributeBase), or for a technique the level before its own bonuses,
-// held to the highest its limit allows before them (see techniquePointsForLevel), or zero when none do.
+// level before bonuses and defaults on the sheet from the base of its attribute (see skillAttributeBase), found at
+// base, since what alters current values alone, such as what the pools' thresholds alone put in effect, must leave it
+// as it is (see Entity.atBaseWhile), or for a technique the level before its own bonuses, held to the highest its limit
+// allows before them (see techniquePointsForLevel), or zero when none do.
 func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	ad := s.AdjustedDifficulty()
 	if s.IsTechnique() {
 		return techniquePointsForLevel(level, ad.Difficulty, s.techniqueBase(e))
 	}
+	defer e.atBaseWhile()()
 	attr := skillAttributeBase(e, ad.Attribute)
 	if attr == fxp.Min {
 		return 0

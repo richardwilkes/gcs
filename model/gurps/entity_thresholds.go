@@ -42,14 +42,20 @@ func (c *currentAdjustment) add(b *AttributeBonus) {
 // value that holds whole numbers, the amount is floored first, as the other bonuses such a value takes are, and each
 // product is rounded to the nearest whole number, so that halving twice rounds up twice, as the rules do (B419).
 func (c currentAdjustment) apply(value fxp.Int, whole bool) fxp.Int {
+	return c.applyRounding(value, whole, whole)
+}
+
+// applyRounding is apply with the amount floored only when wholeAmount is set and each product rounded to the nearest
+// whole number only when roundProducts is set.
+func (c currentAdjustment) applyRounding(value fxp.Int, wholeAmount, roundProducts bool) fxp.Int {
 	bonus := c.bonus
-	if whole {
+	if wholeAmount {
 		bonus = bonus.Floor()
 	}
 	value += bonus
 	for _, factor := range c.factors {
 		value = value.Mul(factor)
-		if whole {
+		if roundProducts {
 			value = value.Round()
 		}
 	}
@@ -103,10 +109,11 @@ func (e *Entity) forEachThresholdFeatureList(fn func(t *PoolThreshold, def *Attr
 // with what the previous pass left. The caches are discarded before the thresholds are found and once the adjustments
 // are in place, since what the scripts cached was computed without them. Found outside a recalculation, a pool whose
 // thresholds alter what it reads may be found at another threshold. A trait bonus a threshold holds raises the level
-// the per-level bonuses of the trait read, whenever they are read, so the totals totalBonuses recorded are recorded
-// again once one is collected. The parry and block tooltips are built here, so that they name these bonuses too. A
-// grant a threshold holds is collected here as well, and so is in effect while the pool is at the threshold; the rows
-// it puts on the sheet are there whether or not it is, as for any grant (see forEachGrant).
+// the per-level bonuses of the trait read, whenever they are read, save those given a pool or the size modifier (see
+// AttributeBonusFor), so the totals totalBonuses recorded are recorded again once one is collected. The parry and
+// block tooltips are built here, so that they name these bonuses too. A grant a threshold holds is collected here as
+// well, and so is in effect while the pool is at the threshold; the rows it puts on the sheet are there whether or not
+// it is, as for any grant (see forEachGrant).
 func (e *Entity) processThresholdFeatures() {
 	if e.recordCurrentAdjustments() {
 		e.discardCaches(true)
@@ -193,8 +200,9 @@ const (
 // being found, as the sheet's own are found without them; see Attribute.CurrentThreshold. A computation at base sees
 // none either, since they alter only the sheet's current state, nor those of the items the thresholds' grants alone put
 // in effect; see atBaseWhile and featuresAtBase. Each is built once while the same prerequisites are judged, or the
-// same computation at base runs, since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. The grants
-// they hold are not those the sheet applies, and so are left out.
+// same computation at base runs, since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. Nothing
+// reads the grants they hold, which are not those the sheet applies: the sheet's are left out, and those the view as
+// judged collects along with the features of the thresholds and of the items their grants give go unused.
 func (e *Entity) bonusFeatures() *features {
 	if !e.carriesGrant(e.judging) {
 		if e.atBase == 0 {
@@ -249,31 +257,26 @@ func (e *Entity) featuresAtBase() features {
 }
 
 // rowsGrantedByThresholdsAlone returns the items grants put on the sheet whose features the sheet's lists hold that a
-// grant of a pool's threshold puts in effect and no other grant in effect can put on the sheet.
+// grant of a pool's threshold puts in effect and no other grant gave anything when the lists were collected, since one
+// that gives an item nothing, such as a level set below what the points of its first level buy, leaves it out of effect
+// without the threshold's (see grantPlan.reaches). What the other grants gave is taken from the lists rather than
+// priced afresh, since pricing a level set may read the bonuses at base, which rest on this; see
+// features.plantedElsewhere.
 func (e *Entity) rowsGrantedByThresholdsAlone() map[grantHolder]bool {
-	var byThresholds, byOthers map[grantHolder]bool
+	var rows map[grantHolder]bool
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
 		row := plan.row()
-		if !e.features.grantedRows[row] || !plan.grant.putsItemOnSheet() || !e.grantInEffect(plan) {
+		if !ownedByThreshold(plan.source.owner) || !e.features.grantedRows[row] || e.features.plantedElsewhere[row] ||
+			!plan.grant.putsItemOnSheet() || !e.grantInEffect(plan) {
 			continue
 		}
-		if ownedByThreshold(plan.source.owner) {
-			if byThresholds == nil {
-				byThresholds = make(map[grantHolder]bool)
-			}
-			byThresholds[row] = true
-		} else {
-			if byOthers == nil {
-				byOthers = make(map[grantHolder]bool)
-			}
-			byOthers[row] = true
+		if rows == nil {
+			rows = make(map[grantHolder]bool)
 		}
+		rows[row] = true
 	}
-	for row := range byOthers {
-		delete(byThresholds, row)
-	}
-	return byThresholds
+	return rows
 }
 
 // ownedByThreshold returns true if the owner of a feature is a pool's threshold.
@@ -437,9 +440,9 @@ var scriptAttributeRef = regexp.MustCompile(`(?:\$(\w+)|\bentity\s*\.\s*attribut
 // given ID and limitation is figured from: for ST under a limitation, the attribute standing in for that ST or, without
 // one, ST (see strengthFor); for Move and Dodge without an attribute standing in for them, Basic Move and Basic Speed
 // (see Move and Dodge); for an attribute, each attribute its base reads as "$id.current" or
-// entity.attribute("id").current, and for one other than a pool standing in for any of those, each it reads as "$id"
-// or entity.attribute("id") too, either of which gives the current value there (see Attribute.Current), but not as
-// "$id.maximum" or entity.attribute("id").maximum; and for anything else, none.
+// entity.attribute("id").current, and for one other than a pool standing in for any of those, each other than a pool it
+// reads as "$id" or entity.attribute("id") too, either of which gives the current value there (see Attribute.Current),
+// but not as "$id.maximum" or entity.attribute("id").maximum; and for anything else, none.
 func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 	if limitation != stlimit.None {
 		var standIn string
@@ -473,12 +476,14 @@ func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 	readsCurrents := baseReadsCurrents(id) && def.Type != attribute.Pool && def.Type != attribute.PoolRef
 	var ids []string
 	for _, match := range scriptAttributeRef.FindAllStringSubmatch(def.Base, -1) {
+		bare := false
 		switch match[5] {
 		case "current":
 		case "", "valueOf":
 			if !readsCurrents {
 				continue
 			}
+			bare = true
 		default:
 			continue
 		}
@@ -488,9 +493,14 @@ func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 		} else if idOrName := match[2] + match[3] + match[4]; idOrName != "" {
 			attr = e.Attributes.Find(idOrName)
 		}
-		if attr != nil && !slices.Contains(ids, attr.AttrID) {
-			ids = append(ids, attr.AttrID)
+		if attr == nil || slices.Contains(ids, attr.AttrID) {
+			continue
 		}
+		if source := attr.AttributeDef(); bare && source != nil &&
+			(source.Type == attribute.Pool || source.Type == attribute.PoolRef) {
+			continue
+		}
+		ids = append(ids, attr.AttrID)
 	}
 	return ids
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -31,7 +32,7 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	Format        func(T) string
 	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
 	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
-	// the focus, or is handed new text by SetText, Format's exact rendering replaces it.
+	// the focus, or is handed new text by SetText or an assistive technology, Format's exact rendering replaces it.
 	DisplayFormat      func(T) string
 	extract            func(s string) (T, error)
 	validationTooltip  *unison.Panel
@@ -156,6 +157,31 @@ func (f *NumericField[T]) restoreExactText() {
 func (f *NumericField[T]) SetText(text string) {
 	f.restoreExactText()
 	f.Field.SetText(text)
+}
+
+// PerformAccessibilityAction implements unison.AccessibilityActor. An assistive technology replacing the field's text
+// does so as SetText does, with the exact text restored first, so that the "before" state the resulting modification
+// records for undo holds the exact value. While display text is showing, a range of it means nothing in the exact text
+// unless the two are the same, so replacing part of it is otherwise refused, and replacing all of it replaces all of
+// the exact text.
+func (f *NumericField[T]) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
+	switch req.Action {
+	case accessibility.SetValue:
+		f.restoreExactText()
+	case accessibility.ReplaceText:
+		if f.showingDisplayText {
+			shown := f.Text()
+			whole := req.Start <= 0 && req.End >= len([]rune(shown))
+			if !whole && shown != f.Format(f.last) {
+				return false
+			}
+			f.restoreExactText()
+			if whole {
+				req.Start, req.End = 0, len([]rune(f.Text()))
+			}
+		}
+	}
+	return f.Field.PerformAccessibilityAction(req)
 }
 
 func (f *NumericField[T]) gainedFocus() {

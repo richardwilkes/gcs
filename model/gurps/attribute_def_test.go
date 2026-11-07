@@ -183,6 +183,7 @@ func TestNamelessAttributeNamedByID(t *testing.T) {
 	c.Equal("+1 to a", bonus.Describe(e, nil, func(s string) string { return s }))
 	_, current := AttributeChoices(e, "to", 0, "a")
 	c.Equal("to a", current.Title)
+	c.Equal("a", def.String(), "as the source of a bonus one of its thresholds gives")
 }
 
 // TestAttributesWithNullRows verifies that a JSON null entry in an entity's attribute list is dropped rather than

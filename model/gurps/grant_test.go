@@ -2446,6 +2446,43 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		c.Equal(fxp.Ten, brawling.LevelData.Level, "and the sheet stays Tired")
 	})
 
+	// So is a skill's default, though a pool's threshold, found for them without what the thresholds do, read it: FP 3
+	// of 10 is Tired, which here gives DX +5, raising Broadsword to 17, and Shortsword, defaulting to it, to 15, while
+	// Stam's threshold, found without that, reads Shortsword at 10.
+	t.Run("skill default as the prerequisites see it once a pool's threshold reads it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		tired := poolThreshold(e, FatiguePointsID, "Tired")
+		tired.Features = append(tired.Features, newAttrBonus(DexterityID, fxp.Five))
+		addSkill(e, "Broadsword", fxp.Four) // DX+2
+		shortsword := addSkill(e, "Shortsword", fxp.One)
+		shortsword.Difficulty = AttributeDifficulty{Attribute: IntelligenceID, Difficulty: difficulty.VeryHard}
+		shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+		low := NewPoolThreshold()
+		low.State = "Low"
+		low.Value = `entity.findSkills("Shortsword")[0].level - 100`
+		low.Features = Features{newAttrBonus(IntelligenceID, fxp.One)}
+		e.SheetSettings.Attributes.Set["stam"] = &AttributeDef{
+			DefID:      "stam",
+			Type:       attribute.Pool,
+			Name:       "Stam",
+			Base:       "10",
+			Thresholds: []*PoolThreshold{low},
+		}
+		e.Attributes.Set["stam"] = NewAttribute(e, "stam", len(e.Attributes.Set))
+		training := addTraitWithFeatures(e, "Training", nightVisionGrant())
+		training.Prereq = NewPrereqList()
+		dx := NewAttributePrereq(e)
+		dx.Parent = training.Prereq
+		dx.Which = DexterityID
+		training.Prereq.Prereqs = append(training.Prereq.Prereqs, dx)
+		addSkillPrereq(training.Prereq, "Shortsword", fxp.FromInteger(15))
+		e.Recalculate()
+		c.Equal(fxp.FromInteger(15), shortsword.LevelData.Level)
+		c.Equal("", training.UnsatisfiedReason, "the prerequisite sees Shortsword as Tired raises it")
+	})
+
 	// So is what a threshold's grants give: Tired here puts Exhausted, at DX -2, on the sheet, or adds 2 levels to
 	// Brawling 10, and the carrier's grant either lifts the sheet out of Tired, FP 3 of 10 being Tired, or brings it
 	// there, FP 5 of 10 being Tiring. A carrier asking for what its prerequisites don't see is never in effect, which
@@ -4156,9 +4193,16 @@ func TestGrantSetLevelPoints(t *testing.T) {
 	limit := -fxp.Three
 	capped.TechniqueLimitModifier = &limit
 	tiredIQ := newAttrBonus(IntelligenceID, -fxp.Two)
+	dull := newGrantLeveledTrait("Dull", fxp.One)
+	dull.Features = Features{newAttrBonus(IntelligenceID, -fxp.Two)}
+	tiredDull := newTraitGrant(dull, fxp.One, grantmerge.Ignore)
 	trained := newGrantLeveledTrait("Trained", fxp.One)
 	trained.Features = Features{newSkillBonusTo("Karate", fxp.Two), newSkillBonusTo("Ritual Magic", fxp.Two)}
 	tiredTrained := newTraitGrant(trained, fxp.One, grantmerge.Ignore)
+	focus := newEasySkill("Focus", 0)
+	focus.Features = Features{newSkillBonusTo("Karate", fxp.Two)}
+	tiredFocus := newSkillGrantOf(focus, grantadjust.AddPoints, fxp.Four, grantmerge.Ignore)
+	unreachedFocus := newSkillGrantOf(focus, grantadjust.SetLevel, fxp.One, grantmerge.Ignore)
 	large := newGrantLeveledTrait("Large", fxp.One)
 	large.Features = Features{newAttrBonus(SizeModifierID, fxp.Two)}
 	cheapST := newGrantLeveledTrait("Cheap ST", fxp.One)
@@ -4186,6 +4230,8 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		// tired, when set, is held by the Tired threshold, which the sheet's FP is at, and alters current values alone,
 		// not the base the points rest on.
 		tired Feature
+		// training, when set, is held by Training, a trait on the sheet.
+		training Feature
 		// burdened, when set, has the sheet carry 15 lb and Karate take the encumbrance penalty, and puts the sheet's
 		// FP at the Tired threshold, whose halving of lifting ST, which alters only its current value, makes that a
 		// Medium load, though no load at base.
@@ -4220,6 +4266,14 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		{name: "spell", item: spell, level: fxp.Ten, points: fxp.Four},
 		{name: "skill while a threshold lowers IQ", item: hard, tired: tiredIQ, level: fxp.Ten, points: fxp.Four},
 		{name: "spell while a threshold lowers IQ", item: spell, tired: tiredIQ, level: fxp.Ten, points: fxp.Four},
+		{
+			name: "skill while a threshold grants a trait lowering IQ", item: hard, tired: tiredDull, level: fxp.Ten,
+			points: fxp.Four,
+		},
+		{
+			name: "spell while a threshold grants a trait lowering IQ", item: spell, tired: tiredDull, level: fxp.Ten,
+			points: fxp.Four,
+		},
 		{name: "skill at half-stat", item: hard, halfStat: true, level: fxp.Twelve, points: fxp.Four},
 		{
 			name: "spell at half-stat, which spells don't use", item: spell, halfStat: true, level: fxp.Twelve,
@@ -4258,6 +4312,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		{
 			name: "ritual magic while a threshold grants a trait whose bonus raises the skill it rests on", item: bless,
 			tired: tiredTrained, level: fxp.Nine, points: fxp.Three,
+		},
+		{
+			name: "technique while a threshold grants a skill whose bonus raises the skill it rests on, which another " +
+				"grant's level set, giving it nothing, puts on the sheet too",
+			item: kicking, tired: tiredFocus, training: unreachedFocus, level: fxp.Nine, points: fxp.Two,
 		},
 		{name: "technique resting on a trait's per-level bonus", item: kicking, smart: true, level: fxp.Eleven, points: fxp.Two},
 		{
@@ -4353,6 +4412,9 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		if tc.tired != nil {
 			tired := poolThreshold(e, FatiguePointsID, "Tired")
 			tired.Features = append(tired.Features, tc.tired.Clone())
+		}
+		if tc.training != nil {
+			addTraitWithFeatures(e, "Training", tc.training.Clone())
 		}
 		if tc.burdened {
 			karate.EncumbrancePenaltyMultiplier = fxp.One

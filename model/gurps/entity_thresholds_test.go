@@ -81,14 +81,19 @@ func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 // TestEntityThresholdFeaturesTakeEffect verifies that the other kinds of feature a threshold holds take effect while
 // the pool is at it, naming the threshold and its pool as their source, and not otherwise, save one the threshold
 // ignores, such as a reaction per level, which never does. A trait bonus raises the level that the trait's per-level
-// attribute bonus reads, which the attribute's value follows.
+// attribute bonus reads, which the attribute's value follows, save that of a pool or the size modifier, which a
+// threshold never alters, so that the pool stays at the threshold whose features apply.
 func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	brawling := addSkill(e, "Brawling", fxp.One)
 	stPerLevel := newAttrBonus(StrengthID, fxp.One)
 	stPerLevel.PerLevel = true
-	lifting := addTraitWithFeatures(e, "Lifting", stPerLevel)
+	fpPerLevel := newAttrBonus(FatiguePointsID, fxp.One)
+	fpPerLevel.PerLevel = true
+	smPerLevel := newAttrBonus(SizeModifierID, fxp.One)
+	smPerLevel.PerLevel = true
+	lifting := addTraitWithFeatures(e, "Lifting", stPerLevel, fpPerLevel, smPerLevel)
 	lifting.CanLevel = true
 	lifting.Levels = fxp.Two
 	st := e.Attributes.Set[StrengthID]
@@ -108,11 +113,15 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c.Equal(0, len(e.Reactions()), "no reaction while Tiring")
 	c.Equal(fxp.Twelve, st.Maximum(), "ST from Lifting 2 while Tiring")
 
-	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	fp := e.Attributes.Set[FatiguePointsID]
+	fp.Damage = fxp.Nine
 	e.Recalculate()
 	c.Equal(level+fxp.Two, brawling.CalculateLevel(nil).Level, "the skill bonus takes effect while Tired")
 	c.Equal(fxp.Four, lifting.CurrentLevel(), "the trait bonus takes effect while Tired")
 	c.Equal(fxp.FromInteger(14), st.Maximum(), "ST follows the level the trait bonus raises")
+	c.Equal(fxp.Twelve, fp.Maximum(), "FP doesn't follow it")
+	c.Equal("Tired", fp.CurrentThreshold().State, "so FP stays at the threshold whose features apply")
+	c.Equal(2, e.Profile.AdjustedSizeModifier(), "nor does the size modifier")
 	c.Equal(fxp.FromInteger(14), st.Current())
 	c.Equal("Includes modifiers from:\nLifting 4 [+4 (+1 per level)]\nFor lifting only:\nTired (FP) [×0.5]",
 		st.BonusTooltip())
