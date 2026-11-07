@@ -430,7 +430,8 @@ func TestThresholdFeaturesFollowAttributeEdits(t *testing.T) {
 		},
 		{
 			name: "add", bonus: "a", view: rowsView{collapsed: true}, shown: summary,
-			before: "+1 to a; a pool threshold ignores it.", after: "+1 to .", // The new attribute has no name yet.
+			// The new attribute has no name yet, so its ID names it.
+			before: "+1 to a; a pool threshold ignores it.", after: "+1 to a.",
 			edit: func(_ check.Checker, p *attrDefSettingsPanel) { p.dockable.addAttribute("Add Attribute") },
 		},
 		{

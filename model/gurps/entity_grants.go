@@ -1285,9 +1285,16 @@ func (e *Entity) grantInEffect(plan *grantPlan) bool {
 // is being found for those prerequisites, and they see one of those grants in effect where the sheet does not, or the
 // other way around. Otherwise it returns nil, and every grant is in effect as the sheet has it, as it is while those
 // thresholds are found, since the sheet's own are found with the grants as the last pass left them. It is found once
-// while the same prerequisites are judged, since their view of the thresholds holds still meanwhile.
+// while the same prerequisites are judged, since their view of the thresholds holds still meanwhile. A computation at
+// base sees none of those grants in effect instead; see thresholdGrantsAtBase.
 func (e *Entity) thresholdGrantsAsJudged() map[*Grant]bool {
-	if e == nil || e.judging == nil || e.judgedThresholdSearches > 0 {
+	if e == nil {
+		return nil
+	}
+	if e.atBase > 0 {
+		return e.thresholdGrantsAtBase()
+	}
+	if e.judging == nil || e.judgedThresholdSearches > 0 {
 		return nil
 	}
 	if e.judgedThresholdGrantsFound {
@@ -1325,17 +1332,52 @@ func (e *Entity) thresholdGrantsAsJudged() map[*Grant]bool {
 	return e.judgedThresholdGrants
 }
 
+// thresholdGrantsAtBase is thresholdGrantsAsJudged for a computation at base, which sees none of the grants held by the
+// pools' thresholds in effect (see atBaseWhile): an empty set while the sheet has one of them in effect, and otherwise
+// nil. It is found once while the same computation at base runs.
+func (e *Entity) thresholdGrantsAtBase() map[*Grant]bool {
+	if !e.baseThresholdGrantsFound {
+		e.baseThresholdGrantsFound = true
+		for i := range e.grantPlans {
+			if plan := &e.grantPlans[i]; ownedByThreshold(plan.source.owner) && e.grantInEffect(plan) {
+				e.baseThresholdGrants = make(map[*Grant]bool)
+				break
+			}
+		}
+	}
+	return e.baseThresholdGrants
+}
+
+// baseGrantStateKey identifies what the grants give an item as a computation at base sees the sheet while the
+// prerequisites of judged are judged, which may be nil; see grantsAsJudged.
+type baseGrantStateKey struct {
+	holder grantHolder
+	judged any
+}
+
 // grantsAsJudged returns what the grants give the holder as the prerequisites being judged see the pools' thresholds:
 // when they see a grant of a threshold that touches the holder in effect where the sheet does not, or the other way
 // around (see thresholdGrantsAsJudged), the state judgedGrantState finds, and otherwise, as while that state is being
-// found, the holder's own. e may be nil, which gives the holder's own.
+// found, the holder's own. A computation at base, which sees none of those grants in effect, gets the state found that
+// way too, kept apart for the prerequisites being judged, if any. e may be nil, which gives the holder's own.
 func (e *Entity) grantsAsJudged(holder grantHolder) *grantState {
 	thresholdGrants := e.thresholdGrantsAsJudged()
 	if thresholdGrants == nil {
 		return holder.grants()
 	}
-	state, ok := e.judgedGrantStates[holder]
-	if !ok {
+	var state *grantState
+	var ok bool
+	if e.atBase > 0 {
+		key := baseGrantStateKey{holder: holder, judged: e.judging}
+		if state, ok = e.baseGrantStates[key]; !ok {
+			if e.baseGrantStates == nil {
+				e.baseGrantStates = make(map[baseGrantStateKey]*grantState)
+			}
+			e.baseGrantStates[key] = nil
+			state = e.judgedGrantState(holder, thresholdGrants)
+			e.baseGrantStates[key] = state
+		}
+	} else if state, ok = e.judgedGrantStates[holder]; !ok {
 		if e.judgedGrantStates == nil {
 			e.judgedGrantStates = make(map[grantHolder]*grantState)
 		}

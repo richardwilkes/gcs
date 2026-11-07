@@ -75,7 +75,7 @@ func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlag
 		case flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef):
 			continue
 		}
-		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.Name})
+		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.nameOrID()})
 	}
 	if flags&SizeFlag != 0 {
 		choices = append(choices, &AttributeChoice{Key: SizeModifierID, Title: prefix + i18n.Text("Size Modifier")})

@@ -104,10 +104,7 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 func attributePrereqValue(entity *Entity, key string) fxp.Int {
 	switch key {
 	case SizeModifierID:
-		if entity.carriesGrant(entity.judging) {
-			return fxp.FromInteger(entity.sizeModifierForPrereqs())
-		}
-		return fxp.FromInteger(entity.Profile.AdjustedSizeModifier())
+		return fxp.FromInteger(entity.sizeModifier())
 	case DodgeID:
 		return fxp.FromInteger(entity.Dodge(entity.EncumbranceLevel(false)))
 	default:
@@ -131,7 +128,7 @@ func (p *AttributePrereq) Describe(entity *Entity, _ map[string]string, em func(
 // attributeTitle returns the title the attribute choices give key, or key itself when it isn't one of them.
 func attributeTitle(entity *Entity, key string) string {
 	if def := AttributeDefsFor(entity).Set[key]; def != nil {
-		return def.Name
+		return def.nameOrID()
 	}
 	switch key {
 	case SizeModifierID:

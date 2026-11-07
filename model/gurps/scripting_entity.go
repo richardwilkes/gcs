@@ -46,14 +46,9 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		m["weightInPounds"] = profileField(func() any { return fxp.Int(entity.Profile.Weight).AsFloat[float64]() })
 		m["displayHeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultLengthUnits.Key()) }
 		m["displayWeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultWeightUnits.Key()) }
-		// A script run for the prerequisites being judged reads the size modifier without the bonuses from what the
-		// grants of the item judged put on the sheet, as it does the attributes and the strengths; see JudgingPrereqsOf.
-		m["sizeModifier"] = func() goja.Value {
-			if entity.carriesGrant(entity.judging) {
-				return r.ToValue(entity.sizeModifierForPrereqs())
-			}
-			return r.ToValue(entity.Profile.AdjustedSizeModifier())
-		}
+		// A script reads the size modifier as the prerequisites being judged, or a computation at base, see it, as it
+		// does the attributes and the strengths; see Entity.sizeModifier.
+		m["sizeModifier"] = func() goja.Value { return r.ToValue(entity.sizeModifier()) }
 		m["liftingStrength"] = func() goja.Value { return r.ToValue(entity.LiftingStrength().AsInteger[int]()) }
 		m["strikingStrength"] = func() goja.Value { return r.ToValue(entity.StrikingStrength().AsInteger[int]()) }
 		m["throwingStrength"] = func() goja.Value { return r.ToValue(entity.ThrowingStrength().AsInteger[int]()) }

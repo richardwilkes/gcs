@@ -224,39 +224,51 @@ type Entity struct {
 	// stack, so discardCaches leaves it alone.
 	currentsDepth int
 	// atBase is the depth of the computations in progress at base, which see the sheet without what alters current
-	// values alone; see atBaseWhile. It guards the call stack, so discardCaches leaves it alone. baseFeatures and
-	// baseDefaults hold what such a computation found, for it alone to read, until the outermost one ends: the feature
-	// lists the bonuses are read from while the item judged, if any, carries no grant (see bonusFeatures), and the
-	// defaults picked for the skills (see Skill.defaultExcept).
-	atBase       int
-	baseFeatures *features
-	baseDefaults map[baseDefaultKey]*SkillDefault
+	// values alone; see atBaseWhile. It guards the call stack, so discardCaches leaves it alone. baseFeatures,
+	// baseDefaults, baseThresholdGrants and baseGrantStates hold what such a computation found, for it alone to read,
+	// until the outermost one ends: the feature lists the bonuses are read from while the item judged, if any, carries
+	// no grant (see bonusFeatures), the defaults picked for the skills (see Skill.defaultExcept), and what the grants
+	// give the items they touch with none of the pools' thresholds' grants in effect (see thresholdGrantsAtBase and
+	// grantsAsJudged), of which baseThresholdGrantsFound records that the first has been found.
+	atBase                   int
+	baseFeatures             *features
+	baseDefaults             map[baseDefaultKey]*SkillDefault
+	baseThresholdGrants      map[*Grant]bool
+	baseThresholdGrantsFound bool
+	baseGrantStates          map[baseGrantStateKey]*grantState
 	// baseLevelReads holds the skills and spells whose levels Skill.CurrentLevel and Spell.CurrentLevel are computing
 	// at base. It guards the call stack, so discardCaches leaves it alone.
 	baseLevelReads map[LeveledOwner]bool
 }
 
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
-// alters current values alone, the current adjustments and the features of the pools' thresholds, along with those of
-// the items the thresholds' grants alone put in effect (see currentAdjustmentFor, sheetAdjustment and bonusFeatures),
-// with the bonuses totalled afresh from what it sees (see Attribute.bonus), as what a level set on a technique or
-// Ritual Magic spell costs is found, so that its points don't change with the state the pools are in. Nothing it finds
-// is taken from the caches or kept in them, unless kept apart from what is found otherwise, and the levels the skills
-// and spells recorded are computed afresh, since they hold what it leaves out. e may be nil.
+// alters current values alone: the current adjustments, and the features and grants of the pools' thresholds, along
+// with the features of the items those grants alone put in effect (see currentAdjustmentFor, sheetAdjustment,
+// bonusFeatures and grantsAsJudged), with the bonuses totalled afresh from what it sees (see Attribute.bonus), as what
+// a level set on a technique or Ritual Magic spell costs is found, so that its points don't change with the state the
+// pools are in. Nothing it finds is taken from the caches or kept in them, unless kept apart from what is found
+// otherwise, and the levels the skills and spells recorded are computed afresh, since they hold what it leaves out. e
+// may be nil.
 func (e *Entity) atBaseWhile() func() {
 	if e == nil {
 		return func() {}
 	}
 	if e.atBase == 0 {
-		e.baseFeatures, e.baseDefaults = nil, nil
+		e.discardBaseCaches()
 	}
 	e.atBase++
 	return func() {
 		e.atBase--
 		if e.atBase == 0 {
-			e.baseFeatures, e.baseDefaults = nil, nil
+			e.discardBaseCaches()
 		}
 	}
+}
+
+// discardBaseCaches discards what the computations at base found; see atBaseWhile.
+func (e *Entity) discardBaseCaches() {
+	e.baseFeatures, e.baseDefaults = nil, nil
+	e.baseThresholdGrants, e.baseThresholdGrantsFound, e.baseGrantStates = nil, false, nil
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1675,10 +1687,15 @@ func (e *Entity) LiftingStrengthForThrowing() fxp.Int {
 	return e.strengthFor(LiftingStrengthID, stlimit.LiftingOnly, false)
 }
 
-// sizeModifierForPrereqs returns the adjusted size modifier as the prerequisites being judged see it: with the bonuses
-// from what the grants of the item judged put on the sheet left out; see JudgingPrereqsOf.
-func (e *Entity) sizeModifierForPrereqs() int {
-	return e.Profile.SizeModifier + e.AttributeBonusFor(SizeModifierID, stlimit.None, nil).AsInteger[int]()
+// sizeModifier returns the adjusted size modifier: as the profile has it, but with the bonuses totalled afresh while the
+// prerequisites of an item carrying a grant are judged, which leaves out those from what its grants put on the sheet
+// (see JudgingPrereqsOf), and in a computation at base, which leaves out those from what alters current values alone
+// (see atBaseWhile).
+func (e *Entity) sizeModifier() int {
+	if e.carriesGrant(e.judging) || e.atBase > 0 {
+		return e.Profile.SizeModifier + e.AttributeBonusFor(SizeModifierID, stlimit.None, nil).AsInteger[int]()
+	}
+	return e.Profile.AdjustedSizeModifier()
 }
 
 // TelekineticStrength returns the total telekinetic strength.
@@ -2504,10 +2521,10 @@ func (e *Entity) ResolveAttributeDef(attrID string) *AttributeDef {
 	return nil
 }
 
-// ResolveAttributeName resolves the given attribute ID to its name, or <unknown>.
+// ResolveAttributeName resolves the given attribute ID to its name, or to the ID when it has none, or <unknown>.
 func (e *Entity) ResolveAttributeName(attrID string) string {
 	if def := e.ResolveAttributeDef(attrID); def != nil {
-		return def.Name
+		return def.nameOrID()
 	}
 	return i18n.Text("<unknown>")
 }

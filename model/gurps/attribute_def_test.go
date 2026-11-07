@@ -155,6 +155,36 @@ func TestAttributeDefsWithNullRows(t *testing.T) {
 	c.Equal(Hash64(defs), Hash64(defs.Clone()), "hash of clone matches")
 }
 
+// TestAttributeDefThresholdsOnlyForPools pins that a definition read from a file keeps thresholds for the pool types
+// alone, as a copy of it does, so that whether a loaded definition has them never depends on whether it was copied.
+func TestAttributeDefThresholdsOnlyForPools(t *testing.T) {
+	c := check.New(t)
+	for _, typ := range attribute.Types {
+		var def AttributeDef
+		c.NoError(jio.Unmarshal([]byte(`{"id":"x","type":"`+typ.Key()+`","name":"X","thresholds":[{"state":"Low"}]}`),
+			&def))
+		pool := typ == attribute.Pool || typ == attribute.PoolRef
+		c.Equal(pool, len(def.Thresholds) != 0, "%s: loaded", typ.Key())
+		c.Equal(pool, len(def.Clone().Thresholds) != 0, "%s: copied", typ.Key())
+	}
+}
+
+// TestNamelessAttributeNamedByID pins that a defined attribute with no name, as one just added in the attribute
+// settings has until a name is typed, is named by its ID wherever it is named, rather than by nothing.
+func TestNamelessAttributeNamedByID(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	def := &AttributeDef{DefID: "a", Type: attribute.Integer, Base: "10", Order: len(e.SheetSettings.Attributes.Set)}
+	e.SheetSettings.Attributes.Set[def.DefID] = def
+	e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, def.Order)
+	c.Equal("a", ResolveAttributeName(e, "a"))
+	c.Equal("a", e.ResolveAttributeName("a"))
+	bonus := NewAttributeBonus("a")
+	c.Equal("+1 to a", bonus.Describe(e, nil, func(s string) string { return s }))
+	_, current := AttributeChoices(e, "to", 0, "a")
+	c.Equal("to a", current.Title)
+}
+
 // TestAttributesWithNullRows verifies that a JSON null entry in an entity's attribute list is dropped rather than
 // dereferenced while decoding.
 func TestAttributesWithNullRows(t *testing.T) {

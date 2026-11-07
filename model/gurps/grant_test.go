@@ -4159,6 +4159,18 @@ func TestGrantSetLevelPoints(t *testing.T) {
 	trained := newGrantLeveledTrait("Trained", fxp.One)
 	trained.Features = Features{newSkillBonusTo("Karate", fxp.Two), newSkillBonusTo("Ritual Magic", fxp.Two)}
 	tiredTrained := newTraitGrant(trained, fxp.One, grantmerge.Ignore)
+	large := newGrantLeveledTrait("Large", fxp.One)
+	large.Features = Features{newAttrBonus(SizeModifierID, fxp.Two)}
+	newSmart := func() *Trait {
+		iq := newAttrBonus(IntelligenceID, fxp.One)
+		iq.PerLevel = true
+		smart := NewTrait(nil, nil, false)
+		smart.Name = "Smart"
+		smart.Features = Features{iq}
+		smart.CanLevel = true
+		smart.Levels = fxp.Two
+		return smart
+	}
 	for _, tc := range []struct {
 		name string
 		item grantLeveler
@@ -4180,9 +4192,11 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		perLevelSpell bool
 		// smart, when set, adds Smart, a trait at level 2 giving +1 IQ per level, which raises Karate and Ritual
 		// Magic to 12.
-		smart  bool
-		level  fxp.Int
-		points fxp.Int
+		smart bool
+		// sizedIQ, when set, makes IQ's base 10 plus the size modifier, which is 0 at base.
+		sizedIQ bool
+		level   fxp.Int
+		points  fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -4242,6 +4256,16 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		{
 			name: "technique while a threshold raises the trait whose per-level bonus raises the skill it rests on",
 			item: kicking, smart: true, tired: newTraitBonusTo("Smart", fxp.Two), level: fxp.Eleven, points: fxp.Two,
+		},
+		{
+			name: "technique while a threshold adds levels to the trait whose per-level bonus raises the skill it rests on",
+			item: kicking, smart: true, tired: addingLevels(newTraitGrant(newSmart(), fxp.Two, grantmerge.Ignore)),
+			level: fxp.Eleven, points: fxp.Two,
+		},
+		{
+			name: "technique while a threshold grants a trait whose size modifier bonus raises the skill it rests on",
+			item: kicking, sizedIQ: true, tired: newTraitGrant(large, fxp.One, grantmerge.Ignore), level: fxp.Nine,
+			points: fxp.Two,
 		},
 		{name: "Average technique", item: averageKicking, level: fxp.Nine, points: fxp.One},
 		{name: "technique above its limit", item: kicking, level: fxp.Twelve, points: fxp.Three},
@@ -4305,11 +4329,10 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			}
 		}
 		if tc.smart {
-			iq := newAttrBonus(IntelligenceID, fxp.One)
-			iq.PerLevel = true
-			smart := addTraitWithFeatures(e, "Smart", iq)
-			smart.CanLevel = true
-			smart.Levels = fxp.Two
+			addTrait(e, newSmart())
+		}
+		if tc.sizedIQ {
+			e.SheetSettings.Attributes.Set[IntelligenceID].Base = "10 + entity.sizeModifier"
 		}
 		if tc.tired != nil {
 			tired := poolThreshold(e, FatiguePointsID, "Tired")

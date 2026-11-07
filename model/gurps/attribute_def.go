@@ -77,6 +77,10 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if a.Base == "" && legacy.AttributeBase != "" {
 		a.Base = ExprToScript(legacy.AttributeBase)
 	}
+	if a.Type != attribute.Pool && a.Type != attribute.PoolRef {
+		// Only the pool types keep thresholds, as with a copy; see Clone.
+		a.Thresholds = nil
+	}
 	a.Thresholds = slices.DeleteFunc(a.Thresholds, func(one *PoolThreshold) bool { return one == nil })
 	for _, threshold := range a.Thresholds {
 		threshold.Value = strings.ReplaceAll(threshold.Value, "$self", "$"+a.DefID)
@@ -108,6 +112,12 @@ func (a *AttributeDef) ID() string {
 // SetID sets the ID, sanitizing it in the process, so the stored value may differ from what was passed in.
 func (a *AttributeDef) SetID(value string) {
 	a.DefID = SanitizeID(value, false, ReservedIDs...)
+}
+
+// nameOrID returns the name, or the ID while the name is empty, as it is for a definition just added in the attribute
+// settings, so that what names the attribute is never empty.
+func (a *AttributeDef) nameOrID() string {
+	return cmp.Or(a.Name, a.DefID)
 }
 
 // ResolveFullName returns the full name, using the short name if full name is empty.
