@@ -751,7 +751,8 @@ func TestFeaturesPanelUndo(t *testing.T) {
 // TestFeaturesPanelDragAndDrop checks that a dragged feature goes before or after a row by which half of the row it is
 // over, that a drop is one step to undo and redo, that the open row follows its feature, that a drop onto or beside
 // itself changes nothing, and that a feature from another features panel is copied in where it is dropped, owned by
-// this panel's owner, unless the panel couldn't have added one of its kind.
+// this panel's owner, unless the panel couldn't have added one of its kind, and that a pool threshold's copy of a
+// switchable feature has no switch, as a threshold has none.
 func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -880,6 +881,16 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	c.False(p.collapse.collapsed, "which expands it")
 	c.Equal([]feature.Type{feature.SkillBonus, feature.SkillBonus, feature.DRBonus, feature.Unknown, feature.DRBonus},
 		featureTypes(features), "and adds the copy at the end")
+
+	thresh := &gurps.PoolThreshold{}
+	defs := gurps.FactoryAttributeDefs()
+	screen.Do(func() {
+		newThresholdFeaturesPanel(entity, thresh, func() *gurps.AttributeDefs { return defs }).dropCopy(other,
+			otherFeatures[1], nil, dropAfter)
+	})
+	c.Equal([]feature.Type{feature.DRBonus}, featureTypes(thresh.Features), "a threshold takes a copy")
+	c.True(len(thresh.Features) == 1 && !thresh.Features[0].IsSwitchable(), "without the switch it has no use for")
+	c.True(otherFeatures[1].IsSwitchable(), "leaving the source switchable")
 }
 
 // TestFeaturesPanelDragFromRow checks that a row can be dragged by its sentence without also opening it, and that a
@@ -1281,9 +1292,10 @@ func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 }
 
 // TestFeaturesPanelThresholdOffers checks that a threshold's features offer only what a threshold can use: the types it
-// may hold, grants among them, no per-level amount nor switch unless a feature already has one, and no selection of
-// the weapon of the item holding a skill bonus; that a feature another panel holds is copied in only when the
-// threshold wouldn't ignore it; and that one it holds that it ignores says so and can't be duplicated.
+// may hold, grants among them, no per-level amount unless a feature already has one, no switch, which a threshold
+// lacks, even when a feature is switchable, whose sentence then doesn't say it is, and no selection of the weapon of
+// the item holding a skill bonus; that a feature another panel holds is copied in only when the threshold wouldn't
+// ignore it, which a switch doesn't make it do; and that one it holds that it ignores says so and can't be duplicated.
 func TestFeaturesPanelThresholdOffers(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -1305,6 +1317,8 @@ func TestFeaturesPanelThresholdOffers(t *testing.T) {
 	weaponThisWeapon.SelectionType = wsel.ThisWeapon
 	thisArmor := gurps.NewDRBonus()
 	thisArmor.Locations = nil
+	switchable := gurps.NewAttributeBonus(gurps.StrengthID)
+	switchable.SetSwitchable(true)
 	for _, one := range []struct {
 		feature gurps.Feature
 		name    string
@@ -1318,6 +1332,7 @@ func TestFeaturesPanelThresholdOffers(t *testing.T) {
 		{feature: weaponThisWeapon, name: "a weapon bonus to this weapon"},
 		{feature: thisArmor, name: "a DR bonus to this armor"},
 		{feature: gurps.NewAttributeBonus(gurps.StrengthID), name: "an attribute bonus", copies: true},
+		{feature: switchable, name: "a switchable attribute bonus", copies: true},
 		{feature: gurps.NewGrant(feature.GrantTrait), name: "a grant", copies: true},
 	} {
 		otherFeatures := gurps.Features{one.feature}
@@ -1335,6 +1350,7 @@ func TestFeaturesPanelThresholdOffers(t *testing.T) {
 		sentence, ok := p.FindRefKey(path + keySentence).Self.(*sentenceButton)
 		c.True(ok && strings.HasSuffix(sentence.plainText(), "; a pool threshold ignores it") == ignored,
 			"row %s says the threshold ignores it: %v", path, ignored)
+		c.True(ok && !strings.Contains(sentence.plainText(), "switched on"), "row %s says nothing of a switch", path)
 	}
 
 	for _, one := range []struct {
@@ -1346,8 +1362,7 @@ func TestFeaturesPanelThresholdOffers(t *testing.T) {
 	} {
 		p.setView(rowsView{open: one.path})
 		c.Equal(one.on, p.FindRefKey(one.path+":perlevel") != nil, "row %s offers per level only when on", one.path)
-		c.Equal(one.on, p.FindRefKey(one.path+":switchable"+keyChip) != nil, "row %s shows switchable only when on",
-			one.path)
+		c.Nil(p.FindRefKey(one.path+":switchable"+keyChip), "row %s shows no switch", one.path)
 		c.Nil(p.FindRefKey(one.path+":add switchable"), "row %s offers no switchable pill", one.path)
 	}
 	p.setView(rowsView{open: "2"})

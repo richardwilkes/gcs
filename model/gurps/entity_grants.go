@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
@@ -131,9 +132,23 @@ func (s *Skill) ReadOnly() bool { return s.Granted != nil }
 // ReadOnly returns true if a grant put the spell on the sheet, so that it changes only with the grants that give it.
 func (s *Spell) ReadOnly() bool { return s.Granted != nil }
 
-func (t *Trait) grantNotInEffect() bool { return t.Granted != nil && !t.grant.inEffect }
-func (s *Skill) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffectAsJudged() }
-func (s *Spell) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffectAsJudged() }
+// grantNotInEffect returns true if a grant put the trait on the sheet and is not in effect, nor is one standing in for
+// it, as the prerequisites being judged see the pools' thresholds; see Entity.grantsAsJudged.
+func (t *Trait) grantNotInEffect() bool {
+	return t.Granted != nil && !EntityFromNode(t).grantsAsJudged(t).inEffect
+}
+
+// grantNotInEffect returns true if a grant put the skill on the sheet and is not in effect, nor is one standing in for
+// it, as the prerequisites being judged see the sheet; see grantState.inEffectAsJudged and Entity.grantsAsJudged.
+func (s *Skill) grantNotInEffect() bool {
+	return s.Granted != nil && !EntityFromNode(s).grantsAsJudged(s).inEffectAsJudged()
+}
+
+// grantNotInEffect returns true if a grant put the spell on the sheet and is not in effect, nor is one standing in for
+// it, as the prerequisites being judged see the sheet; see grantState.inEffectAsJudged and Entity.grantsAsJudged.
+func (s *Spell) grantNotInEffect() bool {
+	return s.Granted != nil && !EntityFromNode(s).grantsAsJudged(s).inEffectAsJudged()
+}
 
 // GrantingItem returns the trait, skill, spell or equipment carrying the grant that put the node on the sheet, or the
 // one carrying the grant standing in for it (see applyGrants), or nil for a node no grant put there.
@@ -852,15 +867,34 @@ func excludedFromPrereqs(exclude, node any) bool {
 
 // hiddenFromPrereqs returns true if the node is left out while the prerequisites of owner are judged, or, when owner is
 // nil, by the rest of the sheet: it is an item one of owner's grants put on the sheet (see grantedFor), so that an item
-// never meets its own prerequisites with what it grants, or a trait those prerequisites see as disabled (see
+// never meets its own prerequisites with what it grants, or one whose grant those prerequisites see out of effect where
+// the sheet does not (see grantedOutOfEffectAsJudged), or a trait those prerequisites see as disabled (see
 // Trait.disabledForPrereqsOf), or one whose features were collected for the prerequisites that see it enabled alone,
 // which those of owner are not (see Trait.featuresJudgedOnly and Trait.enabledForPrereqsOf).
 func hiddenFromPrereqs(owner, node any) bool {
-	if owner != nil && grantedFor(owner, node) {
+	if owner != nil && (grantedFor(owner, node) || grantedOutOfEffectAsJudged(node)) {
 		return true
 	}
 	t, ok := node.(*Trait)
 	return ok && (t.disabledForPrereqsOf(owner) || (t.featuresJudgedOnly && !t.enabledForPrereqsOf(owner)))
+}
+
+// grantedOutOfEffectAsJudged returns true if the node is a trait, skill or spell a grant put on the sheet whose grant
+// is out of effect, along with any that would stand in for it, as the prerequisites being judged see the pools'
+// thresholds, when that differs from what the sheet has; see Entity.grantsAsJudged.
+func grantedOutOfEffectAsJudged(node any) bool {
+	h, ok := node.(grantHolder)
+	if !ok || !IsGranted(node) {
+		return false
+	}
+	state := grantsAsJudgedOf(h)
+	if state == h.grants() {
+		return false
+	}
+	if _, isTrait := node.(*Trait); isTrait {
+		return !state.inEffect
+	}
+	return !state.inEffectAsJudged()
 }
 
 // grantedFor returns true if the node is an item on the sheet only because of the grants carried by owner: every grant
@@ -870,14 +904,14 @@ func hiddenFromPrereqs(owner, node any) bool {
 // other's stands in would bring owner's grant into effect and so take the stand-in away again; owner's prerequisites
 // see it as the other's would make it instead (see grantState.viewFor). The same goes for a level set in effect that
 // gives the item nothing against the sheet as a whole, as when owner's grants raise what its level rests on, but gives
-// it something as owner's prerequisites see the sheet (see grantState.unreachedPoints). owner may be nil, which nothing
-// is granted for.
+// it something as owner's prerequisites see the sheet (see grantState.unreachedPoints). The grants in effect are those
+// the prerequisites being judged see; see Entity.grantsAsJudged. owner may be nil, which nothing is granted for.
 func grantedFor(owner, node any) bool {
 	h, ok := node.(grantHolder)
 	if !ok || owner == nil || !IsGranted(node) {
 		return false
 	}
-	state := h.grants()
+	state := grantsAsJudgedOf(h)
 	if len(state.providers) == 0 {
 		return state.source.owner == owner
 	}
@@ -887,6 +921,20 @@ func grantedFor(owner, node any) bool {
 		}
 	}
 	return state.unreachedPoints == nil || state.unreachedPoints.pointsFor(owner) == 0
+}
+
+// grantsAsJudgedOf is Entity.grantsAsJudged for the holder on the sheet it is on, if any.
+func grantsAsJudgedOf(holder grantHolder) *grantState {
+	var e *Entity
+	switch one := holder.(type) {
+	case *Trait:
+		e = EntityFromNode(one)
+	case *Skill:
+		e = EntityFromNode(one)
+	case *Spell:
+		e = EntityFromNode(one)
+	}
+	return e.grantsAsJudged(holder)
 }
 
 // grantCarrierUnmet returns true if the item carrying a grant has prerequisites that are not met, which leaves its
@@ -1209,25 +1257,185 @@ func (e *Entity) judgeGrantedItems() {
 }
 
 // judgedDetail returns the grant whose details the granted node has as the prerequisites being judged see it, when
-// that is another grant than the one giving them this pass (see grantState.viewFor), or nil.
+// that may be another grant than the one giving them this pass (see grantState.viewFor and Entity.grantsAsJudged), or
+// nil.
 func judgedDetail[T grantNode[T]](node T) *Grant {
-	state := node.grants()
-	if state.judged == nil {
+	if !IsGranted(node) {
 		return nil
 	}
-	return state.viewFor(EntityFromNode(node).judgingOr(nil)).detail
+	e := EntityFromNode(node)
+	return e.grantsAsJudged(node).viewFor(e.judgingOr(nil)).detail
 }
 
 // prereqsBypassed returns true if the grant giving the granted node its details as the prerequisites being judged see
-// it (see grantState.viewFor) treats the node's prerequisites as met.
+// it (see grantState.viewFor and Entity.grantsAsJudged) treats the node's prerequisites as met.
 func prereqsBypassed[T grantNode[T]](node T) bool {
-	return node.grants().viewFor(EntityFromNode(node).judgingOr(nil)).bypass
+	e := EntityFromNode(node)
+	return e.grantsAsJudged(node).viewFor(e.judgingOr(nil)).bypass
 }
 
 // grantInEffect returns true if the plan's grant is in effect in the current pass: what carries it contributes its
 // features and has its prerequisites met.
 func (e *Entity) grantInEffect(plan *grantPlan) bool {
 	return e.features.grants[plan.grant] && !e.grantCarrierUnmet(plan.source.owner)
+}
+
+// thresholdGrantsAsJudged returns the grants held by the pools' thresholds that are in effect as the prerequisites
+// being judged see the thresholds (see Attribute.CurrentThreshold), while the item judged carries a grant, no threshold
+// is being found for those prerequisites, and they see one of those grants in effect where the sheet does not, or the
+// other way around. Otherwise it returns nil, and every grant is in effect as the sheet has it, as it is while those
+// thresholds are found, since the sheet's own are found with the grants as the last pass left them. It is found once
+// while the same prerequisites are judged, since their view of the thresholds holds still meanwhile.
+func (e *Entity) thresholdGrantsAsJudged() map[*Grant]bool {
+	if e == nil || e.judging == nil || e.judgedThresholdSearches > 0 {
+		return nil
+	}
+	if e.judgedThresholdGrantsFound {
+		return e.judgedThresholdGrants
+	}
+	e.judgedThresholdGrantsFound = true
+	if !e.carriesGrant(e.judging) {
+		return nil
+	}
+	inEffect := make(map[*Grant]bool)
+	differs := false
+	for i := range e.grantPlans {
+		plan := &e.grantPlans[i]
+		t, ok := plan.source.owner.(*PoolThreshold)
+		if !ok {
+			continue
+		}
+		judged := false
+		if def, isDef := plan.source.subOwner.(*AttributeDef); isDef &&
+			(def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
+			if attr := e.ResolveAttribute(def.DefID); attr != nil && attr.AttributeDef() == def {
+				judged = attr.CurrentThreshold() == t
+			}
+		}
+		if judged {
+			inEffect[plan.grant] = true
+		}
+		if judged != e.grantInEffect(plan) {
+			differs = true
+		}
+	}
+	if differs {
+		e.judgedThresholdGrants = inEffect
+	}
+	return e.judgedThresholdGrants
+}
+
+// grantsAsJudged returns what the grants give the holder as the prerequisites being judged see the pools' thresholds:
+// when they see a grant of a threshold that touches the holder in effect where the sheet does not, or the other way
+// around (see thresholdGrantsAsJudged), the state judgedGrantState finds, and otherwise, as while that state is being
+// found, the holder's own. e may be nil, which gives the holder's own.
+func (e *Entity) grantsAsJudged(holder grantHolder) *grantState {
+	thresholdGrants := e.thresholdGrantsAsJudged()
+	if thresholdGrants == nil {
+		return holder.grants()
+	}
+	state, ok := e.judgedGrantStates[holder]
+	if !ok {
+		if e.judgedGrantStates == nil {
+			e.judgedGrantStates = make(map[grantHolder]*grantState)
+		}
+		e.judgedGrantStates[holder] = nil
+		state = e.judgedGrantState(holder, thresholdGrants)
+		e.judgedGrantStates[holder] = state
+	}
+	if state == nil {
+		return holder.grants()
+	}
+	return state
+}
+
+// judgedGrantState returns the state the holder has with the grants of the pools' thresholds in effect as
+// thresholdGrants has them, and the others as the sheet has them, when that differs for one of the grants touching it,
+// or nil otherwise. Those grants are applied afresh into a state of its own, as applyGrants and judgeGrantedItems apply
+// them, as the prerequisites being judged see the sheet, with the grant giving a granted holder its details recorded as
+// the state's own (see grantState.detail), since the holder keeps the details the sheet's gives it.
+func (e *Entity) judgedGrantState(holder grantHolder, thresholdGrants map[*Grant]bool) *grantState {
+	inEffect := func(plan *grantPlan) bool {
+		if _, ok := plan.source.owner.(*PoolThreshold); ok {
+			return thresholdGrants[plan.grant]
+		}
+		return e.grantInEffect(plan)
+	}
+	var plans []*grantPlan
+	differs := false
+	for i := range e.grantPlans {
+		if plan := &e.grantPlans[i]; plan.row() == holder {
+			plans = append(plans, plan)
+			differs = differs || inEffect(plan) != e.grantInEffect(plan)
+		}
+	}
+	if !differs {
+		return nil
+	}
+	plants := func(plan *grantPlan) bool {
+		return plan.grant.putsItemOnSheet() && inEffect(plan) && plan.reaches(e)
+	}
+	granted := IsGranted(holder)
+	state := &grantState{source: holder.grants().source}
+	for _, plan := range plans {
+		if plan.node != nil && inEffect(plan) {
+			if plan.reaches(e) {
+				e.grantInto(plan, holder, state)
+				state.detail = plan.grant
+			} else {
+				state.unreached = true
+				state.unresolved = plan.baseUnresolved(e)
+				state.unreachedPoints = e.recordStandalone(plan, holder, state, 0)
+				state.latent = state.unreachedPoints
+			}
+		}
+		if granted && plants(plan) {
+			state.providers = append(state.providers, plan.source.owner)
+		}
+	}
+	var standIn *grantPlan
+	if granted && !state.inEffect {
+		for _, plan := range plans {
+			if plan.node != nil || !plants(plan) {
+				continue
+			}
+			standIn = plan
+			state.standIn = plan.source
+			e.grantInto(plan, holder, state)
+			state.detail = plan.grant
+			break
+		}
+	}
+	for _, plan := range plans {
+		if plan.node == nil && plan != standIn && inEffect(plan) {
+			e.mergeGrant(plan, holder, state)
+		}
+	}
+	if giver := state.giver(); granted && giver != nil {
+		for i, plan := range plans {
+			if plan.node != nil || plan.source.owner == giver || !plants(plan) {
+				continue
+			}
+			judged := &grantState{detail: plan.grant}
+			if state.unreached {
+				for _, own := range plans {
+					if own.node == holder {
+						judged.latent = e.recordStandalone(own, holder, judged, 0)
+						break
+					}
+				}
+			}
+			e.grantInto(plan, holder, judged)
+			for j, other := range plans {
+				if j != i && other.node == nil && other.source.owner != giver && inEffect(other) {
+					e.mergeGrant(other, holder, judged)
+				}
+			}
+			state.judged, state.judgedFor = judged, giver
+			break
+		}
+	}
+	return state
 }
 
 // grantItem puts the holder in effect as the item the plan's grant gives: the item the grant put on the sheet, or one

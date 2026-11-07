@@ -107,6 +107,9 @@ type features struct {
 	// currentAttributeBonuses holds the attribute bonuses that alter current values alone: every multiplier, and every
 	// bonus of a pool's current threshold; attributeBonuses holds the rest. See currentAdjustment.
 	currentAttributeBonuses []*AttributeBonus
+	// grantedRows holds the items grants put on the sheet whose features were collected, which happens while their
+	// grants are in effect as the last pass left them; see collectGrantedFeaturesAsJudged.
+	grantedRows map[grantHolder]bool
 }
 
 // ownedCostReduction is a cost reduction along with the item it came from.
@@ -175,9 +178,20 @@ type Entity struct {
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
 	judgedThresholds map[*Attribute]*PoolThreshold
 	// judgedFeatures holds the feature lists the bonuses are read from as the prerequisites being judged see the sheet,
-	// while the item judged carries a grant: without the features of any threshold, for while the thresholds are found,
-	// and with those of the thresholds they see; see bonusFeatures.
-	judgedFeatures [2]*features
+	// while the item judged carries a grant, by view: without the features of any threshold, for while the thresholds
+	// are found, with those of the thresholds they see, and without those again, for a computation at base; see
+	// bonusFeatures.
+	judgedFeatures [featureViews]*features
+	// judgedThresholdGrants holds the grants of the pools' thresholds that are in effect as the prerequisites being
+	// judged see the thresholds, while the item judged carries a grant and they see one of those grants in effect where
+	// the sheet does not, or the other way around, and is nil otherwise; judgedThresholdGrantsFound records that it has
+	// been found while those prerequisites are judged. See thresholdGrantsAsJudged.
+	judgedThresholdGrants      map[*Grant]bool
+	judgedThresholdGrantsFound bool
+	// judgedGrantStates holds what the grants give the items those grants touch, by item, as the prerequisites being
+	// judged see the thresholds, while judgedThresholdGrants is set, with nil for an item whose state is the sheet's or
+	// is being found; see grantsAsJudged.
+	judgedGrantStates map[grantHolder]*grantState
 	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
 	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
 	judgedPoints map[*grantReprice]fxp.Int
@@ -210,6 +224,36 @@ type Entity struct {
 	// its current value as Attribute.maximumReadingCurrents runs it, or 0; see scriptReadsCurrents. It guards the call
 	// stack, so discardCaches leaves it alone.
 	currentsDepth int
+	// atBase is the depth of the computations in progress at base, which see the sheet without what alters current
+	// values alone; see atBaseWhile. It guards the call stack, so discardCaches leaves it alone. baseFeatures and
+	// baseDefaults hold what such a computation found, for it alone to read, until the outermost one ends: the feature
+	// lists the bonuses are read from while the item judged, if any, carries no grant (see bonusFeatures), and the
+	// defaults picked for the skills (see Skill.defaultExcept).
+	atBase       int
+	baseFeatures *features
+	baseDefaults map[baseDefaultKey]*SkillDefault
+}
+
+// atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
+// alters current values alone, the current adjustments and the features of the pools' thresholds (see
+// currentAdjustmentFor, sheetAdjustment and bonusFeatures), as what a level set on a technique or Ritual Magic spell
+// costs is found, so that its points don't change with the state the pools are in. Nothing it finds is taken from the
+// caches or kept in them, unless kept apart from what is found otherwise, and the levels the skills and spells
+// recorded are computed afresh, since they hold what it leaves out. e may be nil.
+func (e *Entity) atBaseWhile() func() {
+	if e == nil {
+		return func() {}
+	}
+	if e.atBase == 0 {
+		e.baseFeatures, e.baseDefaults = nil, nil
+	}
+	e.atBase++
+	return func() {
+		e.atBase--
+		if e.atBase == 0 {
+			e.baseFeatures, e.baseDefaults = nil, nil
+		}
+	}
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -858,6 +902,12 @@ func (e *Entity) processFeatures() {
 		for _, f := range list {
 			e.processFeature(&e.features, owner, mod, f, leveled)
 		}
+		if holder, ok := owner.(grantHolder); ok && IsGranted(owner) {
+			if e.features.grantedRows == nil {
+				e.features.grantedRows = make(map[grantHolder]bool)
+			}
+			e.features.grantedRows[holder] = true
+		}
 	})
 	// A trait the sheet disabled that the prerequisites of a carrier see enabled (see Trait.enabledForPrereqsOf) has
 	// its features collected too, for those prerequisites alone to read (see hiddenFromPrereqs), all but its DR
@@ -878,26 +928,13 @@ func (e *Entity) processFeatures() {
 		return false
 	}, false, false, e.Traits...)
 	// Self-control-derived features are generated after the full walk, since resolving a trait's self-control roll
-	// and adjustment through a selector override requires every override to have been collected first. The Merchant
-	// penalty reads the roll and adjustment again whenever it is read, so that they are the ones the prerequisites
-	// being judged see, and so is generated for every trait whose adjustment they might see call for it; see
-	// SkillBonus.AdjustedAmount and SkillBonus.applies.
-	merchantPenalty := func(t *Trait) {
-		if t.mayTakeMerchantPenalty() {
-			for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), selfctrl.MajorCostOfLivingIncrease) {
-				if bonus, ok := f.(*SkillBonus); ok {
-					bonus.selfControlOf = t
-				}
-				e.processFeature(&e.features, t, nil, f, t)
-			}
-		}
-	}
+	// and adjustment through a selector override requires every override to have been collected first.
 	Traverse(func(t *Trait) bool {
-		merchantPenalty(t)
+		e.collectMerchantPenalty(&e.features, t)
 		return false
 	}, true, false, e.Traits...)
 	for _, t := range judgedOnly {
-		merchantPenalty(t)
+		e.collectMerchantPenalty(&e.features, t)
 	}
 	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Floor()
 	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Floor()
@@ -928,6 +965,21 @@ func (e *Entity) processFeatures() {
 	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, nil).Floor()
 	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, nil).Floor()
 	e.processThresholdFeatures()
+}
+
+// collectMerchantPenalty collects into the feature lists the Merchant penalty the trait's self-control adjustment may
+// call for. The penalty reads the roll and adjustment again whenever it is read, so that they are the ones the
+// prerequisites being judged see, and so is generated for every trait whose adjustment they might see call for it; see
+// SkillBonus.AdjustedAmount and SkillBonus.applies.
+func (e *Entity) collectMerchantPenalty(into *features, t *Trait) {
+	if t.mayTakeMerchantPenalty() {
+		for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), selfctrl.MajorCostOfLivingIncrease) {
+			if bonus, ok := f.(*SkillBonus); ok {
+				bonus.selfControlOf = t
+			}
+			e.processFeature(into, t, nil, f, t)
+		}
+	}
 }
 
 // forEachActiveFeatureList calls fn with each list of features currently in effect on the entity: those of every
@@ -1587,11 +1639,11 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 }
 
 // AttributeBonusFor returns the total of the amounts the items in effect add to the given attribute, which make up its
-// maximum. Multipliers and the bonuses of the pools' thresholds alter only its current value and are left out; see
-// currentAdjustmentFor.
+// maximum, as the prerequisites being judged see them, if any; see bonusFeatures and bonusExcluded. Multipliers and the
+// bonuses of the pools' thresholds alter only its current value and are left out; see currentAdjustmentFor.
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
-	for _, one := range e.features.attributeBonuses {
+	for _, one := range e.bonusFeatures().attributeBonuses {
 		if one.ActualLimitation() == limitation && one.Attribute == attributeID && !e.bonusExcluded(one) {
 			total += one.AdjustedAmount()
 			one.AddToTooltip(tooltip)
@@ -1605,7 +1657,7 @@ func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option
 // over; see JudgingPrereqsOf.
 func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	var total fxp.Int
-	for _, one := range e.features.costReductions {
+	for _, one := range e.bonusFeatures().costReductions {
 		if one.Attribute == attributeID && !e.excludedWhileJudging(one.owner) {
 			total += one.Percentage
 		}
@@ -1621,12 +1673,12 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
 // grants. When exclude carries a grant, the bonuses of the pools' thresholds are those of the thresholds as those
-// prerequisites see the pools; see bonusFeatures. Scripts see the sheet whole, since what they compute is kept for the
-// rest of the pass (see resolveScript), except, when exclude carries a grant, the script prerequisites themselves and
-// the scripts giving the attributes their bases and the pools their thresholds while the prerequisites read them, which
-// run afresh, with the rows left out hidden from them too (see excludedWhileJudging), unless already stopped once for
-// running too long as those prerequisites see the sheet; see ScriptPrereq.Evaluate, attributeForPrereqs and
-// Attribute.CurrentThreshold.
+// prerequisites see the pools, and so is what the thresholds' grants give; see bonusFeatures and grantsAsJudged.
+// Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript), except,
+// when exclude carries a grant, the script prerequisites themselves and the scripts giving the attributes their bases
+// and the pools their thresholds while the prerequisites read them, which run afresh, with the rows left out hidden
+// from them too (see excludedWhileJudging), unless already stopped once for running too long as those prerequisites see
+// the sheet; see ScriptPrereq.Evaluate, attributeForPrereqs and Attribute.CurrentThreshold.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil || exclude == e.judging {
 		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked and
@@ -1636,12 +1688,17 @@ func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	}
 	saved, savedDefaults, savedThresholds, savedPoints := e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints
 	savedFeatures := e.judgedFeatures
+	savedGrants, savedGrantsFound, savedStates := e.judgedThresholdGrants, e.judgedThresholdGrantsFound,
+		e.judgedGrantStates
 	e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = exclude, nil, nil, nil
-	e.judgedFeatures = [2]*features{}
+	e.judgedFeatures = [featureViews]*features{}
+	e.judgedThresholdGrants, e.judgedThresholdGrantsFound, e.judgedGrantStates = nil, false, nil
 	defer func() {
 		e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = saved, savedDefaults, savedThresholds,
 			savedPoints
 		e.judgedFeatures = savedFeatures
+		e.judgedThresholdGrants, e.judgedThresholdGrantsFound, e.judgedGrantStates = savedGrants, savedGrantsFound,
+			savedStates
 	}()
 	fn()
 }
@@ -1702,7 +1759,7 @@ func collectBonuses[T Bonus](e *Entity, list []T, tooltip *xbytes.InsertBuffer, 
 
 // TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
 func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
-	return collectBonuses(e, e.features.traitMaxLevelBonuses, tooltip,
+	return collectBonuses(e, e.bonusFeatures().traitMaxLevelBonuses, tooltip,
 		func(bonus *TraitMaxLevelBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == traitsel.TraitWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1712,7 +1769,7 @@ func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xb
 
 // EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.
 func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*EquipmentMaxUsesBonus {
-	return collectBonuses(e, e.features.maxUsesBonuses, tooltip,
+	return collectBonuses(e, e.bonusFeatures().maxUsesBonuses, tooltip,
 		func(bonus *EquipmentMaxUsesBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == equipmentsel.EquipmentWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1866,13 +1923,14 @@ func (e *Entity) hasWeaponBonusesBySkill() bool {
 
 // relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
 // fxp.Min when there are none. While the prerequisites of an item carrying a grant are judged, each is computed as they
-// see it, since the recorded one holds what the grant gave; see JudgingPrereqsOf.
+// see it, since the recorded one holds what the grant gave (see JudgingPrereqsOf), and at base, as it is there, since
+// the recorded one holds what alters current values alone (see atBaseWhile).
 func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	rsl := fxp.Min
-	judging := e.carriesGrant(e.judging)
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0
 	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
 		level := sk.LevelData.RelativeLevel
-		if judging {
+		if afresh {
 			level = sk.CalculateLevel(nil).RelativeLevel
 		}
 		if rsl < level {
@@ -2080,10 +2138,10 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 }
 
 // EncumbranceLevel returns the current Encumbrance level. While the prerequisites of an item carrying a grant are
-// judged, it is the level they see, from the Basic Lift they see (see BasicLift), which is neither taken from the cache
-// nor kept in it.
+// judged, it is the level they see, from the Basic Lift they see (see BasicLift), and at base, the level from the
+// Basic Lift there, neither of which is taken from the cache or kept in it; see atBaseWhile.
 func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
-	if e.carriesGrant(e.judging) {
+	if e.carriesGrant(e.judging) || e.atBase > 0 {
 		return e.encumbranceLevelCarrying(e.WeightCarried(forSkills))
 	}
 	if forSkills {
@@ -2121,15 +2179,15 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 // WeightCarried returns the carried weight. It is cached until the caches are discarded, since finding it resolves the
 // weight of every carried item and the encumbrance block asks for it whenever it is synced, but like the encumbrance
 // level derived from it, it is neither taken from the cache nor kept in it while the prerequisites of an item carrying
-// a grant are judged, as a weight script run for a script prerequisite then sees the sheet as those prerequisites do;
-// see resolveScript.
+// a grant are judged, as a weight script run for a script prerequisite then sees the sheet as those prerequisites do
+// (see resolveScript), nor at base, as a weight script then sees the sheet there (see atBaseWhile).
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	i := 0
 	if forSkills {
 		i = 1
 	}
-	judging := e.carriesGrant(e.judging)
-	if !judging && e.weightCarriedCached[i] {
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0
+	if !afresh && e.weightCarriedCached[i] {
 		return e.weightCarriedCache[i]
 	}
 	var total fxp.Weight
@@ -2138,7 +2196,7 @@ func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 			total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 		}
 	}
-	if !judging {
+	if !afresh {
 		e.weightCarriedCache[i] = total
 		e.weightCarriedCached[i] = true
 	}
@@ -2187,10 +2245,11 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 }
 
 // BasicLift returns the entity's Basic Lift. While the prerequisites of an item carrying a grant are judged, it is the
-// Basic Lift they see, from the lifting ST without the bonuses from what the grant put on the sheet, which is neither
-// taken from the cache nor kept in it; see JudgingPrereqsOf.
+// Basic Lift they see, from the lifting ST without the bonuses from what the grant put on the sheet (see
+// JudgingPrereqsOf), and at base, the one from the lifting ST there (see atBaseWhile), neither of which is taken from
+// the cache or kept in it.
 func (e *Entity) BasicLift() fxp.Weight {
-	if e.carriesGrant(e.judging) {
+	if e.carriesGrant(e.judging) || e.atBase > 0 {
 		return e.BasicLiftForST(e.LiftingStrength())
 	}
 	if e.basicLiftCache != -1 {
@@ -2270,9 +2329,11 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		return ""
 	}
 	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
-	// it leaves out what the attribute has at any other time; see attributeForPrereqs and ScriptPrereq.Evaluate.
+	// it leaves out what the attribute has at any other time (see attributeForPrereqs and ScriptPrereq.Evaluate), nor
+	// is one read at base, which leaves out what alters its current value alone (see atBaseWhile).
 	forPrereqs := e.scriptsForPrereqs > 0
-	if v, ok := e.variableCache[variableName]; ok && !forPrereqs {
+	cacheable := !forPrereqs && e.atBase == 0
+	if v, ok := e.variableCache[variableName]; ok && cacheable {
 		return v
 	}
 	e.variableResolverExclusions[variableName] = true
@@ -2303,7 +2364,9 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	} else {
 		result = attr.Maximum().String()
 	}
-	e.variableCache[variableName] = result
+	if cacheable {
+		e.variableCache[variableName] = result
+	}
 	return result
 }
 

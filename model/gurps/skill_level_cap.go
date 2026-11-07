@@ -369,15 +369,16 @@ func (e *Entity) takenOffByEdit(item any) bool {
 }
 
 // grantsAsEdited returns the grant state the level and points of the skill or spell holder are computed with: while an
-// editor previews edits that change which grants merge into it, the state those that would then merge into it give it,
-// and otherwise its own; see matchLevelCapsAs.
+// editor previews edits that change which grants merge into it, the state those that would then merge into it give it
+// (see matchLevelCapsAs), and otherwise its own, as the prerequisites being judged see the pools' thresholds (see
+// grantsAsJudged).
 func (e *Entity) grantsAsEdited(holder grantHolder) *grantState {
 	if e != nil {
 		if state := e.levelCapEdit.leftBehind[holder]; state != nil {
 			return state
 		}
 	}
-	return holder.grants()
+	return e.grantsAsJudged(holder)
 }
 
 // previewingSkillEdit returns true while an editor previews the level of a skill as edited; see matchLevelCapsAs.

@@ -17,7 +17,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -25,6 +27,11 @@ import (
 )
 
 var _ Hashable = &PoolThreshold{}
+
+// ThresholdAttributeFlags has AttributeChoicesFor give, for the definitions a pool threshold belongs to, the attributes
+// the threshold's attribute bonuses alter: those defined other than the pools, along with Move, Dodge, Parry and Block,
+// but not the size modifier.
+const ThresholdAttributeFlags = DodgeFlag | ParryFlag | BlockFlag | MoveFlag | NoPoolsFlag
 
 // PoolThreshold holds a point within an attribute pool where changes in state occur.
 type PoolThreshold struct {
@@ -232,6 +239,60 @@ func (p *PoolThreshold) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, p.Value)
 	xhash.StringWithLen(h, p.Explanation)
 	hashList(h, p.Features)
+}
+
+// ThresholdIgnores returns true if the feature does nothing as one of the features of a pool threshold belonging to the
+// definitions: one of a type a threshold may not hold; an amount per level, since a threshold has no level; an
+// attribute bonus to an attribute ThresholdAttributeFlags doesn't give, such as a pool or the size modifier; or a
+// bonus to this weapon or this armor, since a threshold is no item. A threshold has no switch either, but applies a
+// switchable feature as it does any other.
+func ThresholdIgnores(defs *AttributeDefs, f Feature) bool {
+	if !f.FeatureType().AllowedInThreshold() {
+		return true
+	}
+	switch one := f.(type) {
+	case *AttributeBonus:
+		// A factor isn't given per level, whatever a file says.
+		if one.PerLevel && !one.Multiply {
+			return true
+		}
+		// With no current key, only the choice standing in for an unrecognized one has none.
+		choices, _ := AttributeChoicesFor(defs, "", ThresholdAttributeFlags, "")
+		return !slices.ContainsFunc(choices, func(c *AttributeChoice) bool {
+			return c.Key != "" && c.Key == one.Attribute
+		})
+	case *ConditionalModifierBonus:
+		return one.PerLevel
+	case *ReactionBonus:
+		return one.PerLevel
+	case *DRBonus:
+		return one.PerLevel || len(one.Locations) == 0
+	case *SkillBonus:
+		return one.PerLevel || one.SelectionType == skillsel.ThisWeapon
+	case *SkillPointBonus:
+		return one.PerLevel
+	case *SpellBonus:
+		return one.PerLevel
+	case *SpellPointBonus:
+		return one.PerLevel
+	case *TraitBonus:
+		return one.PerLevel
+	case *WeaponBonus:
+		return one.PerLevel || one.SelectionType == wsel.ThisWeapon
+	default:
+		return false
+	}
+}
+
+// DescribeThresholdFeature returns the description of one of a pool threshold's features, as Feature.Describe gives it,
+// except that it never says the feature takes effect only while switched on: a threshold has no switch, and applies a
+// switchable feature as it does any other.
+func DescribeThresholdFeature(f Feature, entity *Entity, replacements map[string]string, em func(string) string) string {
+	if f.IsSwitchable() {
+		f = f.Clone()
+		f.SetSwitchable(false)
+	}
+	return f.Describe(entity, replacements, em)
 }
 
 // String implements fmt.Stringer, naming the threshold by its state, as tooltips name it as the source of its features.

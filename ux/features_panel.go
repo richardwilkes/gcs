@@ -288,9 +288,11 @@ func (p *featuresPanel) summary() string {
 }
 
 // describe returns the sentence of the feature, which for a threshold's feature says so when the threshold ignores it
-// (see thresholdIgnores). A threshold's attribute bonus names its attribute as the definitions being edited do, as its
-// attribute popup does, rather than as those of the entity or the defaults. Describe takes those from an entity, so it
-// is handed one that holds just the definitions being edited, which is all an attribute bonus reads of it.
+// (see thresholdIgnores), and never that it takes effect only while switched on, since a threshold has no switch (see
+// gurps.DescribeThresholdFeature). A threshold's attribute bonus names its attribute as the definitions being edited
+// do, as its attribute popup does, rather than as those of the entity or the defaults. Describe takes those from an
+// entity, so it is handed one that holds just the definitions being edited, which is all an attribute bonus reads of
+// it.
 func (p *featuresPanel) describe(f gurps.Feature) string {
 	if !p.forThreshold() {
 		return f.Describe(p.entity, p.replacements(), emphasize)
@@ -299,7 +301,7 @@ func (p *featuresPanel) describe(f gurps.Feature) string {
 	if _, ok := f.(*gurps.AttributeBonus); ok {
 		entity = &gurps.Entity{SheetSettings: &gurps.SheetSettings{Attributes: p.thresholdDefs()}}
 	}
-	text := f.Describe(entity, p.replacements(), emphasize)
+	text := gurps.DescribeThresholdFeature(f, entity, p.replacements(), emphasize)
 	if p.thresholdIgnores(f) {
 		text = i18n.Text("%s; a pool threshold ignores it", text)
 	}
@@ -492,6 +494,10 @@ func (p *featuresPanel) dropCopy(src *featuresPanel, f gurps.Feature, target *un
 		dup := f.Clone()
 		if g, ok := dup.(*gurps.Grant); ok {
 			g.RenewKey()
+		}
+		// A threshold has no switch, so its copy isn't switchable.
+		if p.forThreshold() {
+			dup.SetSwitchable(false)
 		}
 		if owned, ok := dup.(interface{ SetOwner(fmt.Stringer) }); ok {
 			owned.SetOwner(p.owner)
@@ -841,8 +847,8 @@ func (p *featuresPanel) switchable(parent *unison.Panel, path string, f gurps.Fe
 	if _, ok := f.(*gurps.TitleNote); ok {
 		return
 	}
-	// A threshold has no switch, so its features offer none, unless one is switchable already.
-	if p.forThreshold() && !f.IsSwitchable() {
+	// A threshold has no switch, and applies a switchable feature as it does any other, so its features show none.
+	if p.forThreshold() {
 		return
 	}
 	words := i18n.Text("only while switched on")
@@ -929,8 +935,7 @@ func (p *featuresPanel) operation(parent *unison.Panel, path string, one *gurps.
 // along with Move, but neither the size modifier nor the pools.
 func (p *featuresPanel) attributeChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
 	if p.forThreshold() {
-		return gurps.AttributeChoicesFor(p.thresholdDefs(), prefix,
-			gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.MoveFlag|gurps.NoPoolsFlag, current)
+		return gurps.AttributeChoicesFor(p.thresholdDefs(), prefix, gurps.ThresholdAttributeFlags, current)
 	}
 	return gurps.AttributeChoices(p.entity, prefix, gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag,
 		current)
@@ -957,46 +962,10 @@ func (p *featuresPanel) newAttributeID() string {
 	return first
 }
 
-// thresholdIgnores returns true if the feature does nothing as one of a pool threshold's features: one of a type a
-// threshold may not hold; an amount per level, since a threshold has no level; an attribute bonus to an attribute its
-// popup doesn't offer (see attributeChoices), such as a pool or the size modifier, which a threshold's bonuses don't
-// alter; or a bonus to this weapon or this armor, since a threshold is no item.
+// thresholdIgnores returns true if the feature does nothing as one of the features of the threshold, which belongs to
+// the definitions being edited; see gurps.ThresholdIgnores.
 func (p *featuresPanel) thresholdIgnores(f gurps.Feature) bool {
-	if !f.FeatureType().AllowedInThreshold() {
-		return true
-	}
-	switch one := f.(type) {
-	case *gurps.AttributeBonus:
-		// A factor isn't given per level, whatever a file says.
-		if one.PerLevel && !one.Multiply {
-			return true
-		}
-		// With no current key, only the choice standing in for an unrecognized one has none.
-		choices, _ := p.attributeChoices("", "")
-		return !slices.ContainsFunc(choices, func(c *gurps.AttributeChoice) bool {
-			return c.Key != "" && c.Key == one.Attribute
-		})
-	case *gurps.ConditionalModifierBonus:
-		return one.PerLevel
-	case *gurps.ReactionBonus:
-		return one.PerLevel
-	case *gurps.DRBonus:
-		return one.PerLevel || len(one.Locations) == 0
-	case *gurps.SkillBonus:
-		return one.PerLevel || one.SelectionType == skillsel.ThisWeapon
-	case *gurps.SkillPointBonus:
-		return one.PerLevel
-	case *gurps.SpellBonus:
-		return one.PerLevel
-	case *gurps.SpellPointBonus:
-		return one.PerLevel
-	case *gurps.TraitBonus:
-		return one.PerLevel
-	case *gurps.WeaponBonus:
-		return one.PerLevel || one.SelectionType == wsel.ThisWeapon
-	default:
-		return false
-	}
+	return gurps.ThresholdIgnores(p.thresholdDefs(), f)
 }
 
 // selectionsOffered returns the selection types a bonus offers: the items, less this, which picks the weapon of the

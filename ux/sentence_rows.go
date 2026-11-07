@@ -322,6 +322,7 @@ func (p *sentenceRows[T]) rebuild(focus string) {
 	p.rebuilding = true
 	unison.InvokeTask(func() {
 		p.rebuilding = false
+		// The target manager is rooted at the panel, so a focus outside it gives no ref and moves only to focus.
 		ref := p.targetMgr.CurrentFocusRef()
 		focus = p.focus
 		p.focus = ""

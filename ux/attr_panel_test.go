@@ -17,6 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
@@ -297,10 +299,24 @@ func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
 }
 
 // TestAttrPanelPoolStateListsThresholdFeatures verifies that the state of a pool whose current threshold has features
-// is drawn in adjustedInk, with those features listed in its tooltip after the explanation.
+// is drawn in adjustedInk, with those features listed in its tooltip after the explanation, a switchable one without
+// saying it is, since a threshold has no switch, and that the features a threshold ignores are neither listed nor
+// enough to draw the state in adjustedInk.
 func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	c := check.New(t)
-	e := tiredEntity(t)
+	switchable := gurps.NewAttributeBonus(gurps.DexterityID)
+	switchable.SetSwitchable(true)
+	e := tiredEntity(t, switchable)
+	perLevel := gurps.NewAttributeBonus(gurps.StrengthID)
+	perLevel.Amount = fxp.Two
+	perLevel.PerLevel = true
+	thisWeapon := gurps.NewWeaponBonus(feature.WeaponBonus)
+	thisWeapon.SelectionType = wsel.ThisWeapon
+	for _, one := range e.SheetSettings.Attributes.Set[gurps.FatiguePointsID].Thresholds {
+		if one.State == "Tiring" {
+			one.Features = gurps.Features{perLevel, gurps.NewAttributeBonus(gurps.FatiguePointsID), thisWeapon}
+		}
+	}
 	panel := NewPointPoolsPanel(e, NewTargetMgr(unison.NewPanel()))
 	label := panel.stateLabels[gurps.FatiguePointsID]
 	c.NotNil(label, "the FP state label must be tracked")
@@ -316,10 +332,13 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	content := string(md.ContentBytes())
 	c.Contains(content, "Move, Dodge and ST are halved", "the explanation leads the tooltip")
 	c.Contains(content, "- ×0.5 to ", "the features are listed after it")
+	c.Contains(content, "- +1 to DX", "a switchable one among them")
+	c.NotContains(content, "switched on", "without a switch")
 
 	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Two
 	e.Recalculate()
 	panel.Sync()
 	c.Equal("[TIRING]", strings.ToUpper(label.Text.String()))
-	c.NotEqual(adjustedInk, stateInk(), "a threshold without features is drawn in the normal ink")
+	c.NotEqual(adjustedInk, stateInk(), "a threshold whose features all do nothing is drawn in the normal ink")
+	c.Nil(label.Tooltip, "and lists none of them, there being no explanation either")
 }

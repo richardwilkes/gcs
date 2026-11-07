@@ -308,6 +308,9 @@ type scriptResolveKey struct {
 	// currents is set when the script read each attribute as "$id" for its current value; see
 	// Entity.scriptReadsCurrents.
 	currents bool
+	// base is set when the script ran at base, which leaves out what alters current values alone; see
+	// Entity.atBaseWhile.
+	base bool
 }
 
 // scriptResolveResult is what a resolution produced, along with whether it produced it. A script GCS stopped part way
@@ -688,6 +691,7 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
 	if entity != nil {
 		key.currents = entity.scriptReadsCurrents()
+		key.base = entity.atBase > 0
 	}
 	if forPrereqs {
 		key.judged = entity.judging

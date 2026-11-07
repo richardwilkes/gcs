@@ -654,9 +654,10 @@ func (s *Spell) CalculateLevel() Level {
 // unless exclude carries a grant, in which case it is computed afresh without what the grants exclude carries gave the
 // spell, nor what the items they put on the sheet give it through their bonuses (see Entity.JudgingPrereqsOf), since an
 // item never meets its own prerequisites with what it grants. The grants need not be in effect this pass, since the
-// recorded level may hold what they gave in the last.
+// recorded level may hold what they gave in the last. At base, it is computed afresh as well, since the recorded level
+// holds what alters current values alone; see Entity.atBaseWhile.
 func (s *Spell) levelForPrereqsOf(exclude any) fxp.Int {
-	if !EntityFromNode(s).carriesGrant(exclude) {
+	if e := EntityFromNode(s); !e.carriesGrant(exclude) && (e == nil || e.atBase == 0) {
 		return s.LevelData.Level
 	}
 	return s.calculateLevelExcept(exclude, s.adjustedPointsExcept(exclude, nil)).Level
@@ -776,12 +777,14 @@ func (s *Spell) baseUnresolved(e *Entity) bool {
 	return e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute) == fxp.Min
 }
 
-// ritualMagicBases returns the ritual skills the Ritual Magic spell's level may rest on as the sheet sees them, as
-// ritualMagicLevel takes them: for each of its colleges, or none when it has none, the ritual skill of that college and
-// the generic one (see ritualMagicDefaults), neither of which the spell rises above once the skill bonuses to it for
-// that college are added.
+// ritualMagicBases returns the ritual skills the Ritual Magic spell's level may rest on, found as ritualMagicLevel
+// finds them, but at base, without what alters current values alone, since the points a level set gives the spell are
+// priced from there (see Entity.atBaseWhile): for each of its colleges, or none when it has none, the ritual skill of
+// that college and the generic one (see ritualMagicDefaults), neither of which the spell rises above once the skill
+// bonuses to it for that college are added.
 func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
 	defer e.passOver(s)()
+	defer e.atBaseWhile()()
 	colleges := s.CollegeWithReplacements()
 	if len(colleges) == 0 {
 		colleges = []string{""}

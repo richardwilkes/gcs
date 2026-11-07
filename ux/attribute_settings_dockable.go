@@ -156,6 +156,23 @@ func (d *attributeSettingsDockable) buildContent() {
 	followGrantItemEditors(d)
 }
 
+// refreshThresholdFeatures shows again the features of the thresholds that a change to an attribute's ID or name, or
+// its deletion, which rebuilds nothing else, may have altered, given the IDs the attribute was and is known by: those
+// holding an attribute bonus to either, which names the attribute as the definitions being edited do, or is ignored
+// while they define none with that ID (see featuresPanel.describe), and those with a row open, whose attribute popup
+// lists what the definitions define.
+func (d *attributeSettingsDockable) refreshThresholdFeatures(ids ...string) {
+	for _, section := range keyedSections(d.content) {
+		p, ok := section.(*featuresPanel)
+		if ok && (p.open != "" || slices.ContainsFunc(*p.features, func(f gurps.Feature) bool {
+			bonus, isBonus := f.(*gurps.AttributeBonus)
+			return isBonus && slices.Contains(ids, bonus.Attribute)
+		})) {
+			p.rebuild("")
+		}
+	}
+}
+
 // adjustDeleteButtons enables the delete button of every attribute panel unless only one attribute remains, in which
 // case the lone panel's button is disabled so that the last attribute can't be removed. Each panel is created with its
 // button enabled, so this must be called whenever panels are added or rebuilt, not just when one is deleted.

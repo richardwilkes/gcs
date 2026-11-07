@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -372,6 +373,115 @@ func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 
 	d.undoMgr.Redo()
 	c.Equal(attribute.PoolSeparator, d.model.Set[gurps.FatiguePointsID].Type, "redo changes the type again")
+}
+
+// TestThresholdFeaturesFollowAttributeEdits verifies that the features of a threshold name an attribute as the
+// definitions being edited do once the attribute is renamed, given another ID or deleted, none of which rebuilds the
+// content: in the summary of those naming it, and in the attribute popup of an open row, even of a feature naming
+// another attribute; and that the field edited, which lies outside them, keeps the focus as they are rebuilt.
+func TestThresholdFeaturesFollowAttributeEdits(t *testing.T) {
+	const ignored = "+1 to zz; a pool threshold ignores it."
+	setText := func(c check.Checker, p *attrDefSettingsPanel, key, text string) {
+		field, ok := p.FindRefKey(p.def.KeyPrefix + key).Self.(*StringField)
+		c.True(ok, "the attribute has a field keyed %s", key)
+		if ok {
+			field.SetText(text)
+		}
+	}
+	rename := func(c check.Checker, p *attrDefSettingsPanel) { setText(c, p, "name", "Zest") }
+	summary := func(c check.Checker, p *featuresPanel) string {
+		sentence, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
+		c.True(ok, "the collapsed features show a summary")
+		if !ok {
+			return ""
+		}
+		return sentence.plainText()
+	}
+	for _, tc := range []struct {
+		name   string
+		bonus  string // the attribute the threshold's only feature names
+		view   rowsView
+		focus  string // the key, after the attribute's prefix, of the field that has the focus during the edit, if any
+		edit   func(c check.Checker, p *attrDefSettingsPanel)
+		shown  func(c check.Checker, p *featuresPanel) string
+		before string
+		after  string
+	}{
+		{
+			name: "short name", bonus: "zz", view: rowsView{collapsed: true}, focus: "name", edit: rename,
+			shown: summary, before: "+1 to ZZ.", after: "+1 to Zest.",
+		},
+		{
+			name: "id", bonus: "zz", view: rowsView{collapsed: true}, focus: "id", shown: summary, before: "+1 to ZZ.",
+			after: ignored, edit: func(c check.Checker, p *attrDefSettingsPanel) { setText(c, p, "id", "zy") },
+		},
+		{
+			name: "delete", bonus: "zz", view: rowsView{collapsed: true}, shown: summary, before: "+1 to ZZ.",
+			after: ignored, edit: func(_ check.Checker, p *attrDefSettingsPanel) { p.deleteAttrDef() },
+		},
+		{
+			name: "open row", bonus: gurps.StrengthID, view: rowsView{open: "0"}, focus: "name", edit: rename,
+			shown: func(c check.Checker, p *featuresPanel) string {
+				popup := featuresPopup[*gurps.AttributeChoice](c, p, "0:attribute")
+				if popup == nil {
+					return ""
+				}
+				titles := make([]string, 0, popup.ItemCount())
+				for i := range popup.ItemCount() {
+					if item, ok := popup.ItemAt(i); ok {
+						titles = append(titles, item.Title)
+					}
+				}
+				return strings.Join(titles, ", ")
+			},
+			before: "to ST, to ZZ, to Move, to Dodge, to Parry, to Block",
+			after:  "to ST, to Zest, to Move, to Dodge, to Parry, to Block",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			var p *featuresPanel
+			var focus *unison.Panel
+			screen.Do(func() {
+				defs := testAttrDefs("st", "zz", "hp")
+				hp := defs.Set["hp"]
+				hp.Type = attribute.Pool
+				hp.Thresholds = []*gurps.PoolThreshold{
+					{State: "Reeling", Features: gurps.Features{gurps.NewAttributeBonus(tc.bonus)}},
+				}
+				d := newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				if p = thresholdFeaturesPanel(c, d); p == nil {
+					return
+				}
+				p.setView(tc.view)
+				c.Equal(tc.before, tc.shown(c, p), "precondition: the features name the attribute")
+				zz := attrDefPanel(d, 1)
+				c.True(zz != nil && zz.def.DefID == "zz", "precondition: the second attribute is the one edited")
+				if zz == nil {
+					return
+				}
+				if tc.focus != "" {
+					if focus = zz.FindRefKey(zz.def.KeyPrefix + tc.focus); focus != nil {
+						focus.RequestFocus()
+					}
+					c.True(focus != nil && wnd.Focus() == focus, "precondition: the field edited has the focus")
+				}
+				tc.edit(c, zz)
+			})
+			if p != nil {
+				screen.Do(func() {
+					c.Equal(tc.after, tc.shown(c, p), "the features follow the edit")
+					if focus != nil {
+						c.True(wnd.Focus() == focus, "the field edited keeps the focus")
+					}
+				})
+			}
+		})
+	}
 }
 
 // testAttrDefs returns a set of integer attribute definitions with the given IDs, in that order.

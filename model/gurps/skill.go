@@ -798,9 +798,10 @@ func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
 // skill, nor what the items they put on the sheet give it through their bonuses or a default resting on them (see
 // Entity.JudgingPrereqsOf), since an item never meets its own prerequisites with what it grants, and with its default
 // picked as for a technique reading it (see defaultExcept). The grants need not be in effect this pass, since the
-// recorded level may hold what they gave in the last.
+// recorded level may hold what they gave in the last. At base, it is computed afresh as well, since the recorded level
+// holds what alters current values alone; see Entity.atBaseWhile.
 func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
-	if !EntityFromNode(s).carriesGrant(exclude) {
+	if e := EntityFromNode(s); !e.carriesGrant(exclude) && (e == nil || e.atBase == 0) {
 		return s.LevelData.Level
 	}
 	return s.calculateLevelExcept(exclude, nil).Level
@@ -1019,18 +1020,21 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // judged; see Entity.judgingOr) carries a grant and the skill is not a technique, a default picked afresh as those
 // prerequisites see the sheet, since the recorded one, or the lack of one, was picked, and its level taken, with what
 // the grants did to the skills it rests on. It is picked afresh too while an editor previews a skill's level, since the
-// recorded one was picked with that skill as it is on the sheet rather than as edited; see Entity.matchLevelCapsAs. It
-// is picked as bestDefault picks, but with the levels taken with the skill added to the excludes given rather than with
-// it alone excluded, so that a chain of defaults never comes back to a skill it passes through: the recorded default,
-// if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill, and otherwise the best
-// of the skill's defaults. Each pick is kept while those prerequisites are judged, or the edits previewed, and reused
-// only for the same skill with the same excludes, so that the answers are those of picking afresh every time, while a
-// pick beneath a skill weighing several defaults is not made again for each of them, and so on down every chain. The
-// picks are still as many as the distinct excludes a skill is reached with, which double with each member of a set of
-// skills with points that default to one another, so judging stays fast only while such a set stays small.
+// recorded one was picked with that skill as it is on the sheet rather than as edited (see Entity.matchLevelCapsAs),
+// and at base, since it was picked, and its level taken, with what alters current values alone (see
+// Entity.atBaseWhile). It is picked as bestDefault picks, but with the levels taken with the skill added to the
+// excludes given rather than with it alone excluded, so that a chain of defaults never comes back to a skill it passes
+// through: the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the
+// skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged, the
+// edits previewed, or the computation at base runs, apart from those found otherwise, and reused only for the same
+// skill with the same excludes, so that the answers are those of picking afresh every time, while a pick beneath a
+// skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
+// as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
+// points that default to one another, so judging stays fast only while such a set stays small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
-	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit()) {
+	atBase := e != nil && e.atBase > 0
+	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit() && !atBase) {
 		return s.DefaultedFrom
 	}
 	excludes = maps.Clone(excludes)
@@ -1039,7 +1043,12 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 	}
 	excludes[s.String()] = true
 	key := newJudgedDefaultKey(s, excludes)
-	if def, ok := e.judgedDefaults[key]; ok {
+	baseKey := baseDefaultKey{judgedDefaultKey: key, judged: e.judgingOr(exclude)}
+	if atBase {
+		if def, ok := e.baseDefaults[baseKey]; ok {
+			return def
+		}
+	} else if def, ok := e.judgedDefaults[key]; ok {
 		return def
 	}
 	var def, excluded *SkillDefault
@@ -1057,10 +1066,17 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 	if def != nil {
 		s.setDefaultPoints(def)
 	}
-	if e.judgedDefaults == nil {
-		e.judgedDefaults = make(map[judgedDefaultKey]*SkillDefault)
+	if atBase {
+		if e.baseDefaults == nil {
+			e.baseDefaults = make(map[baseDefaultKey]*SkillDefault)
+		}
+		e.baseDefaults[baseKey] = def
+	} else {
+		if e.judgedDefaults == nil {
+			e.judgedDefaults = make(map[judgedDefaultKey]*SkillDefault)
+		}
+		e.judgedDefaults[key] = def
 	}
-	e.judgedDefaults[key] = def
 	return def
 }
 
@@ -1069,6 +1085,13 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 type judgedDefaultKey struct {
 	skill    *Skill
 	excludes string
+}
+
+// baseDefaultKey identifies the default Skill.defaultExcept picks for a skill at base, which rests as well on the item
+// whose prerequisites are being judged, if any.
+type baseDefaultKey struct {
+	judgedDefaultKey
+	judged any
 }
 
 // newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes.
@@ -1246,10 +1269,12 @@ func (s *Skill) baseUnresolved(e *Entity) bool {
 	return skillAttributeLevel(e, s.AdjustedDifficulty().Attribute) == fxp.Min
 }
 
-// techniqueBase returns what the technique's level rests on as the sheet sees it, as techniqueLevel takes it for the
-// level the sheet shows.
+// techniqueBase returns what the technique's level rests on, found as techniqueLevel finds it for the level the sheet
+// shows, but at base, without what alters current values alone, since the points a level set gives the technique are
+// priced from there; see Entity.atBaseWhile.
 func (s *Skill) techniqueBase(e *Entity) techniqueBase {
 	defer e.passOver(s)()
+	defer e.atBaseWhile()()
 	base := techniqueBase{level: fxp.Min, limit: s.TechniqueLimitModifier}
 	if def := s.TechniqueDefault; def != nil {
 		name := s.NameWithReplacements()

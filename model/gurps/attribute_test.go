@@ -311,4 +311,10 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		e.CurrentAdjustmentTooltip(MoveID, stlimit.None))
 	c.Equal("Tired (FP) [×0.5]\nBasic Speed:\nTired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
 	c.Equal("", e.CurrentAdjustmentTooltip(DexterityID, stlimit.None))
+	for _, base := range []string{`entity.attribute("st")`, `entity.attribute('Strength')`} {
+		e.SheetSettings.Attributes.Set[StrikingStrengthID].Base = base
+		e.Recalculate()
+		c.Equal("Includes modifiers from:\nST:\nTired (FP) [-1]", e.Attributes.Set[StrikingStrengthID].BonusTooltip(),
+			"a stand-in whose base reads the attribute as %s names it too", base)
+	}
 }

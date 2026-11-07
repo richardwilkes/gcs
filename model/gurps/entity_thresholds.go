@@ -120,10 +120,10 @@ func (e *Entity) processThresholdFeatures() {
 // bonusExcluded leaves out. While the prerequisites of an item carrying a grant are judged, the bonuses of the
 // thresholds are taken from the thresholds as those prerequisites see the pools, and none at all, nor any multiplier,
 // while those thresholds are being found, as the sheet's own are found without any; see bonusFeatures,
-// Attribute.CurrentThreshold and processThresholdFeatures.
+// Attribute.CurrentThreshold and processThresholdFeatures. A computation at base gets none at all; see atBaseWhile.
 func (e *Entity) currentAdjustmentFor(id string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) currentAdjustment {
 	var adj currentAdjustment
-	if e.judgedThresholdSearches > 0 && e.carriesGrant(e.judging) {
+	if e.atBase > 0 || (e.judgedThresholdSearches > 0 && e.carriesGrant(e.judging)) {
 		return adj
 	}
 	for _, one := range e.bonusFeatures().currentAttributeBonuses {
@@ -147,44 +147,122 @@ func (e *Entity) collectThresholdFeatures(into *features) {
 	})
 }
 
+// The views of the sheet's feature lists that bonusFeatures builds while the prerequisites of an item carrying a grant
+// are judged; see Entity.judgedFeatures.
+const (
+	featuresWhileSearching = iota
+	featuresAsJudged
+	featuresAtBase
+	featureViews
+)
+
 // bonusFeatures returns the feature lists the bonuses are read from: those processFeatures collected, or, while the
 // prerequisites of an item carrying a grant are judged, those with the features of the thresholds the sheet's pools are
 // at replaced by those of the thresholds as those prerequisites see the pools, so that the prerequisites never see a
-// threshold that what the grant put on the sheet brought the sheet to, or with none at all while those thresholds are
-// being found, as the sheet's own are found without them; see Attribute.CurrentThreshold. Each is built once while the
-// same prerequisites are judged, since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. The grants
-// they hold are not those the sheet applies, and so are left out.
+// threshold that what the grant put on the sheet brought the sheet to, along with those of the items the grants of
+// those thresholds put in effect (see collectGrantedFeaturesAsJudged), or with none at all while those thresholds are
+// being found, as the sheet's own are found without them; see Attribute.CurrentThreshold. A computation at base sees
+// none either, since they alter only the sheet's current state; see atBaseWhile. Each is built once while the same
+// prerequisites are judged, or the same computation at base runs, since their view of the sheet holds still meanwhile;
+// see JudgingPrereqsOf. The grants they hold are not those the sheet applies, and so are left out.
 func (e *Entity) bonusFeatures() *features {
 	if !e.carriesGrant(e.judging) {
-		return &e.features
+		if e.atBase == 0 {
+			return &e.features
+		}
+		if e.baseFeatures == nil {
+			base := featuresWithoutThresholds(&e.features)
+			e.baseFeatures = &base
+		}
+		return e.baseFeatures
 	}
-	withThresholds := 0
-	if e.judgedThresholdSearches == 0 {
-		withThresholds = 1
+	view := featuresAsJudged
+	switch {
+	case e.judgedThresholdSearches > 0:
+		view = featuresWhileSearching
+	case e.atBase > 0:
+		view = featuresAtBase
 	}
-	if judged := e.judgedFeatures[withThresholds]; judged != nil {
+	if judged := e.judgedFeatures[view]; judged != nil {
 		return judged
 	}
-	judged := e.features
+	judged := featuresWithoutThresholds(&e.features)
 	judged.grants = nil
-	judged.attributeBonuses = withoutThresholdFeatures(judged.attributeBonuses)
-	judged.costReductions = slices.Clip(judged.costReductions)
-	judged.drBonuses = withoutThresholdFeatures(judged.drBonuses)
-	judged.maxUsesBonuses = withoutThresholdFeatures(judged.maxUsesBonuses)
-	judged.skillBonuses = withoutThresholdFeatures(judged.skillBonuses)
-	judged.skillPointBonuses = withoutThresholdFeatures(judged.skillPointBonuses)
-	judged.spellBonuses = withoutThresholdFeatures(judged.spellBonuses)
-	judged.spellPointBonuses = withoutThresholdFeatures(judged.spellPointBonuses)
-	judged.traitBonuses = withoutThresholdFeatures(judged.traitBonuses)
-	judged.traitMaxLevelBonuses = withoutThresholdFeatures(judged.traitMaxLevelBonuses)
-	judged.weaponBonuses = withoutThresholdFeatures(judged.weaponBonuses)
-	judged.selectorOverrides = withoutThresholdFeatures(judged.selectorOverrides)
-	judged.currentAttributeBonuses = withoutThresholdFeatures(judged.currentAttributeBonuses)
-	if withThresholds == 1 {
-		e.collectThresholdFeatures(&judged)
+	if view != featuresWhileSearching {
+		if view == featuresAsJudged {
+			e.collectThresholdFeatures(&judged)
+		}
+		// Finding what the grants of the thresholds give may read bonuses, which then see the lists as built so far.
+		e.judgedFeatures[view] = &judged
+		e.collectGrantedFeaturesAsJudged(&judged)
 	}
-	e.judgedFeatures[withThresholds] = &judged
+	e.judgedFeatures[view] = &judged
 	return &judged
+}
+
+// featuresWithoutThresholds returns a copy of the feature lists without the features of the pools' thresholds, each
+// list clipped, so that adding to the copy never writes into the original.
+func featuresWithoutThresholds(list *features) features {
+	result := *list
+	result.attributeBonuses = withoutThresholdFeatures(result.attributeBonuses)
+	result.costReductions = slices.Clip(result.costReductions)
+	result.drBonuses = withoutThresholdFeatures(result.drBonuses)
+	result.maxUsesBonuses = withoutThresholdFeatures(result.maxUsesBonuses)
+	result.skillBonuses = withoutThresholdFeatures(result.skillBonuses)
+	result.skillPointBonuses = withoutThresholdFeatures(result.skillPointBonuses)
+	result.spellBonuses = withoutThresholdFeatures(result.spellBonuses)
+	result.spellPointBonuses = withoutThresholdFeatures(result.spellPointBonuses)
+	result.traitBonuses = withoutThresholdFeatures(result.traitBonuses)
+	result.traitMaxLevelBonuses = withoutThresholdFeatures(result.traitMaxLevelBonuses)
+	result.weaponBonuses = withoutThresholdFeatures(result.weaponBonuses)
+	result.selectorOverrides = withoutThresholdFeatures(result.selectorOverrides)
+	result.currentAttributeBonuses = withoutThresholdFeatures(result.currentAttributeBonuses)
+	return result
+}
+
+// collectGrantedFeaturesAsJudged collects into the feature lists the features of the items grants put on the sheet
+// that are in effect as the prerequisites being judged see the pools' thresholds, when that differs from what the sheet
+// has (see Entity.grantsAsJudged), and whose features the lists don't hold already, as processFeatures collects those
+// of the items in effect. The features of those the lists hold that are out of effect as those prerequisites see it
+// are left out as they are read instead; see grantedOutOfEffectAsJudged.
+func (e *Entity) collectGrantedFeaturesAsJudged(into *features) {
+	if e.thresholdGrantsAsJudged() == nil {
+		return
+	}
+	seen := make(map[grantHolder]bool)
+	for i := range e.grantPlans {
+		row := e.grantPlans[i].row()
+		if seen[row] || into.grantedRows[row] || !IsGranted(row) {
+			continue
+		}
+		seen[row] = true
+		if e.grantsAsJudged(row) == row.grants() {
+			continue
+		}
+		switch one := row.(type) {
+		case *Trait:
+			if one.Enabled() {
+				forEachActiveTraitFeatureList(one, func(mod fmt.Stringer, leveled LeveledOwner, list Features) {
+					for _, f := range list {
+						e.processFeature(into, one, mod, f, leveled)
+					}
+				})
+				e.collectMerchantPenalty(into, one)
+			}
+		case *Skill:
+			if !one.Container() && one.Enabled() {
+				for _, f := range one.ActiveFeatures() {
+					e.processFeature(into, one, nil, f, one)
+				}
+			}
+		case *Spell:
+			if !one.Container() && one.Enabled() {
+				for _, f := range one.ActiveFeatures() {
+					e.processFeature(into, one, nil, f, one)
+				}
+			}
+		}
+	}
 }
 
 // withoutThresholdFeatures returns the list without the features a pool's threshold holds, clipped, so that adding to
@@ -201,9 +279,10 @@ func withoutThresholdFeatures[T interface{ Owner() fmt.Stringer }](list []T) []T
 }
 
 // sheetAdjustment returns what the current thresholds and multipliers do to the value with the given ID and
-// limitation, as processThresholdFeatures recorded it, which is nothing for a value they leave alone.
+// limitation, as processThresholdFeatures recorded it, which is nothing for a value they leave alone, or for any value
+// to a computation at base; see atBaseWhile.
 func (e *Entity) sheetAdjustment(id string, limitation stlimit.Option) currentAdjustment {
-	if e == nil || e.currentAdjustments == nil {
+	if e == nil || e.currentAdjustments == nil || e.atBase > 0 {
 		return currentAdjustment{}
 	}
 	return e.currentAdjustments[adjustmentKey{id: id, limitation: limitation}]
@@ -269,14 +348,17 @@ func (e *Entity) addSourceAdjustments(id string, limitation stlimit.Option, tool
 	walk(id, limitation)
 }
 
-// scriptAttributeRef matches an attribute read as "$id" in a script, capturing the ID.
-var scriptAttributeRef = regexp.MustCompile(`\$(\w+)`)
+// scriptAttributeRef matches an attribute read in a script as "$id", capturing the ID, or as entity.attribute("id"),
+// capturing the ID or name given it in whichever kind of quotes holds it; see Attributes.Find.
+var scriptAttributeRef = regexp.MustCompile(`\$(\w+)|\bentity\s*\.\s*attribute\s*\(\s*(?:"([^"]*)"|'([^']*)'|` +
+	"`([^`]*)`" + `)\s*\)`)
 
 // currentSources returns the IDs of the attributes whose current values, rather than their maximums, the value with the
 // given ID and limitation is figured from: for ST under a limitation, the attribute standing in for that ST or, without
 // one, ST (see strengthFor); for Move and Dodge without an attribute standing in for them, Basic Move and Basic Speed
 // (see Move and Dodge); for an attribute other than a pool standing in for any of those, each attribute its base reads
-// as "$id" (see Attribute.Current); and for anything else, none.
+// as "$id" or entity.attribute("id"), either of which gives the current value there (see Attribute.Current); and for
+// anything else, none.
 func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 	if limitation != stlimit.None {
 		var standIn string
@@ -309,8 +391,14 @@ func (e *Entity) currentSources(id string, limitation stlimit.Option) []string {
 	}
 	var ids []string
 	for _, match := range scriptAttributeRef.FindAllStringSubmatch(def.Base, -1) {
-		if !slices.Contains(ids, match[1]) && e.ResolveAttribute(match[1]) != nil {
-			ids = append(ids, match[1])
+		var attr *Attribute
+		if match[1] != "" {
+			attr = e.ResolveAttribute(match[1])
+		} else if idOrName := match[2] + match[3] + match[4]; idOrName != "" {
+			attr = e.Attributes.Find(idOrName)
+		}
+		if attr != nil && !slices.Contains(ids, attr.AttrID) {
+			ids = append(ids, attr.AttrID)
 		}
 	}
 	return ids

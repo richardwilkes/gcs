@@ -84,7 +84,7 @@ type grantState struct {
 	providers []any
 	// judged is the state the item has as the prerequisites of judgedFor, what carries the grant that gives the item
 	// its details this pass, see it, when another grant in effect would give them in that one's stead; see viewFor.
-	// detail is, in a judged state, the grant giving the item its details.
+	// detail is, in a judged state or one Entity.grantsAsJudged finds, the grant giving the item its details.
 	judged    *grantState
 	judgedFor any
 	detail    *Grant

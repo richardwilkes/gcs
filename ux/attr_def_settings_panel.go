@@ -66,6 +66,7 @@ func (p *attrDefSettingsPanel) deleteAttrDef() {
 	undo := p.dockable.prepareUndo(i18n.Text("Delete Attribute"))
 	delete(p.dockable.model.Set, p.def.DefID)
 	p.dockable.finishAndPostUndo(undo)
+	p.dockable.refreshThresholdFeatures(p.def.DefID)
 	p.dockable.MarkModified(nil)
 }
 
@@ -87,9 +88,11 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.def.DefID },
 		func(s string) {
 			if p.validateAttrID(s) {
-				delete(p.dockable.model.Set, p.def.DefID)
+				was := p.def.DefID
+				delete(p.dockable.model.Set, was)
 				p.def.DefID = strings.TrimSpace(strings.ToLower(s))
 				p.dockable.model.Set[p.def.DefID] = p.def
+				p.dockable.refreshThresholdFeatures(was, p.def.DefID)
 			}
 		})
 	field.ValidateCallback = func(field *StringField, _ *gurps.AttributeDef) func() bool {
@@ -112,7 +115,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	const nameKey = "name"
 	nameGet := func() string { return p.def.Name }
-	nameSet := func(s string) { p.def.Name = s }
+	nameSet := func(s string) {
+		p.def.Name = s
+		p.dockable.refreshThresholdFeatures(p.def.DefID)
+	}
 	if p.def.IsSeparator() {
 		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+nameKey, i18n.Text("Name"),
 			i18n.Text("A title to use with the separator"), prototypeMinIDWidth, nameGet, nameSet)

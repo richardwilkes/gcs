@@ -524,7 +524,7 @@ var poolThresholdDescFont = &unison.DynamicFont{
 }
 
 // updateThreshold shows the state of the pool's current threshold, if it has one, in adjustedInk when the threshold has
-// features, which are then listed in the tooltip after its explanation.
+// features it doesn't ignore (see gurps.ThresholdIgnores), which are then listed in the tooltip after its explanation.
 func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) {
 	label.DrawCallback = label.DefaultDraw
 	label.Font = poolThresholdDescFont
@@ -538,8 +538,9 @@ func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) 
 			explanation.WriteString(threshold.ResolveExplanation(attr))
 		}
 		listed := false
+		defs := gurps.AttributeDefsFor(a.entity)
 		for _, f := range threshold.Features {
-			if !f.FeatureType().AllowedInThreshold() {
+			if gurps.ThresholdIgnores(defs, f) {
 				continue
 			}
 			switch {
@@ -550,7 +551,7 @@ func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) 
 			}
 			listed = true
 			explanation.WriteString("- ")
-			explanation.WriteString(f.Describe(a.entity, nil, func(s string) string { return s }))
+			explanation.WriteString(gurps.DescribeThresholdFeature(f, a.entity, nil, func(s string) string { return s }))
 		}
 		if listed {
 			ink = adjustedInk

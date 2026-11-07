@@ -518,16 +518,16 @@ func (t *Trait) enabledForPrereqsOf(exclude any) bool {
 		exclude == t.grant.judgedFor
 }
 
-// disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled, unless it
-// is caught in a contradiction among the prerequisites: given its details by the grant giving them as exclude's
-// prerequisites see it (see grantState.viewFor), the trait has a level above the maximum the sheet enforces (see
-// enforcedMaxLevels), or that grant checks its unmet prerequisites, which the grant giving its details treated as met
-// when it was last judged, and the sheet would then disable it (see disabledIfChecked).
+// disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled, unless
+// it is caught in a contradiction among the prerequisites: given its details by the grant giving them as exclude's
+// prerequisites see it (see grantState.viewFor and Entity.grantsAsJudged), the trait has a level above the maximum the
+// sheet enforces (see enforcedMaxLevels), or that grant checks its unmet prerequisites, which the grant giving its
+// details treated as met when it was last judged, and the sheet would then disable it (see disabledIfChecked).
 func (t *Trait) disabledForPrereqsOf(exclude any) bool {
-	if exclude == nil || t.prereqContradicted {
+	if exclude == nil || t.prereqContradicted || (t.enforcedMaxLevels <= 0 && !t.disabledIfChecked) {
 		return false
 	}
-	view := t.grant.viewFor(exclude)
+	view := EntityFromNode(t).grantsAsJudged(t).viewFor(exclude)
 	if t.enforcedMaxLevels > 0 {
 		level := t.Levels
 		if view.detail != nil {
@@ -726,13 +726,15 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // currentLevelExcept is internalCurrentLevel as the prerequisites of exclude see it, without the levels grants carried
-// by exclude merged in; see grantState.applyLevelNotes and grantState.viewFor.
+// by exclude merged in; see grantState.applyLevelNotes, grantState.viewFor and Entity.grantsAsJudged.
 func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !t.IsLeveled() {
 		return 0
 	}
 	levels := t.Levels
-	if detail := t.grant.viewFor(exclude).detail; detail != nil {
+	entity := EntityFromNode(t)
+	grants := entity.grantsAsJudged(t)
+	if detail := grants.viewFor(exclude).detail; detail != nil {
 		levels = detail.amount()
 	}
 	if t.resolvingLevel {
@@ -744,11 +746,11 @@ func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fx
 	t.resolvingLevel = true
 	defer func() { t.resolvingLevel = false }()
 	var levelAdjustment fxp.Int
-	if entity := EntityFromNode(t); entity != nil {
+	if entity != nil {
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
 	// A level a grant keeps is compared with the trait's own, before the bonuses, which the kept one gets too.
-	return (t.grant.applyLevelNotes(exclude, levels, tooltip, nil, nil) + levelAdjustment).Max(0)
+	return (grants.applyLevelNotes(exclude, levels, tooltip, nil, nil) + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -1117,7 +1119,7 @@ func (t *Trait) ResolveSelector(field selector.Field, base string, tooltip *xbyt
 		return base
 	}
 	var candidates []OverrideCandidate[string]
-	for _, override := range entity.features.selectorOverrides {
+	for _, override := range entity.bonusFeatures().selectorOverrides {
 		if override.Field == field && !entity.excludedWhileJudging(override.Owner()) && override.MatchesTrait(t) {
 			candidates = append(candidates, OverrideCandidate[string]{Value: override.Value, Override: override})
 		}

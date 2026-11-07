@@ -835,7 +835,7 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, 
 		}
 	}
 	var bySkill []*SelectorOverride
-	for _, o := range entity.features.selectorOverrides {
+	for _, o := range entity.bonusFeatures().selectorOverrides {
 		if o.Field != field || entity.excludedWhileJudging(o.Owner()) {
 			continue
 		}
