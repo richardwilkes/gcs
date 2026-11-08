@@ -84,7 +84,7 @@ type grantState struct {
 	providers []any
 	// judged is the state the item has as the prerequisites of judgedFor, what carries the grant that gives the item
 	// its details this pass, see it, when another grant in effect would give them in that one's stead; see viewFor.
-	// detail is, in a judged state, the grant giving the item its details.
+	// detail is, in a judged state or one Entity.grantsAsJudged finds, the grant giving the item its details.
 	judged    *grantState
 	judgedFor any
 	detail    *Grant
@@ -199,39 +199,80 @@ func (n *grantNote) amountFor(exclude any) fxp.Int {
 // grantReprice prices afresh the points a level set gives a skill or spell, which applyGrants prices against the sheet
 // as a whole, as the prerequisites of an item carrying a grant see the sheet, without what that item's grants give the
 // attribute or skill the level rests on (see Entity.JudgingPrereqsOf), so that they see the item at the level set,
-// which the grant setting it gives whether or not those grants are in effect. owner carries the grant, points are the
-// points as priced against the sheet as a whole, and busy is set while price runs.
+// which the grant setting it gives whether or not those grants are in effect, and as the sheet is seen while an editor
+// previews a skill's level, since the level may rest on the skill as edited, as a technique's or a default's does (see
+// Entity.matchLevelCapsAs). owner carries the grant, points are the points as priced against the sheet as a whole, and
+// busy is set while price or beyond runs. beyond, set for the level set giving a skill or spell the points it has
+// standing alone, returns those points as priced against the sheet as a whole, less, for a skill, those the default its
+// level is read with stands for as the sheet is seen when it runs (see Grant.pointsBeyondDefault), which is all that
+// differs at base and while a pool's base or thresholds are found without the features those thresholds hold, where
+// that default is picked afresh, so that the skill has the level set there too.
 type grantReprice struct {
 	entity *Entity
 	owner  any
 	price  func() fxp.Int
+	beyond func() fxp.Int
 	points fxp.Int
 	busy   bool
 }
 
+// repriceKey identifies the points a level set gives as the prerequisites of judged, which may be nil, see the sheet,
+// which rest as well on whether they are priced while a pool's base or thresholds are found without the features those
+// thresholds hold (see Entity.thresholdFeaturesLeftOut), since the default they are less those of is picked as the
+// sheet is seen then; see Grant.pointsBeyondDefault.
+type repriceKey struct {
+	reprice   *grantReprice
+	judged    any
+	untouched bool
+}
+
 // pointsFor returns the points as the prerequisites of exclude, or when it is nil those being judged, see the sheet:
-// priced afresh when exclude carries a grant, but not the one setting the level, and otherwise, or while they are
-// priced afresh, as for a level set on an item resting on itself, as priced against the sheet as a whole. They are
-// priced once for each time those prerequisites are judged; see Entity.judgedPoints.
+// priced afresh when exclude carries a grant, but not the one setting the level, and while an editor previews a skill's
+// level; at base and while a pool's base or thresholds are found without the features those thresholds hold, found
+// by beyond when that is set; and otherwise, or while they are priced afresh, as for a level set on an item resting on
+// itself, as priced against the sheet as a whole. They are found once for each view of the sheet each time those
+// prerequisites are judged, the edits are previewed, the computation at base runs, or the pool's base or thresholds are
+// found; see Entity.judgedPoints and Entity.basePoints.
 func (r *grantReprice) pointsFor(exclude any) fxp.Int {
 	e := r.entity
-	if exclude = e.judgingOr(exclude); r.busy || exclude == r.owner || !e.carriesGrant(exclude) {
+	if exclude = e.judgingOr(exclude); r.busy || exclude == r.owner {
 		return r.points
 	}
-	points := r.points
-	e.JudgingPrereqsOf(exclude, func() {
-		if cached, ok := e.judgedPoints[r]; ok {
-			points = cached
-			return
-		}
+	if e.carriesGrant(exclude) {
+		points := r.points
+		e.JudgingPrereqsOf(exclude, func() { points = r.pricedFor(exclude, r.price) })
+		return points
+	}
+	if e.previewingSkillEdit() {
+		return r.pricedFor(exclude, r.price)
+	}
+	if r.beyond != nil && (e.atBase > 0 || e.thresholdFeaturesLeftOut()) {
+		return r.pricedFor(exclude, r.beyond)
+	}
+	return r.points
+}
+
+// pricedFor returns what price finds as the prerequisites of judged, which may be nil, see the sheet now, kept for that
+// view of the sheet, with busy set while price runs; see pointsFor.
+func (r *grantReprice) pricedFor(judged any, price func() fxp.Int) fxp.Int {
+	e := r.entity
+	key := repriceKey{reprice: r, judged: judged, untouched: e.thresholdFeaturesLeftOut()}
+	kept := &e.judgedPoints
+	if e.atBase > 0 {
+		kept = &e.basePoints
+	}
+	if points, ok := (*kept)[key]; ok {
+		return points
+	}
+	points := func() fxp.Int {
 		r.busy = true
 		defer func() { r.busy = false }()
-		points = r.price()
-		if e.judgedPoints == nil {
-			e.judgedPoints = make(map[*grantReprice]fxp.Int)
-		}
-		e.judgedPoints[r] = points
-	})
+		return price()
+	}()
+	if *kept == nil {
+		*kept = make(map[repriceKey]fxp.Int)
+	}
+	(*kept)[key] = points
 	return points
 }
 
@@ -776,8 +817,10 @@ func (g *Grant) baseUnresolved(e *Entity, item grantLeveler) bool {
 // pointsBeyondDefault returns the points the grant gives the skill or spell on the sheet that holder is, which for a
 // level set on a skill are less those the default it uses stands for, since its level adds them (see
 // CalculateSkillLevel), so that the skill has the level set, or the default's when that is higher, rather than one
-// raised by both. The default is the one the skill recorded, or, while the prerequisites of an item carrying a grant
-// are judged, the one they read its level with, picked afresh as they see the sheet (see Skill.levelForPrereqsOf). The
+// raised by both. The default is the one the skill recorded, or, where its level is read with one picked afresh as the
+// sheet is seen then, that one: while the prerequisites of an item carrying a grant are judged (see
+// Skill.levelForPrereqsOf), while an editor previews a skill's level (see Skill.defaultExcept), at base, and while a
+// pool's base or thresholds are found without the features those thresholds hold (see Skill.CurrentLevel). The
 // recorded one is kept when it resolves there, whatever points the skill has: these points decide whether the skill
 // keeps it (see Skill.keepsDefault), and where they are none, so are those beyond the best default it then reads its
 // level with.
@@ -787,7 +830,8 @@ func (g *Grant) pointsBeyondDefault(points fxp.Int, holder grantHolder) fxp.Int 
 		return points
 	}
 	def := s.DefaultedFrom
-	if e := EntityFromNode(s); e != nil && e.carriesGrant(e.judging) {
+	if e := EntityFromNode(s); e != nil && (e.carriesGrant(e.judging) || e.atBase > 0 ||
+		e.thresholdFeaturesLeftOut() || e.previewingSkillEdit()) {
 		def = s.keptDefaultWithPoints()
 	}
 	if def == nil || def.Points <= 0 {
@@ -1117,7 +1161,8 @@ func (s *grantState) keepPoints(source grantSource, points fxp.Int, lower bool, 
 }
 
 // addPoints records that a grant gave the skill or spell the points. reprice, set for a level set, prices them afresh
-// for the prerequisites being judged, and with it the note is kept though the points are zero.
+// where the sheet is seen otherwise, as for the prerequisites being judged (see grantReprice), and with it the note is
+// kept though the points are zero.
 func (s *grantState) addPoints(source grantSource, amount fxp.Int, reprice *grantReprice) {
 	if amount != 0 || reprice != nil {
 		s.points += amount
@@ -1142,11 +1187,19 @@ func newGrantNote(source grantSource, amount fxp.Int) grantNote {
 // out those of the grants carried by exclude, which may be nil to leave out none. The prerequisites of a carrier are
 // judged this way, so that an item never meets its own prerequisites with what it grants, and see the points of a level
 // set priced afresh, including those of one that gives nothing priced against the sheet as a whole (see
-// unreachedPoints).
+// unreachedPoints). With exclude nil, they are the points against the sheet as a whole, but for those of a level set,
+// which are priced afresh where the sheet is seen otherwise, as at base; see grantReprice.pointsFor.
 func (s *grantState) pointsExcept(exclude any) fxp.Int {
 	s = s.viewFor(exclude)
 	if exclude == nil {
-		return s.points
+		total := s.points
+		leveled := s.leveledFor(nil)
+		for i := range s.pointNotes {
+			if note := &s.pointNotes[i]; note.reprice != nil && s.counts(note, leveled) {
+				total += note.amountFor(nil) - note.amount
+			}
+		}
+		return total
 	}
 	leveled := s.leveledFor(exclude)
 	var total fxp.Int

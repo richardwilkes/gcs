@@ -29,6 +29,7 @@ func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
 	e.Attributes.Set[gurps.HitPointsID].Damage = fxp.FromInteger(13)
+	e.Recalculate()
 	c.Equal(fxp.FromInteger(-3), e.ResolveAttributeCurrent(gurps.HitPointsID), "precondition: HP is at -3")
 	c.Equal(fxp.Min, e.ResolveAttributeCurrent("sanity"), "precondition: the sheet has no Sanity")
 	c.Nil(e.ResolveAttribute(gurps.DodgeID), "precondition: the sheet has no dodge attribute")
@@ -77,8 +78,9 @@ func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 		Base:  "$basic_speed + 3",
 	}
 	e.Attributes.Set[gurps.DodgeID] = gurps.NewAttribute(e, gurps.DodgeID, len(e.Attributes.Set))
-	e.DiscardCaches()
-	c.Equal(fxp.Eight, e.ResolveAttributeCurrent(gurps.DodgeID), "precondition: the dodge attribute is 8")
+	e.Recalculate()
+	c.Equal(fxp.Eight, e.Attributes.Maximum(gurps.DodgeID), "precondition: the dodge attribute is 8")
+	c.Equal(fxp.Four, e.ResolveAttributeCurrent(gurps.DodgeID), "precondition: its current value is halved at HP -3")
 	c.True(attr(true, gurps.DodgeID, "", criteria.EqualsNumber, 3).Satisfied(e, nil, nil, "", nil),
 		"a dodge attribute is halved and penalized as the Dodge without one is")
 }

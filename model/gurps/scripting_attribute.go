@@ -14,6 +14,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 )
 
 func deferredNewScriptAttribute(attr *Attribute) ScriptSelfProvider {
@@ -67,7 +68,14 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	}
 	m["valueOf"] = func() goja.Value {
 		return r.ToValue(func(_ goja.FunctionCall) goja.Value {
-			return resolveAttributeForScript(r, attr, attr.AttrID)
+			id := attr.AttrID
+			// A pool's current value is what it has left, which no threshold alters, so its maximum is read still.
+			if attr.Entity != nil && attr.Entity.scriptReadsCurrents() {
+				if def := attr.AttributeDef(); def == nil || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
+					id += ".current"
+				}
+			}
+			return resolveAttributeForScript(r, attr, id)
 		})
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))

@@ -46,6 +46,10 @@ var (
 	lastFeatureTypeUsed   = feature.AttributeBonus
 	lastAttributeIDUsed   = gurps.StrengthID
 	lastSelectorFieldUsed = selector.WeaponDamageType
+	// The feature type and attribute last chosen for a pool threshold's features, which are kept apart from those of
+	// items, since a threshold offers other types and attributes.
+	lastThresholdFeatureTypeUsed = feature.AttributeBonus
+	lastThresholdAttributeIDUsed = gurps.StrengthID
 )
 
 // featureAddKey is the reference key of the section's add button. A feature's row is found by its path, which is its
@@ -76,6 +80,12 @@ type featuresPanel struct {
 	// damageField). It is kept here, rather than with the controls, so that it lasts while the panel is rebuilt.
 	percentSuspended     map[*gurps.WeaponBonus]bool
 	forEquipmentModifier bool
+	// thresholdDefs is set only for the features of a pool threshold, returning the attribute definitions being edited,
+	// which its attribute choices come from; see forThreshold.
+	thresholdDefs func() *gurps.AttributeDefs
+	// lastType and lastAttribute hold the feature type and attribute last chosen, which a new feature takes.
+	lastType      *feature.Type
+	lastAttribute *string
 }
 
 // featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
@@ -90,17 +100,67 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		entity:               entity,
 		owner:                owner,
 		features:             features,
-		percentSuspended:     make(map[*gurps.WeaponBonus]bool),
 		forEquipmentModifier: forEquipmentModifier,
+		lastType:             &lastFeatureTypeUsed,
+		lastAttribute:        &lastAttributeIDUsed,
 	}
+	p.init()
+	return p
+}
+
+// newThresholdFeaturesPanel returns a panel that edits the features of a pool threshold, which owns them. defs returns
+// the attribute definitions the threshold belongs to, as they are being edited, which its attribute choices come from.
+func newThresholdFeaturesPanel(entity *gurps.Entity, thresh *gurps.PoolThreshold, defs func() *gurps.AttributeDefs) *featuresPanel {
+	p := &featuresPanel{
+		entity:        entity,
+		owner:         thresh,
+		features:      &thresh.Features,
+		thresholdDefs: defs,
+		lastType:      &lastThresholdFeatureTypeUsed,
+		lastAttribute: &lastThresholdAttributeIDUsed,
+	}
+	p.init()
+	return p
+}
+
+// init sets up the panel and fills it, once its fields are set.
+func (p *featuresPanel) init() {
+	p.percentSuspended = make(map[*gurps.WeaponBonus]bool)
 	border := initTitledEditorSection(p, i18n.Text("Features"))
 	p.initRows(featureDragKey, p.build, p.state, p.setState, p.dataHash)
-	p.initCollapse(border, len(*features) != 0)
+	p.initCollapse(border, len(*p.features) != 0)
 	p.initDrop(p.dropAt, p.drop)
 	p.initGrantDrop()
 	p.copies = true
 	p.build()
-	return p
+}
+
+// forThreshold returns true if the panel edits the features of a pool threshold, which is no item: it has no level, no
+// switch and no weapon, and offers only the feature types a threshold may hold.
+func (p *featuresPanel) forThreshold() bool {
+	return p.thresholdDefs != nil
+}
+
+// takeOver implements keyedSection, for a threshold's features rebuilt by the attribute settings: the panel is shown as
+// the old one was, with the same optional criterion pending, and keeps the "as a %" the old one suspended for each
+// weapon bonus it holds a copy of at the same index.
+func (p *featuresPanel) takeOver(old keyedSection) {
+	prev, ok := old.(*featuresPanel)
+	if !ok {
+		return
+	}
+	for i, one := range *prev.features {
+		bonus, isWeapon := one.(*gurps.WeaponBonus)
+		if !isWeapon || !prev.percentSuspended[bonus] || i >= len(*p.features) {
+			continue
+		}
+		if same, isSame := (*p.features)[i].(*gurps.WeaponBonus); isSame && gurps.Hash64(same) == gurps.Hash64(bonus) {
+			p.percentSuspended[same] = true
+		}
+	}
+	// Set first, so that the fill setView makes to open the row the criterion belongs to shows it.
+	p.pending = prev.pending
+	p.setView(prev.view())
 }
 
 // state returns a copy of the panel's data, for a snapshot.
@@ -114,9 +174,15 @@ func (p *featuresPanel) state() featuresState {
 	return state
 }
 
-// setState installs a copy of the data of a snapshot, suspending the percentage of the copies it held suspended.
+// setState installs a copy of the data of a snapshot, owned by the panel's owner, suspending the percentage of the
+// copies it held suspended. The snapshot's features may belong to an owner that a rebuilt editor has since replaced.
 func (p *featuresPanel) setState(state featuresState) {
 	*p.features = state.features.Clone()
+	for _, one := range *p.features {
+		if owned, ok := one.(interface{ SetOwner(fmt.Stringer) }); ok {
+			owned.SetOwner(p.owner)
+		}
+	}
 	clear(p.percentSuspended)
 	for _, i := range state.suspended {
 		if bonus, ok := (*p.features)[i].(*gurps.WeaponBonus); ok {
@@ -177,7 +243,7 @@ func (p *featuresPanel) build() {
 		return
 	}
 	add := newSectionAddButton(p, i18n.Text("Add a feature"), func() bool {
-		t := lastFeatureTypeUsed
+		t := *p.lastType
 		if !slices.Contains(p.featureTypesList(), t) {
 			t = feature.AttributeBonus
 		}
@@ -216,17 +282,37 @@ func (p *featuresPanel) summary() string {
 	if len(*p.features) == 0 {
 		return i18n.Text("No features.")
 	}
-	replacements := p.replacements()
 	sentences := make([]string, 0, len(*p.features))
 	for _, one := range *p.features {
-		sentences = append(sentences, i18n.Text("%s.", one.Describe(p.entity, replacements, emphasize)))
+		sentences = append(sentences, i18n.Text("%s.", p.describe(one)))
 	}
 	return strings.Join(sentences, " ")
 }
 
+// describe returns the sentence of the feature, which for a threshold's feature says so when the threshold ignores it
+// (see thresholdIgnores), and never that it takes effect only while switched on, since a threshold has no switch (see
+// gurps.DescribeThresholdFeature). A threshold's attribute bonus names its attribute as the definitions being edited
+// do, as its attribute popup does, rather than as those of the entity or the defaults. Describe takes those from an
+// entity, so it is handed one that holds just the definitions being edited, which is all an attribute bonus reads of
+// it.
+func (p *featuresPanel) describe(f gurps.Feature) string {
+	if !p.forThreshold() {
+		return f.Describe(p.entity, p.replacements(), emphasize)
+	}
+	entity := p.entity
+	if _, ok := f.(*gurps.AttributeBonus); ok {
+		entity = &gurps.Entity{SheetSettings: &gurps.SheetSettings{Attributes: p.thresholdDefs()}}
+	}
+	text := gurps.DescribeThresholdFeature(f, entity, p.replacements(), emphasize)
+	if p.thresholdIgnores(f) {
+		text = i18n.Text("%s; a pool threshold ignores it", text)
+	}
+	return text
+}
+
 // row returns the panel for a feature: its sentence, or while it is open its editor, beside a button for more actions.
 func (p *featuresPanel) row(f gurps.Feature, path string) *unison.Panel {
-	row := p.sentenceRow(path, func() string { return f.Describe(p.entity, p.replacements(), emphasize) },
+	row := p.sentenceRow(path, func() string { return p.describe(f) },
 		f.FeatureType() != feature.Unknown, func() *unison.Panel { return p.editor(f, path) },
 		func() []menuEntry { return p.moreEntries(path) }, nil, nil)
 	row.ClientData()[featureDropKey] = path
@@ -241,7 +327,9 @@ func (p *featuresPanel) moreEntries(path string) []menuEntry {
 		return nil
 	}
 	from := path + keyMore
-	entries := []menuEntry{{Label: i18n.Text("Duplicate"), Act: func() {
+	// A threshold isn't given another copy of what it ignores.
+	ignored := p.forThreshold() && p.thresholdIgnores((*p.features)[i])
+	entries := []menuEntry{{Label: i18n.Text("Duplicate"), Disabled: ignored, Act: func() {
 		p.restructure(i18n.Text("Duplicate Feature"), from, "", func() int {
 			dup := (*p.features)[i].Clone()
 			if g, ok := dup.(*gurps.Grant); ok {
@@ -284,7 +372,8 @@ func (p *featuresPanel) moreEntries(path string) []menuEntry {
 
 // foreignFeature returns the panel and the feature at the path of another features panel that the data of a drag
 // carries, when this panel could hold a copy of it: one of a type it offers (see featureTypesList) that isn't a grant
-// of its own item. Otherwise it returns nil.
+// of its own item, nor, for a threshold's features, one the threshold ignores (see thresholdIgnores). Otherwise it
+// returns nil.
 func (p *featuresPanel) foreignFeature(data any) (*featuresPanel, gurps.Feature) {
 	source, path := p.foreignRow(data)
 	if source == nil {
@@ -299,7 +388,7 @@ func (p *featuresPanel) foreignFeature(data any) (*featuresPanel, gurps.Feature)
 		return nil, nil
 	}
 	f := (*src.features)[i]
-	if !slices.Contains(p.featureTypesList(), f.FeatureType()) {
+	if !slices.Contains(p.featureTypesList(), f.FeatureType()) || (p.forThreshold() && p.thresholdIgnores(f)) {
 		return nil, nil
 	}
 	if g, isGrant := f.(*gurps.Grant); isGrant && g.Key() != "" &&
@@ -408,6 +497,10 @@ func (p *featuresPanel) dropCopy(src *featuresPanel, f gurps.Feature, target *un
 		if g, ok := dup.(*gurps.Grant); ok {
 			g.RenewKey()
 		}
+		// A threshold has no switch, so its copy isn't switchable.
+		if p.forThreshold() {
+			dup.SetSwitchable(false)
+		}
 		if owned, ok := dup.(interface{ SetOwner(fmt.Stringer) }); ok {
 			owned.SetOwner(p.owner)
 		}
@@ -460,9 +553,16 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	var note *unison.Label
 	switch one := f.(type) {
 	case *gurps.AttributeBonus:
-		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		p.attributePopup(fields, key("attribute"), i18n.Text("to"), &one.Attribute, func(id string) {
-			lastAttributeIDUsed = id
+		if p.forThreshold() || one.Multiply {
+			p.operation(fields, path, one)
+		}
+		if one.Multiply {
+			p.factor(fields, path, &one.Amount)
+		} else {
+			p.amount(fields, path, &one.Amount, &one.PerLevel)
+		}
+		p.attributePopup(fields, key("attribute"), i18n.Text("to"), p.attributeChoices, &one.Attribute, func(id string) {
+			*p.lastAttribute = id
 			// Only ST has a limitation, so one is cleared along with its chip, so a file doesn't keep what no chip shows.
 			if id != gurps.StrengthID {
 				one.Limitation = stlimit.None
@@ -503,7 +603,8 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 			})
 	case *gurps.SkillBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		selectionPopup(p, fields, path, skillsel.Types, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria,
+		selections := selectionsOffered(p, skillsel.Types, skillsel.ThisWeapon, one.SelectionType)
+		selectionPopup(p, fields, path, selections, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria,
 			func(v skillsel.Type) {
 				// The criteria the new selection doesn't consult are cleared, so a file doesn't keep what no chip shows.
 				anyText := criteria.Text{Compare: criteria.AnyText}
@@ -580,7 +681,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	case *gurps.WeaponBonus:
 		p.weaponBonus(fields, chips, path, one)
 	case *gurps.CostReduction:
-		p.attributePopup(fields, key("attribute"), "", &one.Attribute, nil)
+		p.attributePopup(fields, key("attribute"), "", p.costReductionChoices, &one.Attribute, nil)
 		items := make([]fxp.Int, 0, 17)
 		for i := 5; i <= 80; i += 5 {
 			items = append(items, fxp.FromInteger(i))
@@ -709,7 +810,7 @@ func (p *featuresPanel) typePopup(parent *unison.Panel, path string, f gurps.Fea
 				return
 			}
 			if created := p.createFeatureForType(e.featureType); created != nil {
-				lastFeatureTypeUsed = e.featureType
+				*p.lastType = e.featureType
 				// Another kind of feature turned into a grant takes a new grant's default, unless it was switchable.
 				if f.IsSwitchable() || gurps.IsGrant(f.FeatureType()) || !gurps.IsGrant(e.featureType) {
 					created.SetSwitchable(f.IsSwitchable())
@@ -746,6 +847,10 @@ func (p *featuresPanel) typePopup(parent *unison.Panel, path string, f gurps.Fea
 // sentence when there are none.
 func (p *featuresPanel) switchable(parent *unison.Panel, path string, f gurps.Feature) {
 	if _, ok := f.(*gurps.TitleNote); ok {
+		return
+	}
+	// A threshold has no switch, and applies a switchable feature as it does any other, so its features show none.
+	if p.forThreshold() {
 		return
 	}
 	words := i18n.Text("only while switched on")
@@ -785,16 +890,146 @@ func (p *featuresPanel) amount(parent *unison.Panel, path string, amount *fxp.In
 	p.perLevel(parent, path, perLevel)
 }
 
+// perLevel adds the checkbox that gives an amount per level. A threshold has no level, so its features offer none,
+// unless one is per level already.
 func (p *featuresPanel) perLevel(parent *unison.Panel, path string, perLevel *bool) {
+	if p.forThreshold() && !*perLevel {
+		return
+	}
 	addCentered(parent, p.checkBox(path+":perlevel", i18n.Text("per level"), *perLevel,
 		func(on bool) { *perLevel = on }))
 }
 
-// attributePopup adds a popup of attributes, each after the prefix, handing a choice to chosen as well when it is set.
-// A key that isn't one of them is shown as such, and kept until another is chosen.
-func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string, value *string, chosen func(string)) {
-	choices, current := gurps.AttributeChoices(p.entity, prefix, gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|
-		gurps.BlockFlag, *value)
+// factor adds the field for the factor an attribute bonus multiplies its attribute by, which has no sign and isn't
+// given per level.
+func (p *featuresPanel) factor(parent *unison.Panel, path string, factor *fxp.Int) {
+	key := path + ":amount"
+	title := i18n.Text("Factor")
+	p.addCompact(parent, NewDecimalField(p.targetMgr, key, title, func() fxp.Int { return *factor },
+		func(v fxp.Int) { p.edit(title, key, "", func() { *factor = v }) }, 0, fxp.Max, false, false).withoutUndo())
+}
+
+// operation adds the popup that has an attribute bonus add its amount or multiply its attribute by it. Switching resets
+// the amount to 1, and a factor isn't given per level.
+func (p *featuresPanel) operation(parent *unison.Panel, path string, one *gurps.AttributeBonus) {
+	popup := compactPopup(&p.sentenceRows, path+":operation", i18n.Text("Add or Multiply"), []bool{false, true},
+		one.Multiply, func(multiply bool) string {
+			if multiply {
+				return fxp.MultiplicationSign
+			}
+			return "±"
+		}, func(multiply bool) {
+			if multiply == one.Multiply {
+				return
+			}
+			one.Multiply = multiply
+			one.Amount = fxp.One
+			if multiply {
+				one.PerLevel = false
+			}
+		})
+	popup.Tooltip = newWrappedTooltip(i18n.Text("± adds the amount; × multiplies the attribute by it, after every amount has been added."))
+	addCentered(parent, popup)
+}
+
+// itemAttributeFlags has gurps.AttributeChoicesFor offer, along with the attributes the definitions define, what an
+// item's attribute bonus may alter: the size modifier, Move, Dodge, Parry and Block.
+const itemAttributeFlags = gurps.SizeFlag | gurps.MoveFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
+
+// attributeChoices returns the attributes an attribute bonus offers, each after the prefix, and the one with the
+// current key, which is added when it isn't one of them (see namedAttributeChoices). An item's features offer the
+// attributes its sheet, or without one the defaults, define, along with the size modifier, Move, Dodge, Parry and
+// Block. A threshold's offer those of the definitions being edited along with Move, Dodge, Parry and Block, but neither
+// the size modifier nor the pools.
+func (p *featuresPanel) attributeChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
+	if p.forThreshold() {
+		return namedAttributeChoices(p.thresholdDefs(), prefix, gurps.ThresholdAttributeFlags, current)
+	}
+	return gurps.AttributeChoices(p.entity, prefix, itemAttributeFlags, current)
+}
+
+// costReductionChoices returns the attributes a cost reduction offers, each after the prefix, and the one with the
+// current key, as attributeChoices does: those defined, which are all that have a point cost to reduce.
+func (p *featuresPanel) costReductionChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
+	defs := gurps.AttributeDefsFor(p.entity)
+	if p.forThreshold() {
+		defs = p.thresholdDefs()
+	}
+	// DodgeFlag lists a dodge attribute the definitions define, which a lack of it would leave out, but adds a stand-in
+	// for Dodge when they define none, which has no point cost.
+	choices, chosen = namedAttributeChoices(defs, prefix, gurps.DodgeFlag, current)
+	if _, defined := defs.Set[gurps.DodgeID]; !defined {
+		choices = slices.DeleteFunc(choices, func(one *gurps.AttributeChoice) bool {
+			return one != chosen && one.Key == gurps.DodgeID
+		})
+	}
+	return choices, chosen
+}
+
+// namedAttributeChoices returns gurps.AttributeChoicesFor's choices and the one with the current key, except that a
+// current key the flags leave out but an item's attribute bonus offers, such as a pool's or the size modifier's, is
+// named as that names it, as the feature's sentence does, rather than as unrecognized.
+func namedAttributeChoices(defs *gurps.AttributeDefs, prefix string, flags gurps.AttributeFlags, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
+	choices, chosen = gurps.AttributeChoicesFor(defs, prefix, flags, current)
+	if !offersAttribute(defs, flags, current) && offersAttribute(defs, itemAttributeFlags, current) {
+		_, named := gurps.AttributeChoicesFor(defs, prefix, itemAttributeFlags, current)
+		chosen.Title = named.Title
+	}
+	return choices, chosen
+}
+
+// offersAttribute returns true if gurps.AttributeChoicesFor offers the key for the definitions and flags.
+func offersAttribute(defs *gurps.AttributeDefs, flags gurps.AttributeFlags, key string) bool {
+	// With no current key, only the choice standing in for an unrecognized one has none.
+	choices, _ := gurps.AttributeChoicesFor(defs, "", flags, "")
+	return key != "" && slices.ContainsFunc(choices, func(one *gurps.AttributeChoice) bool { return one.Key == key })
+}
+
+// newAttributeID returns the attribute a new attribute bonus, or with costReduction set a new cost reduction, names:
+// the one last chosen, unless it is for a cost reduction or a threshold's features and the choices they offer don't
+// include that one, in which case the first they do.
+func (p *featuresPanel) newAttributeID(costReduction bool) string {
+	id := *p.lastAttribute
+	offer := p.attributeChoices
+	switch {
+	case costReduction:
+		offer = p.costReductionChoices
+	case !p.forThreshold():
+		return id
+	}
+	// With no current key, only the choice standing in for an unrecognized one has none.
+	choices, _ := offer("", "")
+	first := ""
+	for _, one := range choices {
+		if one.Key == id {
+			return id
+		}
+		if first == "" {
+			first = one.Key
+		}
+	}
+	return first
+}
+
+// thresholdIgnores returns true if the feature does nothing as one of the features of the threshold, which belongs to
+// the definitions being edited; see gurps.ThresholdIgnores.
+func (p *featuresPanel) thresholdIgnores(f gurps.Feature) bool {
+	return gurps.ThresholdIgnores(p.thresholdDefs(), f)
+}
+
+// selectionsOffered returns the selection types a bonus offers: the items, less this, which picks the weapon of the
+// item holding the feature, for a threshold's features, since a threshold is no item, unless current is this already.
+func selectionsOffered[E comparable](p *featuresPanel, items []E, this, current E) []E {
+	if !p.forThreshold() || current == this {
+		return items
+	}
+	return slices.DeleteFunc(slices.Clone(items), func(one E) bool { return one == this })
+}
+
+// attributePopup adds a popup of the attributes offer returns, each after the prefix, handing a choice to chosen as
+// well when it is set. A key that isn't one of them is shown as offer shows it, and kept until another is chosen.
+func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string, offer func(prefix, current string) ([]*gurps.AttributeChoice, *gurps.AttributeChoice), value *string, chosen func(string)) {
+	choices, current := offer(prefix, *value)
 	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Attribute"), choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
 			*value = c.Key
@@ -1003,7 +1238,8 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 		percent.SetEnabled(one.Dice.IsZero())
 		addCentered(fields, percent)
 	}
-	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria,
+	selections := selectionsOffered(p, wsel.Types, wsel.ThisWeapon, one.SelectionType)
+	selectionPopup(p, fields, path, selections, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria,
 		func(v wsel.Type) {
 			// The criteria the new selection doesn't consult are cleared, so a file doesn't keep what no chip shows. The
 			// specialization stays, since every selection consults it: as the skill's specialization by required skill,
@@ -1215,10 +1451,13 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 	}
 }
 
-// featureTypesList returns the feature types the panel offers: all of them for an equipment container, all but the
-// contained weight reduction otherwise, and never the grants within the editor of a grant's item, since a granted item
-// grants nothing.
+// featureTypesList returns the feature types the panel offers: those a threshold may hold for a threshold's features,
+// all of them for an equipment container, all but the contained weight reduction otherwise, and never the grants
+// within the editor of a grant's item, since a granted item grants nothing.
 func (p *featuresPanel) featureTypesList() []feature.Type {
+	if p.forThreshold() {
+		return feature.ThresholdTypes
+	}
 	types := feature.SelectableTypesWithoutContainedWeightReduction
 	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
 		types = feature.SelectableTypes
@@ -1251,7 +1490,7 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 	var bonus gurps.Bonus
 	switch featureType {
 	case feature.AttributeBonus:
-		bonus = gurps.NewAttributeBonus(lastAttributeIDUsed)
+		bonus = gurps.NewAttributeBonus(p.newAttributeID(false))
 	case feature.ConditionalModifier:
 		bonus = gurps.NewConditionalModifierBonus()
 	case feature.ContainedWeightReduction:
@@ -1259,7 +1498,7 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 	case feature.GrantTrait, feature.GrantSkill, feature.GrantSpell:
 		return p.newGrant(featureType)
 	case feature.CostReduction:
-		return gurps.NewCostReduction(lastAttributeIDUsed)
+		return gurps.NewCostReduction(p.newAttributeID(true))
 	case feature.TitleNote:
 		return gurps.NewTitleNote()
 	case feature.EquipmentMaxUsesBonus:

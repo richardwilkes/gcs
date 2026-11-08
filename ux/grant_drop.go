@@ -273,7 +273,8 @@ func (p *featuresPanel) newGrants(t feature.Type, items []*grantLibraryItem) []g
 	return grants
 }
 
-// grantDestination is an open editor whose features can take grants.
+// grantDestination is the features, which can take grants, of an open editor or of a pool threshold in the attribute
+// settings.
 type grantDestination struct {
 	dockable unison.Dockable
 	panel    *featuresPanel
@@ -281,9 +282,12 @@ type grantDestination struct {
 
 // String names the item being edited, along with where it is: the editor's title, which for an editor opened from
 // another names only the item, so the items of the editors it was opened from follow, then the title of the outermost,
-// which names the document.
+// which names the document. A pool threshold is named along with its pool, then the title of the attribute settings.
 func (d grantDestination) String() string {
 	where := d.dockable.Title()
+	if threshold := unison.AncestorOrSelf[*thresholdSettingsPanel](d.panel); threshold != nil {
+		where = i18n.Text("%s, %s", threshold.pool.def, where)
+	}
 	for current := d.dockable; ; {
 		owned, ok := current.(Owned)
 		if !ok {
@@ -309,12 +313,14 @@ type nestedEditor interface {
 	targetName() string
 }
 
-// grantDestinations returns the open editors whose features can take grants of the items, by name, leaving out those
-// that can take none of them (see grantable).
+// grantDestinations returns the features of the open editors and of the pool thresholds in the attribute settings that
+// can take grants of the items, by name, leaving out those that can take none of them (see grantable).
 func grantDestinations(items []*grantLibraryItem) []grantDestination {
 	var result []grantDestination
 	for _, d := range AllDockables() {
-		if _, isEditor := d.(interface{ editor() editorDockable }); !isEditor {
+		switch d.(type) {
+		case interface{ editor() editorDockable }, *attributeSettingsDockable:
+		default:
 			continue
 		}
 		var walk func(panel *unison.Panel)
@@ -336,7 +342,8 @@ func grantDestinations(items []*grantLibraryItem) []grantDestination {
 }
 
 // installAddAsGrantHandler installs the Add as Grant command on target for the table, which is enabled when the table
-// holds traits, skills or spells. It is the keyboard counterpart of dropping the selected rows on an editor's features.
+// holds traits, skills or spells. It is the keyboard counterpart of dropping the selected rows on the features of an
+// editor or of a pool threshold.
 func installAddAsGrantHandler[T gurps.Node[T]](target unison.Paneler, table *unison.Table[*Node[T]]) {
 	selection := func() (feature.Type, []*grantLibraryItem) {
 		return grantItemsFrom(&unison.TableDragData[*Node[T]]{Table: table, Rows: table.SelectedRows(true)})
@@ -352,8 +359,8 @@ func installAddAsGrantHandler[T gurps.Node[T]](target unison.Paneler, table *uni
 		})
 }
 
-// addAsGrant adds a grant of each of the items the editor can take (see grantable) to the features of the open editor
-// the user picks, when there is more than one, and brings that editor to the front.
+// addAsGrant adds a grant of each of the items the features can take (see grantable) to those of the destination the
+// user picks, when there is more than one (see grantDestinations), and brings its dockable to the front.
 func addAsGrant(t feature.Type, items []*grantLibraryItem) {
 	choices := grantDestinations(items)
 	if len(choices) == 0 {
@@ -364,8 +371,13 @@ func addAsGrant(t feature.Type, items []*grantLibraryItem) {
 		list := newChoiceList[grantDestination](false)
 		list.Append(choices...)
 		list.Select(false, 0)
-		op := promptOperation{name: addAsGrantAction.Title, description: i18n.Text("Adding a grant to an editor")}
-		if !showListQuestionDialog(op.at(promptstep.Destination), i18n.Text("Choose the editor to add to:"), list) {
+		description := i18n.Text("Adding a grant to the features of an item or pool threshold")
+		if len(items) > 1 {
+			description = i18n.Text("Adding grants to the features of an item or pool threshold")
+		}
+		op := promptOperation{name: addAsGrantAction.Title, description: description}
+		header := i18n.Text("Choose the item or pool threshold to add to:")
+		if !showListQuestionDialog(op.at(promptstep.Destination), header, list) {
 			return
 		}
 		picked := pickFromList(list, choices)

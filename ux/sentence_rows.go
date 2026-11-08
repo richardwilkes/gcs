@@ -104,6 +104,19 @@ type sentenceRows[T any] struct {
 	readOnly bool
 	// copies has a row dragged from another panel of the panel's kind copied into it, which its grips say can be done.
 	copies bool
+	// live, when set, returns the panel now showing this panel's data, which undo and redo of its edits apply to, since
+	// what holds the panel may have rebuilt it. Nil, or a nil result, leaves them to this panel.
+	live func() *sentenceRows[T]
+}
+
+// target returns the panel that undo and redo of this panel's edits apply to; see live.
+func (p *sentenceRows[T]) target() *sentenceRows[T] {
+	if p.live != nil {
+		if one := p.live(); one != nil {
+			return one
+		}
+	}
+	return p
 }
 
 // makeReadOnly disables every control of the panel but those that open and close its rows and collapse it, so that its
@@ -256,8 +269,8 @@ func (p *sentenceRows[T]) edit(title, key, focusAfter string, change func()) *ro
 				ID:       p.editID,
 				EditName: title,
 				EditCost: 1,
-				UndoFunc: func(e *unison.UndoEdit[*rowSnapshot[T]]) { p.install(e.BeforeData) },
-				RedoFunc: func(e *unison.UndoEdit[*rowSnapshot[T]]) { p.install(e.AfterData) },
+				UndoFunc: func(e *unison.UndoEdit[*rowSnapshot[T]]) { p.target().install(e.BeforeData) },
+				RedoFunc: func(e *unison.UndoEdit[*rowSnapshot[T]]) { p.target().install(e.AfterData) },
 				AbsorbFunc: func(e *unison.UndoEdit[*rowSnapshot[T]], other unison.Undoable) bool {
 					if o, ok := other.(*unison.UndoEdit[*rowSnapshot[T]]); ok && o.ID == e.ID {
 						e.AfterData = o.AfterData
@@ -309,6 +322,7 @@ func (p *sentenceRows[T]) rebuild(focus string) {
 	p.rebuilding = true
 	unison.InvokeTask(func() {
 		p.rebuilding = false
+		// The target manager is rooted at the panel, so a focus outside it gives no ref and moves only to focus.
 		ref := p.targetMgr.CurrentFocusRef()
 		focus = p.focus
 		p.focus = ""

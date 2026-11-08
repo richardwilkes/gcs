@@ -588,8 +588,16 @@ func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		// A parry- or block-type default deliberately resolves to its defense level here, not the named skill's level.
 		// Such a default exists to feed the parry or block calculation -- the Tonfa in the High Tech library carries
 		// "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and scoring it by the named skill
-		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way.
-		if level := def.SkillLevelFast(entity, replacements, false, nil, true); level != fxp.Min {
+		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way, as long as the
+		// multipliers the defense takes are left out; see SkillDefault.attackLevelFromSkill.
+		var level fxp.Int
+		if def.SkillBased() {
+			_, skLevel := def.bestFastMatch(entity, replacements, false, nil)
+			level = def.attackLevelFromSkill(entity, skLevel)
+		} else {
+			level = def.SkillLevelFast(entity, replacements, false, nil, true)
+		}
+		if level != fxp.Min {
 			level += adj
 			if best < level {
 				best = level
@@ -681,16 +689,19 @@ func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 
 // resolveDefenseModifier resolves the modifier of one of this weapon's defenses -- parry or block, as named by
 // defenseID -- from the weapon's defaults, starting from the weapon's own modifier in current and applying the
-// entity's bonus to that defense (whose explanation is defenseBonusTooltip) and the weapon bonuses of bonusType. It
-// returns 0 when no default resolves.
+// entity's adjustment to that defense (whose explanation is defenseBonusTooltip) and the weapon bonuses of bonusType.
+// The multipliers of the entity's adjustment apply last, after every amount added to the defense, the weapon's
+// included, as AttributeBonus.Multiply has it. It returns 0 when no default resolves.
 func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes.InsertBuffer, current fxp.Int, defenseID string, bonusType feature.Type, defenseBonusTooltip string) fxp.Int {
-	defenseBonus := entity.defenseBonus(defenseID)
 	var primaryTooltip *xbytes.InsertBuffer
 	if modifiersTooltip != nil {
 		primaryTooltip = &xbytes.InsertBuffer{}
 	}
 	preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
 	postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
+	defenseAdj := entity.defenseAdjustment(defenseID)
+	factors := currentAdjustment{factors: defenseAdj.factors}
+	defenseAdj.factors = nil
 	replacements := w.NameableReplacements()
 	best := fxp.Min
 	for _, def := range w.Defaults {
@@ -702,7 +713,7 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 			// A defense-type default names the skill whose defense is wanted, so the skill-level adjustment has to be
 			// folded in before the conversion to a defense level, exactly as it is on the other path. SkillLevelFast()
 			// would hand back an already-converted level, and adding the adjustment to that would weight it twice.
-			level = def.defenseLevelFast(entity, replacements, preAdj, defenseBonus)
+			level = def.defenseLevelFast(entity, replacements, preAdj, defenseAdj)
 			if level == fxp.Min {
 				continue
 			}
@@ -711,7 +722,7 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 			if level == fxp.Min {
 				continue
 			}
-			level = defenseLevelFromSkill(level+preAdj, defenseBonus)
+			level = defenseAdj.apply(defenseLevelFromSkill(level+preAdj), true)
 		}
 		level += postAdj
 		if best < level {
@@ -724,7 +735,7 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 	txtutil.AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 	txtutil.AppendStringOntoNewLine(modifiersTooltip, defenseBonusTooltip)
 	adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, bonusType)
-	return adj.applyTo(current + best).Max(0).Floor()
+	return factors.apply(adj.applyTo(current+best), true).Max(0).Floor()
 }
 
 // EncumbrancePenalty returns the current encumbrance penalty.
@@ -836,7 +847,7 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, 
 		}
 	}
 	var bySkill []*SelectorOverride
-	for _, o := range entity.features.selectorOverrides {
+	for _, o := range entity.bonusFeatures().selectorOverrides {
 		if o.Field != field || entity.excludedWhileJudging(o.Owner()) {
 			continue
 		}
@@ -1051,7 +1062,7 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
 			// one the winner is resolved to below.
 			sk, skLevel := one.bestFastMatch(entity, replacements, false, nil)
-			if level := one.fastLevelFromSkill(entity, skLevel); best < level {
+			if level := one.attackLevelFromSkill(entity, skLevel); best < level {
 				best = level
 				bestSkill = sk
 			}

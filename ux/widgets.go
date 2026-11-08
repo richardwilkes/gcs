@@ -382,6 +382,20 @@ func markdownHardLineBreaks(text string) string {
 	return strings.ReplaceAll(text, "\n", "  \n")
 }
 
+// escapeMarkdown returns the plain text with a backslash ahead of each ASCII punctuation character, any of which
+// Markdown may take as markup, so that it renders as written.
+func escapeMarkdown(text string) string {
+	var b strings.Builder
+	b.Grow(len(text))
+	for _, r := range text {
+		if strings.ContainsRune("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~", r) {
+			b.WriteByte('\\')
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
 func newWrappedTooltip(tooltip string) *unison.Panel {
 	return unison.NewTooltipWithText(wrapTextForTooltip(tooltip))
 }

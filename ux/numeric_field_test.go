@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 )
 
 // newTestIntegerField returns an IntegerField backed by a local variable, along with a pointer to that variable, for
@@ -228,6 +229,58 @@ func TestNumericFieldRefusesValuesAboveItsMaximum(t *testing.T) {
 	plain.lostFocus()
 }
 
+// TestNumericFieldKeepsItsValueForTextItCannotParse verifies that text a focused field can't parse, such as pasted text
+// or the start of a number, a sign or a decimal point by itself, which is typed as it would be on the way to a number
+// and which the decimal extractor takes for zero, shows as invalid without changing the value, rather than committing
+// the zero a failed parse gives; that undoing an edit made over such text restores the value from before it; and that
+// leaving the field puts the value's text back.
+func TestNumericFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
+	for _, one := range []struct {
+		text  string
+		typed bool // The text is the start of a number, which is typed rather than pasted.
+	}{
+		{text: "abc"},
+		{text: "-", typed: true},
+		{text: "+", typed: true},
+		{text: ".", typed: true},
+		{text: "-.", typed: true},
+		{text: "+.", typed: true},
+	} {
+		text := one.text
+		t.Run(text, func(t *testing.T) {
+			c := check.New(t)
+			value := fxp.Ten
+			f := NewDecimalField(nil, "", "Value", func() fxp.Int { return value }, func(v fxp.Int) { value = v },
+				fxp.Min, fxp.Max, false, true)
+			root := newPageUndoRoot()
+			root.AddChild(f)
+			f.gainedFocus()
+			if one.typed {
+				f.SelectAll()
+				for _, ch := range text {
+					c.True(f.RuneTypedCallback(ch), "typing %q is accepted", ch)
+				}
+			} else {
+				f.SetText(text)
+			}
+			c.Equal(text, f.Text(), "the text shows")
+			c.True(f.Invalid(), "as invalid")
+			c.Equal(fxp.Ten, value, "without changing the value")
+
+			f.SelectAll() // Has the next edit recorded on its own.
+			f.SetText("7")
+			c.Equal(fxp.Seven, value)
+			root.mgr.Undo()
+			c.Equal(fxp.Ten, value, "undoing an edit made over the text restores the value from before it")
+
+			f.SetText(text)
+			f.lostFocus()
+			c.Equal("10", f.Text(), "leaving the field puts the value's text back")
+			c.Equal(fxp.Ten, value)
+		})
+	}
+}
+
 // The stored weight used by the tests of rounding for display, along with its exact and two-decimal-place renderings.
 // It carries more decimal places than the sheet is told to show, so that rounding for display is visible and any
 // rounding that leaked back into the stored value would be, too.
@@ -338,32 +391,121 @@ func TestNumericFieldSyncWhileFocusedKeepsEdit(t *testing.T) {
 }
 
 // TestNumericFieldSetTextWhileShowingDisplayText verifies that replacing the text of a field that is showing rounded
-// display text applies the new value and records an undo whose "before" state holds the exact value. Recording the
-// rounded text instead would make undo quietly round the character's weight. After the undo, the field holds the
-// exact text and is focused for editing, and the rounded text returns once the focus is lost.
+// display text, whether through SetText or by an assistive technology replacing the value or all of the text shown,
+// applies the new value and records an undo whose "before" state holds the exact value. Recording the rounded text
+// instead would make undo quietly round the character's weight. After the undo, the field holds the exact text and is
+// focused for editing, and the rounded text returns once the focus is lost.
 func TestNumericFieldSetTextWhileShowingDisplayText(t *testing.T) {
-	c := check.New(t)
-	f, value := newDisplayFormatWeightField(t)
-	root := newPageUndoRoot()
-	root.AddChild(f)
+	for _, one := range []struct {
+		name    string
+		replace func(f *WeightField) bool
+	}{
+		{
+			name: "SetText",
+			replace: func(f *WeightField) bool {
+				f.SetText("8 lb")
+				return true
+			},
+		},
+		{
+			name: "assistive technology setting the value",
+			replace: func(f *WeightField) bool {
+				return f.PerformAccessibilityAction(accessibility.ActionRequest{
+					Action: accessibility.SetValue,
+					Value:  "8 lb",
+				})
+			},
+		},
+		{
+			name: "assistive technology replacing all of the text shown",
+			replace: func(f *WeightField) bool {
+				return f.PerformAccessibilityAction(accessibility.ActionRequest{
+					Action: accessibility.ReplaceText,
+					End:    len([]rune(roundedWeightText)),
+					Value:  "8 lb",
+				})
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			f, value := newDisplayFormatWeightField(t)
+			root := newPageUndoRoot()
+			root.AddChild(f)
 
-	var beforeText string
-	modified := f.ModifiedCallback
-	f.ModifiedCallback = func(before, after *unison.FieldState) {
-		beforeText = before.Text
-		modified(before, after)
+			var beforeText string
+			modified := f.ModifiedCallback
+			f.ModifiedCallback = func(before, after *unison.FieldState) {
+				beforeText = before.Text
+				modified(before, after)
+			}
+
+			c.True(one.replace(f), "the replacement must be carried out")
+			c.Equal(exactWeightText, beforeText, `the undo "before" state must hold the exact text, not the rounded text`)
+			c.Equal("8 lb", f.Format(*value), "the new value must be applied")
+			c.True(root.mgr.CanUndo(), "replacing the text must record an undo edit")
+
+			root.mgr.Undo()
+			c.Equal(exactWeightText, f.Format(*value), "undo must restore every decimal place the value had")
+			c.Equal(exactWeightText, f.Text(), "undo puts the exact text into the field, which it focuses for editing")
+			f.lostFocus()
+			c.Equal(roundedWeightText, f.Text(), "the display rendering returns once the focus is lost")
+		})
 	}
+}
 
-	f.SetText("8 lb")
-	c.Equal(exactWeightText, beforeText, `the undo "before" state must hold the exact text, not the rounded text`)
-	c.Equal("8 lb", f.Format(*value), "the typed value must be applied")
-	c.True(root.mgr.CanUndo(), "replacing the text must record an undo edit")
-
-	root.mgr.Undo()
-	c.Equal(exactWeightText, f.Format(*value), "undo must restore every decimal place the value had")
-	c.Equal(exactWeightText, f.Text(), "undo puts the exact text into the field, which it focuses for editing")
-	f.lostFocus()
-	c.Equal(roundedWeightText, f.Text(), "the display rendering returns once the focus is lost")
+// TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue verifies that an assistive technology handing a field
+// without the focus the value it holds, however written, leaves it as it was: the display text still shows, as nothing
+// syncs the field after an edit that sets no new value, and no undo is recorded for what changed nothing. Text the
+// field can't parse is refused, rather than left showing as invalid with nothing to put the value's text back.
+func TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue(t *testing.T) {
+	for _, one := range []struct {
+		name    string
+		req     accessibility.ActionRequest
+		refused bool
+	}{
+		{
+			name: "setting the exact text",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue, Value: exactWeightText},
+		},
+		{
+			name: "setting the exact text with a leading space",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue, Value: " " + exactWeightText},
+		},
+		{
+			name: "replacing all of the text shown with the exact text",
+			req: accessibility.ActionRequest{
+				Action: accessibility.ReplaceText,
+				End:    len([]rune(roundedWeightText)),
+				Value:  exactWeightText,
+			},
+		},
+		{
+			name:    "setting text it can't parse",
+			req:     accessibility.ActionRequest{Action: accessibility.SetValue, Value: "abc"},
+			refused: true,
+		},
+		{
+			name: "replacing all of the text shown with text it can't parse",
+			req: accessibility.ActionRequest{
+				Action: accessibility.ReplaceText,
+				End:    len([]rune(roundedWeightText)),
+				Value:  "abc",
+			},
+			refused: true,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			f, value := newDisplayFormatWeightField(t)
+			root := newPageUndoRoot()
+			root.AddChild(f)
+			c.Equal(!one.refused, f.PerformAccessibilityAction(one.req), "the request is carried out: %v", !one.refused)
+			c.Equal(exactWeightText, f.Format(*value), "the value is unchanged")
+			c.Equal(roundedWeightText, f.Text(), "the display text still shows")
+			c.False(root.mgr.CanUndo(), "nothing is recorded")
+		})
+	}
 }
 
 // TestNumericFieldSetTextWithIdenticalText covers the two ways SetText can be handed text the field already holds.

@@ -179,7 +179,9 @@ func TestSkillPointsAddToDefault(t *testing.T) {
 }
 
 // TestSkillDefaultWhenTLChosenDefault reproduces issue #1040 end-to-end: an Armory (Body Armor) skill must not default
-// to a skill whose tech level fails the default's WhenTL constraint, even after the character's TL is raised.
+// to a skill whose tech level fails the default's WhenTL constraint, even after the character's TL is raised. Nor may
+// it, or a technique, rest on or be named as defaulting from one, when the default also selects a skill whose tech
+// level satisfies the constraint.
 func TestSkillDefaultWhenTLChosenDefault(t *testing.T) {
 	c := check.New(t)
 
@@ -204,6 +206,29 @@ func TestSkillDefaultWhenTLChosenDefault(t *testing.T) {
 	c.NotNil(armory.DefaultedFrom, "Armory should have a resolved default")
 	c.False(armory.DefaultedFrom.SkillBased(), "Armory must not default to a skill whose TL fails the constraint")
 	c.Equal(IntelligenceID, armory.DefaultedFrom.DefaultType, "Armory must default to IQ")
+
+	// Machinist/TL3 IQ+1 = 11 and Machinist/TL8 IQ+3 = 13. "At most TL4" lets the default use only TL3, so Armory = 8.
+	e = NewEntity()
+	early := addTestSkill(e, "Machinist", "", "3", fxp.Four)
+	addTestSkill(e, "Machinist", "", "8", fxp.Twelve)
+	armory = addTestSkill(e, "Armory", "", "", 0)
+	armory.Defaults = []*SkillDefault{
+		newWhenTLSkillDefault("Machinist", "", numberCriteria(criteria.AtMostNumber, fxp.Four)),
+	}
+	e.Recalculate()
+	c.Equal(fxp.Eight, armory.LevelData.Level, "precondition: Armory rests on Machinist/TL3")
+	c.True(armory.DefaultSkill() == early, "Armory defaults from the Machinist skill its level comes from")
+	c.Equal("Default: Machinist/TL3-3", armory.ModifierNotes(), "the notes name the skill Armory defaults from")
+
+	// A technique's default is held to its WhenTL the same way: Machinist/TL3 11 - 3 + 1 point = 9.
+	tech := NewTechnique(e, nil, "")
+	tech.Name = "Disassembly"
+	tech.TechniqueDefault = newWhenTLSkillDefault("Machinist", "", numberCriteria(criteria.AtMostNumber, fxp.Four))
+	e.Skills = append(e.Skills, tech)
+	e.Recalculate()
+	c.Equal(fxp.Nine, tech.LevelData.Level, "the technique rests on the Machinist skill its WhenTL permits")
+	c.True(tech.DefaultSkill() == early, "the technique defaults from the Machinist skill its level comes from")
+	c.Equal("Default: Machinist/TL3-3", tech.ModifierNotes(), "the notes name the skill the technique defaults from")
 }
 
 // addTagMatchingSkillBonus installs a trait carrying a skill bonus that applies to any skill bearing the given tag.
@@ -215,11 +240,14 @@ func addTagMatchingSkillBonus(e *Entity, tag string, amount fxp.Int) {
 	addTraitWithFeatures(e, "", bonus)
 }
 
-// TestSkillDefaultRemovesBonusUsingOtherSkillsTags verifies that the skill bonus baked into a default's level is undone
-// using the *defaulted-to* skill's tags. calcSkillDefaultLevel passed the defaulting skill's tags instead, so a bonus
-// that only the other skill qualified for was never removed (and one that only the defaulting skill qualified for was
-// removed even though it had never been added). The wrong level is then persisted into DefaultedFrom.
-func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
+// TestSkillDefaultRemovesOtherSkillsBonus verifies that the skill bonus baked into a default's level is undone using
+// the *defaulted-to* skill's tags. calcSkillDefaultLevel passed the defaulting skill's tags instead, so a bonus that
+// only the other skill qualified for was never removed (and one that only the defaulting skill qualified for was
+// removed even though it had never been added). The wrong level is then persisted into DefaultedFrom. For a parry- or
+// block-type default, the bonus is undone from the skill's level before it is turned into a defense level, which
+// halves it, rather than from the defense level. The defaulted-to skill is the one whose level is used, which a
+// WhenTL constraint can make other than the highest-level skill the default selects.
+func TestSkillDefaultRemovesOtherSkillsBonus(t *testing.T) {
 	c := check.New(t)
 
 	// The +2 applies to Broadsword only. Its level carries the bonus, but the level Shortsword defaults from must not:
@@ -254,6 +282,40 @@ func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
 	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
 	c.Equal(fxp.Seven, shortsword.DefaultedFrom.Level, "no bonus was baked in, so none may be removed")
 	c.Equal(fxp.Nine, shortsword.LevelData.Level, "Shortsword still earns the Combat bonus for itself")
+
+	// Broadsword DX+2 = 12, +2 = 14. A parry-type default reads the parry of Broadsword-12: 12/2 + 3 = 9, where taking
+	// the bonus off the parry of Broadsword-14 would give 14/2 + 3 - 2 = 8.
+	e = NewEntity()
+	broadsword = addSkill(e, "Broadsword", fxp.Four)
+	addTraitWithFeatures(e, "Trained", newSkillBonusTo("Broadsword", fxp.Two))
+	counter := addSkill(e, "Counter", 0)
+	parry := newSkillDefaultTo("Broadsword", "", true, 0)
+	parry.DefaultType = ParryID
+	counter.Defaults = []*SkillDefault{parry}
+	shortsword = addSkill(e, "Shortsword", 0)
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(14), broadsword.LevelData.Level, "Broadsword gets the bonus")
+	c.Equal(fxp.Nine, counter.LevelData.Level, "the bonus is removed before the defense conversion")
+	c.Equal(fxp.Twelve, shortsword.LevelData.Level, "as it is from a skill-type default")
+
+	// The bonus undone is that of the skill whose level the default uses: the best one WhenTL lets it rest on, not the
+	// best one overall. Machinist/TL8 IQ+3 = 13, +2 = 15, and Machinist/TL3 IQ+1 = 11. "At most TL4" leaves only TL3, so
+	// Armory = 11 - 3 = 8, where taking off the bonus TL8 has would give 6.
+	e = NewEntity()
+	addTestSkill(e, "Machinist", "", "3", fxp.Four)
+	modern := addTestSkill(e, "Machinist", "", "8", fxp.Twelve)
+	modern.Tags = []string{"Modern"}
+	armory := addTestSkill(e, "Armory", "", "", 0)
+	armory.Defaults = []*SkillDefault{
+		newWhenTLSkillDefault("Machinist", "", numberCriteria(criteria.AtMostNumber, fxp.Four)),
+	}
+	addTagMatchingSkillBonus(e, "Modern", fxp.Two)
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(15), modern.LevelData.Level, "Machinist/TL8 gets the Modern bonus")
+	c.NotNil(armory.DefaultedFrom, "Armory should have a resolved default")
+	c.Equal(fxp.Eight, armory.DefaultedFrom.Level, "only the bonus of the skill WhenTL permits may be removed")
+	c.Equal(fxp.Eight, armory.LevelData.Level, "Armory rests on Machinist/TL3")
 }
 
 // TestSkillUpdateLevelReportsDefaultChange verifies that updating a skill's level reports a change when only the
@@ -991,7 +1053,9 @@ func TestTechniqueSatisfiedTooltipForTagDefault(t *testing.T) {
 
 // TestTechniqueSatisfiedByTheSkillItsLevelComesFrom verifies that a technique is satisfied by any skill its default
 // selects that has points, as its level is computed from those skills, rather than only by the highest-level skill
-// selected, which may have no points of its own, as one that defaults from another does.
+// selected, which may have no points of its own, as one that defaults from another does. Nor is it satisfied by one at
+// a tech level its default's WhenTL rules out, which its level is not computed from either, and the reason given then
+// names the tech level required.
 func TestTechniqueSatisfiedByTheSkillItsLevelComesFrom(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1007,6 +1071,27 @@ func TestTechniqueSatisfiedByTheSkillItsLevelComesFrom(t *testing.T) {
 	c.Equal(fxp.FromInteger(13), rifle.LevelData.Level, "precondition: the rifle skill defaults from the LMG skill")
 	c.Equal(fxp.Ten, tech.LevelData.Level, "precondition: the technique's level comes from the pistol skill")
 	c.Equal("", tech.UnsatisfiedReason, "the pistol skill, which has points, satisfies the technique")
+
+	e = NewEntity()
+	addTestSkill(e, "Machinist", "", "8", fxp.Twelve)
+	tech = NewTechnique(e, nil, "")
+	tech.Name = "Disassembly"
+	tech.TechniqueDefault = newWhenTLSkillDefault("Machinist", "", numberCriteria(criteria.AtMostNumber, fxp.Four))
+	e.Skills = append(e.Skills, tech)
+	e.Recalculate()
+	c.Equal(fxp.Min, tech.LevelData.Level, "precondition: the technique cannot rest on Machinist/TL8")
+	c.Equal("Prerequisites have not been met:\n- Requires a skill named Machinist whose tech level is at most 4",
+		tech.UnsatisfiedReason, "a skill whose tech level WhenTL rules out does not satisfy the technique")
+
+	// With a Machinist skill at a tech level WhenTL permits, it is the points in it that are missing.
+	early := addTestSkill(e, "Machinist", "", "3", 0)
+	e.Recalculate()
+	c.Equal("Prerequisites have not been met:\n- Requires at least 1 point in the skill named Machinist whose tech "+
+		"level is at most 4", tech.UnsatisfiedReason, "points are missing from the skill WhenTL permits")
+
+	early.Points = fxp.Four
+	e.Recalculate()
+	c.Equal("", tech.UnsatisfiedReason, "the skill WhenTL permits, which has points, satisfies the technique")
 }
 
 // TestSkillDefaultRechosenWhenSyncedWithSource verifies that a sync which brings changed defaults across from the
@@ -1254,26 +1339,29 @@ func TestRecordedDefaultSurvivesCriteriaBeingDropped(t *testing.T) {
 }
 
 // TestDefenseLevelFromSkill verifies the conversion of a skill level into a defense level: half the skill level,
-// rounded down, plus three, plus the defense bonus.
+// rounded down, plus three.
 func TestDefenseLevelFromSkill(t *testing.T) {
 	c := check.New(t)
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve, 0), "12 / 2 + 3")
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen, 0), "an odd skill level rounds down")
-	c.Equal(fxp.Eleven, defenseLevelFromSkill(fxp.Thirteen, fxp.Two), "the defense bonus is added after the halving")
-	c.Equal(fxp.Six, defenseLevelFromSkill(fxp.Nine, -fxp.One), "a negative defense bonus is applied as well")
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve), "12 / 2 + 3")
+	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen), "an odd skill level rounds down")
 }
 
-// TestEntityDefenseBonus verifies that the entity hands back the bonus for the named defense and nothing for any
-// other ID.
-func TestEntityDefenseBonus(t *testing.T) {
+// TestEntityDefenseLevel verifies that the entity applies its bonus to the named defense after the halving, along with
+// what the thresholds and multipliers do to that defense, and nothing to any other ID.
+func TestEntityDefenseLevel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	e.ParryBonus = fxp.Two
-	e.BlockBonus = fxp.Three
-	c.Equal(fxp.Two, e.defenseBonus(ParryID), "parry")
-	c.Equal(fxp.Three, e.defenseBonus(BlockID), "block")
-	c.Equal(fxp.Int(0), e.defenseBonus(DodgeID), "dodge is not a skill-derived defense")
-	c.Equal(fxp.Int(0), e.defenseBonus(SkillID), "a skill default has no defense bonus")
+	e.BlockBonus = -fxp.One
+	c.Equal(fxp.Eleven, e.defenseLevel(ParryID, fxp.Thirteen), "the parry bonus is added after the halving")
+	c.Equal(fxp.Six, e.defenseLevel(BlockID, fxp.Nine), "a negative block bonus is applied as well")
+	c.Equal(fxp.Nine, e.defenseLevel(DodgeID, fxp.Thirteen), "dodge is not a skill-derived defense")
+	c.Equal(fxp.Nine, e.defenseLevel(SkillID, fxp.Thirteen), "a skill default has no defense bonus")
+	e.currentAdjustments = map[adjustmentKey]currentAdjustment{
+		{id: ParryID}: {bonus: fxp.One, factors: []fxp.Int{fxp.Half}},
+	}
+	c.Equal(fxp.Six, e.defenseLevel(ParryID, fxp.Thirteen), "the threshold's amount is added and then the halving applied")
+	c.Equal(fxp.Six, e.defenseLevel(BlockID, fxp.Nine), "block is left alone")
 }
 
 // TestSkillDefaultDefenseLevels verifies that parry and block defaults convert the best matching skill's level into a
@@ -1294,9 +1382,9 @@ func TestSkillDefaultDefenseLevels(t *testing.T) {
 	parry.DefaultType = ParryID
 	block := newSkillDefaultTo("Broadsword", "", false, fxp.Two)
 	block.DefaultType = BlockID
-	c.Equal(defenseLevelFromSkill(level, fxp.One)+fxp.Two, parry.SkillLevel(e, nil, false, nil, false),
+	c.Equal(defenseLevelFromSkill(level)+fxp.One+fxp.Two, parry.SkillLevel(e, nil, false, nil, false),
 		"parry applies the parry bonus and then the default's modifier")
-	c.Equal(defenseLevelFromSkill(level, fxp.Two)+fxp.Two, block.SkillLevel(e, nil, false, nil, false),
+	c.Equal(defenseLevelFromSkill(level)+fxp.Two+fxp.Two, block.SkillLevel(e, nil, false, nil, false),
 		"block applies the block bonus and then the default's modifier")
 	c.Equal(parry.SkillLevel(e, nil, false, nil, false), parry.SkillLevelFast(e, nil, false, nil, false),
 		"the fast parry path agrees with the full one")

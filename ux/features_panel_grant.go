@@ -285,7 +285,7 @@ func grantAmountTooltip(g *gurps.Grant) string {
 // to the grant with the item's key, since undoing the panel's own edits replaces its grants with copies. hash is the
 // hash of the grant's item as the editor last saw it, by which the panel tells that the item changed under the editor;
 // see closeStaleGrantItemEditors. The panel is known by the features it edits (see editsFeaturesOf), since the editor
-// holding it may build a new panel for the same features.
+// holding it may build a new panel for the same features, or by the panel now showing a copy of them (see follow).
 type grantItemOwner struct {
 	Rebuildable // the editor holding the panel
 	panel       *featuresPanel
@@ -302,11 +302,20 @@ func (o *grantItemOwner) String() string {
 
 // Rebuild hands the copy to the grant.
 func (o *grantItemOwner) Rebuild(_ bool) {
+	o.follow()
 	if g := o.grant(); g != nil {
 		o.commit(g)
 		o.hash = grantItemHash(g)
 		MarkModified(o.panel)
 		o.panel.rebuild("")
+	}
+}
+
+// follow has the owner take the panel now showing its panel's features, which is another once what holds the panel has
+// replaced both, as the attribute settings replace a threshold with a copy; see sentenceRows.live.
+func (o *grantItemOwner) follow() {
+	if live, ok := o.panel.target().Self.(*featuresPanel); ok {
+		o.panel = live
 	}
 }
 
@@ -368,6 +377,28 @@ func (p *featuresPanel) closeStaleGrantItemEditors() {
 			continue
 		}
 		if o, isGrant := owned.Owner().(*grantItemOwner); isGrant && o.editsFeaturesOf(p) && !o.current() {
+			if closer, canDiscard := d.(interface{ discardAndCloseAll() }); canDiscard {
+				closer.discardAndCloseAll()
+			}
+		}
+	}
+}
+
+// followGrantItemEditors has the editors open on the items of the grants within outer follow the panels now showing
+// their features, once outer has rebuilt or removed the panels they were opened from, and closes, without asking, those
+// whose features no panel within outer shows any more, along with those closeStaleGrantItemEditors would close.
+func followGrantItemEditors(outer Rebuildable) {
+	for _, d := range AllDockables() {
+		owned, ok := d.AsPanel().Self.(Owned)
+		if !ok {
+			continue
+		}
+		o, isGrant := owned.Owner().(*grantItemOwner)
+		if !isGrant || o.AsPanel() != outer.AsPanel() {
+			continue
+		}
+		o.follow()
+		if !unison.AncestorIsOrSelf(o.panel, outer) || !o.current() {
 			if closer, canDiscard := d.(interface{ discardAndCloseAll() }); canDiscard {
 				closer.discardAndCloseAll()
 			}

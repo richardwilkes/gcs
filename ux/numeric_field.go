@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -31,7 +32,8 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	Format        func(T) string
 	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
 	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
-	// the focus, or is handed new text by SetText, Format's exact rendering replaces it.
+	// the focus, or is handed new text by SetText or a new value by an assistive technology, Format's exact rendering
+	// replaces it.
 	DisplayFormat      func(T) string
 	extract            func(s string) (T, error)
 	validationTooltip  *unison.Panel
@@ -104,6 +106,18 @@ func newBaseNumericField[T xmath.Integer | xmath.Float](targetMgr *TargetMgr, ta
 	// Format is called through a closure rather than handed over directly, so that a Format installed later is used.
 	f.init(f, unison.NewField(), targetMgr, targetKey, undoTitle, get, set, f.mustExtract,
 		func(v T) string { return f.Format(v) })
+	// An edit made over text the field can't parse records the exact text of the value the field holds in its place,
+	// since that text leaves the value as it is (see mustExtract): undoing the edit would otherwise put the text back
+	// but leave the value the edit set.
+	modified := f.ModifiedCallback
+	f.ModifiedCallback = func(before, after *unison.FieldState) {
+		if _, ok := f.extractValid(before.Text); !ok {
+			exact := *before
+			exact.Text = f.Format(f.last)
+			before = &exact
+		}
+		modified(before, after)
+	}
 	f.RuneTypedCallback = f.runeTyped
 	f.ValidateCallback = f.validate
 	return f
@@ -158,6 +172,52 @@ func (f *NumericField[T]) SetText(text string) {
 	f.Field.SetText(text)
 }
 
+// PerformAccessibilityAction implements unison.AccessibilityActor. An assistive technology replacing the field's text
+// does so as SetText does, with the exact text restored first, so that the "before" state the resulting modification
+// records for undo holds the exact value. While display text is showing, a range of it means nothing in the exact text
+// unless the two are the same, so replacing part of it is otherwise refused, and replacing all of it replaces all of
+// the exact text. Without the focus, text that would leave the value as it is changes nothing, since the field is
+// synced to show its value only once the value changes, and text the field can't parse, which leaves the value as it is
+// too (see mustExtract), is refused rather than left showing as invalid, with no loss of the focus to come and put the
+// value's text back.
+func (f *NumericField[T]) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
+	if req.Action != accessibility.SetValue && req.Action != accessibility.ReplaceText {
+		return f.Field.PerformAccessibilityAction(req)
+	}
+	exact := f.Text()
+	if f.showingDisplayText {
+		exact = f.Format(f.last)
+		if req.Action == accessibility.ReplaceText {
+			shown := f.Text()
+			whole := req.Start <= 0 && req.End >= len([]rune(shown))
+			if !whole && shown != exact {
+				return false
+			}
+			if whole {
+				req.Start, req.End = 0, len([]rune(exact))
+			}
+		}
+	}
+	if !f.hasFocus {
+		text := req.Value
+		if req.Action == accessibility.ReplaceText {
+			runes := []rune(exact)
+			start := min(max(req.Start, 0), len(runes))
+			end := min(max(req.End, start), len(runes))
+			text = string(runes[:start]) + req.Value + string(runes[end:])
+		}
+		text = strings.TrimSpace(text)
+		if _, ok := f.extractValid(text); !ok {
+			return false
+		}
+		if f.mustExtract(text) == f.last {
+			return true
+		}
+	}
+	f.restoreExactText()
+	return f.Field.PerformAccessibilityAction(req)
+}
+
 func (f *NumericField[T]) gainedFocus() {
 	f.restoreExactText()
 	f.undoableField.gainedFocus()
@@ -168,12 +228,27 @@ func (f *NumericField[T]) lostFocus() {
 	f.showDisplayText()
 }
 
+// mustExtract returns the value the text holds, brought into the field's range unless it is the exception. Text the
+// field can't parse, which shows as invalid, holds no value, so it is taken for the value the field holds: the value is
+// left as it is, and losing the focus puts its text back.
 func (f *NumericField[T]) mustExtract(s string) T {
-	v, _ := f.extract(strings.TrimSpace(s)) //nolint:errcheck // Default value in case of error is acceptable
+	v, ok := f.extractValid(s)
+	if !ok {
+		return f.last
+	}
 	if f.hasException && v == f.exception {
 		return v
 	}
 	return min(max(v, f.minValue), f.maxValue)
+}
+
+// extractValid returns the value the text holds, which may lie outside of the field's range, and whether the field can
+// parse the text at all. Text with no digit, such as a sign or a decimal point by itself, which some extractors take
+// for zero, is only the start of a number.
+func (f *NumericField[T]) extractValid(s string) (T, bool) {
+	s = strings.TrimSpace(s)
+	v, err := f.extract(s)
+	return v, err == nil && strings.ContainsAny(s, "0123456789")
 }
 
 func (f *NumericField[T]) validate() bool {
@@ -207,9 +282,8 @@ func (f *NumericField[T]) SetBaseTooltip(tip *unison.Panel) {
 }
 
 func (f *NumericField[T]) tooltipTextForValidation() string {
-	s := strings.TrimSpace(f.Text())
-	v, err := f.extract(s)
-	if err != nil || s == "-" || s == "+" {
+	v, ok := f.extractValid(f.Text())
+	if !ok {
 		return i18n.Text("Invalid value")
 	}
 	if f.hasException && v == f.exception {

@@ -103,6 +103,14 @@ func newSkillBonusTo(name string, amount fxp.Int) *SkillBonus {
 	return bonus
 }
 
+// newTraitBonusTo returns a bonus of the given levels to the trait with the given name.
+func newTraitBonusTo(name string, amount fxp.Int) *TraitBonus {
+	bonus := NewTraitBonus()
+	bonus.NameCriteria.Qualifier = name
+	bonus.Amount = amount
+	return bonus
+}
+
 // logCountingHandler counts the records at or above its level and prints nothing, so a test can observe whether
 // something was logged without depending on the log's textual format, and can silence what it expects to be logged.
 type logCountingHandler struct {
@@ -284,4 +292,23 @@ func item(parent *Equipment, name, value, weight string) *Equipment {
 	one.SetParent(parent)
 	parent.Children = append(parent.Children, one)
 	return one
+}
+
+// poolThreshold returns the threshold of the entity's pool attribute with the given ID whose state has the given name,
+// or nil if there is none.
+func poolThreshold(e *Entity, attrID, state string) *PoolThreshold {
+	for _, t := range e.SheetSettings.Attributes.Set[attrID].Thresholds {
+		if t.State == state {
+			return t
+		}
+	}
+	return nil
+}
+
+// newMultiplier returns an attribute bonus that multiplies the given attribute by the given factor.
+func newMultiplier(attrID string, factor fxp.Int) *AttributeBonus {
+	bonus := NewAttributeBonus(attrID)
+	bonus.Multiply = true
+	bonus.Amount = factor
+	return bonus
 }

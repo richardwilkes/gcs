@@ -814,7 +814,7 @@ func (l *notesCellLayout) PerformLayout(target *unison.Panel) {
 }
 
 // newGrantedMark returns the mark that follows the name of an item a grant put on the sheet. Its tooltip names the
-// grant, and clicking it selects the item carrying the grant.
+// grant, and clicking it selects the item carrying the grant, or for a pool threshold shows the attribute settings.
 func (n *Node[T]) newGrantedMark(c *gurps.CellData, f unison.Font, foreground unison.Ink) *unison.Label {
 	theme := unison.DefaultLinkTheme
 	theme.OnBackgroundInk = foreground
@@ -831,19 +831,26 @@ func (n *Node[T]) newGrantedMark(c *gurps.CellData, f unison.Font, foreground un
 		SVG:  svg.ChainLink,
 		Size: geom.NewSize(size, size).Ceil(),
 	}, c.Dim)
-	mark.Tooltip = newWrappedTooltip(c.GrantedBy + "\n" + i18n.Text("Click to select the item that grants it."))
+	hint := i18n.Text("Click to select the item that grants it.")
+	if _, ok := gurps.GrantingItem(n.data).(*gurps.PoolThreshold); ok {
+		hint = i18n.Text("Click to show the attribute settings, where the pool threshold that grants it is edited.")
+	}
+	mark.Tooltip = newWrappedTooltip(c.GrantedBy + "\n" + hint)
 	mark.Accessibility.Name = c.GrantedBy
 	return mark
 }
 
 // selectGrantingItem selects the item, the carrier of a grant, in the sheet holding the table, opening the containers
-// holding it and bringing it into view.
+// holding it and bringing it into view. For a pool threshold, it shows the sheet's attribute settings, where the
+// threshold is edited.
 func selectGrantingItem[T gurps.Node[T]](table *unison.Table[*Node[T]], item any) {
 	sheet := unison.Ancestor[*Sheet](liveTable(table))
 	if sheet == nil {
 		return
 	}
 	switch one := item.(type) {
+	case *gurps.PoolThreshold:
+		ShowAttributeSettings(sheet)
 	case *gurps.Trait:
 		selectAndReveal(sheet, sheet.Traits, one)
 	case *gurps.Skill:

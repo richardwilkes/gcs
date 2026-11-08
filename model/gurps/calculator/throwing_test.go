@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -66,13 +67,26 @@ func TestThrowingTiers(t *testing.T) {
 }
 
 // TestThrowerStatsFromEntity verifies what a sheet supplies about a thrower: the lifting ST without its lifting-only
-// bonus, the striking ST, and the tier each throwing skill's level falls in.
+// bonus but with its lifting-only multipliers, the striking ST, and the tier each throwing skill's level falls in.
 func TestThrowerStatsFromEntity(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
 	s := ThrowerStatsFromEntity(e)
-	c.Equal(e.LiftingStrength()-e.LiftingStrengthBonus, s.ST, "the ST is the lifting ST without its lifting-only bonus")
+	c.Equal(e.LiftingStrength(), s.ST, "the ST is the lifting ST without a lifting-only bonus")
 	c.Equal(e.StrikingStrength(), s.StrikingST, "the striking ST is the sheet's")
+	lifter := gurps.NewTrait(e, nil, false)
+	lifter.Name = "Lifting ST 4"
+	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+	bonus.Limitation = stlimit.LiftingOnly
+	bonus.Amount = fxp.Four
+	lifter.Features = gurps.Features{bonus}
+	e.Traits = append(e.Traits, lifter)
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	c.Equal(fxp.Seven, e.LiftingStrength(), "precondition: ST 10 plus the bonus, halved while Tired")
+	c.Equal(fxp.Five, ThrowerStatsFromEntity(e).ST,
+		"the ST is halved while Tired, but the lifting-only bonus is left out")
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = 0
 	c.Equal(0, s.ThrowingIndex, "without Throwing, the first tier")
 	c.Equal(0, s.ThrowingArtIndex, "without Throwing Art, the first tier")
 

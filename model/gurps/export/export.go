@@ -232,19 +232,22 @@ type exportedEncumbrance struct {
 	IsCurrent bool
 }
 
+// exportedAttribute is an attribute as the templates see it. Value is the maximum, which the points buy, and Current is
+// the value in play as gurps.Attribute.Current works it out: a pool's maximum less its damage, or another attribute's
+// maximum as the bonuses of the pools' current thresholds and any multiplying attribute bonus alter it.
 type exportedAttribute struct {
 	ID           string
 	Name         string
 	FullName     string
 	CombinedName string
 	Value        fxp.Int
+	Current      fxp.Int
 	Points       fxp.Int
 	order        int
 }
 
 type exportedPool struct {
 	*exportedAttribute
-	Current fxp.Int
 	Maximum fxp.Int
 }
 
@@ -515,7 +518,6 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 			case gurps.PoolAttrKind:
 				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
-					Current:           attr.Current(),
 					Maximum:           attr.Maximum(),
 				}
 				data.Attributes.Pools = append(data.Attributes.Pools, p)
@@ -720,6 +722,7 @@ func newExportedAttribute(def *gurps.AttributeDef, attr *gurps.Attribute) *expor
 		FullName:     def.ResolveFullName(),
 		CombinedName: def.CombinedName(),
 		Value:        attr.Maximum(),
+		Current:      attr.Current(),
 		Points:       attr.PointCost(),
 		order:        def.Order,
 	}

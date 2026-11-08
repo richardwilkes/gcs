@@ -13,6 +13,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -158,4 +160,221 @@ func TestAttributeBonusTooltipPerLevel(t *testing.T) {
 func TestAttributeBonusTooltipWithoutEntity(t *testing.T) {
 	c := check.New(t)
 	c.Equal("", NewAttribute(nil, StrengthID, 0).BonusTooltip(), "a detached attribute has no tooltip")
+}
+
+// TestAttributeCurrentCarriesThresholdEffects verifies that the bonuses of a pool's current threshold, and multipliers
+// wherever they come from, alter an attribute's current value alone: its maximum, which scripts read as "$id" and the
+// attributes derived from it rest on, stays as it is, amounts are added before factors are applied, the result is
+// rounded to whole unless the attribute allows decimals, a pool is left alone, and nothing changes while the pool is
+// at another threshold.
+func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name     string
+		attrID   string
+		features Features
+		fromItem bool
+		damage   fxp.Int
+		maximum  fxp.Int
+		current  fxp.Int
+	}{
+		{"amount added", DexterityID, Features{NewAttributeBonus(DexterityID)}, false, fxp.Seven, fxp.Ten, fxp.Eleven},
+		{
+			"amount before factor", DexterityID,
+			Features{newAttrBonus(DexterityID, fxp.Two), newMultiplier(DexterityID, fxp.Half)},
+			false, fxp.Seven,
+			fxp.Ten, fxp.Six,
+		},
+		{"product rounded for a whole attribute", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Seven, fxp.Ten, fxp.Five},
+		{"fraction kept for a decimal attribute", BasicSpeedID, Features{newMultiplier(BasicSpeedID, fxp.Half)}, false, fxp.Seven, fxp.Five, fxp.TwoAndAHalf},
+		{"multiplier from an item", StrengthID, Features{newMultiplier(StrengthID, fxp.Two)}, true, 0, fxp.Ten, fxp.FromInteger(20)},
+		{"pool left alone", HitPointsID, Features{newMultiplier(HitPointsID, fxp.Half), NewAttributeBonus(HitPointsID)}, false, fxp.Seven, fxp.Ten, fxp.Ten},
+		{"not at the threshold", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Six, fxp.Ten, fxp.Ten},
+		{"derived from another's maximum", "will", Features{newMultiplier(IntelligenceID, fxp.Half)}, false, fxp.Seven, fxp.Ten, fxp.Ten},
+	} {
+		e := NewEntity()
+		if one.fromItem {
+			addTraitWithFeatures(e, "Item", one.features...)
+		} else {
+			tired := poolThreshold(e, FatiguePointsID, "Tired")
+			tired.Features = append(tired.Features, one.features...)
+		}
+		e.Attributes.Set[FatiguePointsID].Damage = one.damage
+		e.Recalculate()
+		attr := e.Attributes.Set[one.attrID]
+		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.name)
+		c.Equal(one.current, attr.Current(), "%s: current", one.name)
+		c.Equal(one.maximum.String(), e.ResolveVariable(one.attrID), "%s: $%s", one.name, one.attrID)
+		c.Equal(one.current.String(), e.ResolveVariable(one.attrID+".current"), "%s: $%s.current", one.name, one.attrID)
+	}
+}
+
+// TestAttributeCurrentOfStandInReadsCurrents verifies that the current value of an attribute standing in for Striking
+// ST, Lifting ST, Throwing ST, Dodge or Move rests on the current values of the attributes its base reads as "$id",
+// other than a pool's, which is what it has left, but not on those that their own bases read, and, for one standing in
+// for a limited ST, takes the bonuses ST is given under its limitation, such as the factory Tired threshold's
+// lifting-only ×0.5, so that the sheet gets from it what it gets without it, even for a Dodge or Move allowing decimals,
+// whose halving still rounds up, while its maximum, which scripts read as "$id", rests on their maximums.
+func TestAttributeCurrentOfStandInReadsCurrents(t *testing.T) {
+	c := check.New(t)
+	limited := func(amount fxp.Int, limitation stlimit.Option) Features {
+		bonus := newAttrBonus(StrengthID, amount)
+		bonus.Limitation = limitation
+		return Features{bonus}
+	}
+	for _, one := range []struct {
+		name    string
+		attrID  string
+		base    string
+		source  string
+		items   Features
+		value   func(e *Entity) int
+		maximum fxp.Int
+		current fxp.Int
+		typ     attribute.Type
+	}{
+		{
+			"striking ST", StrikingStrengthID, "$st", StrengthID, limited(fxp.Two, stlimit.StrikingOnly),
+			func(e *Entity) int { return e.StrikingStrength().AsInteger[int]() }, fxp.Ten, fxp.Seven, attribute.Integer,
+		},
+		{
+			"lifting ST", LiftingStrengthID, "$st", StrengthID, limited(fxp.Three, stlimit.LiftingOnly),
+			func(e *Entity) int { return e.LiftingStrength().AsInteger[int]() }, fxp.Ten, fxp.Four, attribute.Integer,
+		},
+		{
+			"lifting ST for throwing", LiftingStrengthID, "$st", StrengthID, limited(fxp.Three, stlimit.LiftingOnly),
+			func(e *Entity) int { return e.LiftingStrengthForThrowing().AsInteger[int]() }, fxp.Ten, fxp.Four,
+			attribute.Integer,
+		},
+		{
+			"throwing ST", ThrowingStrengthID, "$st", StrengthID, limited(fxp.One, stlimit.ThrowingOnly),
+			func(e *Entity) int { return e.ThrowingStrength().AsInteger[int]() }, fxp.Ten, fxp.Six, attribute.Integer,
+		},
+		{
+			"dodge", DodgeID, "Math.floor($basic_speed) + 3", BasicSpeedID, nil,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three, attribute.Integer,
+		},
+		{
+			"dodge allowing decimals", DodgeID, "Math.floor($basic_speed) + 3", BasicSpeedID, nil,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Three, attribute.Decimal,
+		},
+		{
+			"dodge, from a pool's maximum", DodgeID, "Math.floor($fp / 2) + 3", DexterityID, nil,
+			func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four, attribute.Integer,
+		},
+		{
+			"dodge, from a Basic Speed derived from DX's maximum", DodgeID, "Math.floor($basic_speed) + 3", DexterityID,
+			nil, func(e *Entity) int { return e.Dodge(encumbrance.No) }, fxp.Eight, fxp.Four, attribute.Integer,
+		},
+		{
+			"move", MoveID, "$basic_move", BasicMoveID, nil,
+			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two, attribute.Integer,
+		},
+		{
+			"move allowing decimals", MoveID, "$basic_move", BasicMoveID, nil,
+			func(e *Entity) int { return e.Move(encumbrance.No) }, fxp.Five, fxp.Two, attribute.Decimal,
+		},
+	} {
+		e := NewEntity()
+		if one.items != nil {
+			addTraitWithFeatures(e, "Item", one.items...)
+		}
+		tired := poolThreshold(e, FatiguePointsID, "Tired")
+		tired.Features = append(tired.Features, newMultiplier(one.source, fxp.Half))
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		e.Recalculate()
+		want := one.value(e)
+		e.SheetSettings.Attributes.Set[one.attrID] = &AttributeDef{
+			DefID: one.attrID,
+			Type:  one.typ,
+			Name:  one.name,
+			Base:  one.base,
+		}
+		e.Attributes.Set[one.attrID] = NewAttribute(e, one.attrID, len(e.Attributes.Set))
+		e.Recalculate()
+		attr := e.Attributes.Set[one.attrID]
+		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.name)
+		c.Equal(one.current, attr.Current(), "%s: current", one.name)
+		c.Equal(want, one.value(e), "%s: as without the attribute", one.name)
+		c.Equal(one.maximum.String(), e.ResolveVariable(one.attrID), "%s: $%s", one.name, one.attrID)
+		c.Equal(one.current.String(), e.ResolveVariable(one.attrID+".current"), "%s: $%s.current", one.name, one.attrID)
+	}
+}
+
+// newAttrBonus returns an attribute bonus adding the given amount to the given attribute.
+func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
+	bonus := NewAttributeBonus(attrID)
+	bonus.Amount = amount
+	return bonus
+}
+
+// TestAttributeBonusTooltipThresholdSources verifies that the bonuses of a pool's current threshold are listed after
+// the items' in each section, named for the threshold, even one with no state, and its pool, that a pool lists none,
+// that a bonus the threshold ignores, such as one per level, is not listed, and that the tooltip of a value figured
+// from the current values of attributes, such as lifting ST, Move, Dodge, an attribute standing in for one or one whose
+// base reads them as "$id.current", lists after its own bonuses those altering only the current value of each such
+// attribute, under its name, and names none whose maximum alone it reads.
+func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	st := e.Attributes.Set[StrengthID]
+	newAttrBonusTrait(e, "Lifting Harness", StrengthID, fxp.Three, stlimit.LiftingOnly)
+	newAttrBonusTrait(e, "Power Gauntlets", StrengthID, fxp.One, stlimit.StrikingOnly)
+	newAttrBonusTrait(e, "Fleet", MoveID, fxp.Two, stlimit.None)
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	tired.Features = append(tired.Features, newAttrBonus(StrengthID, -fxp.One), newMultiplier(BasicMoveID, fxp.Half),
+		newMultiplier(BasicSpeedID, fxp.Half))
+	hp := NewAttributeBonus(HitPointsID)
+	hp.Amount = -fxp.Two
+	perLevel := newAttrBonus(StrengthID, fxp.Two)
+	perLevel.PerLevel = true
+	tired.Features = append(tired.Features, hp, perLevel)
+	e.SheetSettings.Attributes.Set[StrikingStrengthID] = &AttributeDef{
+		DefID: StrikingStrengthID,
+		Type:  attribute.Integer,
+		Name:  "Striking ST",
+		Base:  "$st",
+	}
+	e.Attributes.Set[StrikingStrengthID] = NewAttribute(e, StrikingStrengthID, len(e.Attributes.Set))
+	e.SheetSettings.Attributes.Set["might"] = &AttributeDef{
+		DefID: "might",
+		Type:  attribute.Integer,
+		Name:  "Might",
+		Base:  "$st.current",
+	}
+	e.Attributes.Set["might"] = NewAttribute(e, "might", len(e.Attributes.Set))
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	e.Recalculate()
+	c.Equal("Includes modifiers from:\nTired (FP) [-1]\nFor striking only:\nPower Gauntlets [+1]\nFor lifting only:\nLifting Harness [+3]\nTired (FP) [×0.5]",
+		st.BonusTooltip(), "the threshold's bonuses follow the items' in each section")
+	c.Equal("", e.Attributes.Set[HitPointsID].BonusTooltip(), "a pool lists no threshold bonus, which doesn't alter it")
+	c.Equal("Includes modifiers from:\nPower Gauntlets [+1]\nST:\nTired (FP) [-1]",
+		e.Attributes.Set[StrikingStrengthID].BonusTooltip(),
+		"a stand-in names the ST bonuses under its limitation and what alters the current value of the attribute its base reads")
+	c.Equal("Lifting Harness [+3]\nTired (FP) [×0.5]\nST:\nTired (FP) [-1]",
+		e.CurrentAdjustmentTooltip(StrengthID, stlimit.LiftingOnly))
+	c.Equal("Fleet [+2]\nTired (FP) [×0.5]\nBasic Move:\nTired (FP) [×0.5]",
+		e.CurrentAdjustmentTooltip(MoveID, stlimit.None))
+	c.Equal("Tired (FP) [×0.5]\nBasic Speed:\nTired (FP) [×0.5]", e.CurrentAdjustmentTooltip(DodgeID, stlimit.None))
+	c.Equal("", e.CurrentAdjustmentTooltip(DexterityID, stlimit.None))
+	c.Equal("Includes modifiers from:\nST:\nTired (FP) [-1]", e.Attributes.Set["might"].BonusTooltip(),
+		"an attribute whose base reads another's current value names what alters it")
+	for _, one := range []struct {
+		base string
+		want string
+	}{
+		{`entity.attribute("st")`, "Includes modifiers from:\nPower Gauntlets [+1]\nST:\nTired (FP) [-1]"},
+		{`entity.attribute('Strength')`, "Includes modifiers from:\nPower Gauntlets [+1]\nST:\nTired (FP) [-1]"},
+		{`$st.maximum`, "Includes modifiers from:\nPower Gauntlets [+1]"},
+		{`entity.attribute("st").maximum`, "Includes modifiers from:\nPower Gauntlets [+1]"},
+	} {
+		e.SheetSettings.Attributes.Set[StrikingStrengthID].Base = one.base
+		e.Recalculate()
+		c.Equal(one.want, e.Attributes.Set[StrikingStrengthID].BonusTooltip(), "a stand-in whose base reads ST as %s",
+			one.base)
+	}
+	tired.State = ""
+	e.Recalculate()
+	c.Equal("Includes modifiers from:\nUnnamed Threshold (FP) [-1]\nFor striking only:\nPower Gauntlets [+1]\nFor lifting only:\nLifting Harness [+3]\nUnnamed Threshold (FP) [×0.5]",
+		st.BonusTooltip(), "a threshold with no state is named nonetheless")
 }

@@ -62,9 +62,11 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 func (p *attrDefSettingsPanel) deleteAttrDef() {
 	p.RemoveFromParent()
 	p.dockable.adjustDeleteButtons()
+	followGrantItemEditors(p.dockable)
 	undo := p.dockable.prepareUndo(i18n.Text("Delete Attribute"))
 	delete(p.dockable.model.Set, p.def.DefID)
 	p.dockable.finishAndPostUndo(undo)
+	p.dockable.refreshThresholdFeatures(p.def.DefID)
 	p.dockable.MarkModified(nil)
 }
 
@@ -86,9 +88,11 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.def.DefID },
 		func(s string) {
 			if p.validateAttrID(s) {
-				delete(p.dockable.model.Set, p.def.DefID)
+				was := p.def.DefID
+				delete(p.dockable.model.Set, was)
 				p.def.DefID = strings.TrimSpace(strings.ToLower(s))
 				p.dockable.model.Set[p.def.DefID] = p.def
+				p.dockable.refreshThresholdFeatures(was, p.def.DefID)
 			}
 		})
 	field.ValidateCallback = func(field *StringField, _ *gurps.AttributeDef) func() bool {
@@ -101,7 +105,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	addLabelAndTargetedPopup(content, p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"), "",
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.Types...)
+		attribute.Types...).withoutUndo()
 
 	if !p.def.IsSeparator() {
 		label := NewFieldLeadingLabel(i18n.Text("Placement"), false)
@@ -111,7 +115,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	const nameKey = "name"
 	nameGet := func() string { return p.def.Name }
-	nameSet := func(s string) { p.def.Name = s }
+	nameSet := func(s string) {
+		p.def.Name = s
+		p.dockable.refreshThresholdFeatures(p.def.DefID)
+	}
 	if p.def.IsSeparator() {
 		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+nameKey, i18n.Text("Name"),
 			i18n.Text("A title to use with the separator"), prototypeMinIDWidth, nameGet, nameSet)
@@ -233,16 +240,24 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
+// applyAttributeType changes the attribute's type in a single undo edit of the whole set of definitions, since the
+// change may add a threshold, drop the thresholds of a type that has none, as copying the definitions would (see
+// gurps.AttributeDef.Clone), or clear the fields a separator has no use for, all of which undoing it must bring back.
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
-	p.def.Type = attrType
-	if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
-		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
-	} else if p.def.IsSeparator() {
-		p.def.FullName = ""
-		p.def.Base = ""
-		p.def.CostPerPoint = 0
-		p.def.CostAdjPercentPerSM = 0
-		p.def.Thresholds = nil
-	}
-	p.dockable.sync()
+	p.dockable.editStructure(i18n.Text("Attribute Type"), func() {
+		p.def.Type = attrType
+		if p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef {
+			p.def.Thresholds = nil
+		} else if len(p.def.Thresholds) == 0 {
+			threshold := gurps.NewPoolThreshold()
+			threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
+			p.def.Thresholds = append(p.def.Thresholds, threshold)
+		}
+		if p.def.IsSeparator() {
+			p.def.FullName = ""
+			p.def.Base = ""
+			p.def.CostPerPoint = 0
+			p.def.CostAdjPercentPerSM = 0
+		}
+	}, "")
 }

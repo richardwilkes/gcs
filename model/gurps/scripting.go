@@ -305,6 +305,15 @@ type scriptResolveKey struct {
 	// judged is the item whose prerequisites were being judged when the script ran as they see the sheet, and nil when
 	// it ran as the rest of the sheet sees it; see resolveScript.
 	judged any
+	// currents is set when the script read each attribute other than a pool as "$id" for its current value; see
+	// Entity.scriptReadsCurrents.
+	currents bool
+	// base is set when the script ran at base, which leaves out what alters current values alone; see
+	// Entity.atBaseWhile.
+	base bool
+	// untouched is set when the script ran while a pool's base or thresholds were found without the features the
+	// pools' thresholds hold; see Entity.thresholdFeaturesLeftOut.
+	untouched bool
 }
 
 // scriptResolveResult is what a resolution produced, along with whether it produced it. A script GCS stopped part way
@@ -683,6 +692,11 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		defer func() { entity.judging = judging }()
 	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
+	if entity != nil {
+		key.currents = entity.scriptReadsCurrents()
+		key.base = entity.atBase > 0
+		key.untouched = entity.thresholdFeaturesLeftOut()
+	}
 	if forPrereqs {
 		key.judged = entity.judging
 	}

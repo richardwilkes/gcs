@@ -12,11 +12,12 @@ package gurps
 import (
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
 // AttributeFlags provides flags that can be set to extend the defined attribute choice list.
-type AttributeFlags byte
+type AttributeFlags uint16
 
 // Possible AttributeFlags.
 const (
@@ -27,6 +28,11 @@ const (
 	ParryFlag
 	BlockFlag
 	SkillFlag
+	// MoveFlag adds a choice standing in for Move when no move attribute is listed; see AttributeChoicesFor and
+	// Entity.Move.
+	MoveFlag
+	// NoPoolsFlag leaves out the pools, which the bonuses of their thresholds can't alter.
+	NoPoolsFlag
 )
 
 // AttributeChoice holds a single attribute choice.
@@ -36,12 +42,21 @@ type AttributeChoice struct {
 }
 
 // AttributeChoices returns the attribute choices for the entity, which may be nil, along with the choice matching
-// currentKey; if none matches, an "unrecognized key" choice for it is appended.
+// currentKey; see AttributeChoicesFor.
 func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
+	return AttributeChoicesFor(AttributeDefsFor(entity), prefix, flags, currentKey)
+}
+
+// AttributeChoicesFor returns the attribute choices for the given definitions, along with the choice matching
+// currentKey; if none matches, an "unrecognized key" choice for it is appended. A defined dodge attribute is listed
+// only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is listed. A stand-in
+// for Dodge or Move takes the place of a dodge or move attribute that NoPoolsFlag leaves out as a pool, since the Dodge
+// or Move the sheet works out from such a pool takes the bonuses of the thresholds; see Entity.Dodge and Entity.Move.
+func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix += " "
 	}
-	list := AttributeDefsFor(entity).List(true)
+	list := defs.List(true)
 	choices = make([]*AttributeChoice, 0, len(list)+8)
 	if flags&BlankFlag != 0 {
 		choices = append(choices, &AttributeChoice{})
@@ -50,17 +65,27 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 		choices = append(choices, &AttributeChoice{Key: "10", Title: prefix + "10"})
 	}
 	addedDodge := false
+	addedMove := false
 	for _, def := range list {
-		if def.DefID == DodgeID {
-			if flags&DodgeFlag == 0 {
-				continue
-			}
-			addedDodge = true
+		if def.DefID == DodgeID && flags&DodgeFlag == 0 {
+			continue
 		}
-		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.Name})
+		if flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
+			continue
+		}
+		switch def.DefID {
+		case DodgeID:
+			addedDodge = true
+		case MoveID:
+			addedMove = true
+		}
+		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.nameOrID()})
 	}
 	if flags&SizeFlag != 0 {
 		choices = append(choices, &AttributeChoice{Key: SizeModifierID, Title: prefix + i18n.Text("Size Modifier")})
+	}
+	if flags&MoveFlag != 0 && !addedMove {
+		choices = append(choices, &AttributeChoice{Key: MoveID, Title: prefix + i18n.Text("Move")})
 	}
 	if flags&DodgeFlag != 0 && !addedDodge {
 		choices = append(choices, &AttributeChoice{Key: DodgeID, Title: prefix + i18n.Text("Dodge")})

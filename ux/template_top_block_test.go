@@ -21,24 +21,6 @@ import (
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
-// TestOptionalDecimalFieldBlankMeansNone verifies that zero is a value of its own, and that text which isn't a number is
-// flagged rather than taken as one. Blank meaning none is covered through the template's target fields.
-func TestOptionalDecimalFieldBlankMeansNone(t *testing.T) {
-	c := check.New(t)
-	var value *fxp.Int
-	f := NewOptionalDecimalField(nil, "", "Value",
-		func() *fxp.Int { return value },
-		func(v *fxp.Int) { value = v })
-	c.Equal("", f.Text(), "no value shows as a blank field")
-
-	f.SetText("0")
-	c.NotNil(value, "zero is a value of its own")
-	c.Equal(fxp.Int(0), *value)
-
-	f.SetText("abc")
-	c.False(f.validate(), "text that isn't a number must be flagged")
-}
-
 // TestTemplateTopBlockEditsTheTemplate verifies that the fields at the top of a template edit the template's own
 // values, with each end of the target range settable on its own and an inverted range flagged.
 func TestTemplateTopBlockEditsTheTemplate(t *testing.T) {
