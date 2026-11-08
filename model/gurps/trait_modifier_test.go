@@ -127,9 +127,9 @@ func TestTraitModifierCostIgnoresLevel(t *testing.T) {
 	}
 }
 
-// TestTraitModifierShowsTheLevelItWouldHaveIfEnabled verifies that a leveled modifier that is disabled, or whose trait
-// is, shows the level it would have were both enabled, as a disabled trait shows its own, while a disabled modifier's
-// current level, which its per-level features key off of, stays zero.
+// TestTraitModifierShowsTheLevelItWouldHaveIfEnabled verifies that a disabled modifier with its own levels still shows
+// them, that one taking its level from its trait shows none, and that a disabled modifier's current level, which its
+// per-level features key off of, stays zero.
 func TestTraitModifierShowsTheLevelItWouldHaveIfEnabled(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -139,8 +139,8 @@ func TestTraitModifierShowsTheLevelItWouldHaveIfEnabled(t *testing.T) {
 		shown             string
 	}{
 		{"disabled, with its own levels", false, false, "Limited 2"},
-		{"disabled, with the trait's level", true, false, "Limited 3"},
-		{"on a disabled trait, with the trait's level", true, true, "Limited 3"},
+		{"disabled, with the trait's level", true, false, "Limited"},
+		{"on a disabled trait, with the trait's level", true, true, "Limited"},
 	} {
 		e, trait, mod := newIgnoresLevelTestTrait(one.useLevelFromTrait)
 		if one.disableTrait {
