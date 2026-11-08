@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -33,7 +34,9 @@ const (
 
 var _ Hashable = &AttributeDef{}
 
-// ReservedIDs holds a list of IDs that are reserved for internal use.
+// ReservedIDs holds a list of IDs that are reserved for internal use. The attribute settings never give a definition one
+// (see SanitizeID), and UnmarshalJSONFrom refuses to load a definition that has one, which only a hand-edited file can
+// hold, so nothing else need cope with one.
 var ReservedIDs = []string{SkillID, ParryID, BlockID, SizeModifierID, "10"}
 
 // AttributeDef holds the definition of an attribute.
@@ -74,6 +77,9 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return err
 	}
 	a.AttributeDefData = legacy.AttributeDefData
+	if slices.Contains(ReservedIDs, a.DefID) {
+		return errs.Newf("attribute definition %q uses a reserved ID", a.DefID)
+	}
 	if a.Base == "" && legacy.AttributeBase != "" {
 		a.Base = ExprToScript(legacy.AttributeBase)
 	}

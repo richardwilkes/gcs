@@ -15,9 +15,11 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"hash"
+	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -102,6 +104,9 @@ func (h *HitLocation) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	h.HitLocationData = HitLocationData{}
 	if err := json.UnmarshalDecode(dec, &h.HitLocationData); err != nil {
 		return err
+	}
+	if slices.Contains(ReservedIDs, h.LocID) {
+		return errs.Newf("hit location %q uses a reserved ID", h.LocID)
 	}
 	if h.SubTable != nil {
 		h.SubTable.SetOwningLocation(h)

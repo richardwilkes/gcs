@@ -57,7 +57,7 @@ func TestAttributeDefEffectivePlacement(t *testing.T) {
 	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
 
 	def := &AttributeDef{
-		DefID: "sm",
+		DefID: "mana",
 		Type:  attribute.Integer,
 		Base:  "10",
 	}
@@ -92,7 +92,7 @@ func TestAttributeDefPlacementResolution(t *testing.T) {
 	e := NewEntity()
 
 	def := &AttributeDef{
-		DefID:                "sm",
+		DefID:                "mana",
 		Type:                 attribute.Integer,
 		Base:                 "10",
 		Placement:            attribute.Hidden,
@@ -259,4 +259,23 @@ func TestAttributeDefKindByTypeAndPlacement(t *testing.T) {
 			}
 		}
 	}
+}
+
+// TestAttributeDefReservedIDRefusedOnLoad pins that a definition whose ID is one of the ReservedIDs, which only a
+// hand-edited file can hold since the attribute settings never give one, fails to load, on its own and within a set, so
+// that nothing else need cope with an attribute standing where the Skill, Parry, Block, Size Modifier or 10 choices do.
+func TestAttributeDefReservedIDRefusedOnLoad(t *testing.T) {
+	c := check.New(t)
+	for _, id := range ReservedIDs {
+		def := `{"id":"` + id + `","type":"integer","name":"X","base":"10"}`
+		c.HasError(jio.Unmarshal([]byte(def), &AttributeDef{}), "%s: alone", id)
+		data := `{"version":5,"rows":[{"id":"st","type":"integer","name":"ST","base":"10","cost_per_point":10},` + def + `]}`
+		_, err := NewAttributeDefsFromFile(fstest.MapFS{"Test.attr": {Data: []byte(data)}}, "Test.attr")
+		c.HasError(err, "%s: in a set", id)
+		if err != nil {
+			c.Contains(err.Error(), `"`+id+`" uses a reserved ID`, "%s: names the ID", id)
+		}
+	}
+	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","type":"integer","name":"X","base":"10"}`), &AttributeDef{}),
+		"an ID SetID would turn a reserved one into loads")
 }

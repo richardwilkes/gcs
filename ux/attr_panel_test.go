@@ -35,8 +35,8 @@ func TestAttrPanelHashReflectsTraitDrivenVisibility(t *testing.T) {
 
 	// A hidden secondary attribute that becomes visible when the character has the "Magery" trait.
 	defs := &gurps.AttributeDefs{Set: map[string]*gurps.AttributeDef{
-		"sm": {AttributeDefData: gurps.AttributeDefData{
-			DefID:                "sm",
+		"mana": {AttributeDefData: gurps.AttributeDefData{
+			DefID:                "mana",
 			Type:                 attribute.Integer,
 			Base:                 "10",
 			Placement:            attribute.Hidden,

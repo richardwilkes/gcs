@@ -12,8 +12,10 @@ package gurps
 import (
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -99,4 +101,22 @@ func TestHitLocationArmorDRSeparatedFromInnate(t *testing.T) {
 	e.Recalculate()
 	c.Equal(5, torso.DR(e, nil, nil)["crushing"], "the specialized bonus keeps its own key")
 	c.Equal(5, torso.ArmorDR(e, nil)["crushing"], "the specialized bonus is armor, so it appears in both maps")
+}
+
+// TestHitLocationReservedIDRefusedOnLoad pins that a hit location whose ID is one of the ReservedIDs, which only a
+// hand-edited file can hold since the body settings never give one, fails to load, on its own and within a body.
+func TestHitLocationReservedIDRefusedOnLoad(t *testing.T) {
+	c := check.New(t)
+	for _, id := range ReservedIDs {
+		loc := `{"id":"` + id + `","choice_name":"X","table_name":"X","slots":1}`
+		c.HasError(jio.Unmarshal([]byte(loc), &HitLocation{}), "%s: alone", id)
+		data := `{"version":5,"name":"Test","roll":"3d","locations":[` + loc + `]}`
+		_, err := NewBodyFromFile(fstest.MapFS{"Test.body": {Data: []byte(data)}}, "Test.body")
+		c.HasError(err, "%s: in a body", id)
+		if err != nil {
+			c.Contains(err.Error(), `"`+id+`" uses a reserved ID`, "%s: names the ID", id)
+		}
+	}
+	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","choice_name":"X","table_name":"X","slots":1}`), &HitLocation{}),
+		"an ID the sanitizer would turn a reserved one into loads")
 }
