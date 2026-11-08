@@ -142,8 +142,8 @@ func (p *featuresPanel) forThreshold() bool {
 }
 
 // takeOver implements keyedSection, for a threshold's features rebuilt by the attribute settings: the panel is shown as
-// the old one was, and keeps the "as a %" the old one suspended for each weapon bonus it holds a copy of at the same
-// index.
+// the old one was, with the same optional criterion pending, and keeps the "as a %" the old one suspended for each
+// weapon bonus it holds a copy of at the same index.
 func (p *featuresPanel) takeOver(old keyedSection) {
 	prev, ok := old.(*featuresPanel)
 	if !ok {
@@ -158,6 +158,8 @@ func (p *featuresPanel) takeOver(old keyedSection) {
 			p.percentSuspended[same] = true
 		}
 	}
+	// Set first, so that the fill setView makes to open the row the criterion belongs to shows it.
+	p.pending = prev.pending
 	p.setView(prev.view())
 }
 
@@ -559,7 +561,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		} else {
 			p.amount(fields, path, &one.Amount, &one.PerLevel)
 		}
-		p.attributePopup(fields, key("attribute"), i18n.Text("to"), &one.Attribute, func(id string) {
+		p.attributePopup(fields, key("attribute"), i18n.Text("to"), p.attributeChoices, &one.Attribute, func(id string) {
 			*p.lastAttribute = id
 			// Only ST has a limitation, so one is cleared along with its chip, so a file doesn't keep what no chip shows.
 			if id != gurps.StrengthID {
@@ -679,7 +681,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	case *gurps.WeaponBonus:
 		p.weaponBonus(fields, chips, path, one)
 	case *gurps.CostReduction:
-		p.attributePopup(fields, key("attribute"), "", &one.Attribute, nil)
+		p.attributePopup(fields, key("attribute"), "", p.costReductionChoices, &one.Attribute, nil)
 		items := make([]fxp.Int, 0, 17)
 		for i := 5; i <= 80; i += 5 {
 			items = append(items, fxp.FromInteger(i))
@@ -930,27 +932,73 @@ func (p *featuresPanel) operation(parent *unison.Panel, path string, one *gurps.
 	addCentered(parent, popup)
 }
 
-// attributeChoices returns the attributes the panel offers, each after the prefix, and the one with the current key,
-// which is added as such when it isn't one of them. An item's features offer the attributes its sheet, or without one
-// the defaults, define, along with the size modifier, Move, Dodge, Parry and Block. A threshold's offer those of the
-// definitions being edited along with Move, Dodge, Parry and Block, but neither the size modifier nor the pools.
+// itemAttributeFlags has gurps.AttributeChoicesFor offer, along with the attributes the definitions define, what an
+// item's attribute bonus may alter: the size modifier, Move, Dodge, Parry and Block.
+const itemAttributeFlags = gurps.SizeFlag | gurps.MoveFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
+
+// attributeChoices returns the attributes an attribute bonus offers, each after the prefix, and the one with the
+// current key, which is added when it isn't one of them (see namedAttributeChoices). An item's features offer the
+// attributes its sheet, or without one the defaults, define, along with the size modifier, Move, Dodge, Parry and
+// Block. A threshold's offer those of the definitions being edited along with Move, Dodge, Parry and Block, but neither
+// the size modifier nor the pools.
 func (p *featuresPanel) attributeChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
 	if p.forThreshold() {
-		return gurps.AttributeChoicesFor(p.thresholdDefs(), prefix, gurps.ThresholdAttributeFlags, current)
+		return namedAttributeChoices(p.thresholdDefs(), prefix, gurps.ThresholdAttributeFlags, current)
 	}
-	return gurps.AttributeChoices(p.entity, prefix,
-		gurps.SizeFlag|gurps.MoveFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag, current)
+	return gurps.AttributeChoices(p.entity, prefix, itemAttributeFlags, current)
 }
 
-// newAttributeID returns the attribute a new feature names: the one last chosen, or for a threshold's features, when
-// the definitions being edited don't offer that one, the first they do.
-func (p *featuresPanel) newAttributeID() string {
+// costReductionChoices returns the attributes a cost reduction offers, each after the prefix, and the one with the
+// current key, as attributeChoices does: those defined, which are all that have a point cost to reduce.
+func (p *featuresPanel) costReductionChoices(prefix, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
+	defs := gurps.AttributeDefsFor(p.entity)
+	if p.forThreshold() {
+		defs = p.thresholdDefs()
+	}
+	// DodgeFlag lists a dodge attribute the definitions define, which a lack of it would leave out, but adds a stand-in
+	// for Dodge when they define none, which has no point cost.
+	choices, chosen = namedAttributeChoices(defs, prefix, gurps.DodgeFlag, current)
+	if _, defined := defs.Set[gurps.DodgeID]; !defined {
+		choices = slices.DeleteFunc(choices, func(one *gurps.AttributeChoice) bool {
+			return one != chosen && one.Key == gurps.DodgeID
+		})
+	}
+	return choices, chosen
+}
+
+// namedAttributeChoices returns gurps.AttributeChoicesFor's choices and the one with the current key, except that a
+// current key the flags leave out but an item's attribute bonus offers, such as a pool's or the size modifier's, is
+// named as that names it, as the feature's sentence does, rather than as unrecognized.
+func namedAttributeChoices(defs *gurps.AttributeDefs, prefix string, flags gurps.AttributeFlags, current string) (choices []*gurps.AttributeChoice, chosen *gurps.AttributeChoice) {
+	choices, chosen = gurps.AttributeChoicesFor(defs, prefix, flags, current)
+	if !offersAttribute(defs, flags, current) && offersAttribute(defs, itemAttributeFlags, current) {
+		_, named := gurps.AttributeChoicesFor(defs, prefix, itemAttributeFlags, current)
+		chosen.Title = named.Title
+	}
+	return choices, chosen
+}
+
+// offersAttribute returns true if gurps.AttributeChoicesFor offers the key for the definitions and flags.
+func offersAttribute(defs *gurps.AttributeDefs, flags gurps.AttributeFlags, key string) bool {
+	// With no current key, only the choice standing in for an unrecognized one has none.
+	choices, _ := gurps.AttributeChoicesFor(defs, "", flags, "")
+	return key != "" && slices.ContainsFunc(choices, func(one *gurps.AttributeChoice) bool { return one.Key == key })
+}
+
+// newAttributeID returns the attribute a new attribute bonus, or with costReduction set a new cost reduction, names:
+// the one last chosen, unless it is for a cost reduction or a threshold's features and the choices they offer don't
+// include that one, in which case the first they do.
+func (p *featuresPanel) newAttributeID(costReduction bool) string {
 	id := *p.lastAttribute
-	if !p.forThreshold() {
+	offer := p.attributeChoices
+	switch {
+	case costReduction:
+		offer = p.costReductionChoices
+	case !p.forThreshold():
 		return id
 	}
 	// With no current key, only the choice standing in for an unrecognized one has none.
-	choices, _ := p.attributeChoices("", "")
+	choices, _ := offer("", "")
 	first := ""
 	for _, one := range choices {
 		if one.Key == id {
@@ -978,10 +1026,10 @@ func selectionsOffered[E comparable](p *featuresPanel, items []E, this, current 
 	return slices.DeleteFunc(slices.Clone(items), func(one E) bool { return one == this })
 }
 
-// attributePopup adds a popup of attributes, each after the prefix, handing a choice to chosen as well when it is set.
-// A key that isn't one of them is shown as such, and kept until another is chosen.
-func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string, value *string, chosen func(string)) {
-	choices, current := p.attributeChoices(prefix, *value)
+// attributePopup adds a popup of the attributes offer returns, each after the prefix, handing a choice to chosen as
+// well when it is set. A key that isn't one of them is shown as offer shows it, and kept until another is chosen.
+func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string, offer func(prefix, current string) ([]*gurps.AttributeChoice, *gurps.AttributeChoice), value *string, chosen func(string)) {
+	choices, current := offer(prefix, *value)
 	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Attribute"), choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
 			*value = c.Key
@@ -1442,7 +1490,7 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 	var bonus gurps.Bonus
 	switch featureType {
 	case feature.AttributeBonus:
-		bonus = gurps.NewAttributeBonus(p.newAttributeID())
+		bonus = gurps.NewAttributeBonus(p.newAttributeID(false))
 	case feature.ConditionalModifier:
 		bonus = gurps.NewConditionalModifierBonus()
 	case feature.ContainedWeightReduction:
@@ -1450,7 +1498,7 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 	case feature.GrantTrait, feature.GrantSkill, feature.GrantSpell:
 		return p.newGrant(featureType)
 	case feature.CostReduction:
-		return gurps.NewCostReduction(p.newAttributeID())
+		return gurps.NewCostReduction(p.newAttributeID(true))
 	case feature.TitleNote:
 		return gurps.NewTitleNote()
 	case feature.EquipmentMaxUsesBonus:

@@ -215,11 +215,13 @@ func addTagMatchingSkillBonus(e *Entity, tag string, amount fxp.Int) {
 	addTraitWithFeatures(e, "", bonus)
 }
 
-// TestSkillDefaultRemovesBonusUsingOtherSkillsTags verifies that the skill bonus baked into a default's level is undone
-// using the *defaulted-to* skill's tags. calcSkillDefaultLevel passed the defaulting skill's tags instead, so a bonus
-// that only the other skill qualified for was never removed (and one that only the defaulting skill qualified for was
-// removed even though it had never been added). The wrong level is then persisted into DefaultedFrom.
-func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
+// TestSkillDefaultRemovesOtherSkillsBonus verifies that the skill bonus baked into a default's level is undone using
+// the *defaulted-to* skill's tags. calcSkillDefaultLevel passed the defaulting skill's tags instead, so a bonus that
+// only the other skill qualified for was never removed (and one that only the defaulting skill qualified for was
+// removed even though it had never been added). The wrong level is then persisted into DefaultedFrom. For a parry- or
+// block-type default, the bonus is undone from the skill's level before it is turned into a defense level, which
+// halves it, rather than from the defense level.
+func TestSkillDefaultRemovesOtherSkillsBonus(t *testing.T) {
 	c := check.New(t)
 
 	// The +2 applies to Broadsword only. Its level carries the bonus, but the level Shortsword defaults from must not:
@@ -254,6 +256,22 @@ func TestSkillDefaultRemovesBonusUsingOtherSkillsTags(t *testing.T) {
 	c.NotNil(shortsword.DefaultedFrom, "Shortsword should have a resolved default")
 	c.Equal(fxp.Seven, shortsword.DefaultedFrom.Level, "no bonus was baked in, so none may be removed")
 	c.Equal(fxp.Nine, shortsword.LevelData.Level, "Shortsword still earns the Combat bonus for itself")
+
+	// Broadsword DX+2 = 12, +2 = 14. A parry-type default reads the parry of Broadsword-12: 12/2 + 3 = 9, where taking
+	// the bonus off the parry of Broadsword-14 would give 14/2 + 3 - 2 = 8.
+	e = NewEntity()
+	broadsword = addSkill(e, "Broadsword", fxp.Four)
+	addTraitWithFeatures(e, "Trained", newSkillBonusTo("Broadsword", fxp.Two))
+	counter := addSkill(e, "Counter", 0)
+	parry := newSkillDefaultTo("Broadsword", "", true, 0)
+	parry.DefaultType = ParryID
+	counter.Defaults = []*SkillDefault{parry}
+	shortsword = addSkill(e, "Shortsword", 0)
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(14), broadsword.LevelData.Level, "Broadsword gets the bonus")
+	c.Equal(fxp.Nine, counter.LevelData.Level, "the bonus is removed before the defense conversion")
+	c.Equal(fxp.Twelve, shortsword.LevelData.Level, "as it is from a skill-type default")
 }
 
 // TestSkillUpdateLevelReportsDefaultChange verifies that updating a skill's level reports a change when only the

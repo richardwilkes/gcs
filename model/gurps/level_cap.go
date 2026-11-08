@@ -401,7 +401,7 @@ func (c *ReferenceLevelCap) describeTarget(entity *Entity, em func(string) strin
 // prerequisites were being judged, the excludes of the default chain, whether it was resolved at base (see
 // Entity.atBaseWhile), whether it was resolved while a pool's threshold was found for those prerequisites (see
 // Attribute.CurrentThreshold) and whether it was resolved while a pool's base or thresholds were found without the
-// trait bonuses those thresholds hold (see Entity.thresholdTraitBonusesLeftOut); see Entity.levelCapMemo.
+// features those thresholds hold (see Entity.thresholdFeaturesLeftOut); see Entity.levelCapMemo.
 type levelCapMemoKey struct {
 	ref       *ReferenceLevelCap
 	exclude   any
@@ -443,7 +443,7 @@ func (c *ReferenceLevelCap) resolve(r *levelCapResolver) (levelCapValue, bool) {
 			excludes:  excludesKey(r.excludes),
 			base:      e.atBase > 0,
 			searching: e.judgedThresholdSearches > 0,
-			untouched: e.thresholdTraitBonusesLeftOut(),
+			untouched: e.thresholdFeaturesLeftOut(),
 		}
 		if entry, ok := e.levelCapMemo[key]; ok && !slices.ContainsFunc(entry.candidates, resolving) {
 			if e.levelCapCandidates != nil {

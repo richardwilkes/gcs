@@ -28,7 +28,8 @@ type AttributeDefs struct {
 	Set map[string]*AttributeDef
 }
 
-// ResolveAttributeName returns the name of the attribute, or its ID when it has none or is not defined.
+// ResolveAttributeName returns the name of the attribute, or its full name or ID when it has none (see
+// AttributeDef.nameOrID), or the ID when it is not defined.
 func ResolveAttributeName(entity *Entity, attribute string) string {
 	if def := AttributeDefsFor(entity).Set[attribute]; def != nil {
 		return def.nameOrID()

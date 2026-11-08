@@ -205,8 +205,8 @@ func (n *grantNote) amountFor(exclude any) fxp.Int {
 // busy is set while price or beyond runs. beyond, set for the level set giving a skill or spell the points it has
 // standing alone, returns those points as priced against the sheet as a whole, less, for a skill, those the default its
 // level is read with stands for as the sheet is seen when it runs (see Grant.pointsBeyondDefault), which is all that
-// differs at base and while a pool's base or thresholds are found without the trait bonuses those thresholds hold,
-// where that default is picked afresh, so that the skill has the level set there too.
+// differs at base and while a pool's base or thresholds are found without the features those thresholds hold, where
+// that default is picked afresh, so that the skill has the level set there too.
 type grantReprice struct {
 	entity *Entity
 	owner  any
@@ -217,9 +217,9 @@ type grantReprice struct {
 }
 
 // repriceKey identifies the points a level set gives as the prerequisites of judged, which may be nil, see the sheet,
-// which rest as well on whether they are priced while a pool's base or thresholds are found without the trait bonuses
-// those thresholds hold (see Entity.thresholdTraitBonusesLeftOut), since the default they are less those of is picked
-// as the sheet is seen then; see Grant.pointsBeyondDefault.
+// which rest as well on whether they are priced while a pool's base or thresholds are found without the features those
+// thresholds hold (see Entity.thresholdFeaturesLeftOut), since the default they are less those of is picked as the
+// sheet is seen then; see Grant.pointsBeyondDefault.
 type repriceKey struct {
 	reprice   *grantReprice
 	judged    any
@@ -228,7 +228,7 @@ type repriceKey struct {
 
 // pointsFor returns the points as the prerequisites of exclude, or when it is nil those being judged, see the sheet:
 // priced afresh when exclude carries a grant, but not the one setting the level, and while an editor previews a skill's
-// level; at base and while a pool's base or thresholds are found without the trait bonuses those thresholds hold, found
+// level; at base and while a pool's base or thresholds are found without the features those thresholds hold, found
 // by beyond when that is set; and otherwise, or while they are priced afresh, as for a level set on an item resting on
 // itself, as priced against the sheet as a whole. They are found once for each view of the sheet each time those
 // prerequisites are judged, the edits are previewed, the computation at base runs, or the pool's base or thresholds are
@@ -246,7 +246,7 @@ func (r *grantReprice) pointsFor(exclude any) fxp.Int {
 	if e.previewingSkillEdit() {
 		return r.pricedFor(exclude, r.price)
 	}
-	if r.beyond != nil && (e.atBase > 0 || e.thresholdTraitBonusesLeftOut()) {
+	if r.beyond != nil && (e.atBase > 0 || e.thresholdFeaturesLeftOut()) {
 		return r.pricedFor(exclude, r.beyond)
 	}
 	return r.points
@@ -256,7 +256,7 @@ func (r *grantReprice) pointsFor(exclude any) fxp.Int {
 // view of the sheet, with busy set while price runs; see pointsFor.
 func (r *grantReprice) pricedFor(judged any, price func() fxp.Int) fxp.Int {
 	e := r.entity
-	key := repriceKey{reprice: r, judged: judged, untouched: e.thresholdTraitBonusesLeftOut()}
+	key := repriceKey{reprice: r, judged: judged, untouched: e.thresholdFeaturesLeftOut()}
 	kept := &e.judgedPoints
 	if e.atBase > 0 {
 		kept = &e.basePoints
@@ -820,7 +820,7 @@ func (g *Grant) baseUnresolved(e *Entity, item grantLeveler) bool {
 // raised by both. The default is the one the skill recorded, or, where its level is read with one picked afresh as the
 // sheet is seen then, that one: while the prerequisites of an item carrying a grant are judged (see
 // Skill.levelForPrereqsOf), while an editor previews a skill's level (see Skill.defaultExcept), at base, and while a
-// pool's base or thresholds are found without the trait bonuses those thresholds hold (see Skill.CurrentLevel). The
+// pool's base or thresholds are found without the features those thresholds hold (see Skill.CurrentLevel). The
 // recorded one is kept when it resolves there, whatever points the skill has: these points decide whether the skill
 // keeps it (see Skill.keepsDefault), and where they are none, so are those beyond the best default it then reads its
 // level with.
@@ -831,7 +831,7 @@ func (g *Grant) pointsBeyondDefault(points fxp.Int, holder grantHolder) fxp.Int 
 	}
 	def := s.DefaultedFrom
 	if e := EntityFromNode(s); e != nil && (e.carriesGrant(e.judging) || e.atBase > 0 ||
-		e.thresholdTraitBonusesLeftOut() || e.previewingSkillEdit()) {
+		e.thresholdFeaturesLeftOut() || e.previewingSkillEdit()) {
 		def = s.keptDefaultWithPoints()
 	}
 	if def == nil || def.Points <= 0 {

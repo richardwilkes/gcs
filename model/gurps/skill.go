@@ -678,13 +678,13 @@ func (s *Skill) IsLeveled() bool {
 }
 
 // CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base, and while a pool's
-// base or thresholds are found without the trait bonuses those thresholds hold, the level of an enabled skill is
-// computed afresh, since the recorded one holds what alters current values alone, or what those trait bonuses add (see
-// Entity.atBaseWhile and Entity.thresholdTraitBonusesLeftOut), unless that computation is already under way for the
+// base or thresholds are found without the features those thresholds hold, the level of an enabled skill is computed
+// afresh, since the recorded one holds what alters current values alone, or what those features add (see
+// Entity.atBaseWhile and Entity.thresholdFeaturesLeftOut), unless that computation is already under way for the
 // skill, as when a per-level amount leads back to it, which then reads the recorded one.
 func (s *Skill) CurrentLevel() fxp.Int {
 	e := EntityFromNode(s)
-	if e == nil || (e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()) || s.Container() || !s.Enabled() ||
+	if e == nil || (e.atBase == 0 && !e.thresholdFeaturesLeftOut()) || s.Container() || !s.Enabled() ||
 		e.baseLevelReads[s] {
 		return s.LevelData.Level
 	}
@@ -1036,15 +1036,15 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // the grants did to the skills it rests on. It is picked afresh too while an editor previews a skill's level, since the
 // recorded one was picked with that skill as it is on the sheet rather than as edited (see Entity.matchLevelCapsAs),
 // at base, since it was picked, and its level taken, with what alters current values alone (see Entity.atBaseWhile),
-// and while a pool's base or thresholds are found without the trait bonuses those thresholds hold, since it was
-// picked, and its level taken, with what they add (see Entity.thresholdTraitBonusesLeftOut). It is picked as
+// and while a pool's base or thresholds are found without the features those thresholds hold, since it was
+// picked, and its level taken, with what they add (see Entity.thresholdFeaturesLeftOut). It is picked as
 // bestDefault picks, but with the levels taken with the skill added to the excludes given rather than with it alone
 // excluded, so that a chain of defaults never comes back to a skill it passes through: the recorded default, if the
 // skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill, and otherwise the best of the
 // skill's defaults. Each pick is kept while those prerequisites are judged, the edits previewed, the computation at
 // base runs, or the pool's base or thresholds are found, apart from those found otherwise, and reused only for the
 // same skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a
-// pool's threshold is found for those prerequisites, and the trait bonuses they hold while a pool's base or thresholds
+// pool's threshold is found for those prerequisites, and the features they hold while a pool's base or thresholds
 // are found (see judgedDefaultKey), so that the answers are those of picking afresh every time, while a pick beneath a
 // skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
 // as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
@@ -1053,7 +1053,7 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 	e := EntityFromNode(s)
 	atBase := e != nil && e.atBase > 0
 	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit() && !atBase &&
-		!e.thresholdTraitBonusesLeftOut()) {
+		!e.thresholdFeaturesLeftOut()) {
 		return s.DefaultedFrom
 	}
 	excludes = maps.Clone(excludes)
@@ -1102,8 +1102,8 @@ func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefau
 // judgedDefaultKey identifies the default Skill.defaultExcept picks for a skill with the levels taken with a set of
 // excludes, which it holds as their names sorted and joined, whether it is picked while a pool's threshold is found
 // for the prerequisites being judged, which see the sheet without what the thresholds do meanwhile (see
-// Attribute.CurrentThreshold), and whether it is picked while a pool's base or thresholds are found without the trait
-// bonuses those thresholds hold (see Entity.thresholdTraitBonusesLeftOut).
+// Attribute.CurrentThreshold), and whether it is picked while a pool's base or thresholds are found without the
+// features those thresholds hold (see Entity.thresholdFeaturesLeftOut).
 type judgedDefaultKey struct {
 	skill     *Skill
 	excludes  string
@@ -1126,7 +1126,7 @@ func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
 		skill:     s,
 		excludes:  excludesKey(excludes),
 		searching: e != nil && e.judgedThresholdSearches > 0,
-		untouched: e.thresholdTraitBonusesLeftOut(),
+		untouched: e.thresholdFeaturesLeftOut(),
 	}
 }
 
@@ -1701,19 +1701,17 @@ func (s *Skill) SwapToNextDefault() {
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
 	e := EntityFromNode(s)
-	level := def.SkillLevel(e, s.Replacements, true, excludes, !s.IsTechnique())
-	if level == fxp.Min {
-		return level
-	}
+	var bonus fxp.Int
 	if def.SkillBased() {
 		if other := def.bestMatchingSkill(e, s.Replacements, true, excludes); other != nil {
 			// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's
-			// own qualifiers and tags, so all of them must come from 'other' here, not from this skill.
-			level -= e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
+			// own qualifiers and tags, so all of them must come from 'other' here, not from this skill. It is undone
+			// from the other skill's level, before a parry- or block-type default halves that into a defense level.
+			bonus = e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
 				other.OptionalSpecializationWithReplacements(), other.Tags, nil)
 		}
 	}
-	return level
+	return def.skillLevelLess(e, s.Replacements, true, excludes, !s.IsTechnique(), bonus)
 }
 
 func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {

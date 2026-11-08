@@ -96,13 +96,13 @@ func updateSkillLevelForScript(entity *Entity, skill *Skill) Level {
 // for the prerequisites of an item carrying grants, the level is computed as those prerequisites see it, without what
 // the grants gave the skill, and is not recorded, since the sheet has the level with them; see Skill.levelForPrereqsOf.
 // One computed at base, which leaves out what alters current values alone, is not recorded either (see
-// Entity.atBaseWhile), nor is one computed while a pool's base or thresholds are found without the trait bonuses those
-// thresholds hold; see Entity.thresholdTraitBonusesLeftOut.
+// Entity.atBaseWhile), nor is one computed while a pool's base or thresholds are found without the features those
+// thresholds hold; see Entity.thresholdFeaturesLeftOut.
 func scriptSkillLevel(entity *Entity, skill *Skill) Level {
 	if entity.carriesGrant(entity.judging) {
 		return skill.calculateLevelExcept(entity.judging, nil)
 	}
-	if entity.atBase > 0 || entity.thresholdTraitBonusesLeftOut() {
+	if entity.atBase > 0 || entity.thresholdFeaturesLeftOut() {
 		return skill.CalculateLevel(nil)
 	}
 	skill.UpdateLevel()

@@ -427,15 +427,25 @@ func (s *SkillDefault) SkillBased() bool {
 
 // SkillLevel returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+	return s.skillLevelLess(entity, replacements, requirePoints, excludes, ruleOf20, 0)
+}
+
+// skillLevelLess is SkillLevel with less taken off the level of the skill a skill-based default rests on, before a
+// parry- or block-type default turns it into a defense level.
+func (s *SkillDefault) skillLevelLess(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool, less fxp.Int) fxp.Int {
 	switch s.Type() {
 	case ParryID, BlockID:
 		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
-			best = entity.defenseLevel(s.Type(), best)
+			best = entity.defenseLevel(s.Type(), best-less)
 		}
 		return s.finalLevel(best)
 	case SkillID:
-		return s.finalLevel(s.best(entity, replacements, requirePoints, excludes))
+		best := s.best(entity, replacements, requirePoints, excludes)
+		if best != fxp.Min {
+			best -= less
+		}
+		return s.finalLevel(best)
 	default:
 		return s.SkillLevelFast(entity, replacements, requirePoints, excludes, ruleOf20)
 	}
@@ -493,11 +503,11 @@ func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[st
 // level is instead computed as they see it, as best computes it, since the recorded one holds what the grant gave (see
 // Entity.JudgingPrereqsOf), at base, as it is there, since the recorded one holds what alters current values alone
 // (see Entity.atBaseWhile), and while a pool's base or thresholds are found, as they see it, since the recorded one
-// holds what the trait bonuses those thresholds hold add (see Entity.thresholdTraitBonusesLeftOut).
+// holds what the features those thresholds hold add (see Entity.thresholdFeaturesLeftOut).
 func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best *Skill, level fxp.Int) {
 	level = fxp.Min
 	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.atBase > 0 ||
-		entity.thresholdTraitBonusesLeftOut())
+		entity.thresholdFeaturesLeftOut())
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
@@ -521,11 +531,11 @@ func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]str
 // an editor previews a skill's level, since the recorded ones are those of the skill as it is on the sheet rather
 // than as edited, and of the skills resting on it (see Entity.matchLevelCapsAs), at base, since they hold what alters
 // current values alone (see Entity.atBaseWhile), and while a pool's base or thresholds are found, since they hold what
-// the trait bonuses those thresholds hold add (see Entity.thresholdTraitBonusesLeftOut).
+// the features those thresholds hold add (see Entity.thresholdFeaturesLeftOut).
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.previewingSkillEdit() ||
-		entity.atBase > 0 || entity.thresholdTraitBonusesLeftOut())
+		entity.atBase > 0 || entity.thresholdFeaturesLeftOut())
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
@@ -621,6 +631,19 @@ func (s *SkillDefault) fastLevelFromSkill(entity *Entity, level fxp.Int) fxp.Int
 		level = entity.defenseLevel(t, level)
 	}
 	return s.finalLevel(level)
+}
+
+// attackLevelFromSkill is fastLevelFromSkill as a weapon ranks its defaults for its attack skill (see
+// Weapon.SkillLevel): a parry- or block-type default is turned into its defense level without the multipliers the
+// defense takes, which alter the defense rather than the skill, so that, halved, it stays out of the way of the
+// defaults the weapon attacks with.
+func (s *SkillDefault) attackLevelFromSkill(entity *Entity, level fxp.Int) fxp.Int {
+	if t := s.Type(); level != fxp.Min && (t == ParryID || t == BlockID) {
+		adj := entity.defenseAdjustment(t)
+		adj.factors = nil
+		return s.finalLevel(adj.apply(defenseLevelFromSkill(level), true))
+	}
+	return s.fastLevelFromSkill(entity, level)
 }
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {

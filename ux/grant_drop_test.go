@@ -19,11 +19,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -1063,6 +1065,40 @@ func TestGrantDestinationsAreToldApart(t *testing.T) {
 	c.True(slices.ContainsFunc(names, func(s string) bool {
 		return strings.HasPrefix(s, "Mod (") && strings.Contains(s, "Schooling")
 	}), "a modifier's editor names the trait it was opened from: %v", names)
+}
+
+// TestAddAsGrantReachesThresholdFeatures checks that Add as Grant offers the features of a pool threshold in the
+// attribute settings, which take grants dropped on them, naming its pool, and adds the grant there.
+func TestAddAsGrantReachesThresholdFeatures(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var d *attributeSettingsDockable
+	var names []string
+	screen.Do(func() {
+		defs := testAttrDefs("st", "hp")
+		def := defs.Set["hp"]
+		def.Type = attribute.Pool
+		def.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
+		d = newAttributeSettingsDockable(nil, defs)
+		d.TabTitle = "Attributes"
+		d.TabIcon = svg.Attributes
+		d.show()
+		items := collectGrantItems(gurps.LibraryFile{}, []*gurps.Trait{newGrantTestTrait("Night Vision", 0)})
+		for _, one := range grantDestinations(items) {
+			names = append(names, one.String())
+		}
+		addAsGrant(feature.GrantTrait, items)
+	})
+	c.Equal([]string{"Reeling (HP, Attributes)"}, names, "the threshold is offered, named with its pool")
+	var granted []string
+	screen.Do(func() {
+		for _, f := range d.model.Set["hp"].Thresholds[0].Features {
+			if g, ok := f.(*gurps.Grant); ok {
+				granted = append(granted, g.ItemName())
+			}
+		}
+	})
+	c.Equal([]string{"Night Vision"}, granted, "the grant is added to the threshold")
 }
 
 // TestGrantNotAddedToItsOwnEditor checks that an item is never added as a grant to the editor of that same item, since

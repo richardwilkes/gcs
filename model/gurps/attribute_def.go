@@ -114,10 +114,10 @@ func (a *AttributeDef) SetID(value string) {
 	a.DefID = SanitizeID(value, false, ReservedIDs...)
 }
 
-// nameOrID returns the name, or the ID while the name is empty, as it is for a definition just added in the attribute
-// settings, so that what names the attribute is never empty.
+// nameOrID returns the name, or while that is empty, as it is for a definition just added in the attribute settings,
+// the full name, or while both are, the ID, so that what names the attribute is never empty.
 func (a *AttributeDef) nameOrID() string {
-	return cmp.Or(a.Name, a.DefID)
+	return cmp.Or(a.Name, a.FullName, a.DefID)
 }
 
 // ResolveFullName returns the full name, using the short name if full name is empty.
@@ -139,10 +139,10 @@ func (a *AttributeDef) CombinedName() string {
 	return a.FullName + " (" + a.Name + ")"
 }
 
-// String implements fmt.Stringer, naming the attribute as tooltips name the pool whose threshold a bonus comes from: by
-// its name, its full name or, while both are empty, its ID, as nameOrID does.
+// String implements fmt.Stringer, naming the attribute as tooltips name the pool whose threshold a bonus comes from;
+// see nameOrID.
 func (a *AttributeDef) String() string {
-	return cmp.Or(a.Name, a.FullName, a.DefID)
+	return a.nameOrID()
 }
 
 // IsSeparator returns true if this is actually just a separator.
@@ -216,8 +216,8 @@ func (a *AttributeDef) AllowsDecimal() bool {
 	return a.Type == attribute.Decimal || a.Type == attribute.DecimalRef
 }
 
-// BaseValue returns the resolved base value. That of a pool is found with the levels of the traits leaving out the
-// trait bonuses the pools' thresholds hold, which never alter a pool; see Entity.untouchedByThresholds.
+// BaseValue returns the resolved base value. That of a pool is found without the features the pools' thresholds hold,
+// which never alter a pool; see Entity.untouchedByThresholds.
 func (a *AttributeDef) BaseValue(attr *Attribute) fxp.Int {
 	if a.IsSeparator() {
 		return 0

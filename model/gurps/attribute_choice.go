@@ -28,7 +28,8 @@ const (
 	ParryFlag
 	BlockFlag
 	SkillFlag
-	// MoveFlag adds a choice standing in for Move when the definitions have no move attribute; see Entity.Move.
+	// MoveFlag adds a choice standing in for Move when no move attribute is listed; see AttributeChoicesFor and
+	// Entity.Move.
 	MoveFlag
 	// NoPoolsFlag leaves out the pools, which the bonuses of their thresholds can't alter.
 	NoPoolsFlag
@@ -48,8 +49,9 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 
 // AttributeChoicesFor returns the attribute choices for the given definitions, along with the choice matching
 // currentKey; if none matches, an "unrecognized key" choice for it is appended. A defined dodge attribute is listed
-// only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is defined. Neither
-// stand-in is added for a dodge or move attribute that NoPoolsFlag leaves out as a pool.
+// only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is listed. A stand-in
+// for Dodge or Move takes the place of a dodge or move attribute that NoPoolsFlag leaves out as a pool, since the Dodge
+// or Move the sheet works out from such a pool takes the bonuses of the thresholds; see Entity.Dodge and Entity.Move.
 func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix += " "
@@ -65,17 +67,17 @@ func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlag
 	addedDodge := false
 	addedMove := false
 	for _, def := range list {
-		switch def.DefID {
-		case DodgeID:
-			if flags&DodgeFlag == 0 {
-				continue
-			}
-			addedDodge = true
-		case MoveID:
-			addedMove = true
+		if def.DefID == DodgeID && flags&DodgeFlag == 0 {
+			continue
 		}
 		if flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
 			continue
+		}
+		switch def.DefID {
+		case DodgeID:
+			addedDodge = true
+		case MoveID:
+			addedMove = true
 		}
 		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.nameOrID()})
 	}

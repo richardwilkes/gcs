@@ -181,16 +181,17 @@ type Entity struct {
 	scriptsForPrereqs int
 	// judgedDefaults holds the defaults picked for the skills, by skill, excludes and view of the sheet, as the
 	// prerequisites being judged see the sheet, while the item judged carries a grant, as an editor previews a skill's
-	// level, and while a pool's base or thresholds are found without the trait bonuses those thresholds hold, until
-	// that ends (see untouchedByThresholdsWhile); see Skill.defaultExcept and judgedDefaultKey.
+	// level, and while a pool's base or thresholds are found without the features those thresholds hold, until that
+	// ends (see untouchedByThresholdsWhile); see Skill.defaultExcept and judgedDefaultKey.
 	judgedDefaults map[judgedDefaultKey]*SkillDefault
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
 	judgedThresholds map[*Attribute]*PoolThreshold
 	// judgedFeatures holds the feature lists the bonuses are read from as the prerequisites being judged see the sheet,
 	// while the item judged carries a grant, by view: without the features of any threshold, for while the thresholds
-	// are found, with those of the thresholds they see, and without those again, nor those of the items the thresholds'
-	// grants alone put in effect, for a computation at base; see bonusFeatures.
+	// are found, with those of the thresholds they see, without those again but with those of the items their grants
+	// put in effect, for the view untouchedByThresholdsWhile enters, and without those of the items the thresholds'
+	// grants alone put in effect either, for a computation at base; see bonusFeatures.
 	judgedFeatures [featureViews]*features
 	// judgedThresholdGrants holds the grants of the pools' thresholds that are in effect as the prerequisites being
 	// judged see the thresholds, while the item judged carries a grant and they see one of those grants in effect where
@@ -204,9 +205,8 @@ type Entity struct {
 	judgedGrantStates map[judgedGrantStateKey]*grantState
 	// judgedPoints holds the points the level sets of grants give the skills and spells, by level set and view of the
 	// sheet, priced afresh as the prerequisites being judged see the sheet, while the item judged carries a grant, as
-	// an editor previews a skill's level, and while a pool's base or thresholds are found without the trait bonuses
-	// those thresholds hold, until that ends (see untouchedByThresholdsWhile); see grantReprice.pointsFor and
-	// repriceKey.
+	// an editor previews a skill's level, and while a pool's base or thresholds are found without the features those
+	// thresholds hold, until that ends (see untouchedByThresholdsWhile); see grantReprice.pointsFor and repriceKey.
 	judgedPoints map[repriceKey]fxp.Int
 	// levelCapsResolving holds the skills and spells whose level caps are being resolved, whose levels a reference is
 	// computing, or for which the level of the skill they rest on is being computed, while they are, so that no cap
@@ -253,20 +253,24 @@ type Entity struct {
 	baseThresholdGrantsFound bool
 	baseGrantStates          map[baseGrantStateKey]*grantState
 	// baseLevelReads holds the skills and spells whose levels Skill.CurrentLevel and Spell.CurrentLevel are computing
-	// at base, or while a pool's base or thresholds are found without the trait bonuses those thresholds hold. It
-	// guards the call stack, so discardCaches leaves it alone.
+	// at base, or while a pool's base or thresholds are found without the features those thresholds hold. It guards
+	// the call stack, so discardCaches leaves it alone.
 	baseLevelReads map[LeveledOwner]bool
 	// untouchedByThresholds is set while the bonuses given a pool or the size modifier, which the pools' thresholds
-	// never alter, are totalled, and while the scripts giving a pool its base and its thresholds run, so that the
-	// levels of the traits that anything found meanwhile reads, such as the per-level amounts of those bonuses or of
-	// the bonuses of the attributes those scripts read, leave out the trait bonuses those thresholds hold; see
-	// untouchedByThresholdsWhile, thresholdTraitBonusesLeftOut and TraitBonusFor. It guards the call stack, so
-	// discardCaches leaves it alone.
+	// never alter, are totalled, and while the scripts giving a pool its base and its thresholds run, so that anything
+	// found meanwhile, such as the levels the per-level amounts of those bonuses read or the values those scripts read,
+	// is found without the features of those thresholds; see untouchedByThresholdsWhile and thresholdFeaturesLeftOut.
+	// untouchedFeatures holds the feature lists that view reads, once found while in it; see untouchedLists. Both guard
+	// the call stack, so discardCaches leaves them alone.
 	untouchedByThresholds bool
-	// thresholdsBeingFound is set while processThresholdFeatures finds the current thresholds of the pools and collects
-	// their features into the lists the bonuses are read from, which lack some or all of those features meanwhile, so
-	// that what the scripts giving a pool its base and its thresholds find may differ from what the sheet has once they
-	// are in place; see thresholdTraitBonusesLeftOut. It guards the call stack, so discardCaches leaves it alone.
+	untouchedFeatures     *features
+	// untouchedAdjustments holds what the items' multipliers do to the sheet's values, without what the pools'
+	// thresholds do, as processThresholdFeatures recorded it before finding those; see sheetAdjustment.
+	untouchedAdjustments map[adjustmentKey]currentAdjustment
+	// thresholdsBeingFound is set while processThresholdFeatures totals the bonuses of the items and finds the current
+	// thresholds of the pools, collecting their features into the lists the bonuses are read from, which lack some or
+	// all of those features meanwhile, while the values the previous pass recorded hold what those it found did; see
+	// thresholdFeaturesLeftOut. It guards the call stack, so discardCaches leaves it alone.
 	thresholdsBeingFound bool
 }
 
@@ -997,6 +1001,7 @@ func (e *Entity) EnsureAttachments() {
 func (e *Entity) processFeatures() {
 	e.features = features{}
 	e.currentAdjustments = nil
+	e.untouchedAdjustments = nil
 	e.forEachActiveFeatureList(func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features) {
 		for _, f := range list {
 			e.processFeature(&e.features, owner, mod, f, leveled)
@@ -1044,7 +1049,6 @@ func (e *Entity) processFeatures() {
 	for _, t := range judgedOnly {
 		e.collectMerchantPenalty(&e.features, t)
 	}
-	e.totalBonuses()
 	e.processThresholdFeatures()
 }
 
@@ -1224,14 +1228,14 @@ func (e *Entity) processFeature(into *features, owner, subOwner fmt.Stringer, f 
 // the bonus the items in effect give it, along with what the current thresholds and multipliers do to it. While the
 // prerequisites of an item carrying a grant are judged, it is what they see, without the bonuses from what the grant
 // put on the sheet (see JudgingPrereqsOf), in a computation at base, what it sees (see atBaseWhile), and while a pool's
-// base or thresholds are found, what they see (see thresholdTraitBonusesLeftOut).
+// base or thresholds are found, what they see (see thresholdFeaturesLeftOut).
 func (e *Entity) defenseAdjustment(defenseID string) currentAdjustment {
 	if defenseID != ParryID && defenseID != BlockID {
 		return currentAdjustment{}
 	}
 	adj := e.adjustmentFor(defenseID, stlimit.None)
 	switch {
-	case e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut():
+	case e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut():
 		adj.bonus += e.AttributeBonusFor(defenseID, stlimit.None, nil).Floor()
 	case defenseID == ParryID:
 		adj.bonus += e.ParryBonus
@@ -1696,7 +1700,7 @@ func (e *Entity) strengthFor(attrID string, limitation stlimit.Option, amounts b
 // given ST under it do is applied; see currentAdjustment. With amounts unset, the multipliers alone are applied. With
 // forPrereqs set, those bonuses are the ones the prerequisites being judged see (see JudgingPrereqsOf), in a
 // computation at base, the ones it sees (see atBaseWhile), and while a pool's base or thresholds are found, those
-// without what the trait bonuses those thresholds hold add (see thresholdTraitBonusesLeftOut).
+// without what the features those thresholds hold add (see thresholdFeaturesLeftOut).
 func (e *Entity) limitedStrength(value fxp.Int, limitation stlimit.Option, forPrereqs, amounts bool) fxp.Int {
 	var adj currentAdjustment
 	if forPrereqs {
@@ -1708,7 +1712,7 @@ func (e *Entity) limitedStrength(value fxp.Int, limitation stlimit.Option, forPr
 	switch {
 	case !amounts:
 		adj.bonus = 0
-	case forPrereqs || e.atBase > 0 || e.thresholdTraitBonusesLeftOut():
+	case forPrereqs || e.atBase > 0 || e.thresholdFeaturesLeftOut():
 		bonus = e.AttributeBonusFor(StrengthID, limitation, nil).Floor()
 	case limitation == stlimit.StrikingOnly:
 		bonus = e.StrikingStrengthBonus
@@ -1811,8 +1815,8 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 // AttributeBonusFor returns the total of the amounts the items in effect add to the given attribute, which make up its
 // maximum, as the prerequisites being judged see them, if any; see bonusFeatures and bonusExcluded. Multipliers and the
 // bonuses of the pools' thresholds alter only its current value and are left out; see currentAdjustmentFor. For a pool
-// or the size modifier, which those thresholds never alter, a per-level amount reads the level of a trait without the
-// trait bonuses they hold, as does everything a pool's base and thresholds read, so that a pool's threshold never feeds
+// or the size modifier, which those thresholds never alter, a per-level amount reads the level of its owner without
+// the features they hold, as does everything a pool's base and thresholds read, so that a pool's threshold never feeds
 // back into the pool; see untouchedByThresholdsWhile.
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if def := e.ResolveAttributeDef(attributeID); attributeID == SizeModifierID ||
@@ -2046,13 +2050,10 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 	return sumSpellBonuses(e, e.bonusFeatures().spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
-// TraitBonusFor returns the total bonus for the matching trait bonuses, leaving out those the pools' thresholds hold
-// while the bonuses given a pool or the size modifier are totalled, or a pool's base or thresholds are found; see
-// untouchedByThresholds.
+// TraitBonusFor returns the total bonus for the matching trait bonuses.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	return sumBonuses(e, e.bonusFeatures().traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
-		return (!e.untouchedByThresholds || !ownedByThreshold(bonus.Owner())) &&
-			bonus.NameCriteria.Matches(replacements, name) &&
+		return bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})
 }
@@ -2105,11 +2106,11 @@ func (e *Entity) hasWeaponBonusesBySkill() bool {
 // fxp.Min when there are none. While the prerequisites of an item carrying a grant are judged, each is computed as they
 // see it, since the recorded one holds what the grant gave (see JudgingPrereqsOf), at base, as it is there, since the
 // recorded one holds what alters current values alone (see atBaseWhile), and while a pool's base or thresholds are
-// found, as they see it, since the recorded one holds what the trait bonuses those thresholds hold add (see
-// thresholdTraitBonusesLeftOut).
+// found, as they see it, since the recorded one holds what the features those thresholds hold add (see
+// thresholdFeaturesLeftOut).
 func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	rsl := fxp.Min
-	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut()
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut()
 	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
 		level := sk.LevelData.RelativeLevel
 		if afresh {
@@ -2151,18 +2152,22 @@ func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string,
 }
 
 // Move returns the current Move value for the given Encumbrance: the current value of the sheet's move attribute,
-// whose base reads Basic Move's current value as "$basic_move" (see Attribute.Current), or, without one, the current
-// Basic Move (never below 0) plus MoveBonus with what the current thresholds and multipliers do to Move applied (see
-// currentAdjustment), then reduced for the encumbrance, which leaves at least 1 while the move is above 0. In a
-// computation at base, the bonus is the one it sees, and while a pool's base or thresholds are found, the one they see;
-// see atBaseWhile and thresholdTraitBonusesLeftOut.
+// whose base reads Basic Move's current value as "$basic_move" (see Attribute.Current), with what the current
+// thresholds and multipliers do to Move applied when that is a pool, which takes none of them itself, or, without one,
+// the current Basic Move (never below 0) plus MoveBonus with those applied (see currentAdjustment), then reduced for
+// the encumbrance, which leaves at least 1 while the move is above 0. In a computation at base, the bonus is the one it
+// sees, and while a pool's base or thresholds are found, the one they see; see atBaseWhile and
+// thresholdFeaturesLeftOut.
 func (e *Entity) Move(enc encumbrance.Level) int {
 	var initialMove fxp.Int
-	if e.ResolveAttribute(MoveID) != nil {
+	if attr := e.ResolveAttribute(MoveID); attr != nil {
 		initialMove = e.ResolveAttributeCurrent(MoveID)
+		if def := attr.AttributeDef(); def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
+			initialMove = e.sheetAdjustment(MoveID, stlimit.None).apply(initialMove, true)
+		}
 	} else {
 		bonus := e.MoveBonus
-		if e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
+		if e.atBase > 0 || e.thresholdFeaturesLeftOut() {
 			bonus = e.AttributeBonusFor(MoveID, stlimit.None, nil).Floor()
 		}
 		initialMove = e.sheetAdjustment(MoveID, stlimit.None).apply((e.ResolveAttributeCurrent(BasicMoveID).Max(0) +
@@ -2304,24 +2309,27 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 }
 
 // Dodge returns the current Dodge value for the given Encumbrance: the current value of the sheet's dodge attribute,
-// whose base reads Basic Speed's current value as "$basic_speed" (see Attribute.Current), or, without one, the current
-// Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with what the current thresholds and
-// multipliers do to Dodge applied (see currentAdjustment), then less the encumbrance penalty, but never below 1. While
-// the prerequisites of an item carrying a grant are judged, it is the Dodge they see, without the bonuses from what the
-// grant put on the sheet and with the thresholds as they see them (see JudgingPrereqsOf), in a computation at base,
-// the Dodge it sees (see atBaseWhile), and while a pool's base or thresholds are found, the Dodge they see (see
-// thresholdTraitBonusesLeftOut).
+// whose base reads Basic Speed's current value as "$basic_speed" (see Attribute.Current), with what the current
+// thresholds and multipliers do to Dodge applied when that is a pool, which takes none of them itself, or, without one,
+// the current Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with those applied (see
+// currentAdjustment), then less the encumbrance penalty, but never below 1. While the prerequisites of an item carrying
+// a grant are judged, it is the Dodge they see, without the bonuses from what the grant put on the sheet and with the
+// thresholds as they see them (see JudgingPrereqsOf), in a computation at base, the Dodge it sees (see atBaseWhile),
+// and while a pool's base or thresholds are found, the Dodge they see (see thresholdFeaturesLeftOut).
 func (e *Entity) Dodge(enc encumbrance.Level) int {
 	current, bonus := e.ResolveAttributeCurrent, e.DodgeBonus
 	if e.carriesGrant(e.judging) {
 		current, bonus = e.resolveAttributeCurrentForPrereqs, e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
-	} else if e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
+	} else if e.atBase > 0 || e.thresholdFeaturesLeftOut() {
 		bonus = e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
 	}
 	var dodge fxp.Int
-	if e.ResolveAttribute(DodgeID) != nil {
+	if attr := e.ResolveAttribute(DodgeID); attr != nil {
 		// The dodge attribute carries the bonuses to Dodge itself.
 		dodge = current(DodgeID)
+		if def := attr.AttributeDef(); def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
+			dodge = e.adjustmentFor(DodgeID, stlimit.None).apply(dodge, true)
+		}
 	} else {
 		dodge = e.adjustmentFor(DodgeID, stlimit.None).apply((current(BasicSpeedID).Max(0) + fxp.Three + bonus).Floor(),
 			true)
@@ -2332,9 +2340,9 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 // EncumbranceLevel returns the current Encumbrance level. While the prerequisites of an item carrying a grant are
 // judged, it is the level they see, from the Basic Lift they see (see BasicLift), at base, the level from the Basic
 // Lift there (see atBaseWhile), and while a pool's base or thresholds are found, the level from the Basic Lift they
-// see (see thresholdTraitBonusesLeftOut), none of which is taken from the cache or kept in it.
+// see (see thresholdFeaturesLeftOut), none of which is taken from the cache or kept in it.
 func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
-	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
+	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut() {
 		return e.encumbranceLevelCarrying(e.WeightCarried(forSkills))
 	}
 	if forSkills {
@@ -2374,13 +2382,13 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 // level derived from it, it is neither taken from the cache nor kept in it while the prerequisites of an item carrying
 // a grant are judged, as a weight script run for a script prerequisite then sees the sheet as those prerequisites do
 // (see resolveScript), nor at base, as a weight script then sees the sheet there (see atBaseWhile), nor while a pool's
-// base or thresholds are found, as a weight script then sees the sheet as they do (see thresholdTraitBonusesLeftOut).
+// base or thresholds are found, as a weight script then sees the sheet as they do (see thresholdFeaturesLeftOut).
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	i := 0
 	if forSkills {
 		i = 1
 	}
-	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut()
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut()
 	if !afresh && e.weightCarriedCached[i] {
 		return e.weightCarriedCache[i]
 	}
@@ -2441,10 +2449,10 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 // BasicLift returns the entity's Basic Lift. While the prerequisites of an item carrying a grant are judged, it is the
 // Basic Lift they see, from the lifting ST without the bonuses from what the grant put on the sheet (see
 // JudgingPrereqsOf), at base, the one from the lifting ST there (see atBaseWhile), and while a pool's base or
-// thresholds are found, the one from the lifting ST they see (see thresholdTraitBonusesLeftOut), none of which is
+// thresholds are found, the one from the lifting ST they see (see thresholdFeaturesLeftOut), none of which is
 // taken from the cache or kept in it.
 func (e *Entity) BasicLift() fxp.Weight {
-	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
+	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut() {
 		return e.BasicLiftForST(e.LiftingStrength())
 	}
 	if e.basicLiftCache != -1 {
@@ -2526,10 +2534,9 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
 	// it leaves out what the attribute has at any other time (see attributeForPrereqs and ScriptPrereq.Evaluate), nor
 	// is one read at base, which leaves out what alters its current value alone (see atBaseWhile), nor one read while
-	// a pool's base or thresholds are found without the trait bonuses those thresholds hold (see
-	// thresholdTraitBonusesLeftOut).
+	// a pool's base or thresholds are found without the features those thresholds hold (see thresholdFeaturesLeftOut).
 	forPrereqs := e.scriptsForPrereqs > 0
-	cacheable := !forPrereqs && e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()
+	cacheable := !forPrereqs && e.atBase == 0 && !e.thresholdFeaturesLeftOut()
 	if v, ok := e.variableCache[variableName]; ok && cacheable {
 		return v
 	}
@@ -2580,7 +2587,8 @@ func (e *Entity) ResolveAttributeDef(attrID string) *AttributeDef {
 	return nil
 }
 
-// ResolveAttributeName resolves the given attribute ID to its name, or to the ID when it has none, or <unknown>.
+// ResolveAttributeName resolves the given attribute ID to its name, or to its full name or ID when it has none (see
+// AttributeDef.nameOrID), or <unknown>.
 func (e *Entity) ResolveAttributeName(attrID string) string {
 	if def := e.ResolveAttributeDef(attrID); def != nil {
 		return def.nameOrID()

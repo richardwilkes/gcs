@@ -350,7 +350,7 @@ func newDefenseTestWeaponWithBonuses(c check.Checker, parryBonus, blockBonus int
 // TestWeaponSkillLevelIgnoresDefenseTypeDefaults verifies that a parry- or block-type weapon default does not become
 // the weapon's attack skill. Such a default is there for the defenses (the Tonfa in the High Tech library carries
 // "Brawling Parry" and "Karate Parry" alongside its real attack defaults), so it stays scored by its halved defense
-// level rather than by the level of the skill it names.
+// level rather than by the level of the skill it names, without the multipliers the defense takes.
 func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
 	c := check.New(t)
 	w := newDefenseTestWeapon(c)
@@ -370,6 +370,17 @@ func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
 
 	// The parry, meanwhile, is the better of Tonfa's (13/2 + 3 + 1) and Cloak's (14/2 + 3 + 1).
 	c.Equal("11", w.ResolvedParry(nil).String(), "the parry-type default still feeds the parry")
+
+	doubled := gurps.NewTrait(e, nil, false)
+	doubled.Name = "Doubled Parry"
+	multiplier := gurps.NewAttributeBonus(gurps.ParryID)
+	multiplier.Multiply = true
+	multiplier.Amount = fxp.Two
+	doubled.Features = gurps.Features{multiplier}
+	e.Traits = append(e.Traits, doubled)
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(13), w.SkillLevel(nil), "a multiplied parry must not take over the attack skill either")
+	c.Equal("22", w.ResolvedParry(nil).String(), "while the parry is multiplied")
 }
 
 // newDefenseTestDefault creates a skill default of the given type that matches the "Cloak" skill created by

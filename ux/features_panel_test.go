@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
@@ -1428,6 +1429,64 @@ func TestFeaturesPanelItemAttributeBonusOffersMove(t *testing.T) {
 	p.setView(rowsView{open: "0"})
 	if popup := featuresPopup[*gurps.AttributeChoice](c, p, "0:attribute"); popup != nil {
 		c.Equal("to Move", popup.Text(), "the bonus to Move shows as such")
+	}
+}
+
+// TestFeaturesPanelCostReductionOffersDefinedAttributes checks that a cost reduction offers only the attributes the
+// sheet defines, a dodge attribute among them when it defines one, since only those have a point cost to reduce, that a
+// new one starts out on the first of them when the attribute last chosen isn't one, and that one to something else
+// shows it by name until another is chosen.
+func TestFeaturesPanelCostReductionOffersDefinedAttributes(t *testing.T) {
+	uxtest.SwapForTest(t, &lastAttributeIDUsed, gurps.MoveID)
+	for _, one := range []struct {
+		name        string
+		defineDodge bool
+	}{
+		{name: "no dodge attribute"},
+		{name: "a dodge attribute", defineDodge: true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			entity := gurps.NewEntity()
+			defs := entity.SheetSettings.Attributes
+			if one.defineDodge {
+				defs.Set[gurps.DodgeID] = &gurps.AttributeDef{
+					DefID: gurps.DodgeID, Type: attribute.Integer, Name: "Dodge", Base: "8", Order: len(defs.Set),
+				}
+			}
+			_, defined := defs.Set[gurps.MoveID]
+			c.False(defined, "precondition: the sheet defines no move attribute")
+			features := gurps.Features{
+				gurps.NewCostReduction(gurps.StrengthID),
+				gurps.NewCostReduction(gurps.SizeModifierID),
+			}
+			p := newFeaturesPanel(entity, gurps.NewTrait(entity, nil, false), &features, false)
+			p.setView(rowsView{open: "0"})
+			if popup := featuresPopup[*gurps.AttributeChoice](c, p, "0:attribute"); popup != nil {
+				var offered []string
+				for i := range popup.ItemCount() {
+					if item, ok := popup.ItemAt(i); ok {
+						offered = append(offered, item.Key)
+					}
+				}
+				for _, id := range []string{gurps.StrengthID, gurps.HitPointsID} {
+					c.True(slices.Contains(offered, id), "%s is offered: %v", id, offered)
+				}
+				c.Equal(one.defineDodge, slices.Contains(offered, gurps.DodgeID), "Dodge is offered: %v", offered)
+				for _, id := range []string{gurps.SizeModifierID, gurps.MoveID, gurps.ParryID, gurps.BlockID} {
+					c.False(slices.Contains(offered, id), "%s isn't offered: %v", id, offered)
+				}
+			}
+			p.setView(rowsView{open: "1"})
+			if popup := featuresPopup[*gurps.AttributeChoice](c, p, "1:attribute"); popup != nil {
+				c.Equal("Size Modifier", popup.Text(), "a reduction of the size modifier shows it by name")
+			}
+			reduction, ok := p.createFeatureForType(feature.CostReduction).(*gurps.CostReduction)
+			c.True(ok, "a cost reduction is created")
+			if ok {
+				c.Equal(gurps.StrengthID, reduction.Attribute, "with Move last chosen, it starts out on the first offered")
+			}
+		})
 	}
 }
 

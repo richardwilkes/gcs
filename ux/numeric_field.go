@@ -32,7 +32,8 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	Format        func(T) string
 	// DisplayFormat, if not nil, provides the text to show while the field does not have the keyboard focus. That text
 	// is never parsed back into the value, since it may be a rounded, lossy rendering of it: the moment the field gains
-	// the focus, or is handed new text by SetText or an assistive technology, Format's exact rendering replaces it.
+	// the focus, or is handed new text by SetText or a new value by an assistive technology, Format's exact rendering
+	// replaces it.
 	DisplayFormat      func(T) string
 	extract            func(s string) (T, error)
 	validationTooltip  *unison.Panel
@@ -163,24 +164,44 @@ func (f *NumericField[T]) SetText(text string) {
 // does so as SetText does, with the exact text restored first, so that the "before" state the resulting modification
 // records for undo holds the exact value. While display text is showing, a range of it means nothing in the exact text
 // unless the two are the same, so replacing part of it is otherwise refused, and replacing all of it replaces all of
-// the exact text.
+// the exact text. Without the focus, text that would leave the value as it is changes nothing, since the field is
+// synced to show its value only once the value changes, and text the field can't parse is refused, since mustExtract
+// would take it for zero, clamped to the range, which the sync that follows would show in place of the invalid text.
 func (f *NumericField[T]) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
-	switch req.Action {
-	case accessibility.SetValue:
-		f.restoreExactText()
-	case accessibility.ReplaceText:
-		if f.showingDisplayText {
+	if req.Action != accessibility.SetValue && req.Action != accessibility.ReplaceText {
+		return f.Field.PerformAccessibilityAction(req)
+	}
+	exact := f.Text()
+	if f.showingDisplayText {
+		exact = f.Format(f.last)
+		if req.Action == accessibility.ReplaceText {
 			shown := f.Text()
 			whole := req.Start <= 0 && req.End >= len([]rune(shown))
-			if !whole && shown != f.Format(f.last) {
+			if !whole && shown != exact {
 				return false
 			}
-			f.restoreExactText()
 			if whole {
-				req.Start, req.End = 0, len([]rune(f.Text()))
+				req.Start, req.End = 0, len([]rune(exact))
 			}
 		}
 	}
+	if !f.hasFocus {
+		text := req.Value
+		if req.Action == accessibility.ReplaceText {
+			runes := []rune(exact)
+			start := min(max(req.Start, 0), len(runes))
+			end := min(max(req.End, start), len(runes))
+			text = string(runes[:start]) + req.Value + string(runes[end:])
+		}
+		text = strings.TrimSpace(text)
+		if _, err := f.extract(text); err != nil || text == "-" || text == "+" {
+			return false
+		}
+		if f.mustExtract(text) == f.last {
+			return true
+		}
+	}
+	f.restoreExactText()
 	return f.Field.PerformAccessibilityAction(req)
 }
 

@@ -309,11 +309,11 @@ func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
 }
 
 // TestAttributeBonusTooltipThresholdSources verifies that the bonuses of a pool's current threshold are listed after
-// the items' in each section, named for the threshold and its pool, that a pool lists none, that a bonus the threshold
-// ignores, such as one per level, is not listed, and that the tooltip of a value figured from the current values of
-// attributes, such as lifting ST, Move, Dodge, an attribute standing in for one or one whose base reads them as
-// "$id.current", lists after its own bonuses those altering only the current value of each such attribute, under its
-// name, and names none whose maximum alone it reads.
+// the items' in each section, named for the threshold, even one with no state, and its pool, that a pool lists none,
+// that a bonus the threshold ignores, such as one per level, is not listed, and that the tooltip of a value figured
+// from the current values of attributes, such as lifting ST, Move, Dodge, an attribute standing in for one or one whose
+// base reads them as "$id.current", lists after its own bonuses those altering only the current value of each such
+// attribute, under its name, and names none whose maximum alone it reads.
 func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -373,4 +373,8 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		c.Equal(one.want, e.Attributes.Set[StrikingStrengthID].BonusTooltip(), "a stand-in whose base reads ST as %s",
 			one.base)
 	}
+	tired.State = ""
+	e.Recalculate()
+	c.Equal("Includes modifiers from:\nUnnamed Threshold (FP) [-1]\nFor striking only:\nPower Gauntlets [+1]\nFor lifting only:\nLifting Harness [+3]\nUnnamed Threshold (FP) [×0.5]",
+		st.BonusTooltip(), "a threshold with no state is named nonetheless")
 }

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/zeebo/xxh3"
@@ -222,8 +224,8 @@ func (p *PoolThreshold) Clone() *PoolThreshold {
 	return &clone
 }
 
-// Threshold returns the threshold value for the given attribute, found with the levels of the traits leaving out the
-// trait bonuses the pools' thresholds hold, as the pool's base is; see AttributeDef.BaseValue.
+// Threshold returns the threshold value for the given attribute, found without the features the pools' thresholds
+// hold, as the pool's base is; see AttributeDef.BaseValue.
 func (p *PoolThreshold) Threshold(attr *Attribute) fxp.Int {
 	defer attr.Entity.untouchedByThresholdsWhile()()
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), p.Value)
@@ -245,9 +247,10 @@ func (p *PoolThreshold) Hash(h hash.Hash) {
 
 // ThresholdIgnores returns true if the feature does nothing as one of the features of a pool threshold belonging to the
 // definitions: one of a type a threshold may not hold; an amount per level, since a threshold has no level; an
-// attribute bonus to an attribute ThresholdAttributeFlags doesn't give, such as a pool or the size modifier; or a
-// bonus to this weapon or this armor, since a threshold is no item. A threshold has no switch either, but applies a
-// switchable feature as it does any other.
+// attribute bonus to an attribute ThresholdAttributeFlags doesn't give, such as a pool or the size modifier, unless it
+// is one to ST under a limitation while the definitions hold the attribute standing in for ST under it, which takes it
+// (see Entity.strengthFor); or a bonus to this weapon or this armor, since a threshold is no item. A threshold has no
+// switch either, but applies a switchable feature as it does any other.
 func ThresholdIgnores(defs *AttributeDefs, f Feature) bool {
 	if !f.FeatureType().AllowedInThreshold() {
 		return true
@@ -257,6 +260,13 @@ func ThresholdIgnores(defs *AttributeDefs, f Feature) bool {
 		// A factor isn't given per level, whatever a file says.
 		if one.PerLevel && !one.Multiply {
 			return true
+		}
+		if limitation := one.ActualLimitation(); limitation != stlimit.None {
+			for id, def := range defs.Set {
+				if strengthLimitationOf(id) == limitation && !def.IsSeparator() {
+					return false
+				}
+			}
 		}
 		// With no current key, only the choice standing in for an unrecognized one has none.
 		choices, _ := AttributeChoicesFor(defs, "", ThresholdAttributeFlags, "")
@@ -297,7 +307,9 @@ func DescribeThresholdFeature(f Feature, entity *Entity, replacements map[string
 	return f.Describe(entity, replacements, em)
 }
 
-// String implements fmt.Stringer, naming the threshold by its state, as tooltips name it as the source of its features.
+// String implements fmt.Stringer, naming the threshold by its state, or while that is empty, as it is for a threshold
+// just added in the pool settings, as an unnamed threshold, as tooltips and grants name it as the source of its
+// features.
 func (p *PoolThreshold) String() string {
-	return p.State
+	return cmp.Or(p.State, i18n.Text("Unnamed Threshold"))
 }

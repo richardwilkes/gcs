@@ -588,8 +588,16 @@ func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		// A parry- or block-type default deliberately resolves to its defense level here, not the named skill's level.
 		// Such a default exists to feed the parry or block calculation -- the Tonfa in the High Tech library carries
 		// "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and scoring it by the named skill
-		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way.
-		if level := def.SkillLevelFast(entity, replacements, false, nil, true); level != fxp.Min {
+		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way, as long as the
+		// multipliers the defense takes are left out; see SkillDefault.attackLevelFromSkill.
+		var level fxp.Int
+		if def.SkillBased() {
+			_, skLevel := def.bestFastMatch(entity, replacements, false, nil)
+			level = def.attackLevelFromSkill(entity, skLevel)
+		} else {
+			level = def.SkillLevelFast(entity, replacements, false, nil, true)
+		}
+		if level != fxp.Min {
 			level += adj
 			if best < level {
 				best = level
@@ -1054,7 +1062,7 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
 			// one the winner is resolved to below.
 			sk, skLevel := one.bestFastMatch(entity, replacements, false, nil)
-			if level := one.fastLevelFromSkill(entity, skLevel); best < level {
+			if level := one.attackLevelFromSkill(entity, skLevel); best < level {
 				best = level
 				bestSkill = sk
 			}

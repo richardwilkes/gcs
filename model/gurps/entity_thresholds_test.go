@@ -53,9 +53,31 @@ func TestCurrentAdjustmentApply(t *testing.T) {
 
 // TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST verifies that the factory thresholds halve Move and Dodge,
 // rounding up, once for Tired and once for Reeling, and halve the ST used for lifting alone while Tired, leaving the
-// attributes themselves and the damage alone.
+// attributes themselves and the damage alone, as they do with a set defining Move and Dodge as pools, which they leave
+// alone themselves, or defining a lifting ST and no ST, as the operations they converted from did.
 func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 	c := check.New(t)
+	pools := func(e *Entity) {
+		for _, def := range []*AttributeDef{
+			{DefID: MoveID, Type: attribute.Pool, Name: "Move", Base: "$basic_move"},
+			{DefID: DodgeID, Type: attribute.Pool, Name: "Dodge", Base: "Math.floor($basic_speed) + 3"},
+		} {
+			e.SheetSettings.Attributes.Set[def.DefID] = def
+			e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, len(e.Attributes.Set))
+		}
+	}
+	liftingOnly := func(e *Entity) {
+		delete(e.SheetSettings.Attributes.Set, StrengthID)
+		delete(e.Attributes.Set, StrengthID)
+		e.SheetSettings.Attributes.Set[HitPointsID].Base = "10"
+		e.SheetSettings.Attributes.Set[LiftingStrengthID] = &AttributeDef{
+			DefID: LiftingStrengthID,
+			Type:  attribute.Integer,
+			Name:  "Lifting ST",
+			Base:  "10",
+		}
+		e.Attributes.Set[LiftingStrengthID] = NewAttribute(e, LiftingStrengthID, len(e.Attributes.Set))
+	}
 	for _, one := range []struct {
 		name  string
 		fp    fxp.Int
@@ -63,22 +85,34 @@ func TestEntityFactoryThresholdsHalveMoveDodgeAndLiftingST(t *testing.T) {
 		move  int
 		dodge int
 		lift  int
+		defs  func(e *Entity)
 	}{
-		{"rested and healthy", 0, 0, 5, 8, 20},
-		{"tired", fxp.Seven, 0, 3, 4, 5},
-		{"reeling", 0, fxp.Seven, 3, 4, 20},
-		{"tired and reeling", fxp.Seven, fxp.Seven, 2, 2, 5},
+		{"rested and healthy", 0, 0, 5, 8, 20, nil},
+		{"tired", fxp.Seven, 0, 3, 4, 5, nil},
+		{"reeling", 0, fxp.Seven, 3, 4, 20, nil},
+		{"tired and reeling", fxp.Seven, fxp.Seven, 2, 2, 5, nil},
+		{"tired, with Move and Dodge pools", fxp.Seven, 0, 3, 4, 5, pools},
+		{"tired, with a lifting ST and no ST", fxp.Seven, 0, 3, 4, 5, liftingOnly},
 	} {
 		e := NewEntity()
+		if one.defs != nil {
+			one.defs(e)
+		}
 		e.Attributes.Set[FatiguePointsID].Damage = one.fp
 		e.Attributes.Set[HitPointsID].Damage = one.hp
 		e.Recalculate()
 		c.Equal(one.move, e.Move(encumbrance.No), "%s: Move", one.name)
 		c.Equal(one.dodge, e.Dodge(encumbrance.No), "%s: Dodge", one.name)
 		c.Equal(fxp.WeightFromInteger(one.lift, fxp.Pound), e.BasicLift(), "%s: Basic Lift", one.name)
-		c.Equal(fxp.Ten, e.Attributes.Current(StrengthID), "%s: ST itself", one.name)
 		c.Equal(fxp.Five, e.Attributes.Current(BasicMoveID), "%s: Basic Move itself", one.name)
-		c.Equal(e.SwingFor(10), e.Swing(), "%s: damage", one.name)
+		if e.ResolveAttribute(StrengthID) != nil {
+			c.Equal(fxp.Ten, e.Attributes.Current(StrengthID), "%s: ST itself", one.name)
+			c.Equal(e.SwingFor(10), e.Swing(), "%s: damage", one.name)
+		}
+		if one.defs != nil && e.ResolveAttribute(MoveID) != nil {
+			c.Equal(fxp.Five, e.Attributes.Current(MoveID), "%s: the Move pool itself", one.name)
+			c.Equal(fxp.Eight, e.Attributes.Current(DodgeID), "%s: the Dodge pool itself", one.name)
+		}
 	}
 }
 
@@ -115,8 +149,8 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 		newTraitBonusTo("Lifting", fxp.Two))
 	e.Recalculate()
 	level := brawling.CalculateLevel(nil).Level
-	c.Equal(0, len(e.Reactions()), "no reaction while Tiring")
-	c.Equal(fxp.Twelve, st.Maximum(), "ST from Lifting 2 while Tiring")
+	c.Equal(0, len(e.Reactions()), "no reaction while Rested")
+	c.Equal(fxp.Twelve, st.Maximum(), "ST from Lifting 2 while Rested")
 
 	fp := e.Attributes.Set[FatiguePointsID]
 	fp.Damage = fxp.Nine
@@ -137,12 +171,13 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c.Equal([]string{"from Tired (FP)"}, reactions[0].Sources, "the threshold and its pool are the source")
 }
 
-// TestEntityPoolBaseLeavesOutThresholdTraitBonuses verifies that a pool's base leaves out what the trait bonuses its
-// thresholds hold add to anything it reads that the levels of the traits move, such as the level of a default, Dodge,
-// a defense, a skill or spell or a relative skill level, rather than read the values the sheet recorded with them, so
-// that the pool stays at the threshold whose features apply, and that nothing found for the base then is recorded on
-// the sheet or kept for the next time it is found.
-func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
+// TestEntityPoolBaseLeavesOutThresholdFeatures verifies that a pool's base and the bonuses given it leave out what the
+// features its thresholds hold add to anything they read, such as the levels of the traits and what those move, like
+// the level of a default, Dodge, a defense, a skill or spell or a relative skill level, the level of a skill a skill
+// bonus raises, or an attribute's current value, rather than read the values the sheet recorded with them, so that the
+// pool stays at the threshold whose features apply, and that nothing found for the base then is recorded on the sheet
+// or kept for the next time it is found.
+func TestEntityPoolBaseLeavesOutThresholdFeatures(t *testing.T) {
 	c := check.New(t)
 	perLevel := func(bonus Feature) Feature {
 		switch b := bonus.(type) {
@@ -165,8 +200,8 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		}
 	}
 	// Each setup puts on the sheet what the base reads and returns the per-level feature of Agile, which has levels (1
-	// unless given) and to which Drained holds a trait bonus of held (+4 unless given). evade, when set, is the level
-	// the sheet gives Evade while Drained.
+	// unless given) and to which Drained holds a trait bonus of held (+4 unless given), along with holds, when set.
+	// evade, when set, is the level the sheet gives Evade while Drained.
 	for _, one := range []struct {
 		name   string
 		base   string
@@ -174,6 +209,7 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		levels fxp.Int
 		held   fxp.Int
 		evade  fxp.Int
+		holds  Feature
 		setup  func(e *Entity) Feature
 	}{
 		{
@@ -265,6 +301,51 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 				return perLevel(newSkillBonusTo("Brawling", fxp.One))
 			},
 		},
+		{
+			name: "a skill a skill bonus raises", base: `entity.skillLevel("Meditation")`, want: fxp.Eleven,
+			holds: newSkillBonusTo("Meditation", fxp.Four), setup: func(e *Entity) Feature {
+				addSkill(e, "Meditation", fxp.One)
+				return perLevel(newSkillBonusTo("Meditation", fxp.One))
+			},
+		},
+		{
+			name: "an attribute's current value an attribute bonus raises", base: "$dx.current", want: fxp.Eleven,
+			holds: newAttrBonus(DexterityID, fxp.Four), setup: func(_ *Entity) Feature {
+				return perLevel(newAttrBonus(DexterityID, fxp.One))
+			},
+		},
+		{
+			// Low, which the other pool, listed first, is at, holds the skill bonus.
+			name: "a skill another pool's threshold raises", base: `entity.skillLevel("Meditation")`, want: fxp.Eleven,
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Meditation", fxp.One)
+				low := NewPoolThreshold()
+				low.State = "Low"
+				low.Value = "5"
+				low.Features = Features{newSkillBonusTo("Meditation", fxp.Four)}
+				full := NewPoolThreshold()
+				full.State = "Full"
+				full.Value = "$other"
+				e.SheetSettings.Attributes.Set["other"] = &AttributeDef{
+					DefID:      "other",
+					Type:       attribute.Pool,
+					Name:       "Other",
+					Base:       "10",
+					Thresholds: []*PoolThreshold{low, full},
+				}
+				other := NewAttribute(e, "other", len(e.Attributes.Set))
+				other.Damage = fxp.Six
+				e.Attributes.Set["other"] = other
+				return perLevel(newSkillBonusTo("Meditation", fxp.One))
+			},
+		},
+		{
+			name: "a per-level bonus to the pool of a skill a skill bonus raises", base: "10", want: fxp.FromInteger(21),
+			holds: newSkillBonusTo("Meditation", fxp.Four), setup: func(e *Entity) Feature {
+				addSkill(e, "Meditation", fxp.One).Features = Features{perLevel(newAttrBonus("focus", fxp.One))}
+				return perLevel(newSkillBonusTo("Meditation", fxp.One))
+			},
+		},
 	} {
 		e := NewEntity()
 		agile := addTraitWithFeatures(e, "Agile", one.setup(e))
@@ -275,6 +356,9 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		drained.State = "Drained"
 		drained.Value = "5"
 		drained.Features = Features{newTraitBonusTo("Agile", held)}
+		if one.holds != nil {
+			drained.Features = append(drained.Features, one.holds)
+		}
 		fresh := NewPoolThreshold()
 		fresh.State = "Fresh"
 		fresh.Value = "$focus"
@@ -292,6 +376,7 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		focus.Damage = one.want - fxp.One
 		e.Recalculate()
 		c.Equal("Drained", focus.CurrentThreshold().State, "%s", one.name)
+		c.False(e.Unsettled(), "%s: the sheet settles", one.name)
 		c.Equal(agile.Levels+held, agile.CurrentLevel(), "%s: the trait bonus takes effect while Drained", one.name)
 		c.Equal(one.want, focus.Maximum(), "%s: the base doesn't follow it", one.name)
 		if one.evade != 0 {

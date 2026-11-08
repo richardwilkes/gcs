@@ -169,21 +169,36 @@ func TestAttributeDefThresholdsOnlyForPools(t *testing.T) {
 	}
 }
 
-// TestNamelessAttributeNamedByID pins that a defined attribute with no name, as one just added in the attribute
-// settings has until a name is typed, is named by its ID wherever it is named, rather than by nothing.
-func TestNamelessAttributeNamedByID(t *testing.T) {
+// TestNamelessAttributeNamedByFullNameOrID pins that a defined attribute with no name, as one just added in the
+// attribute settings has until a name is typed, is named by its full name, or while that is empty too, by its ID,
+// wherever it is named, rather than by nothing.
+func TestNamelessAttributeNamedByFullNameOrID(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	def := &AttributeDef{DefID: "a", Type: attribute.Integer, Base: "10", Order: len(e.SheetSettings.Attributes.Set)}
-	e.SheetSettings.Attributes.Set[def.DefID] = def
-	e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, def.Order)
-	c.Equal("a", ResolveAttributeName(e, "a"))
-	c.Equal("a", e.ResolveAttributeName("a"))
-	bonus := NewAttributeBonus("a")
-	c.Equal("+1 to a", bonus.Describe(e, nil, func(s string) string { return s }))
-	_, current := AttributeChoices(e, "to", 0, "a")
-	c.Equal("to a", current.Title)
-	c.Equal("a", def.String(), "as the source of a bonus one of its thresholds gives")
+	for _, one := range []struct {
+		fullName string
+		want     string
+	}{
+		{"", "a"},
+		{"Sanity", "Sanity"},
+	} {
+		e := NewEntity()
+		def := &AttributeDef{
+			DefID:    "a",
+			Type:     attribute.Integer,
+			FullName: one.fullName,
+			Base:     "10",
+			Order:    len(e.SheetSettings.Attributes.Set),
+		}
+		e.SheetSettings.Attributes.Set[def.DefID] = def
+		e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, def.Order)
+		c.Equal(one.want, ResolveAttributeName(e, "a"))
+		c.Equal(one.want, e.ResolveAttributeName("a"))
+		bonus := NewAttributeBonus("a")
+		c.Equal("+1 to "+one.want, bonus.Describe(e, nil, func(s string) string { return s }))
+		_, current := AttributeChoices(e, "to", 0, "a")
+		c.Equal("to "+one.want, current.Title)
+		c.Equal(one.want, def.String(), "as the source of a bonus one of its thresholds gives")
+	}
 }
 
 // TestAttributesWithNullRows verifies that a JSON null entry in an entity's attribute list is dropped rather than

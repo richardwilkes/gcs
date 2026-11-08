@@ -80,10 +80,10 @@ type weaponMemo struct {
 // later in it, nor while the prerequisites of an item carrying a grant are judged, since the weapons then resolve as
 // those prerequisites see the sheet, without what the grant gives (see JudgingPrereqsOf), nor at base, since they then
 // resolve without what alters current values alone (see atBaseWhile), nor while a pool's base or thresholds are found,
-// since they then resolve without the trait bonuses those thresholds hold (see thresholdTraitBonusesLeftOut).
+// since they then resolve without the features those thresholds hold (see thresholdFeaturesLeftOut).
 func (e *Entity) weaponCachesUsable() bool {
 	return weaponMemosEnabled && e.recalculating == 0 && !e.carriesGrant(e.judging) && e.atBase == 0 &&
-		!e.thresholdTraitBonusesLeftOut()
+		!e.thresholdFeaturesLeftOut()
 }
 
 // memo returns the memo for the weapon's current data, owner and holding modifier, or nil when nothing may be

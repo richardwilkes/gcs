@@ -311,8 +311,8 @@ type scriptResolveKey struct {
 	// base is set when the script ran at base, which leaves out what alters current values alone; see
 	// Entity.atBaseWhile.
 	base bool
-	// untouched is set when the script ran while a pool's base or thresholds were found without the trait bonuses the
-	// pools' thresholds hold; see Entity.thresholdTraitBonusesLeftOut.
+	// untouched is set when the script ran while a pool's base or thresholds were found without the features the
+	// pools' thresholds hold; see Entity.thresholdFeaturesLeftOut.
 	untouched bool
 }
 
@@ -695,7 +695,7 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 	if entity != nil {
 		key.currents = entity.scriptReadsCurrents()
 		key.base = entity.atBase > 0
-		key.untouched = entity.thresholdTraitBonusesLeftOut()
+		key.untouched = entity.thresholdFeaturesLeftOut()
 	}
 	if forPrereqs {
 		key.judged = entity.judging

@@ -313,7 +313,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 							VAlign: align.Middle,
 						})
 						valueField = field
-						adjust = trackAdjustment(field, attr, adjustableLabelInk(field.Label))
+						adjust = trackAdjustment(field, attr, adjustableLabelInk(field.Label), nil)
 					} else {
 						a.AddChild(a.createPointsField(attr))
 						editable = true
@@ -323,7 +323,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
 							showCurrentWhileIdle(field, func() string { return attr.Current().String() })
 							valueField = field
-							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field))
+							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field), hiddenCurrent(field))
 						} else {
 							field := NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() int { return attr.Maximum().Floor().AsInteger[int]() },
@@ -331,7 +331,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								fxp.Min.Floor().AsInteger[int](), fxp.Max.Floor().AsInteger[int](), false, true)
 							showCurrentWhileIdle(field, func() string { return attr.Current().Floor().String() })
 							valueField = field
-							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field))
+							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field), hiddenCurrent(field))
 						}
 					}
 					adjust()
@@ -382,19 +382,39 @@ func showCurrentWhileIdle[T xmath.Integer | xmath.Float](field *NumericField[T],
 	field.Sync()
 }
 
+// hiddenCurrent returns a function that returns the current value a field set up by showCurrentWhileIdle shows while
+// idle, if the field shows the maximum instead, as it does while being edited, or an empty string if not.
+func hiddenCurrent[T xmath.Integer | xmath.Float](field *NumericField[T]) func() string {
+	return func() string {
+		if field.showingDisplayText {
+			return ""
+		}
+		return field.DisplayFormat(field.get())
+	}
+}
+
 // trackAdjustment has the value field of a non-pool attribute's row drawn in adjustedInk, and spoken as adjusted from
 // the attribute's maximum, while the attribute's current value is adjusted (see adjustedFrom), and returns the function
-// that brings the field up to date. setInk is called with the new state each time it changes.
-func trackAdjustment(field unison.Paneler, attr *gurps.Attribute, setInk func(adjusted bool)) func() {
+// that brings the field up to date. setInk is called with the new state each time it changes. hidden, if not nil,
+// returns the current value while the field shows the maximum instead (see hiddenCurrent), and the field is then spoken
+// as adjusted to that value.
+func trackAdjustment(field unison.Paneler, attr *gurps.Attribute, setInk func(adjusted bool), hidden func() string) func() {
 	var from string // The maximum the current value is adjusted from, or empty when it isn't adjusted.
 	addAccessibilityCallback(field, func(node *accessibility.Node) {
-		if from != "" {
-			node.Name = i18n.Text("%s, adjusted from %s", node.Name, from)
-			if node.Role == role.Label {
-				// The name of static text is its text, so, as speakAs does, the text is withheld now that the name says
-				// more, since macOS would speak both.
-				node.Text = nil
+		if from == "" {
+			return
+		}
+		if hidden != nil {
+			if current := hidden(); current != "" {
+				node.Name = i18n.Text("%s, adjusted to %s", node.Name, current)
+				return
 			}
+		}
+		node.Name = i18n.Text("%s, adjusted from %s", node.Name, from)
+		if node.Role == role.Label {
+			// The name of static text is its text, so, as speakAs does, the text is withheld now that the name says
+			// more, since macOS would speak both.
+			node.Text = nil
 		}
 	})
 	return func() {
@@ -545,7 +565,8 @@ var poolThresholdDescFont = &unison.DynamicFont{
 }
 
 // updateThreshold shows the state of the pool's current threshold, if it has one, in adjustedInk when the threshold has
-// features it doesn't ignore (see gurps.ThresholdIgnores), which are then listed in the tooltip after its explanation.
+// features it doesn't ignore (see gurps.ThresholdIgnores), which are then listed in the tooltip after its explanation,
+// which is Markdown, as the plain text they are described with.
 func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) {
 	label.DrawCallback = label.DefaultDraw
 	label.Font = poolThresholdDescFont
@@ -572,7 +593,8 @@ func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) 
 			}
 			listed = true
 			explanation.WriteString("- ")
-			explanation.WriteString(gurps.DescribeThresholdFeature(f, a.entity, nil, func(s string) string { return s }))
+			explanation.WriteString(escapeMarkdown(gurps.DescribeThresholdFeature(f, a.entity, nil,
+				func(s string) string { return s })))
 		}
 		if listed {
 			ink = adjustedInk

@@ -402,6 +402,60 @@ func TestNumericFieldSetTextWhileShowingDisplayText(t *testing.T) {
 	}
 }
 
+// TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue verifies that an assistive technology handing a field
+// without the focus the value it holds, however written, leaves it as it was: the display text still shows, as nothing
+// syncs the field after an edit that sets no new value, and no undo is recorded for what changed nothing. Text the
+// field can't parse is refused, rather than taken as the value a failed parse gives, which would never show as invalid.
+func TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue(t *testing.T) {
+	for _, one := range []struct {
+		name    string
+		req     accessibility.ActionRequest
+		refused bool
+	}{
+		{
+			name: "setting the exact text",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue, Value: exactWeightText},
+		},
+		{
+			name: "setting the exact text with a leading space",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue, Value: " " + exactWeightText},
+		},
+		{
+			name: "replacing all of the text shown with the exact text",
+			req: accessibility.ActionRequest{
+				Action: accessibility.ReplaceText,
+				End:    len([]rune(roundedWeightText)),
+				Value:  exactWeightText,
+			},
+		},
+		{
+			name:    "setting text it can't parse",
+			req:     accessibility.ActionRequest{Action: accessibility.SetValue, Value: "abc"},
+			refused: true,
+		},
+		{
+			name: "replacing all of the text shown with text it can't parse",
+			req: accessibility.ActionRequest{
+				Action: accessibility.ReplaceText,
+				End:    len([]rune(roundedWeightText)),
+				Value:  "abc",
+			},
+			refused: true,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			f, value := newDisplayFormatWeightField(t)
+			root := newPageUndoRoot()
+			root.AddChild(f)
+			c.Equal(!one.refused, f.PerformAccessibilityAction(one.req), "the request is carried out: %v", !one.refused)
+			c.Equal(exactWeightText, f.Format(*value), "the value is unchanged")
+			c.Equal(roundedWeightText, f.Text(), "the display text still shows")
+			c.False(root.mgr.CanUndo(), "nothing is recorded")
+		})
+	}
+}
+
 // TestNumericFieldSetTextWithIdenticalText covers the two ways SetText can be handed text the field already holds.
 // Text identical to the exact value behind the display rendering is not a change, so nothing may be recorded. Text
 // identical to the display rendering itself is a change -- the caller asked for that value -- and the undo it records

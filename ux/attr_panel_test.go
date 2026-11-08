@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
@@ -197,6 +198,19 @@ func tooltipText(tip *unison.Panel) string {
 	return strings.Join(lines, "\n")
 }
 
+// markdownText returns the text of the labels a rendered Markdown panel is drawn with, each ended by a line feed.
+func markdownText(md *unison.Markdown) string {
+	var b strings.Builder
+	md.HasInSelfOrDescendants(func(p *unison.Panel) bool {
+		if label, ok := p.Self.(*unison.Label); ok {
+			b.WriteString(label.String())
+			b.WriteByte('\n')
+		}
+		return false
+	})
+	return b.String()
+}
+
 // The drawn text is withheld from the node, since macOS would speak both the name and the text.
 func TestAttrPanelPointsFieldsAreSpokenAsPoints(t *testing.T) {
 	c := check.New(t)
@@ -258,8 +272,9 @@ func tiredEntity(t *testing.T, features ...gurps.Feature) *gurps.Entity {
 
 // TestAttrPanelShowsAdjustedCurrentValue verifies that the value field of an attribute held away from its maximum by a
 // pool threshold shows the current value in adjustedInk, names the maximum in its tooltip and spoken name, and puts
-// the maximum in place for editing, also for an assistive technology replacing the value without focusing the field,
-// whose edit undo then reverts to the maximum, and that all of that goes once the threshold no longer applies.
+// the maximum in place for editing, with the current value spoken in its name instead, also for an assistive
+// technology replacing the value without focusing the field, whose edit undo then reverts to the maximum, and that all
+// of that goes once the threshold no longer applies.
 func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
 	c := check.New(t)
 	halveST := gurps.NewAttributeBonus(gurps.StrengthID)
@@ -291,8 +306,10 @@ func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
 
 	field.gainedFocus()
 	c.Equal("10", field.Text(), "the maximum is what is edited")
+	c.Equal("ST, adjusted to 5", spokenName(), "while the maximum is edited, the current value is spoken")
 	field.lostFocus()
 	c.Equal("5", field.Text(), "the current value returns once the focus is lost")
+	c.Equal("ST, adjusted from 10", spokenName(), "and so does the spoken maximum")
 
 	for _, req := range []accessibility.ActionRequest{
 		{Action: accessibility.SetValue, Value: "12"},
@@ -303,7 +320,11 @@ func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
 		root.mgr.Undo()
 		c.Equal(fxp.Ten, st.Maximum(), "%v: undo restores the maximum rather than the current value shown",
 			req.Action)
-		c.Equal("5", field.Text(), "%v: the current value shows again after the undo", req.Action)
+		// Undo focuses the field, which can't take the focus without a window.
+		field.gainedFocus()
+		c.Equal("10", field.Text(), "%v: undo puts the maximum in place for editing", req.Action)
+		field.lostFocus()
+		c.Equal("5", field.Text(), "%v: the current value returns once the focus is lost", req.Action)
 	}
 	c.False(field.PerformAccessibilityAction(accessibility.ActionRequest{
 		Action: accessibility.ReplaceText, Start: 1, End: 1, Value: "0",
@@ -400,13 +421,15 @@ func TestAttrPanelStandInLimitedBonusesAreNotAdjustments(t *testing.T) {
 
 // TestAttrPanelPoolStateListsThresholdFeatures verifies that the state of a pool whose current threshold has features
 // is drawn in adjustedInk, with those features listed in its tooltip after the explanation, a switchable one without
-// saying it is, since a threshold has no switch, and that the features a threshold ignores are neither listed nor
-// enough to draw the state in adjustedInk.
+// saying it is, since a threshold has no switch, and each as written rather than as Markdown, and that the features a
+// threshold ignores are neither listed nor enough to draw the state in adjustedInk.
 func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	c := check.New(t)
 	switchable := gurps.NewAttributeBonus(gurps.DexterityID)
 	switchable.SetSwitchable(true)
-	e := tiredEntity(t, switchable)
+	lore := gurps.NewTraitBonus()
+	lore.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Hidden _Lore_ of `Old`"}
+	e := tiredEntity(t, switchable, lore)
 	perLevel := gurps.NewAttributeBonus(gurps.StrengthID)
 	perLevel.Amount = fxp.Two
 	perLevel.PerLevel = true
@@ -429,11 +452,12 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	c.Equal(adjustedInk, stateInk(), "a threshold with features is drawn in adjustedInk")
 	md := findMarkdown(label.Tooltip)
 	c.NotNil(md, "the tooltip must hold the explanation")
-	content := string(md.ContentBytes())
-	c.Contains(content, "Move, Dodge and ST are halved", "the explanation leads the tooltip")
-	c.Contains(content, "- ×0.5 to ", "the features are listed after it")
-	c.Contains(content, "- +1 to DX", "a switchable one among them")
-	c.NotContains(content, "switched on", "without a switch")
+	text := markdownText(md)
+	c.True(strings.HasPrefix(text, "Move, Dodge and ST are halved"), "the explanation leads the tooltip: %s", text)
+	c.Contains(text, "\n•\n×0.5 to ", "the features are listed after it")
+	c.Contains(text, "\n•\n+1 to DX\n", "a switchable one among them")
+	c.NotContains(text, "switched on", "without a switch")
+	c.Contains(text, "\n•\n+1 to the level of trait Hidden _Lore_ of `Old`\n", "a description shows as written")
 
 	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Two
 	e.Recalculate()

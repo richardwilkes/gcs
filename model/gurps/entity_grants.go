@@ -1356,9 +1356,9 @@ type baseGrantStateKey struct {
 }
 
 // judgedGrantStateKey identifies what the grants give an item as the prerequisites being judged see the pools'
-// thresholds, which rests as well on whether it is found while a pool's base or thresholds are found without the trait
-// bonuses those thresholds hold (see thresholdTraitBonusesLeftOut), since the points a level set gives a skill are
-// less those of the default picked as the sheet is seen then; see Grant.pointsBeyondDefault.
+// thresholds, which rests as well on whether it is found while a pool's base or thresholds are found without the
+// features those thresholds hold (see thresholdFeaturesLeftOut), since the points a level set gives a skill are less
+// those of the default picked as the sheet is seen then; see Grant.pointsBeyondDefault.
 type judgedGrantStateKey struct {
 	holder    grantHolder
 	untouched bool
@@ -1367,7 +1367,7 @@ type judgedGrantStateKey struct {
 // grantsAsJudged returns what the grants give the holder as the prerequisites being judged see the pools' thresholds:
 // when they see a grant of a threshold that touches the holder in effect where the sheet does not, or the other way
 // around (see thresholdGrantsAsJudged), the state judgedGrantState finds, kept apart for while a pool's base or
-// thresholds are found without the trait bonuses those thresholds hold (see judgedGrantStateKey), and otherwise, as
+// thresholds are found without the features those thresholds hold (see judgedGrantStateKey), and otherwise, as
 // while that state is being found, the holder's own. A computation at base, which sees none of those grants in effect,
 // gets the state found that way too, kept apart for the prerequisites being judged, if any. e may be nil, which gives
 // the holder's own.
@@ -1389,7 +1389,7 @@ func (e *Entity) grantsAsJudged(holder grantHolder) *grantState {
 			e.baseGrantStates[key] = state
 		}
 	} else {
-		key := judgedGrantStateKey{holder: holder, untouched: e.thresholdTraitBonusesLeftOut()}
+		key := judgedGrantStateKey{holder: holder, untouched: e.thresholdFeaturesLeftOut()}
 		if state, ok = e.judgedGrantStates[key]; !ok {
 			if e.judgedGrantStates == nil {
 				e.judgedGrantStates = make(map[judgedGrantStateKey]*grantState)
@@ -1515,8 +1515,8 @@ func (e *Entity) grantInto(plan *grantPlan, holder grantHolder, state *grantStat
 // a Keep Highest or Keep Lowest grant the level it sets, kept as when it merges into an item already present (see
 // mergeGrant), so that it floors the levels the other grants take away, or caps those they add, whether or not it is
 // the grant that put the item on the sheet. The points of a level set are priced afresh for the prerequisites being
-// judged, and less the default picked afresh at base and while a pool's base or thresholds are found without the trait
-// bonuses those thresholds hold (see grantReprice.beyond), and what prices those it gives the holder is returned, or
+// judged, and less the default picked afresh at base and while a pool's base or thresholds are found without the
+// features those thresholds hold (see grantReprice.beyond), and what prices those it gives the holder is returned, or
 // nil for another grant; see levelSetReprice. For a grant standing in for a level set that gives the holder nothing
 // against the sheet as a whole, what it would merge into the level that one gives where it gives something is recorded
 // as well; see grantState.mergeAlternative.

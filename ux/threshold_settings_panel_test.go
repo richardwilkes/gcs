@@ -88,8 +88,9 @@ func TestThresholdFeaturesUndoAfterRebuild(t *testing.T) {
 
 // TestThresholdFeaturesOfferTheEditedAttributes checks that a threshold's features offer the attributes being edited,
 // even one the sheet and the defaults lack, with Move, Dodge, Parry and Block, but neither the size modifier nor the
-// pools, that their sentences, collapsed or not, name an attribute as those definitions do, and that a new attribute
-// bonus names the attribute last chosen for a threshold, or the first offered when that one isn't.
+// pools, that their sentences, collapsed or not, name an attribute as those definitions do, as does the popup of a
+// bonus to an attribute the threshold ignores, and that a new attribute bonus names the attribute last chosen for a
+// threshold, or the first offered when that one isn't.
 func TestThresholdFeaturesOfferTheEditedAttributes(t *testing.T) {
 	c := check.New(t)
 	d := newTestThresholdDockable(testAttrDefs("st", "zz", "hp"), gurps.Features{gurps.NewAttributeBonus("zz")})
@@ -118,6 +119,15 @@ func TestThresholdFeaturesOfferTheEditedAttributes(t *testing.T) {
 		keys = append(keys, one.Key)
 	}
 	c.Equal([]string{gurps.StrengthID, "zz", gurps.MoveID, gurps.DodgeID, gurps.ParryID, gurps.BlockID}, keys)
+
+	*p.features = append(*p.features, gurps.NewAttributeBonus("hp"), gurps.NewAttributeBonus(gurps.SizeModifierID))
+	for i, want := range []string{"to HP", "to Size Modifier"} {
+		path := strconv.Itoa(i + 1)
+		p.setView(rowsView{open: path})
+		if popup := featuresPopup[*gurps.AttributeChoice](c, p, path+":attribute"); popup != nil {
+			c.Equal(want, popup.Text(), "the threshold ignores the attribute, but names it")
+		}
+	}
 
 	uxtest.SwapForTest(t, &lastAttributeIDUsed, gurps.SizeModifierID)
 	uxtest.SwapForTest(t, &lastThresholdAttributeIDUsed, "zz")
@@ -360,4 +370,48 @@ func TestThresholdFeaturesKeepTheirViewAcrossRebuilds(t *testing.T) {
 			c.True(ok && bonus.Percent, "the percentage comes back once the dice go")
 		})
 	}
+}
+
+// TestThresholdFeaturesKeepAPendingCriterionAcrossRebuilds checks that the chip of an optional criterion added to the
+// open row of a threshold's features, which holds nothing yet, is still there once the attribute settings rebuild their
+// content, with the focus still in it.
+func TestThresholdFeaturesKeepAPendingCriterionAcrossRebuilds(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var d *attributeSettingsDockable
+	screen.Do(func() {
+		defs := testAttrDefs("st", "hp")
+		def := defs.Set["hp"]
+		def.Type = attribute.Pool
+		def.Thresholds = []*gurps.PoolThreshold{
+			{State: "Reeling", Features: gurps.Features{gurps.NewConditionalModifierBonus()}},
+		}
+		d = newAttributeSettingsDockable(nil, defs)
+		d.TabTitle = "Attributes"
+		d.TabIcon = svg.Attributes
+		d.show()
+		uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
+	})
+	// inGroupField returns true if the focus is in the group field of the first threshold's open row.
+	inGroupField := func() bool {
+		var in bool
+		screen.Do(func() {
+			p := uxtest.PanelsOfType[*featuresPanel](d.AsPanel())[0]
+			focus := d.Window().Focus()
+			in = focus != nil && focus.RefKey == "0:group" && unison.AncestorIsOrSelf(focus, p.AsPanel())
+		})
+		return in
+	}
+	screen.Do(func() {
+		p := uxtest.PanelsOfType[*featuresPanel](d.AsPanel())[0]
+		p.setView(rowsView{open: "0"})
+		add, ok := p.FindRefKey("0:add group").Self.(*unison.Button)
+		c.True(ok, "the open row has a button that adds a group")
+		if ok {
+			add.ClickCallback()
+		}
+	})
+	c.True(inGroupField(), "precondition: the focus is in the group field the button added")
+	screen.Do(d.undoMgr.Undo)
+	c.True(inGroupField(), "the group field is still there once undo rebuilds the content, with the focus in it")
 }
