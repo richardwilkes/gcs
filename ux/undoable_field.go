@@ -29,9 +29,9 @@ type undoableFieldSelf interface {
 	setWithoutUndo(state *unison.FieldState, focus bool)
 }
 
-// undoableField is the editing core shared by StringField and NumericField: a unison.Field whose text is parsed into a
-// value that is handed to a setter, with each change recorded for undo against a target key, and which Sync keeps in
-// step with the value it edits.
+// undoableField is the editing core shared by StringField, NumericField and OptionalDecimalField: a unison.Field whose
+// text is parsed into a value that is handed to a setter, with each change recorded for undo against a target key, and
+// which Sync keeps in step with the value it edits.
 type undoableField[T comparable] struct {
 	*unison.Field
 	self      undoableFieldSelf

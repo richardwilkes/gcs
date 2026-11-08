@@ -229,6 +229,58 @@ func TestNumericFieldRefusesValuesAboveItsMaximum(t *testing.T) {
 	plain.lostFocus()
 }
 
+// TestNumericFieldKeepsItsValueForTextItCannotParse verifies that text a focused field can't parse, such as pasted text
+// or the start of a number, a sign or a decimal point by itself, which is typed as it would be on the way to a number
+// and which the decimal extractor takes for zero, shows as invalid without changing the value, rather than committing
+// the zero a failed parse gives; that undoing an edit made over such text restores the value from before it; and that
+// leaving the field puts the value's text back.
+func TestNumericFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
+	for _, one := range []struct {
+		text  string
+		typed bool // The text is the start of a number, which is typed rather than pasted.
+	}{
+		{text: "abc"},
+		{text: "-", typed: true},
+		{text: "+", typed: true},
+		{text: ".", typed: true},
+		{text: "-.", typed: true},
+		{text: "+.", typed: true},
+	} {
+		text := one.text
+		t.Run(text, func(t *testing.T) {
+			c := check.New(t)
+			value := fxp.Ten
+			f := NewDecimalField(nil, "", "Value", func() fxp.Int { return value }, func(v fxp.Int) { value = v },
+				fxp.Min, fxp.Max, false, true)
+			root := newPageUndoRoot()
+			root.AddChild(f)
+			f.gainedFocus()
+			if one.typed {
+				f.SelectAll()
+				for _, ch := range text {
+					c.True(f.RuneTypedCallback(ch), "typing %q is accepted", ch)
+				}
+			} else {
+				f.SetText(text)
+			}
+			c.Equal(text, f.Text(), "the text shows")
+			c.True(f.Invalid(), "as invalid")
+			c.Equal(fxp.Ten, value, "without changing the value")
+
+			f.SelectAll() // Has the next edit recorded on its own.
+			f.SetText("7")
+			c.Equal(fxp.Seven, value)
+			root.mgr.Undo()
+			c.Equal(fxp.Ten, value, "undoing an edit made over the text restores the value from before it")
+
+			f.SetText(text)
+			f.lostFocus()
+			c.Equal("10", f.Text(), "leaving the field puts the value's text back")
+			c.Equal(fxp.Ten, value)
+		})
+	}
+}
+
 // The stored weight used by the tests of rounding for display, along with its exact and two-decimal-place renderings.
 // It carries more decimal places than the sheet is told to show, so that rounding for display is visible and any
 // rounding that leaked back into the stored value would be, too.
@@ -405,7 +457,7 @@ func TestNumericFieldSetTextWhileShowingDisplayText(t *testing.T) {
 // TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue verifies that an assistive technology handing a field
 // without the focus the value it holds, however written, leaves it as it was: the display text still shows, as nothing
 // syncs the field after an edit that sets no new value, and no undo is recorded for what changed nothing. Text the
-// field can't parse is refused, rather than taken as the value a failed parse gives, which would never show as invalid.
+// field can't parse is refused, rather than left showing as invalid with nothing to put the value's text back.
 func TestNumericFieldUnfocusedAccessibilityEditsWithoutANewValue(t *testing.T) {
 	for _, one := range []struct {
 		name    string
