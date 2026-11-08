@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -56,7 +57,19 @@ func NewOptionalDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, 
 	f.init(f, unison.NewField(), targetMgr, targetKey, undoTitle,
 		func() optionalDecimal { return optionalDecimalOf(get()) },
 		func(value optionalDecimal) { set(value.pointer()) },
-		parseOptionalDecimal, formatOptionalDecimal)
+		f.mustParse, formatOptionalDecimal)
+	// An edit made over text the field can't parse records the text of the value the field holds in its place, since
+	// that text leaves the value as it is (see mustParse): undoing the edit would otherwise put the text back but leave
+	// the value the edit set.
+	modified := f.ModifiedCallback
+	f.ModifiedCallback = func(before, after *unison.FieldState) {
+		if _, ok := parseOptionalDecimal(before.Text); !ok {
+			exact := *before
+			exact.Text = formatOptionalDecimal(f.last)
+			before = &exact
+		}
+		modified(before, after)
+	}
 	f.HAlign = align.End
 	f.RuneTypedCallback = f.runeTyped
 	f.ValidateCallback = f.validate
@@ -65,14 +78,28 @@ func NewOptionalDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, 
 	return f
 }
 
-// parseOptionalDecimal reads the field's text. Text that is not a number is treated as none, as a number field treats
-// it as zero; the field flags it as invalid meanwhile.
-func parseOptionalDecimal(text string) optionalDecimal {
-	value, err := fxp.FromString(strings.TrimSpace(text))
-	if err != nil {
-		return optionalDecimal{}
+// mustParse returns the value the text holds. Text the field can't parse, which shows as invalid, holds no value, so it
+// is taken for the value the field holds: the value is left as it is, and losing the focus puts its text back.
+func (f *OptionalDecimalField) mustParse(text string) optionalDecimal {
+	if value, ok := parseOptionalDecimal(text); ok {
+		return value
 	}
-	return optionalDecimal{value: value, present: true}
+	return f.last
+}
+
+// parseOptionalDecimal returns the value the text holds, which is none for blank text, and whether the field can parse
+// the text at all. Text with no digit, such as a sign or a decimal point by itself, which fxp.FromString takes for
+// zero, is only the start of a number.
+func parseOptionalDecimal(text string) (optionalDecimal, bool) {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return optionalDecimal{}, true
+	}
+	value, err := fxp.FromString(text)
+	if err != nil || !strings.ContainsAny(text, "0123456789") {
+		return optionalDecimal{}, false
+	}
+	return optionalDecimal{value: value, present: true}, true
 }
 
 func formatOptionalDecimal(value optionalDecimal) string {
@@ -94,16 +121,36 @@ func (f *OptionalDecimalField) runeTyped(ch rune) bool {
 	return f.DefaultRuneTyped(ch)
 }
 
-func (f *OptionalDecimalField) tooltipTextForValidation() string {
-	text := strings.TrimSpace(f.Text())
-	if text == "" {
-		return f.problem(nil)
+// PerformAccessibilityAction implements unison.AccessibilityActor. Without the focus, text that would leave the value
+// as it is changes nothing, since the field is synced to show its value only once the value changes, and text the
+// field can't parse, which leaves the value as it is too (see mustParse), is refused rather than left showing as
+// invalid, with no loss of the focus to come and put the value's text back.
+func (f *OptionalDecimalField) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
+	if !f.hasFocus && (req.Action == accessibility.SetValue || req.Action == accessibility.ReplaceText) {
+		text := req.Value
+		if req.Action == accessibility.ReplaceText {
+			runes := []rune(f.Text())
+			start := min(max(req.Start, 0), len(runes))
+			end := min(max(req.End, start), len(runes))
+			text = string(runes[:start]) + req.Value + string(runes[end:])
+		}
+		value, ok := parseOptionalDecimal(text)
+		if !ok {
+			return false
+		}
+		if value == f.last {
+			return true
+		}
 	}
-	value, err := fxp.FromString(text)
-	if err != nil || text == "-" || text == "+" {
+	return f.Field.PerformAccessibilityAction(req)
+}
+
+func (f *OptionalDecimalField) tooltipTextForValidation() string {
+	value, ok := parseOptionalDecimal(f.Text())
+	if !ok {
 		return i18n.Text("Invalid value")
 	}
-	return f.problem(&value)
+	return f.problem(value.pointer())
 }
 
 func (f *OptionalDecimalField) problem(value *fxp.Int) string {

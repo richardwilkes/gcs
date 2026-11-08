@@ -78,9 +78,12 @@ type weaponMemo struct {
 // builds, may be kept and served from what was kept. Neither may be while the entity is recalculating, since its
 // derived state changes from one step of a pass to the next, so a value kept early in a pass could be served stale
 // later in it, nor while the prerequisites of an item carrying a grant are judged, since the weapons then resolve as
-// those prerequisites see the sheet, without what the grant gives (see JudgingPrereqsOf).
+// those prerequisites see the sheet, without what the grant gives (see JudgingPrereqsOf), nor at base, since they then
+// resolve without what alters current values alone (see atBaseWhile), nor while a pool's base or thresholds are found,
+// since they then resolve without the features those thresholds hold (see thresholdFeaturesLeftOut).
 func (e *Entity) weaponCachesUsable() bool {
-	return weaponMemosEnabled && e.recalculating == 0 && !e.carriesGrant(e.judging)
+	return weaponMemosEnabled && e.recalculating == 0 && !e.carriesGrant(e.judging) && e.atBase == 0 &&
+		!e.thresholdFeaturesLeftOut()
 }
 
 // memo returns the memo for the weapon's current data, owner and holding modifier, or nil when nothing may be

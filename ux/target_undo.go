@@ -46,7 +46,7 @@ func NewTargetUndo[T any](targetMgr *TargetMgr, targetKey, title string, undoID 
 func (t *TargetUndo[T]) apply(data T) {
 	var target *unison.Panel
 	if t.mgr != nil {
-		target = t.mgr.Find(t.key)
+		target = t.mgr.findRevealing(t.key)
 	}
 	t.callback(target, data)
 }

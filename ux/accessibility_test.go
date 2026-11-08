@@ -239,7 +239,13 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		entity.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{levelCap}
 		ShowSheetSettings(sheet)
 	})
-	audit.CheckOpened("attribute settings", func() { ShowAttributeSettings(sheet) })
+	// The attribute rows start out collapsed to their headers, so they are checked again expanded, with their fields
+	// and the features of their thresholds.
+	if d, isOne := audit.Open(func() { ShowAttributeSettings(sheet) }).(*attributeSettingsDockable); isOne {
+		audit.Check("attribute settings", d)
+		screen.Do(d.toggleAllExpanded)
+		audit.Check("attribute settings, expanded", d)
+	}
 	audit.CheckOpened("body settings", func() { ShowBodySettings(sheet) })
 	audit.CheckOpened("general settings", ShowGeneralSettings)
 	audit.CheckOpened("color settings", ShowColorSettings)

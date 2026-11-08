@@ -13,11 +13,9 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/check"
 )
 
 type thresholdSettingsPanel struct {
@@ -77,14 +75,9 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		i18n.Text("The value where the threshold takes effect, which may be a number or a script expression"),
 		func() string { return p.threshold.Value },
 		func(s string) { p.threshold.Value = s }, false)
-
-	for _, op := range threshold.Ops[1:] {
-		content.AddChild(unison.NewPanel())
-		content.AddChild(p.createOpCheckBox(op))
-	}
-
+	content.AddChild(p.createFeatures())
 	addLabelAndScriptField(content, mgr, p.threshold.KeyPrefix+"explanation", i18n.Text("Explanation"),
-		i18n.Text("A explanation of the effects of the threshold state. This field will be interpreted as markdown and may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
+		i18n.Text("An explanation of the effects of the threshold state. This field will be interpreted as markdown and may have scripts embedded in it by wrapping each script in <script>your script goes here</script> tags."),
 		func() string { return p.threshold.Explanation },
 		func(value string) {
 			p.threshold.Explanation = value
@@ -95,16 +88,22 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	return content
 }
 
-func (p *thresholdSettingsPanel) createOpCheckBox(op threshold.Op) *CheckBox {
-	c := NewCheckBox(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+op.Key(), op.String(),
-		func() check.Enum { return check.FromBool(p.threshold.ContainsOp(op)) },
-		func(state check.Enum) {
-			if state == check.On {
-				p.threshold.AddOp(op)
-			} else {
-				p.threshold.RemoveOp(op)
+// createFeatures returns the panel that edits the threshold's features. The dockable replaces its content after each
+// change to its structure, so undo and redo of an edit made in the panel apply to whichever panel then shows the
+// threshold's features, which is found by its reference key, as do the editors open on the items of its grants (see
+// followGrantItemEditors), and that panel takes over how this one was shown (see featuresPanel.takeOver).
+func (p *thresholdSettingsPanel) createFeatures() *featuresPanel {
+	d := p.pool.dockable
+	features := newThresholdFeaturesPanel(d.Entity(), p.threshold, func() *gurps.AttributeDefs { return d.model })
+	key := p.threshold.KeyPrefix + "features"
+	features.RefKey = key
+	features.live = func() *sentenceRows[featuresState] {
+		if found := d.targetMgr.findRevealing(key); found != nil {
+			if one, ok := found.Self.(*featuresPanel); ok {
+				return &one.sentenceRows
 			}
-		})
-	c.Tooltip = newWrappedTooltip(op.AltString())
-	return c
+		}
+		return nil
+	}
+	return features
 }

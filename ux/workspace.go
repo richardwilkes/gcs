@@ -657,10 +657,24 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	// display than the one it is about to be moved to. Packing first and moving after would carry that smaller
 	// display's clamp along, leaving the window shorter than its content asked for even though its eventual display
 	// had the room.
-	wnd.PackWithLocation(frame.Point)
-	widenToFitTooltips(wnd, panel)
+	pack := func() {
+		wnd.PackWithLocation(frame.Point)
+		widenToFitTooltips(wnd, panel)
+	}
+	if shower, ok := dockable.(ownWindowShower); ok {
+		shower.showForOwnWindow(pack)
+	} else {
+		pack()
+	}
 	placeWindowOver(wnd, frame)
 	return wnd, nil
+}
+
+// ownWindowShower is implemented by a Dockable that shows less when first placed in a window of its own than the window
+// must have room for, such as a list of rows collapsed to their headers. It is asked to call pack, which sizes the
+// window around what the Dockable then shows, while showing what the window is to be sized for.
+type ownWindowShower interface {
+	showForOwnWindow(pack func())
 }
 
 // widenToFitTooltips widens the window, which must already be packed, so that its content is at least as wide as the

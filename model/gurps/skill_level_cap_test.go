@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
@@ -367,7 +368,7 @@ func TestSkillLevelCapReferences(t *testing.T) {
 				riposte.SetDataOwner(e)
 				e.Skills = append(e.Skills, riposte)
 				return []LevelCap{refCap(levelcap.Skill, "Riposte", 0)},
-					func(uncapped fxp.Int) fxp.Int { return defenseLevelFromSkill(uncapped, 0) }, "Riposte"
+					defenseLevelFromSkill, "Riposte"
 			},
 			target:  levelcap.Skills,
 			restsOn: "Riposte",
@@ -792,7 +793,8 @@ func TestSkillLevelCapSettles(t *testing.T) {
 }
 
 // TestSkillLevelCapSeenByPrerequisites verifies that a prerequisite on a skill's level is judged against the capped
-// level.
+// level, and that the prerequisites of an item carrying a grant judge it against the level the skill a cap rests on has
+// as they see the sheet, rather than as it is while a pool's threshold is found for them.
 func TestSkillLevelCapSeenByPrerequisites(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -806,6 +808,40 @@ func TestSkillLevelCapSeenByPrerequisites(t *testing.T) {
 	addTestLevelCap(e, levelcap.Skills, NewFixedLevelCap(nil, sk.LevelData.Level-fxp.One))
 	e.Recalculate()
 	c.NotEqual("", needs.UnsatisfiedReason, "the prerequisite is unmet once the level is capped below it")
+
+	// Tired gives DX +5, raising Running 17 to Jogging 15, which caps it. Finding Stam's threshold reads Running's
+	// level, which is found without Tired's bonus.
+	e = NewEntity()
+	tired := poolThreshold(e, FatiguePointsID, "Tired")
+	tired.Features = append(tired.Features, newAttrBonus(DexterityID, fxp.Five))
+	e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+	addSkill(e, "Jogging", fxp.One)
+	running := addSkill(e, "Running", fxp.Four)
+	onRunning := addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Skill, "Jogging", 0))
+	onRunning.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Running"}
+	low := NewPoolThreshold()
+	low.State = "Low"
+	low.Value = `entity.findSkills("Running")[0].level - 100`
+	low.Features = Features{newAttrBonus(IntelligenceID, fxp.One)}
+	e.SheetSettings.Attributes.Set["stam"] = &AttributeDef{
+		DefID:      "stam",
+		Type:       attribute.Pool,
+		Name:       "Stam",
+		Base:       "10",
+		Thresholds: []*PoolThreshold{low},
+	}
+	e.Attributes.Set["stam"] = NewAttribute(e, "stam", len(e.Attributes.Set))
+	training := addTraitWithFeatures(e, "Training", newTraitGrant(newGrantLeveledTrait("Skilled", fxp.One), fxp.One,
+		grantmerge.Ignore))
+	training.Prereq = NewPrereqList()
+	dx := NewAttributePrereq(e)
+	dx.Parent = training.Prereq
+	dx.Which = DexterityID
+	training.Prereq.Prereqs = append(training.Prereq.Prereqs, dx)
+	addSkillPrereq(training.Prereq, "Running", fxp.FromInteger(15))
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(15), running.LevelData.Level, "Running is held to Jogging")
+	c.Equal("", training.UnsatisfiedReason, "the prerequisite sees Running held to Jogging as Tired raises it")
 }
 
 // TestSkillLevelCapSeenByDefaults verifies that a skill defaulting to a capped skill rests on the capped level.
@@ -847,8 +883,9 @@ func TestSkillLevelCapStepping(t *testing.T) {
 
 // TestSkillLevelCapEditPreview verifies that the level an editor previews is held to the caps that select the skill
 // or spell as edited rather than as it is on the sheet, with the references matching it as edited and the levels they
-// rest on, such as a technique's or a default's resting on the skill, taken with it as edited, and the row of a grant
-// the edits merge into it left out, so that the preview is the level the sheet shows once the edits are applied.
+// rest on, such as a technique's or a default's resting on the skill, taken with it as edited, along with the points a
+// grant's level set gives them, and the row of a grant the edits merge into it left out, so that the preview is the
+// level the sheet shows once the edits are applied.
 func TestSkillLevelCapEditPreview(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -980,6 +1017,37 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 			},
 			capped: true,
 		},
+		{
+			// Training's grant sets Shortsword at 13, which its default stands for 12 points of once the skill is
+			// bought.
+			name: "a skill bought that the default of a skill a grant sets at a level the cap rests on rests on",
+			from: "Broadsword", to: "Broadsword",
+			setup: func(e *Entity) LevelCap {
+				shortsword := NewSkill(nil, nil, false)
+				shortsword.Name = "Shortsword"
+				shortsword.Difficulty = AttributeDifficulty{Attribute: IntelligenceID, Difficulty: difficulty.Average}
+				shortsword.Defaults = []*SkillDefault{{
+					DefaultType: SkillID,
+					Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Broadsword"}},
+					Modifier:    -fxp.Two,
+				}}
+				addTraitWithFeatures(e, "Training", newSkillGrantOf(shortsword, grantadjust.SetLevel, fxp.Thirteen,
+					grantmerge.Ignore))
+				return refCap(levelcap.Skill, "Shortsword", 0)
+			},
+			capped: true,
+		},
+		{
+			// Training's grant sets Feint at 17, 8 levels above the skill at 9, but 2 above it at 15.
+			name: "a skill a technique a grant sets at a level the cap rests on rests on", from: "Broadsword",
+			to: "Broadsword", points: fxp.One,
+			setup: func(e *Entity) LevelCap {
+				addTraitWithFeatures(e, "Training", newSkillGrantOf(newTechniqueOf("Broadsword", "Feint", 0),
+					grantadjust.SetLevel, fxp.FromInteger(17), grantmerge.Ignore))
+				return refCap(levelcap.Skill, "Feint", -3)
+			},
+			capped: true,
+		},
 	} {
 		e = NewEntity()
 		sk = addTestSkill(e, one.from, "", "", one.points)
@@ -989,14 +1057,20 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 		}
 		addTestLevelCap(e, levelcap.Skills, ref)
 		e.Recalculate()
+		previewOf := func(data *SkillEditData) Level {
+			edited := sk.withEditData(data)
+			uncapped := edited.levelBeforeGrants(nil, data.DefaultedFrom, nil)
+			return sk.LevelWithGrants(data, uncapped, func(points fxp.Int) Level {
+				return edited.levelAt(e, nil, points, nil)
+			})
+		}
 		skillData = sk.SkillEditData
 		skillData.Name = one.to
 		skillData.Points = fxp.Twenty
-		edited := sk.withEditData(&skillData)
-		uncapped := edited.levelBeforeGrants(nil, skillData.DefaultedFrom, nil)
-		preview := sk.LevelWithGrants(&skillData, uncapped, func(points fxp.Int) Level {
-			return edited.levelAt(e, nil, points, nil)
-		})
+		preview := previewOf(&skillData)
+		unedited := sk.SkillEditData
+		c.Equal(sk.LevelData.Level, previewOf(&unedited).Level,
+			"%s: a preview without the edits, after one with them, is the level the sheet shows", one.name)
 		sk.SkillEditData = skillData
 		e.Recalculate()
 		c.Equal(one.capped, cappedBy(sk.LevelData), "%s: the edited skill is capped on the sheet", one.name)

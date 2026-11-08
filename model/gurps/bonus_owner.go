@@ -72,10 +72,17 @@ func (b *BonusOwner) SetSubOwner(subOwner fmt.Stringer) {
 
 func (b *BonusOwner) basicAddToTooltip(amt *LeveledAmount, buffer *xbytes.InsertBuffer) {
 	if buffer != nil {
+		b.addAmountToTooltip(amt.Format(), buffer)
+	}
+}
+
+// addAmountToTooltip adds a line naming the owner, followed by the amount in brackets, to the tooltip, which may be nil.
+func (b *BonusOwner) addAmountToTooltip(amount string, buffer *xbytes.InsertBuffer) {
+	if buffer != nil {
 		buffer.WriteByte('\n')
 		buffer.WriteString(b.parentName())
 		buffer.WriteString(" [")
-		buffer.WriteString(amt.Format())
+		buffer.WriteString(amount)
 		buffer.WriteByte(']')
 	}
 }

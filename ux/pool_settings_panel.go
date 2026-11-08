@@ -49,7 +49,8 @@ func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Attrib
 
 // addThreshold appends a new threshold to the pool, undoably, and gives its state field the focus.
 func (p *poolSettingsPanel) addThreshold() {
-	threshold := &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()}
+	threshold := gurps.NewPoolThreshold()
+	threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
 	p.dockable.editStructure(i18n.Text("Add Pool Threshold"),
 		func() { p.def.Thresholds = append(p.def.Thresholds, threshold) }, threshold.KeyPrefix+"state")
 }

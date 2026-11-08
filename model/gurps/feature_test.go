@@ -106,6 +106,11 @@ func TestFeatureDescribe(t *testing.T) {
 	attribute.Limitation = stlimit.StrikingOnly
 	attributeLimitationIgnored := gurps.NewAttributeBonus(gurps.DexterityID)
 	attributeLimitationIgnored.Limitation = stlimit.StrikingOnly
+	attributeMultiplied := gurps.NewAttributeBonus(gurps.StrengthID)
+	attributeMultiplied.Multiply = true
+	attributeMultiplied.Amount = fxp.Half
+	attributeMultiplied.Limitation = stlimit.LiftingOnly
+	attributeMove := gurps.NewAttributeBonus(gurps.MoveID)
 
 	drOne := dr(fxp.Three, gurps.AllID, "skull")
 	drAgainst := dr(-fxp.Two, "crushing", "vitals")
@@ -278,6 +283,8 @@ func TestFeatureDescribe(t *testing.T) {
 		{"skill switchable", skillSwitchable, "[-3] to skill [Pickpocket], only while switched on"},
 		{"attribute limited", attribute, "[+18] to [ST] for striking only"},
 		{"attribute limitation only for ST", attributeLimitationIgnored, "[+1] to [DX]"},
+		{"attribute multiplied", attributeMultiplied, "[×0.5] to [ST] for lifting only"},
+		{"attribute move", attributeMove, "[+1] to [Move]"},
 		{"DR one location", drOne, "[+3] DR to the [Skull]"},
 		{"DR against", drAgainst, "[-2] DR to the [Vitals] against [crushing] attacks"},
 		{"DR all locations", drAll, "[+2] per level DR to [all locations]"},

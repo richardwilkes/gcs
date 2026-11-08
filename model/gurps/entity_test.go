@@ -302,6 +302,22 @@ func TestEntityAttributeBonus(t *testing.T) {
 	e.Recalculate()
 	c.Equal(fxp.Ten, e.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels, for throwing only")
 	c.Equal(fxp.Three, e.ThrowingStrengthBonus, "Throwing ST Bonus; leveled +1 bonus, with 3 levels, for throwing only")
+
+	bonus.Limitation = stlimit.None
+	bonus.PerLevel = false
+	bonus.Multiply = true
+	bonus.Amount = fxp.Two
+	e.Recalculate()
+	c.Equal(fxp.Ten, e.Attributes.Maximum("st"), "ST maximum; a multiplier from an item leaves it alone")
+	c.Equal(fxp.FromInteger(20), e.Attributes.Current("st"), "ST current; ×2 multiplier from an item")
+	c.Equal(fxp.Ten, e.Attributes.Maximum("hp"), "HP; derived from the maximum, so unchanged")
+	c.Equal(e.SwingFor(20), e.Swing(), "Swing; from the current ST")
+
+	bonus.Limitation = stlimit.LiftingOnly
+	e.Recalculate()
+	c.Equal(fxp.Ten, e.Attributes.Current("st"), "ST current; ×2 multiplier for lifting only")
+	c.Equal(fxp.FromInteger(80), fxp.Int(e.BasicLift()), "Basic Lift; ×2 multiplier for lifting only")
+	c.Equal(e.SwingFor(10), e.Swing(), "Swing; ×2 multiplier for lifting only")
 }
 
 // TestEntityThisArmorDRBonus verifies that a "this armor" DR bonus (one that names no locations) is applied exactly

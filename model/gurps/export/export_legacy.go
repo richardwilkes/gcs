@@ -221,39 +221,39 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
 	case "ST":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.StrengthID).String())
+		ex.writeAttribute(gurps.StrengthID, (*gurps.Attribute).Maximum)
 	case "DX":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.DexterityID).String())
+		ex.writeAttribute(gurps.DexterityID, (*gurps.Attribute).Maximum)
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.IntelligenceID).String())
+		ex.writeAttribute(gurps.IntelligenceID, (*gurps.Attribute).Maximum)
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HealthID).String())
+		ex.writeAttribute(gurps.HealthID, (*gurps.Attribute).Maximum)
 	case "FP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
+		ex.writeAttribute(fpAttrID, (*gurps.Attribute).Current)
 	case "BASIC_FP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(fpAttrID).String())
+		ex.writeAttribute(fpAttrID, (*gurps.Attribute).Maximum)
 	case "HP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HitPointsID).String())
+		ex.writeAttribute(gurps.HitPointsID, (*gurps.Attribute).Current)
 	case "BASIC_HP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HitPointsID).String())
+		ex.writeAttribute(gurps.HitPointsID, (*gurps.Attribute).Maximum)
 	case "WILL":
-		ex.writeEncodedText(ex.entity.Attributes.Current("will").String())
+		ex.writeAttribute("will", (*gurps.Attribute).Maximum)
 	case "FRIGHT_CHECK":
-		ex.writeEncodedText(ex.entity.Attributes.Current("fright_check").String())
+		ex.writeAttribute("fright_check", (*gurps.Attribute).Maximum)
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicSpeedID).String())
+		ex.writeAttribute(gurps.BasicSpeedID, (*gurps.Attribute).Maximum)
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicMoveID).String())
+		ex.writeAttribute(gurps.BasicMoveID, (*gurps.Attribute).Maximum)
 	case "PERCEPTION":
-		ex.writeEncodedText(ex.entity.Attributes.Current("per").String())
+		ex.writeAttribute("per", (*gurps.Attribute).Maximum)
 	case "VISION":
-		ex.writeEncodedText(ex.entity.Attributes.Current("vision").String())
+		ex.writeAttribute("vision", (*gurps.Attribute).Maximum)
 	case "HEARING":
-		ex.writeEncodedText(ex.entity.Attributes.Current("hearing").String())
+		ex.writeAttribute("hearing", (*gurps.Attribute).Maximum)
 	case "TASTE_SMELL":
-		ex.writeEncodedText(ex.entity.Attributes.Current("taste_smell").String())
+		ex.writeAttribute("taste_smell", (*gurps.Attribute).Maximum)
 	case "TOUCH":
-		ex.writeEncodedText(ex.entity.Attributes.Current("touch").String())
+		ex.writeAttribute("touch", (*gurps.Attribute).Maximum)
 	case "THRUST":
 		ex.writeEncodedText(gurps.Roller.Format(ex.entity.Thrust()))
 	case "SWING":
@@ -289,25 +289,25 @@ func (ex *legacyExporter) emitKey(key string) error {
 		}
 		ex.writeEncodedText(best)
 	case "TIRED":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "tired").String())
+		ex.writePoolThreshold(fpAttrID, "tired")
 	case "FP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "collapse").String())
+		ex.writePoolThreshold(fpAttrID, "collapse")
 	case "UNCONSCIOUS":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "unconscious").String())
+		ex.writePoolThreshold(fpAttrID, "unconscious")
 	case "REELING":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "reeling").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "reeling")
 	case "HP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "collapse").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "collapse")
 	case "DEATH_CHECK_1":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #1").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #1")
 	case "DEATH_CHECK_2":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #2").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #2")
 	case "DEATH_CHECK_3":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #3").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #3")
 	case "DEATH_CHECK_4":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #4").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dying #4")
 	case "DEAD":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dead").String())
+		ex.writePoolThreshold(gurps.HitPointsID, "dead")
 	case "BASIC_LIFT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.BasicLift()))
 	case "ONE_HANDED_LIFT":
@@ -488,6 +488,22 @@ func (ex *legacyExporter) emitKey(key string) error {
 
 func (ex *legacyExporter) unidentifiedKey(key string) {
 	ex.writeEncodedText(fmt.Sprintf(`Unidentified key: %q`, key))
+}
+
+// writeAttribute writes the value that value gives for the attribute with the given ID, or nothing when the sheet's
+// attribute set has no such attribute.
+func (ex *legacyExporter) writeAttribute(attrID string, value func(*gurps.Attribute) fxp.Int) {
+	if attr, ok := ex.entity.Attributes.Set[attrID]; ok && attr.AttributeDef() != nil {
+		ex.writeEncodedText(value(attr).String())
+	}
+}
+
+// writePoolThreshold writes the value of the pool's threshold with the given state, or nothing when the pool or the
+// threshold is missing.
+func (ex *legacyExporter) writePoolThreshold(attrID, state string) {
+	if value := ex.entity.Attributes.PoolThreshold(attrID, state); value != fxp.Min {
+		ex.writeEncodedText(value.String())
+	}
 }
 
 func splitIntoMap(in, prefix string, m map[string]bool) {
@@ -1151,6 +1167,8 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, kind int) {
 			case ex.processAttributeKey(key, def, attr):
 			case key == "VALUE":
 				ex.writeEncodedText(attr.Maximum().String())
+			case key == "CURRENT":
+				ex.writeEncodedText(attr.Current().String())
 			default:
 				ex.unidentifiedKey(key)
 			}

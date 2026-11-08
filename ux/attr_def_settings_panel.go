@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -20,13 +21,23 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
+// The reference key suffixes, after the definition's target key prefix, of the widgets of an attribute's row that the
+// dockable reaches for.
+const (
+	attrDefIDKey     = "id"
+	attrDefHeaderKey = "header"
+)
+
+// attrDefSettingsPanel is the row of the attribute settings that edits one definition. It starts out collapsed to its
+// header, which names the definition, and expands to the definition's fields when the header is clicked; see
+// attributeSettingsDockable.expandedRows.
 type attrDefSettingsPanel struct {
 	unison.Panel
-	dockable           *attributeSettingsDockable
-	def                *gurps.AttributeDef
-	deleteButton       *unison.Button
-	addThresholdButton *unison.Button
-	poolPanel          *poolSettingsPanel
+	dockable     *attributeSettingsDockable
+	def          *gurps.AttributeDef
+	deleteButton *unison.Button
+	header       *rowDisclosure
+	poolPanel    *poolSettingsPanel
 }
 
 func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.AttributeDef) *attrDefSettingsPanel {
@@ -36,35 +47,104 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 	}
 	p.Self = p
 	configureEditorRow(p.AsPanel(), 3, true)
+	p.fill()
+	return p
+}
+
+// fill adds the row's parts for its state: the drag handle, the buttons and the content, which is the header alone
+// while the row is collapsed.
+func (p *attrDefSettingsPanel) fill() {
 	p.AddChild(NewDragHandle(editorRowDragKey, &editorRowDragData{
-		editor: dockable,
+		editor: p.dockable,
 		row:    p.AsPanel(),
 		title:  i18n.Text("Attribute Definition Drag"),
-		move:   func(to int) bool { return dockable.moveAttributeDef(def, to) },
+		move:   func(to int) bool { return p.dockable.moveAttributeDef(p.def, to) },
 	}))
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
-	return p
+}
+
+// isExpanded reports whether the row shows the definition's fields rather than its header alone.
+func (p *attrDefSettingsPanel) isExpanded() bool {
+	return p.dockable.expandedRows[p.def.KeyPrefix]
+}
+
+// toggle expands or collapses the row. Collapsing first closes the editors open on the items the definition's
+// thresholds grant, which the collapsed row no longer shows, and leaves the row as it is if one of them stays open.
+func (p *attrDefSettingsPanel) toggle() {
+	expand := !p.isExpanded()
+	if !expand && !closeGrantItemEditorsWithin(p.dockable, p) {
+		return
+	}
+	p.dockable.showExpanded(expand, p)
+}
+
+// show fills the row again, expanded or not as asked, with its delete button as enabled as it was, and reports whether
+// the focus was within it, which the filling leaves nowhere.
+func (p *attrDefSettingsPanel) show(expanded bool) (hadFocus bool) {
+	// CurrentFocus, unlike Focus, leaves the focus alone when an earlier row's filling has taken it out of the window.
+	hadFocus = unison.AncestorIsOrSelf(p.Window().CurrentFocus(), p)
+	canDelete := p.deleteButton.Enabled()
+	if expanded {
+		p.dockable.expandedRows[p.def.KeyPrefix] = true
+	} else {
+		delete(p.dockable.expandedRows, p.def.KeyPrefix)
+	}
+	p.RemoveAllChildren()
+	p.fill()
+	p.deleteButton.SetEnabled(canDelete)
+	p.MarkForLayoutRecursivelyUpward()
+	return hadFocus
+}
+
+// refreshHeader has the header name the definition as it now is.
+func (p *attrDefSettingsPanel) refreshHeader() {
+	p.header.setText(attrDefSummary(p.def))
+}
+
+// holdsKey reports whether the widget with the reference key belongs to the row: to the definition or to one of its
+// thresholds, whose keys begin with their target key prefixes.
+func (p *attrDefSettingsPanel) holdsKey(refKey string) bool {
+	if p.def.KeyPrefix != "" && strings.HasPrefix(refKey, p.def.KeyPrefix) {
+		return true
+	}
+	return slices.ContainsFunc(p.def.Thresholds, func(threshold *gurps.PoolThreshold) bool {
+		return threshold.KeyPrefix != "" && strings.HasPrefix(refKey, threshold.KeyPrefix)
+	})
+}
+
+// attrDefSummary returns the line naming the definition in its row's header: its ID, its name if it has one, and its
+// type.
+func attrDefSummary(def *gurps.AttributeDef) string {
+	parts := []string{def.DefID}
+	if name := strings.TrimSpace(def.Name); name != "" {
+		parts = append(parts, name)
+	}
+	return strings.Join(append(parts, def.Type.String()), i18n.Text(" · "))
 }
 
 func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	p.deleteButton = unison.NewSVGButton(unison.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
 	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove attribute"))
-
-	p.addThresholdButton = unison.NewSVGButton(unison.CircledAddSVG)
-	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
-	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
-	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)
-	return newEditorRowButtonColumn(p.deleteButton, p.addThresholdButton)
+	if !p.isExpanded() {
+		return newEditorRowButtonColumn(p.deleteButton)
+	}
+	addThresholdButton := unison.NewSVGButton(unison.CircledAddSVG)
+	addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
+	addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
+	addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)
+	return newEditorRowButtonColumn(p.deleteButton, addThresholdButton)
 }
 
 func (p *attrDefSettingsPanel) deleteAttrDef() {
 	p.RemoveFromParent()
 	p.dockable.adjustDeleteButtons()
+	followGrantItemEditors(p.dockable)
 	undo := p.dockable.prepareUndo(i18n.Text("Delete Attribute"))
 	delete(p.dockable.model.Set, p.def.DefID)
 	p.dockable.finishAndPostUndo(undo)
+	p.dockable.refreshThresholdFeatures(p.def.DefID)
 	p.dockable.MarkModified(nil)
 }
 
@@ -77,18 +157,35 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
+		VAlign: align.Middle,
 		HGrab:  true,
 	})
+	p.header = newRowDisclosure(attrDefSummary(p.def), p.isExpanded(), p.toggle)
+	p.header.RefKey = p.def.KeyPrefix + attrDefHeaderKey
+	p.header.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill, HGrab: true})
+	content.AddChild(p.header)
+	if p.isExpanded() {
+		p.addFields(content)
+	} else {
+		p.poolPanel = nil
+	}
+	return content
+}
 
+// addFields adds the definition's fields to the content, below the header.
+func (p *attrDefSettingsPanel) addFields(content *unison.Panel) {
 	text := i18n.Text("ID")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	field := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"id", text,
+	field := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+attrDefIDKey, text,
 		func() string { return p.def.DefID },
 		func(s string) {
 			if p.validateAttrID(s) {
-				delete(p.dockable.model.Set, p.def.DefID)
+				was := p.def.DefID
+				delete(p.dockable.model.Set, was)
 				p.def.DefID = strings.TrimSpace(strings.ToLower(s))
 				p.dockable.model.Set[p.def.DefID] = p.def
+				p.dockable.refreshThresholdFeatures(was, p.def.DefID)
+				p.refreshHeader()
 			}
 		})
 	field.ValidateCallback = func(field *StringField, _ *gurps.AttributeDef) func() bool {
@@ -101,7 +198,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	addLabelAndTargetedPopup(content, p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"), "",
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.Types...)
+		attribute.Types...).withoutUndo()
 
 	if !p.def.IsSeparator() {
 		label := NewFieldLeadingLabel(i18n.Text("Placement"), false)
@@ -111,7 +208,11 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	const nameKey = "name"
 	nameGet := func() string { return p.def.Name }
-	nameSet := func(s string) { p.def.Name = s }
+	nameSet := func(s string) {
+		p.def.Name = s
+		p.dockable.refreshThresholdFeatures(p.def.DefID)
+		p.refreshHeader()
+	}
 	if p.def.IsSeparator() {
 		addLabelAndTargetedStringField(content, p.dockable.targetMgr, p.def.KeyPrefix+nameKey, i18n.Text("Name"),
 			i18n.Text("A title to use with the separator"), prototypeMinIDWidth, nameGet, nameSet)
@@ -149,7 +250,6 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	} else {
 		p.poolPanel = nil
 	}
-	return content
 }
 
 // createPlacementPanel builds the content that follows the "Placement" label. When the placement is Hidden, it expands
@@ -233,16 +333,24 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
+// applyAttributeType changes the attribute's type in a single undo edit of the whole set of definitions, since the
+// change may add a threshold, drop the thresholds of a type that has none, as copying the definitions would (see
+// gurps.AttributeDef.Clone), or clear the fields a separator has no use for, all of which undoing it must bring back.
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
-	p.def.Type = attrType
-	if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
-		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
-	} else if p.def.IsSeparator() {
-		p.def.FullName = ""
-		p.def.Base = ""
-		p.def.CostPerPoint = 0
-		p.def.CostAdjPercentPerSM = 0
-		p.def.Thresholds = nil
-	}
-	p.dockable.sync()
+	p.dockable.editStructure(i18n.Text("Attribute Type"), func() {
+		p.def.Type = attrType
+		if p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef {
+			p.def.Thresholds = nil
+		} else if len(p.def.Thresholds) == 0 {
+			threshold := gurps.NewPoolThreshold()
+			threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
+			p.def.Thresholds = append(p.def.Thresholds, threshold)
+		}
+		if p.def.IsSeparator() {
+			p.def.FullName = ""
+			p.def.Base = ""
+			p.def.CostPerPoint = 0
+			p.def.CostAdjPercentPerSM = 0
+		}
+	}, "")
 }

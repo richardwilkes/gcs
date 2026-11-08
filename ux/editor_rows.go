@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/role"
+	"github.com/richardwilkes/unison/enums/side"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -208,7 +209,6 @@ func newSectionToggle(section unison.Paneler, border *TitledBorder, collapsed bo
 	t := &sectionToggle{border: border, collapsed: collapsed, changed: changed}
 	t.Self = t
 	t.RefKey = sectionToggleKey
-	t.SetFocusable(true)
 	t.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	panel := section.AsPanel()
 	// The title bar takes the first row in place of the strip the border reserved, so the border leaves the strip to
@@ -228,43 +228,76 @@ func newSectionToggle(section unison.Paneler, border *TitledBorder, collapsed bo
 	})
 	// A panel draws its border over its children, so the border draws the chevron and the focus ring.
 	panel.SetBorder(&sectionToggleBorder{Border: panel.Border(), toggle: t})
-	t.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool { return true }
-	t.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
-		if where.In(t.ContentRect(true)) {
-			t.toggle()
+	makeDisclosure(t.AsPanel(), func() bool { return !t.collapsed }, t.toggle)
+	t.Accessibility.Name = border.Title
+	return t
+}
+
+// makeDisclosure has the panel act as a disclosure triangle whose state expanded reports: it takes the focus, and a
+// click within it, Space or Return calls toggle, as do a screen reader's press and its request to expand or collapse
+// while the panel is the other way. A held key toggles once. The caller names the panel.
+func makeDisclosure(p *unison.Panel, expanded func() bool, toggle func()) {
+	p.SetFocusable(true)
+	p.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool { return true }
+	p.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+		if where.In(p.ContentRect(true)) {
+			toggle()
 		}
 		return true
 	}
-	t.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return unison.PointingCursor() }
-	t.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+	p.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return unison.PointingCursor() }
+	p.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		if mods&mod.NonSticky != 0 ||
 			(keyCode != unison.KeySpace && keyCode != unison.KeyReturn && keyCode != unison.KeyNumPadEnter) {
 			return false
 		}
-		t.toggle()
+		if !repeat {
+			toggle()
+		}
 		return true
 	}
-	t.Accessibility.Role = role.DisclosureTriangle
-	t.Accessibility.Name = border.Title
-	addAccessibilityCallback(t, func(node *accessibility.Node) {
+	p.Accessibility.Role = role.DisclosureTriangle
+	addAccessibilityCallback(p, func(node *accessibility.Node) {
 		node.Expandable = true
-		node.Expanded = !t.collapsed
+		node.Expanded = expanded()
 		node.Actions = node.Actions.With(accessibility.Press, accessibility.Expand, accessibility.Collapse)
 	})
-	t.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
+	p.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
 		switch req.Action {
 		case accessibility.Press:
-			t.toggle()
+			toggle()
 		case accessibility.Expand, accessibility.Collapse:
-			if t.collapsed == (req.Action == accessibility.Expand) {
-				t.toggle()
+			if expanded() != (req.Action == accessibility.Expand) {
+				toggle()
 			}
 		default:
 			return false
 		}
 		return true
 	}
-	return t
+}
+
+// newDisclosureChevron returns the chevron of a disclosure set in the font: pointing right, or down when expanded.
+func newDisclosureChevron(font unison.Font, expanded bool) *unison.DrawableSVG {
+	size := max(font.Baseline()-2, 6)
+	chevron := &unison.DrawableSVG{SVG: unison.CircledChevronRightSVG, Size: geom.NewSize(size, size)}
+	if expanded {
+		chevron.RotationDegrees = 90
+	}
+	return chevron
+}
+
+// drawDisclosureHighlight draws, within r, the background of a disclosure the pointer is over and the ring of one that
+// has the focus.
+func drawDisclosureHighlight(gc *unison.Canvas, r geom.Rect, hovered, focused bool) {
+	radius := geom.NewUniformSize(compactCornerRadius)
+	if hovered {
+		gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
+	}
+	if focused {
+		ring := r.Inset(geom.NewUniformInsets(0.5))
+		gc.DrawRoundedRect(ring, radius, unison.ThemeFocus.Paint(gc, ring, paintstyle.Stroke))
+	}
 }
 
 // toggle collapses or expands the section.
@@ -284,11 +317,8 @@ type sectionToggleBorder struct {
 func (b *sectionToggleBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
 	b.Border.Draw(gc, rect)
 	strip := b.toggle.FrameRect()
-	size := max(b.toggle.border.font().Baseline()-2, 6)
-	chevron := &unison.DrawableSVG{SVG: unison.CircledChevronRightSVG, Size: geom.NewSize(size, size)}
-	if !b.toggle.collapsed {
-		chevron.RotationDegrees = 90
-	}
+	chevron := newDisclosureChevron(b.toggle.border.font(), !b.toggle.collapsed)
+	size := chevron.Size.Height
 	chevron.DrawInRect(gc, geom.NewRect(strip.X+unison.StdHSpacing, strip.CenterY()-size/2, size, size), nil,
 		colors.OnHeader.Paint(gc, strip, paintstyle.Fill))
 	if b.toggle.Focused() {
@@ -383,4 +413,75 @@ func newEditorRowButtonColumn(buttons ...*unison.Button) *unison.Panel {
 		column.AddChild(button)
 	}
 	return column
+}
+
+// rowDisclosure is the header line of an editor row that can be collapsed: a chevron, pointing right while the row is
+// collapsed and down while it is expanded, followed by a line naming the row. A click, Space or Return toggles the row,
+// as a screen reader can ask it to; the row builds a new header each time it is filled.
+type rowDisclosure struct {
+	unison.Panel
+	text      string
+	expanded  bool
+	hovered   bool
+	built     *unison.Text
+	builtFont unison.FontDescriptor
+}
+
+// newRowDisclosure returns the header of an editor row that reads text and is expanded or not as given; toggle
+// collapses or expands the row.
+func newRowDisclosure(text string, expanded bool, toggle func()) *rowDisclosure {
+	h := &rowDisclosure{expanded: expanded}
+	h.Self = h
+	h.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 4}))
+	h.SetSizer(h.sizes)
+	h.DrawCallback = h.draw
+	h.MouseEnterCallback = func(_ geom.Point, _ mod.Modifiers) bool { return h.hover(true) }
+	h.MouseExitCallback = func() bool { return h.hover(false) }
+	makeDisclosure(h.AsPanel(), func() bool { return h.expanded }, toggle)
+	h.setText(text)
+	return h
+}
+
+// setText replaces the line, which is also what a screen reader calls the header.
+func (h *rowDisclosure) setText(text string) {
+	h.text = text
+	h.built = nil
+	h.Accessibility.Name = text
+	h.MarkForLayoutRecursivelyUpward()
+	h.MarkForRedraw()
+}
+
+func (h *rowDisclosure) hover(on bool) bool {
+	h.hovered = on
+	h.MarkForRedraw()
+	return true
+}
+
+// label returns the line set in the label font, built anew when the font has changed.
+func (h *rowDisclosure) label() *unison.Text {
+	font := unison.DefaultLabelTheme.Font
+	if desc := font.Descriptor(); h.built == nil || h.builtFont != desc {
+		h.built = unison.NewText(h.text, &unison.TextDecoration{
+			Font:            font,
+			OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
+		})
+		h.builtFont = desc
+	}
+	return h.built
+}
+
+func (h *rowDisclosure) sizes(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	font := unison.DefaultLabelTheme.Font
+	prefSize, _ = unison.LabelContentSizes(h.label(), newDisclosureChevron(font, h.expanded), font, side.Left,
+		unison.StdIconGap)
+	prefSize = prefSize.Add(h.Border().Insets().Size()).Ceil()
+	return prefSize, prefSize, unison.MaxSize(prefSize)
+}
+
+func (h *rowDisclosure) draw(gc *unison.Canvas, _ geom.Rect) {
+	drawDisclosureHighlight(gc, h.ContentRect(true), h.hovered, h.Focused())
+	font := unison.DefaultLabelTheme.Font
+	unison.DrawLabel(gc, h.ContentRect(false), align.Start, align.Middle, font, h.label(),
+		unison.DefaultLabelTheme.OnBackgroundInk, nil, newDisclosureChevron(font, h.expanded), side.Left,
+		unison.StdIconGap, false)
 }

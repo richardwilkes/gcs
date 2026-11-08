@@ -107,39 +107,92 @@
 			"cost_per_point": 3,
 			"thresholds": [
 				{
+					"id": "lluMWd6o3hHfqEyI1",
 					"state": "Unconscious",
 					"value": "-$fp",
-					"ops": [
-						"halve_move",
-						"halve_dodge",
-						"halve_st"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"limitation": "lifting_only",
+							"attribute": "st",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "l0LrJDnfVPYs_-uQI",
 					"state": "Collapse",
 					"value": "0",
 					"explanation": "- Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\n- Each FP you lose below 0 also causes 1 HP of injury\n- Move, Dodge and ST are halved (B426)",
-					"ops": [
-						"halve_move",
-						"halve_dodge",
-						"halve_st"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"limitation": "lifting_only",
+							"attribute": "st",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lSB3Gw8_6xsmaqN-x",
 					"state": "Tired",
 					"value": "Math.ceil($fp / 3) - 1",
 					"explanation": "Move, Dodge and ST are halved (B426)",
-					"ops": [
-						"halve_move",
-						"halve_dodge",
-						"halve_st"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"limitation": "lifting_only",
+							"attribute": "st",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lEEDz2JtZYh2-SEgX",
 					"state": "Tiring",
 					"value": "$fp - 1"
 				},
 				{
+					"id": "lVaXOwvjNtlX2FzEW",
 					"state": "Rested",
 					"value": "$fp"
 				}
@@ -155,72 +208,151 @@
 			"cost_adj_percent_per_sm": 10,
 			"thresholds": [
 				{
+					"id": "lDyO3pkC2I77a6l6y",
 					"state": "Dead",
 					"value": "Math.round(-$hp * 5)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "l4C8Cfgv9LnLt1Qwr",
 					"state": "Dying #4",
 					"value": "Math.round(-$hp * 4)",
 					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-4 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lzA6NdQNZ2QrECaEY",
 					"state": "Dying #3",
 					"value": "Math.round(-$hp * 3)",
 					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-3 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "l8MGGVkG4dQkFRknl",
 					"state": "Dying #2",
 					"value": "Math.round(-$hp * 2)",
 					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-2 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "l786hiRtAyiZEQIp2",
 					"state": "Dying #1",
 					"value": "-$hp",
 					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-1 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lv0Xe7J0ZozwVcLD_",
 					"state": "Collapse",
 					"value": "0",
 					"explanation": "- Roll vs. HT every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lxwdx2jxHhWZ4l5Kz",
 					"state": "Reeling",
 					"value": "Math.ceil($hp / 3) - 1",
 					"explanation": "Move and Dodge are halved (B419)",
-					"ops": [
-						"halve_move",
-						"halve_dodge"
+					"features": [
+						{
+							"type": "attribute_bonus",
+							"attribute": "move",
+							"multiply": true,
+							"amount": 0.5
+						},
+						{
+							"type": "attribute_bonus",
+							"attribute": "dodge",
+							"multiply": true,
+							"amount": 0.5
+						}
 					]
 				},
 				{
+					"id": "lru2Jk6eogs2wUjVh",
 					"state": "Wounded",
 					"value": "$hp - 1"
 				},
 				{
+					"id": "llYQN1_nj87Vg-lmR",
 					"state": "Healthy",
 					"value": "$hp"
 				}

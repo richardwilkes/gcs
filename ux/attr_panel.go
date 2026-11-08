@@ -22,10 +22,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/zeebo/xxh3"
 )
 
@@ -35,6 +38,11 @@ var dimmedTextColor = unison.ThemeOnSurface.Derive(func(basedOn unison.ThemeColo
 		Dark:  basedOn.Dark.SetAlphaIntensity(0.5),
 	}
 })
+
+// adjustedInk is the ink of a value that a pool threshold, or a multiplier, holds away from its base, and of the state
+// of a pool whose current threshold has features. Warning is what the encumbrance block uses for the temporary
+// condition of being overloaded, and users can retheme it.
+var adjustedInk unison.Ink = unison.ThemeWarning
 
 // AttrPanel holds the contents of an attributes block on the sheet.
 type AttrPanel struct {
@@ -48,6 +56,9 @@ type AttrPanel struct {
 	nameLabels  map[string]*unison.Label
 	valueFields map[string]unison.Paneler
 	stateLabels map[string]*unison.Label
+	// adjusters holds, for each non-pool attribute row, the function that shows whether its current value is adjusted;
+	// see trackAdjustment.
+	adjusters map[string]func()
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
@@ -150,6 +161,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	a.rowStarts = nil
 	a.nameLabels = make(map[string]*unison.Label)
 	a.valueFields = make(map[string]unison.Paneler)
+	a.adjusters = make(map[string]func())
 	if a.kind == gurps.PoolAttrKind {
 		a.stateLabels = make(map[string]*unison.Label)
 	}
@@ -291,29 +303,39 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					a.stateLabels[def.ID()] = state
 				} else {
 					var valueField unison.Paneler
+					var adjust func()
 					editable := false
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
-						field := NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
+						field := NewNonEditablePageFieldEndFor(func() string { return attr.Current().String() })
 						field.SetLayoutData(&unison.FlexLayoutData{
 							HSpan:  2,
 							HAlign: align.Fill,
 							VAlign: align.Middle,
 						})
 						valueField = field
+						adjust = trackAdjustment(field, attr, adjustableLabelInk(field.Label), nil)
 					} else {
 						a.AddChild(a.createPointsField(attr))
 						editable = true
 						if def.AllowsDecimal() {
-							valueField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
+							field := NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() fxp.Int { return attr.Maximum() },
 								func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
+							showCurrentWhileIdle(field, func() string { return attr.Current().String() })
+							valueField = field
+							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field), hiddenCurrent(field))
 						} else {
-							valueField = NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
+							field := NewIntegerPageField(a.targetMgr, a.prefix+attr.AttrID, def.CombinedName(),
 								func() int { return attr.Maximum().Floor().AsInteger[int]() },
 								func(v int) { attr.SetMaximum(fxp.FromInteger(v)) },
 								fxp.Min.Floor().AsInteger[int](), fxp.Max.Floor().AsInteger[int](), false, true)
+							showCurrentWhileIdle(field, func() string { return attr.Current().Floor().String() })
+							valueField = field
+							adjust = trackAdjustment(field, attr, adjustableFieldInk(field.Field), hiddenCurrent(field))
 						}
 					}
+					adjust()
+					a.adjusters[def.ID()] = adjust
 					a.AddChild(valueField)
 					a.valueFields[def.ID()] = valueField
 					name := NewPageLabel(def.CombinedName())
@@ -352,6 +374,118 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	return field
 }
 
+// showCurrentWhileIdle has a field that edits the maximum of a non-pool attribute show the attribute's current value,
+// as current renders it, while the field is not being edited.
+func showCurrentWhileIdle[T xmath.Integer | xmath.Float](field *NumericField[T], current func() string) {
+	field.DisplayFormat = func(T) string { return current() }
+	// The field was synced with the exact text when it was created, before the display format was installed.
+	field.Sync()
+}
+
+// hiddenCurrent returns a function that returns the current value a field set up by showCurrentWhileIdle shows while
+// idle, if the field shows the maximum instead, as it does while being edited, or an empty string if not.
+func hiddenCurrent[T xmath.Integer | xmath.Float](field *NumericField[T]) func() string {
+	return func() string {
+		if field.showingDisplayText {
+			return ""
+		}
+		return field.DisplayFormat(field.get())
+	}
+}
+
+// trackAdjustment has the value field of a non-pool attribute's row drawn in adjustedInk, and spoken as adjusted from
+// the attribute's maximum, while the attribute's current value is adjusted (see adjustedFrom), and returns the function
+// that brings the field up to date. setInk is called with the new state each time it changes. hidden, if not nil,
+// returns the current value while the field shows the maximum instead (see hiddenCurrent), and the field is then spoken
+// as adjusted to that value.
+func trackAdjustment(field unison.Paneler, attr *gurps.Attribute, setInk func(adjusted bool), hidden func() string) func() {
+	var from string // The maximum the current value is adjusted from, or empty when it isn't adjusted.
+	addAccessibilityCallback(field, func(node *accessibility.Node) {
+		if from == "" {
+			return
+		}
+		if hidden != nil {
+			if current := hidden(); current != "" {
+				node.Name = i18n.Text("%s, adjusted to %s", node.Name, current)
+				return
+			}
+		}
+		node.Name = i18n.Text("%s, adjusted from %s", node.Name, from)
+		if node.Role == role.Label {
+			// The name of static text is its text, so, as speakAs does, the text is withheld now that the name says
+			// more, since macOS would speak both.
+			node.Text = nil
+		}
+	})
+	return func() {
+		was := from != ""
+		from = adjustedFrom(attr)
+		if adjusted := from != ""; adjusted != was {
+			setInk(adjusted)
+		}
+	}
+}
+
+// adjustedFrom returns the maximum of a non-pool attribute as text if the pools' current thresholds or the multipliers
+// hold its current value away from the value it has without them, or an empty string if not. That value is the
+// maximum or, for an attribute standing in for Striking ST, Lifting ST or Throwing ST, the maximum with the ST bonuses
+// under the same limitation added and the sum floored, as gurps.Attribute.Current takes them, since those bonuses are
+// part of the ST in use rather than an adjustment of it.
+func adjustedFrom(attr *gurps.Attribute) string {
+	maximum := attr.Maximum()
+	unadjusted := maximum
+	if e := attr.Entity; e != nil {
+		switch attr.AttrID {
+		case gurps.StrikingStrengthID:
+			unadjusted = (maximum + e.StrikingStrengthBonus).Floor()
+		case gurps.LiftingStrengthID:
+			unadjusted = (maximum + e.LiftingStrengthBonus).Floor()
+		case gurps.ThrowingStrengthID:
+			unadjusted = (maximum + e.ThrowingStrengthBonus).Floor()
+		}
+	}
+	if attr.Current() == unadjusted {
+		return ""
+	}
+	return maximum.String()
+}
+
+// adjustableFieldInk returns a function that draws the field's text in adjustedInk, or in the inks it has now.
+func adjustableFieldInk(field *unison.Field) func(adjusted bool) {
+	onEditable, onBackground := field.OnEditableInk, field.OnBackgroundInk
+	return func(adjusted bool) {
+		if adjusted {
+			field.OnEditableInk, field.OnBackgroundInk = adjustedInk, adjustedInk
+		} else {
+			field.OnEditableInk, field.OnBackgroundInk = onEditable, onBackground
+		}
+		field.MarkForRedraw()
+	}
+}
+
+// adjustableLabelInk returns a function that draws the label's text in adjustedInk, or in the ink it has now.
+func adjustableLabelInk(label *unison.Label) func(adjusted bool) {
+	normal := label.OnBackgroundInk
+	return func(adjusted bool) {
+		ink := normal
+		if adjusted {
+			ink = adjustedInk
+		}
+		label.OnBackgroundInk = ink
+		label.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = ink })
+		label.MarkForRedraw()
+	}
+}
+
+// adjustedTooltip returns the tooltip text followed by the lines naming the bonuses that adjust the current value it
+// describes, as gurps.Entity.CurrentAdjustmentTooltip lists them, if there are any.
+func adjustedTooltip(text, adjustments string) string {
+	if adjustments == "" {
+		return text
+	}
+	return text + "\n" + i18n.Text("Adjusted by:") + "\n" + adjustments
+}
+
 func spokenPoints(points fxp.Int) string {
 	if points == fxp.One || points == fxp.NegOne {
 		return i18n.Text("%s point", points.String())
@@ -371,6 +505,9 @@ func (a *AttrPanel) Sync() {
 			if attr, ok := a.entity.Attributes.Set[id]; ok {
 				a.updateBonusTooltips(id, attr)
 			}
+		}
+		for _, adjust := range a.adjusters {
+			adjust()
 		}
 		for id, label := range a.stateLabels {
 			if attr, ok := a.entity.Attributes.Set[id]; ok {
@@ -394,13 +531,17 @@ func (a *AttrPanel) updateBonusTooltips(id string, attr *gurps.Attribute) {
 	}
 }
 
-// bonusTooltipText returns the tooltip text for an attribute, or an empty string if it doesn't need one.
+// bonusTooltipText returns the tooltip text for an attribute, or an empty string if it doesn't need one. A non-pool
+// attribute whose current value is adjusted (see adjustedFrom) leads with its maximum; the bonuses that adjust it are
+// listed after those that make up the maximum, among the modifiers BonusTooltip lists.
 func (a *AttrPanel) bonusTooltipText(attr *gurps.Attribute) string {
 	var parts []string
 	if a.kind == gurps.PoolAttrKind {
 		if def := attr.AttributeDef(); def != nil && def.FullName != "" {
 			parts = append(parts, def.FullName)
 		}
+	} else if from := adjustedFrom(attr); from != "" {
+		parts = append(parts, i18n.Text("Adjusted from %s", from))
 	}
 	if tooltip := attr.BonusTooltip(); tooltip != "" {
 		parts = append(parts, tooltip)
@@ -423,20 +564,48 @@ var poolThresholdDescFont = &unison.DynamicFont{
 	},
 }
 
+// updateThreshold shows the state of the pool's current threshold, if it has one, in adjustedInk when the threshold has
+// features it doesn't ignore (see gurps.ThresholdIgnores), which are then listed in the tooltip after its explanation,
+// which is Markdown, as the plain text they are described with.
 func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) {
 	label.DrawCallback = label.DefaultDraw
 	label.Font = poolThresholdDescFont
 	var txt string
 	var tip *unison.Panel
+	var ink unison.Ink = unison.ThemeOnSurface
 	if threshold := attr.CurrentThreshold(); threshold != nil {
-		txt = "[" + threshold.State + "]"
+		txt = "[" + threshold.String() + "]"
+		var explanation strings.Builder
 		if threshold.Explanation != "" {
-			tip = newMarkdownTooltip(threshold.ResolveExplanation(attr), "")
+			explanation.WriteString(threshold.ResolveExplanation(attr))
+		}
+		listed := false
+		defs := gurps.AttributeDefsFor(a.entity)
+		for _, f := range threshold.Features {
+			if gurps.ThresholdIgnores(defs, f) {
+				continue
+			}
+			switch {
+			case listed:
+				explanation.WriteByte('\n')
+			case explanation.Len() != 0:
+				explanation.WriteString("\n\n")
+			}
+			listed = true
+			explanation.WriteString("- ")
+			explanation.WriteString(escapeMarkdown(gurps.DescribeThresholdFeature(f, a.entity, nil,
+				func(s string) string { return s })))
+		}
+		if listed {
+			ink = adjustedInk
+		}
+		if explanation.Len() != 0 {
+			tip = newMarkdownTooltip(explanation.String(), "")
 		}
 	}
 	label.Text = unison.NewSmallCapsText(txt, &unison.TextDecoration{
 		Font:            poolThresholdDescFont,
-		OnBackgroundInk: unison.ThemeOnSurface,
+		OnBackgroundInk: ink,
 	})
 	label.Tooltip = tip
 }

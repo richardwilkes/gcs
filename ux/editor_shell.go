@@ -133,21 +133,21 @@ func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func
 // objects within those changes are closed first, asking whether to discard their changes rather than whether to save
 // them, since what they would save is dropped with the rest. The editor stays open if one of them does.
 func (s *editorShell) discardAndClose() {
-	if !s.closeSubEditorsForDiscard() {
+	if !closeSubEditorsForDiscard(s.editor()) {
 		return
 	}
 	s.promptForSave = false
 	s.editor().AttemptClose()
 }
 
-// closeSubEditorsForDiscard closes the editors open on objects within the editor's pending data, as CloseGroup does,
+// closeSubEditorsForDiscard closes the editors open on objects within the pending data of d, as CloseGroup does,
 // returning false if one of them stays open. Each asks whether to discard its pending changes, since the data they
 // would be saved into is about to be dropped, as does each editor opened from one of them, whose changes would go the
 // same way.
-func (s *editorShell) closeSubEditorsForDiscard() bool {
+func closeSubEditorsForDiscard(d unison.Dockable) bool {
 	var subs []*editorShell
-	reason := i18n.Text("Discarding the changes made to\n%s\ndiscards these as well.", s.editor().Title())
-	traverseGroupDeep(s.editor(), func(target GroupedCloser) bool {
+	reason := i18n.Text("Discarding the changes made to\n%s\ndiscards these as well.", d.Title())
+	traverseGroupDeep(d, func(target GroupedCloser) bool {
 		if sub, ok := target.(interface{ shell() *editorShell }); ok {
 			shell := sub.shell()
 			shell.discardReason = reason
@@ -155,7 +155,7 @@ func (s *editorShell) closeSubEditorsForDiscard() bool {
 		}
 		return false
 	})
-	closed := CloseGroup(s.editor())
+	closed := CloseGroup(d)
 	for _, shell := range subs {
 		shell.discardReason = ""
 	}

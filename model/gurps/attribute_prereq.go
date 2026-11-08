@@ -98,16 +98,13 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 // attributePrereqValue returns the value an attribute prerequisite compares for the key, as the prerequisites being
 // judged see it (see Entity.JudgingPrereqsOf): the current value of the sheet's attribute with that ID or, for the keys
 // the editor offers beside the attributes, the adjusted size modifier or the Dodge at the current encumbrance, which
-// on a sheet with a dodge attribute is that attribute halved by any threshold that halves Dodge and less the
-// encumbrance penalty. A number resolves to itself, and any other key to fxp.Min, as a missing attribute does; a parry
-// or block has no value of the sheet's to compare, so the editor doesn't offer them.
+// on a sheet with a dodge attribute is worked out from that attribute's current value; see Entity.Dodge. A number
+// resolves to itself, and any other key to fxp.Min, as a missing attribute does; a parry or block has no value of the
+// sheet's to compare, so the editor doesn't offer them.
 func attributePrereqValue(entity *Entity, key string) fxp.Int {
 	switch key {
 	case SizeModifierID:
-		if entity.carriesGrant(entity.judging) {
-			return fxp.FromInteger(entity.sizeModifierForPrereqs())
-		}
-		return fxp.FromInteger(entity.Profile.AdjustedSizeModifier())
+		return fxp.FromInteger(entity.sizeModifier())
 	case DodgeID:
 		return fxp.FromInteger(entity.Dodge(entity.EncumbranceLevel(false)))
 	default:
@@ -131,11 +128,13 @@ func (p *AttributePrereq) Describe(entity *Entity, _ map[string]string, em func(
 // attributeTitle returns the title the attribute choices give key, or key itself when it isn't one of them.
 func attributeTitle(entity *Entity, key string) string {
 	if def := AttributeDefsFor(entity).Set[key]; def != nil {
-		return def.Name
+		return def.nameOrID()
 	}
 	switch key {
 	case SizeModifierID:
 		return i18n.Text("Size Modifier")
+	case MoveID:
+		return i18n.Text("Move")
 	case DodgeID:
 		return i18n.Text("Dodge")
 	case ParryID:

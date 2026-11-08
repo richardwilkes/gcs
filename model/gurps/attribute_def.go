@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -32,7 +34,9 @@ const (
 
 var _ Hashable = &AttributeDef{}
 
-// ReservedIDs holds a list of IDs that are reserved for internal use.
+// ReservedIDs holds a list of IDs that are reserved for internal use. The attribute settings never give a definition one
+// (see SanitizeID), and UnmarshalJSONFrom refuses to load a definition that has one, which only a hand-edited file can
+// hold, so nothing else need cope with one.
 var ReservedIDs = []string{SkillID, ParryID, BlockID, SizeModifierID, "10"}
 
 // AttributeDef holds the definition of an attribute.
@@ -73,8 +77,15 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return err
 	}
 	a.AttributeDefData = legacy.AttributeDefData
+	if slices.Contains(ReservedIDs, a.DefID) {
+		return errs.Newf("attribute definition %q uses a reserved ID", a.DefID)
+	}
 	if a.Base == "" && legacy.AttributeBase != "" {
 		a.Base = ExprToScript(legacy.AttributeBase)
+	}
+	if a.Type != attribute.Pool && a.Type != attribute.PoolRef {
+		// Only the pool types keep thresholds, as with a copy; see Clone.
+		a.Thresholds = nil
 	}
 	a.Thresholds = slices.DeleteFunc(a.Thresholds, func(one *PoolThreshold) bool { return one == nil })
 	for _, threshold := range a.Thresholds {
@@ -109,6 +120,12 @@ func (a *AttributeDef) SetID(value string) {
 	a.DefID = SanitizeID(value, false, ReservedIDs...)
 }
 
+// nameOrID returns the name, or while that is empty, as it is for a definition just added in the attribute settings,
+// the full name, or while both are, the ID, so that what names the attribute is never empty.
+func (a *AttributeDef) nameOrID() string {
+	return cmp.Or(a.Name, a.FullName, a.DefID)
+}
+
 // ResolveFullName returns the full name, using the short name if full name is empty.
 func (a *AttributeDef) ResolveFullName() string {
 	if a.FullName == "" {
@@ -126,6 +143,12 @@ func (a *AttributeDef) CombinedName() string {
 		return a.FullName
 	}
 	return a.FullName + " (" + a.Name + ")"
+}
+
+// String implements fmt.Stringer, naming the attribute as tooltips name the pool whose threshold a bonus comes from;
+// see nameOrID.
+func (a *AttributeDef) String() string {
+	return a.nameOrID()
 }
 
 // IsSeparator returns true if this is actually just a separator.
@@ -199,10 +222,14 @@ func (a *AttributeDef) AllowsDecimal() bool {
 	return a.Type == attribute.Decimal || a.Type == attribute.DecimalRef
 }
 
-// BaseValue returns the resolved base value.
+// BaseValue returns the resolved base value. That of a pool is found without the features the pools' thresholds hold,
+// which never alter a pool; see Entity.untouchedByThresholds.
 func (a *AttributeDef) BaseValue(attr *Attribute) fxp.Int {
 	if a.IsSeparator() {
 		return 0
+	}
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
+		defer attr.Entity.untouchedByThresholdsWhile()()
 	}
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), a.Base)
 }
