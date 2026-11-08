@@ -202,9 +202,11 @@ type Entity struct {
 	// prerequisites being judged see the thresholds, while judgedThresholdGrants is set, with nil for an item whose
 	// state is the sheet's or is being found; see grantsAsJudged and judgedGrantStateKey.
 	judgedGrantStates map[judgedGrantStateKey]*grantState
-	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
-	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
-	judgedPoints map[*grantReprice]fxp.Int
+	// judgedPoints holds the points the level sets of grants give the skills and spells, by level set and view of the
+	// sheet, priced afresh as the prerequisites being judged see the sheet, while the item judged carries a grant, and
+	// while a pool's base or thresholds are found without the trait bonuses those thresholds hold, until that ends (see
+	// untouchedByThresholdsWhile); see grantReprice.pointsFor and repriceKey.
+	judgedPoints map[repriceKey]fxp.Int
 	// levelCapsResolving holds the skills and spells whose level caps are being resolved, whose levels a reference is
 	// computing, or for which the level of the skill they rest on is being computed, while they are, so that no cap
 	// rests on the level of one of them; see capLevel and passOver. It guards the call stack rather than caching
@@ -236,14 +238,16 @@ type Entity struct {
 	currentsDepth int
 	// atBase is the depth of the computations in progress at base, which see the sheet without what alters current
 	// values alone; see atBaseWhile. It guards the call stack, so discardCaches leaves it alone. baseFeatures,
-	// baseDefaults, baseThresholdGrants and baseGrantStates hold what such a computation found, for it alone to read,
-	// until the outermost one ends: the feature lists the bonuses are read from while the item judged, if any, carries
-	// no grant (see bonusFeatures), the defaults picked for the skills (see Skill.defaultExcept), and what the grants
+	// baseDefaults, basePoints, baseThresholdGrants and baseGrantStates hold what such a computation found, for it
+	// alone to read, until the outermost one ends: the feature lists the bonuses are read from while the item judged,
+	// if any, carries no grant (see bonusFeatures), the defaults picked for the skills (see Skill.defaultExcept), the
+	// points the level sets of grants give the skills and spells (see grantReprice.pointsFor), and what the grants
 	// give the items they touch with none of the pools' thresholds' grants in effect (see thresholdGrantsAtBase and
 	// grantsAsJudged), of which baseThresholdGrantsFound records that the first has been found.
 	atBase                   int
 	baseFeatures             *features
 	baseDefaults             map[baseDefaultKey]*SkillDefault
+	basePoints               map[repriceKey]fxp.Int
 	baseThresholdGrants      map[*Grant]bool
 	baseThresholdGrantsFound bool
 	baseGrantStates          map[baseGrantStateKey]*grantState
@@ -286,7 +290,7 @@ func (e *Entity) atBaseWhile() func() {
 
 // discardBaseCaches discards what the computations at base found; see atBaseWhile.
 func (e *Entity) discardBaseCaches() {
-	e.baseFeatures, e.baseDefaults = nil, nil
+	e.baseFeatures, e.baseDefaults, e.basePoints = nil, nil, nil
 	e.baseThresholdGrants, e.baseThresholdGrantsFound, e.baseGrantStates = nil, false, nil
 }
 

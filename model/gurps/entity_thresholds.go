@@ -289,16 +289,17 @@ func ownedByThreshold(owner fmt.Stringer) bool {
 }
 
 // untouchedByThresholdsWhile enters the view in which the levels of the traits leave out the trait bonuses the pools'
-// thresholds hold, unless already in it, and returns what leaves it, which restores the set of picked defaults it was
-// entered with, so that a default picked in the view outlasts neither the view nor the judging it was picked for; see
-// Entity.untouchedByThresholds and Skill.defaultExcept. e may be nil.
+// thresholds hold, unless already in it, and returns what leaves it, which restores the sets of picked defaults and
+// priced level sets it was entered with, so that a default picked, or a level set priced, in the view outlasts neither
+// the view nor the judging it was found for; see Entity.untouchedByThresholds, Skill.defaultExcept and
+// grantReprice.pointsFor. e may be nil.
 func (e *Entity) untouchedByThresholdsWhile() func() {
 	if e == nil || e.untouchedByThresholds {
 		return func() {}
 	}
 	e.untouchedByThresholds = true
-	saved := e.judgedDefaults
-	return func() { e.untouchedByThresholds, e.judgedDefaults = false, saved }
+	savedDefaults, savedPoints := e.judgedDefaults, e.judgedPoints
+	return func() { e.untouchedByThresholds, e.judgedDefaults, e.judgedPoints = false, savedDefaults, savedPoints }
 }
 
 // thresholdTraitBonusesLeftOut returns true while, in the view untouchedByThresholdsWhile enters, the lists the bonuses
@@ -306,9 +307,10 @@ func (e *Entity) untouchedByThresholdsWhile() func() {
 // computation at base never sees, so that what is found in it may differ from what the sheet has. The bonuses of the
 // attributes, the limited STs, Dodge, Move and the defenses are then totalled afresh, the levels of the skills and
 // spells, the defaults of the skills and the relative levels the weapon bonuses select by are computed afresh rather
-// than read as recorded, and are not recorded, the results of the scripts and the level caps and defaults resolved are
-// kept apart from those found otherwise, and the variables, Basic Lift, encumbrance, carried weight and weapons are
-// neither taken from the caches nor kept in them. e may be nil.
+// than read as recorded, and are not recorded, the points the level sets of grants give the skills are priced afresh,
+// and these, the results of the scripts and the level caps and defaults resolved are kept apart from those found
+// otherwise, and the variables, Basic Lift, encumbrance, carried weight and weapons are neither taken from the caches
+// nor kept in them. e may be nil.
 func (e *Entity) thresholdTraitBonusesLeftOut() bool {
 	return e != nil && e.untouchedByThresholds && e.atBase == 0 &&
 		slices.ContainsFunc(e.bonusFeatures().traitBonuses, func(bonus *TraitBonus) bool {

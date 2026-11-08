@@ -1515,13 +1515,18 @@ func (e *Entity) grantInto(plan *grantPlan, holder grantHolder, state *grantStat
 // a Keep Highest or Keep Lowest grant the level it sets, kept as when it merges into an item already present (see
 // mergeGrant), so that it floors the levels the other grants take away, or caps those they add, whether or not it is
 // the grant that put the item on the sheet. The points of a level set are priced afresh for the prerequisites being
-// judged, and what prices those it gives the holder is returned, or nil for another grant; see levelSetReprice. For a
-// grant standing in for a level set that gives the holder nothing against the sheet as a whole, what it would merge
-// into the level that one gives where it gives something is recorded as well; see grantState.mergeAlternative.
+// judged, and less the default picked afresh at base and while a pool's base or thresholds are found without the trait
+// bonuses those thresholds hold (see grantReprice.beyond), and what prices those it gives the holder is returned, or
+// nil for another grant; see levelSetReprice. For a grant standing in for a level set that gives the holder nothing
+// against the sheet as a whole, what it would merge into the level that one gives where it gives something is recorded
+// as well; see grantState.mergeAlternative.
 func (e *Entity) recordStandalone(plan *grantPlan, holder grantHolder, state *grantState, points fxp.Int) *grantReprice {
 	g := plan.grant
 	state.ownPoints = g.pointsBeyondDefault(points, holder)
 	reprice := e.levelSetReprice(plan, plan.leveler, holder, state.ownPoints)
+	if reprice != nil {
+		reprice.beyond = func() fxp.Int { return g.pointsBeyondDefault(points, holder) }
+	}
 	before := len(state.pointNotes)
 	state.addPoints(plan.source, state.ownPoints, reprice)
 	if state.latent != nil {
