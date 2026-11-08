@@ -574,7 +574,7 @@ func (a *AttrPanel) updateThreshold(label *unison.Label, attr *gurps.Attribute) 
 	var tip *unison.Panel
 	var ink unison.Ink = unison.ThemeOnSurface
 	if threshold := attr.CurrentThreshold(); threshold != nil {
-		txt = "[" + threshold.State + "]"
+		txt = "[" + threshold.String() + "]"
 		var explanation strings.Builder
 		if threshold.Explanation != "" {
 			explanation.WriteString(threshold.ResolveExplanation(attr))

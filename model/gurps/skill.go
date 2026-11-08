@@ -558,12 +558,14 @@ func (s *Skill) AttachWeapons(list []*Weapon) {
 	}
 }
 
-// BaseSkill returns the best skill for the given default, or nil.
+// BaseSkill returns the skill whose level the given default uses, the best one it selects whose tech level satisfies
+// its WhenTL, or nil.
 func (s *Skill) BaseSkill(e *Entity, def *SkillDefault, requirePoints bool) *Skill {
 	if e == nil || def == nil || !def.SkillBased() {
 		return nil
 	}
-	return def.bestMatchingSkill(e, s.Replacements, requirePoints, nil)
+	sk, _ := def.best(e, s.Replacements, requirePoints, nil)
+	return sk
 }
 
 // DefaultSkill returns the skill currently defaulted to, or nil.
@@ -1435,9 +1437,12 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 			if excludes == nil {
 				excludes = make(map[string]bool)
 			}
-			// Use the highest-level matching skill that isn't (circularly) defaulting back to this technique, rather
-			// than whichever happens to be encountered first.
+			// Use the highest-level matching skill whose tech level satisfies WhenTL and that isn't (circularly)
+			// defaulting back to this technique, rather than whichever happens to be encountered first.
 			for _, sk := range list {
+				if !def.isTLPermitted(e, sk.TL()) {
+					continue
+				}
 				var usable bool
 				if sk.IsTechnique() {
 					usable = sk.TechniqueDefault != nil &&
@@ -1701,17 +1706,14 @@ func (s *Skill) SwapToNextDefault() {
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
 	e := EntityFromNode(s)
-	var bonus fxp.Int
-	if def.SkillBased() {
-		if other := def.bestMatchingSkill(e, s.Replacements, true, excludes); other != nil {
-			// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's
-			// own qualifiers and tags, so all of them must come from 'other' here, not from this skill. It is undone
-			// from the other skill's level, before a parry- or block-type default halves that into a defense level.
-			bonus = e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
-				other.OptionalSpecializationWithReplacements(), other.Tags, nil)
-		}
-	}
-	return def.skillLevelLess(e, s.Replacements, true, excludes, !s.IsTechnique(), bonus)
+	return def.skillLevelLess(e, s.Replacements, true, excludes, !s.IsTechnique(), func(other *Skill) fxp.Int {
+		// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's own
+		// qualifiers and tags, so all of them must come from 'other' here, not from this skill. 'other' is the skill
+		// whose level the default uses, the best one its WhenTL permits, and the bonus is undone from that level,
+		// before a parry- or block-type default halves it into a defense level.
+		return e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
+			other.OptionalSpecializationWithReplacements(), other.Tags, nil)
+	})
 }
 
 func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {
@@ -1803,11 +1805,11 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		return true
 	}
 	e := EntityFromNode(s)
-	// The skill is one the default selects that has points, as the technique's level is computed from those (see
-	// Entity.SkillMatching), so that a granted skill, whose points are those its grant gives it, counts, and a skill
-	// without points, which may be the highest of them by defaulting from another, does not stand in the way of one
-	// that has.
-	if s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, true, nil) != nil {
+	// The skill is one the default selects that has points and whose tech level satisfies WhenTL, as the technique's
+	// level is computed from those (see Entity.SkillMatching and techniqueBaseLevel), so that a granted skill, whose
+	// points are those its grant gives it, counts, and a skill without points, which may be the highest of them by
+	// defaulting from another, does not stand in the way of one that has.
+	if s.TechniqueDefault.selectsPermittedSkill(e, s.Replacements, true) {
 		return true
 	}
 	if tooltip != nil {
@@ -1815,11 +1817,11 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		// A default that names its skill outright reads as "a skill named X"; one that selects it by other criteria is
 		// described by FullName, and the sentence is shaped around that description instead.
 		named := s.TechniqueDefault.namesSkill(s.Replacements)
-		sk := s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, false, nil)
+		selects := s.TechniqueDefault.selectsPermittedSkill(e, s.Replacements, false)
 		switch {
-		case sk == nil && named:
+		case !selects && named:
 			tooltip.WriteString(i18n.Text("Requires a skill named "))
-		case sk == nil:
+		case !selects:
 			tooltip.WriteString(i18n.Text("Requires "))
 		case named:
 			tooltip.WriteString(i18n.Text("Requires at least 1 point in the skill named "))
@@ -1827,6 +1829,10 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 			tooltip.WriteString(i18n.Text("Requires at least 1 point in "))
 		}
 		tooltip.WriteString(s.TechniqueDefault.FullName(e, s.Replacements))
+		if s.TechniqueDefault.WhenTL.Compare != criteria.AnyNumber {
+			tooltip.WriteString(i18n.Text(" whose tech level is "))
+			tooltip.WriteString(s.TechniqueDefault.WhenTL.AltString())
+		}
 	}
 	return false
 }

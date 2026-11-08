@@ -421,8 +421,9 @@ func TestAttrPanelStandInLimitedBonusesAreNotAdjustments(t *testing.T) {
 
 // TestAttrPanelPoolStateListsThresholdFeatures verifies that the state of a pool whose current threshold has features
 // is drawn in adjustedInk, with those features listed in its tooltip after the explanation, a switchable one without
-// saying it is, since a threshold has no switch, and each as written rather than as Markdown, and that the features a
-// threshold ignores are neither listed nor enough to draw the state in adjustedInk.
+// saying it is, since a threshold has no switch, and each as written rather than as Markdown, that the features a
+// threshold ignores are neither listed nor enough to draw the state in adjustedInk, and that a threshold with no state
+// is named as tooltips name it.
 func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	c := check.New(t)
 	switchable := gurps.NewAttributeBonus(gurps.DexterityID)
@@ -465,4 +466,10 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	c.Equal("[TIRING]", strings.ToUpper(label.Text.String()))
 	c.NotEqual(adjustedInk, stateInk(), "a threshold whose features all do nothing is drawn in the normal ink")
 	c.Nil(label.Tooltip, "and lists none of them, there being no explanation either")
+
+	threshold := e.Attributes.Set[gurps.FatiguePointsID].CurrentThreshold()
+	threshold.State = ""
+	panel.Sync()
+	c.Equal("[UNNAMED THRESHOLD]", strings.ToUpper(panel.stateLabels[gurps.FatiguePointsID].Text.String()),
+		"a threshold with no state is named as tooltips name it")
 }
