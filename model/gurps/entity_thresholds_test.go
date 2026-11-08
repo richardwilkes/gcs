@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -139,8 +140,8 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 // TestEntityPoolBaseLeavesOutThresholdTraitBonuses verifies that a pool's base leaves out what the trait bonuses its
 // thresholds hold add to anything it reads that the levels of the traits move, such as the level of a default, Dodge,
 // a defense, a skill or spell or a relative skill level, rather than read the values the sheet recorded with them, so
-// that the pool stays at the threshold whose features apply, and that nothing found for the base then is kept for the
-// next time it is found.
+// that the pool stays at the threshold whose features apply, and that nothing found for the base then is recorded on
+// the sheet or kept for the next time it is found.
 func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 	c := check.New(t)
 	perLevel := func(bonus Feature) Feature {
@@ -164,19 +165,33 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		}
 	}
 	// Each setup puts on the sheet what the base reads and returns the per-level feature of Agile, which has levels (1
-	// unless given) and to which Drained holds a trait bonus of held (+4 unless given).
+	// unless given) and to which Drained holds a trait bonus of held (+4 unless given). evade, when set, is the level
+	// the sheet gives Evade while Drained.
 	for _, one := range []struct {
 		name   string
 		base   string
 		want   fxp.Int
 		levels fxp.Int
 		held   fxp.Int
+		evade  fxp.Int
 		setup  func(e *Entity) Feature
 	}{
 		{
 			name: "a skill defaulting to Dodge", base: `entity.skillLevel("Evade")`, want: fxp.Nine,
 			setup: func(e *Entity) Feature {
 				addSkill(e, "Evade", 0).Defaults = []*SkillDefault{{DefaultType: DodgeID}}
+				return perLevel(newAttrBonus(DodgeID, fxp.One))
+			},
+		},
+		{
+			// While Drained, the sheet's Dodge 13 makes Evade's default stand for 8 of the 12 points that set it at 14,
+			// and the base's Dodge 9 for none.
+			name: "a skill defaulting to Dodge that a grant sets at a level", base: `entity.skillLevel("Evade")`,
+			want: fxp.FromInteger(14), evade: fxp.FromInteger(14), setup: func(e *Entity) Feature {
+				evade := newEasySkill("Evade", 0)
+				evade.Defaults = []*SkillDefault{{DefaultType: DodgeID}}
+				addTraitWithFeatures(e, "Training",
+					newSkillGrantOf(evade, grantadjust.SetLevel, fxp.FromInteger(14), grantmerge.Ignore))
 				return perLevel(newAttrBonus(DodgeID, fxp.One))
 			},
 		},
@@ -279,6 +294,10 @@ func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
 		c.Equal("Drained", focus.CurrentThreshold().State, "%s", one.name)
 		c.Equal(agile.Levels+held, agile.CurrentLevel(), "%s: the trait bonus takes effect while Drained", one.name)
 		c.Equal(one.want, focus.Maximum(), "%s: the base doesn't follow it", one.name)
+		if one.evade != 0 {
+			c.Equal(one.evade, e.SkillNamed("Evade", "", false, nil)[0].LevelData.Level, "%s: the sheet's Evade",
+				one.name)
+		}
 		agile.Levels += fxp.One
 		focus.Damage = 0
 		e.Recalculate()

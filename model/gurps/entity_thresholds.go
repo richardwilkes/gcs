@@ -106,21 +106,27 @@ func (e *Entity) forEachThresholdFeatureList(fn func(t *PoolThreshold, def *Attr
 // and every multiplier do to each value; see recordCurrentAdjustments. The thresholds are found while the values carry
 // what the items' multipliers do to them alone, so that a pool whose base or thresholds read a value is found with the
 // value the sheet shows unless the thresholds alter it, in which case it is found without that alteration rather than
-// with what the previous pass left. The caches are discarded before the thresholds are found and once the adjustments
-// are in place, since what the scripts cached was computed without them. Found outside a recalculation, a pool whose
-// thresholds alter what it reads may be found at another threshold. A trait bonus a threshold holds raises the level
-// the per-level bonuses of the trait read, whenever they are read, save while the bonuses given a pool or the size
-// modifier are totalled or a pool's base or thresholds are found (see untouchedByThresholds), so the totals
-// totalBonuses recorded are recorded again once one is collected. The parry and block tooltips are built here, so that
-// they name these bonuses too. A grant a threshold holds is collected here as well, and so is in effect while the pool
-// is at the threshold; the rows it puts on the sheet are there whether or not it is, as for any grant (see
-// forEachGrant).
+// with what the previous pass left, and what the scripts find meanwhile is not recorded, since the sheet has the values
+// with the alteration once the thresholds' features are in place; see thresholdsBeingFound. The caches are discarded
+// before the thresholds are found and once the adjustments are in place, since what the scripts cached was computed
+// without them. Found outside a recalculation, a pool whose thresholds alter what it reads may be found at another
+// threshold. A trait bonus a threshold holds raises the level the per-level bonuses of the trait read, whenever they
+// are read, save while the bonuses given a pool or the size modifier are totalled or a pool's base or thresholds are
+// found (see untouchedByThresholds), so the totals totalBonuses recorded are recorded again once one is collected. The
+// parry and block tooltips are built here, so that they name these bonuses too. A grant a threshold holds is collected
+// here as well, and so is in effect while the pool is at the threshold; the rows it puts on the sheet are there whether
+// or not it is, as for any grant (see forEachGrant).
 func (e *Entity) processThresholdFeatures() {
 	if e.recordCurrentAdjustments() {
 		e.discardCaches(true)
 	}
 	traitBonuses := len(e.features.traitBonuses)
-	e.collectThresholdFeatures(&e.features)
+	func() {
+		saved := e.thresholdsBeingFound
+		e.thresholdsBeingFound = true
+		defer func() { e.thresholdsBeingFound = saved }()
+		e.collectThresholdFeatures(&e.features)
+	}()
 	if len(e.features.traitBonuses) != traitBonuses {
 		e.totalBonuses()
 	}
@@ -304,18 +310,19 @@ func (e *Entity) untouchedByThresholdsWhile() func() {
 
 // thresholdTraitBonusesLeftOut returns true while, in the view untouchedByThresholdsWhile enters, the lists the bonuses
 // are read from (see bonusFeatures) hold a trait bonus a pool's threshold holds, which that view leaves out and a
-// computation at base never sees, so that what is found in it may differ from what the sheet has. The bonuses of the
-// attributes, the limited STs, Dodge, Move and the defenses are then totalled afresh, the levels of the skills and
-// spells, the defaults of the skills and the relative levels the weapon bonuses select by are computed afresh rather
-// than read as recorded, and are not recorded, the points the level sets of grants give the skills are priced afresh,
-// and these, the results of the scripts and the level caps and defaults resolved are kept apart from those found
-// otherwise, and the variables, Basic Lift, encumbrance, carried weight and weapons are neither taken from the caches
-// nor kept in them. e may be nil.
+// computation at base never sees, or while processThresholdFeatures finds the pools' thresholds, before the lists hold
+// all of their features (see thresholdsBeingFound), so that what is found in it may differ from what the sheet has. The
+// bonuses of the attributes, the limited STs, Dodge, Move and the defenses are then totalled afresh, the levels of the
+// skills and spells, the defaults of the skills and the relative levels the weapon bonuses select by are computed
+// afresh rather than read as recorded, and are not recorded, the points the level sets of grants give the skills are
+// priced afresh, and these, the results of the scripts and the level caps and defaults resolved are kept apart from
+// those found otherwise, and the variables, Basic Lift, encumbrance, carried weight and weapons are neither taken from
+// the caches nor kept in them. e may be nil.
 func (e *Entity) thresholdTraitBonusesLeftOut() bool {
-	return e != nil && e.untouchedByThresholds && e.atBase == 0 &&
+	return e != nil && e.untouchedByThresholds && e.atBase == 0 && (e.thresholdsBeingFound ||
 		slices.ContainsFunc(e.bonusFeatures().traitBonuses, func(bonus *TraitBonus) bool {
 			return ownedByThreshold(bonus.Owner())
-		})
+		}))
 }
 
 // featuresWithout returns a copy of the feature lists without the features whose owners dropped reports. Each list is

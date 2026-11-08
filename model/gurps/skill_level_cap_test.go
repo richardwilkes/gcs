@@ -883,8 +883,9 @@ func TestSkillLevelCapStepping(t *testing.T) {
 
 // TestSkillLevelCapEditPreview verifies that the level an editor previews is held to the caps that select the skill
 // or spell as edited rather than as it is on the sheet, with the references matching it as edited and the levels they
-// rest on, such as a technique's or a default's resting on the skill, taken with it as edited, and the row of a grant
-// the edits merge into it left out, so that the preview is the level the sheet shows once the edits are applied.
+// rest on, such as a technique's or a default's resting on the skill, taken with it as edited, along with the points a
+// grant's level set gives them, and the row of a grant the edits merge into it left out, so that the preview is the
+// level the sheet shows once the edits are applied.
 func TestSkillLevelCapEditPreview(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1016,6 +1017,37 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 			},
 			capped: true,
 		},
+		{
+			// Training's grant sets Shortsword at 13, which its default stands for 12 points of once the skill is
+			// bought.
+			name: "a skill bought that the default of a skill a grant sets at a level the cap rests on rests on",
+			from: "Broadsword", to: "Broadsword",
+			setup: func(e *Entity) LevelCap {
+				shortsword := NewSkill(nil, nil, false)
+				shortsword.Name = "Shortsword"
+				shortsword.Difficulty = AttributeDifficulty{Attribute: IntelligenceID, Difficulty: difficulty.Average}
+				shortsword.Defaults = []*SkillDefault{{
+					DefaultType: SkillID,
+					Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Broadsword"}},
+					Modifier:    -fxp.Two,
+				}}
+				addTraitWithFeatures(e, "Training", newSkillGrantOf(shortsword, grantadjust.SetLevel, fxp.Thirteen,
+					grantmerge.Ignore))
+				return refCap(levelcap.Skill, "Shortsword", 0)
+			},
+			capped: true,
+		},
+		{
+			// Training's grant sets Feint at 17, 8 levels above the skill at 9, but 2 above it at 15.
+			name: "a skill a technique a grant sets at a level the cap rests on rests on", from: "Broadsword",
+			to: "Broadsword", points: fxp.One,
+			setup: func(e *Entity) LevelCap {
+				addTraitWithFeatures(e, "Training", newSkillGrantOf(newTechniqueOf("Broadsword", "Feint", 0),
+					grantadjust.SetLevel, fxp.FromInteger(17), grantmerge.Ignore))
+				return refCap(levelcap.Skill, "Feint", -3)
+			},
+			capped: true,
+		},
 	} {
 		e = NewEntity()
 		sk = addTestSkill(e, one.from, "", "", one.points)
@@ -1025,14 +1057,20 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 		}
 		addTestLevelCap(e, levelcap.Skills, ref)
 		e.Recalculate()
+		previewOf := func(data *SkillEditData) Level {
+			edited := sk.withEditData(data)
+			uncapped := edited.levelBeforeGrants(nil, data.DefaultedFrom, nil)
+			return sk.LevelWithGrants(data, uncapped, func(points fxp.Int) Level {
+				return edited.levelAt(e, nil, points, nil)
+			})
+		}
 		skillData = sk.SkillEditData
 		skillData.Name = one.to
 		skillData.Points = fxp.Twenty
-		edited := sk.withEditData(&skillData)
-		uncapped := edited.levelBeforeGrants(nil, skillData.DefaultedFrom, nil)
-		preview := sk.LevelWithGrants(&skillData, uncapped, func(points fxp.Int) Level {
-			return edited.levelAt(e, nil, points, nil)
-		})
+		preview := previewOf(&skillData)
+		unedited := sk.SkillEditData
+		c.Equal(sk.LevelData.Level, previewOf(&unedited).Level,
+			"%s: a preview without the edits, after one with them, is the level the sheet shows", one.name)
 		sk.SkillEditData = skillData
 		e.Recalculate()
 		c.Equal(one.capped, cappedBy(sk.LevelData), "%s: the edited skill is capped on the sheet", one.name)

@@ -338,15 +338,16 @@ type levelCapEdit struct {
 // copy of it holding an editor's edits, until the returned func is called; see ReferenceLevelCap.resolve. A skill is
 // found as edited by every lookup of the skills by name (see skillEdit), and the defaults of the skills are picked,
 // and their levels computed, afresh rather than read as recorded (see Skill.defaultExcept and SkillDefault.best), so
-// that a level resting on it, as a technique's or a default's does, rests on it as edited. The defaults picked while
-// the edits are previewed are kept apart from any picked before. The rows of the grants that merge into it as edited
-// in place of their own, which applying the edits takes off the sheet, are found neither by those lookups nor by the
-// references; see takenOffByEdit. The rows the grants merging into it now would put on the sheet in its place are
-// found by both, after the rows on the sheet. The other rows the grants merge into now, or would then, have their
-// levels computed with those that would then merge into them, as they would once the edits are applied; see
+// that a level resting on it, as a technique's or a default's does, rests on it as edited, and the points the level
+// sets of grants give the skills and spells are priced afresh (see grantReprice.pointsFor). The defaults picked and the
+// points priced while the edits are previewed are kept apart from any found before. The rows of the grants that merge
+// into it as edited in place of their own, which applying the edits takes off the sheet, are found neither by those
+// lookups nor by the references; see takenOffByEdit. The rows the grants merging into it now would put on the sheet in
+// its place are found by both, after the rows on the sheet. The other rows the grants merge into now, or would then,
+// have their levels computed with those that would then merge into them, as they would once the edits are applied; see
 // grantsMovedByEdit and grantsAsEdited.
 func (e *Entity) matchLevelCapsAs(onSheet, edited any) (restore func()) {
-	saved, savedDefaults := e.levelCapEdit, e.judgedDefaults
+	saved, savedDefaults, savedPoints := e.levelCapEdit, e.judgedDefaults, e.judgedPoints
 	edit := levelCapEdit{onSheet: onSheet, edited: edited}
 	switch one := onSheet.(type) {
 	case *Skill:
@@ -358,8 +359,8 @@ func (e *Entity) matchLevelCapsAs(onSheet, edited any) (restore func()) {
 			edit.mergedAway, edit.leftBehind, edit.plantedSpells = grantsMovedByEdit(one, copyOf)
 		}
 	}
-	e.levelCapEdit, e.judgedDefaults = edit, nil
-	return func() { e.levelCapEdit, e.judgedDefaults = saved, savedDefaults }
+	e.levelCapEdit, e.judgedDefaults, e.judgedPoints = edit, nil, nil
+	return func() { e.levelCapEdit, e.judgedDefaults, e.judgedPoints = saved, savedDefaults, savedPoints }
 }
 
 // takenOffByEdit returns true if the item is a row a grant put on the sheet that applying the edits an editor previews

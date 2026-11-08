@@ -203,9 +203,10 @@ type Entity struct {
 	// state is the sheet's or is being found; see grantsAsJudged and judgedGrantStateKey.
 	judgedGrantStates map[judgedGrantStateKey]*grantState
 	// judgedPoints holds the points the level sets of grants give the skills and spells, by level set and view of the
-	// sheet, priced afresh as the prerequisites being judged see the sheet, while the item judged carries a grant, and
-	// while a pool's base or thresholds are found without the trait bonuses those thresholds hold, until that ends (see
-	// untouchedByThresholdsWhile); see grantReprice.pointsFor and repriceKey.
+	// sheet, priced afresh as the prerequisites being judged see the sheet, while the item judged carries a grant, as
+	// an editor previews a skill's level, and while a pool's base or thresholds are found without the trait bonuses
+	// those thresholds hold, until that ends (see untouchedByThresholdsWhile); see grantReprice.pointsFor and
+	// repriceKey.
 	judgedPoints map[repriceKey]fxp.Int
 	// levelCapsResolving holds the skills and spells whose level caps are being resolved, whose levels a reference is
 	// computing, or for which the level of the skill they rest on is being computed, while they are, so that no cap
@@ -262,6 +263,11 @@ type Entity struct {
 	// untouchedByThresholdsWhile, thresholdTraitBonusesLeftOut and TraitBonusFor. It guards the call stack, so
 	// discardCaches leaves it alone.
 	untouchedByThresholds bool
+	// thresholdsBeingFound is set while processThresholdFeatures finds the current thresholds of the pools and collects
+	// their features into the lists the bonuses are read from, which lack some or all of those features meanwhile, so
+	// that what the scripts giving a pool its base and its thresholds find may differ from what the sheet has once they
+	// are in place; see thresholdTraitBonusesLeftOut. It guards the call stack, so discardCaches leaves it alone.
+	thresholdsBeingFound bool
 }
 
 // atBaseWhile enters a computation at base and returns what leaves it. Such a computation sees the sheet without what
