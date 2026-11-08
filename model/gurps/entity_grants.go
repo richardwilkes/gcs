@@ -1355,11 +1355,22 @@ type baseGrantStateKey struct {
 	judged any
 }
 
+// judgedGrantStateKey identifies what the grants give an item as the prerequisites being judged see the pools'
+// thresholds, which rests as well on whether it is found while a pool's base or thresholds are found without the trait
+// bonuses those thresholds hold (see thresholdTraitBonusesLeftOut), since the points a level set gives a skill are
+// less those of the default picked as the sheet is seen then; see Grant.pointsBeyondDefault.
+type judgedGrantStateKey struct {
+	holder    grantHolder
+	untouched bool
+}
+
 // grantsAsJudged returns what the grants give the holder as the prerequisites being judged see the pools' thresholds:
 // when they see a grant of a threshold that touches the holder in effect where the sheet does not, or the other way
-// around (see thresholdGrantsAsJudged), the state judgedGrantState finds, and otherwise, as while that state is being
-// found, the holder's own. A computation at base, which sees none of those grants in effect, gets the state found that
-// way too, kept apart for the prerequisites being judged, if any. e may be nil, which gives the holder's own.
+// around (see thresholdGrantsAsJudged), the state judgedGrantState finds, kept apart for while a pool's base or
+// thresholds are found without the trait bonuses those thresholds hold (see judgedGrantStateKey), and otherwise, as
+// while that state is being found, the holder's own. A computation at base, which sees none of those grants in effect,
+// gets the state found that way too, kept apart for the prerequisites being judged, if any. e may be nil, which gives
+// the holder's own.
 func (e *Entity) grantsAsJudged(holder grantHolder) *grantState {
 	thresholdGrants := e.thresholdGrantsAsJudged()
 	if thresholdGrants == nil {
@@ -1377,13 +1388,16 @@ func (e *Entity) grantsAsJudged(holder grantHolder) *grantState {
 			state = e.judgedGrantState(holder, thresholdGrants)
 			e.baseGrantStates[key] = state
 		}
-	} else if state, ok = e.judgedGrantStates[holder]; !ok {
-		if e.judgedGrantStates == nil {
-			e.judgedGrantStates = make(map[grantHolder]*grantState)
+	} else {
+		key := judgedGrantStateKey{holder: holder, untouched: e.thresholdTraitBonusesLeftOut()}
+		if state, ok = e.judgedGrantStates[key]; !ok {
+			if e.judgedGrantStates == nil {
+				e.judgedGrantStates = make(map[judgedGrantStateKey]*grantState)
+			}
+			e.judgedGrantStates[key] = nil
+			state = e.judgedGrantState(holder, thresholdGrants)
+			e.judgedGrantStates[key] = state
 		}
-		e.judgedGrantStates[holder] = nil
-		state = e.judgedGrantState(holder, thresholdGrants)
-		e.judgedGrantStates[holder] = state
 	}
 	if state == nil {
 		return holder.grants()

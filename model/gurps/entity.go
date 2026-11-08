@@ -179,9 +179,10 @@ type Entity struct {
 	// read for them (see attributeForPrereqs), the pool thresholds found for them (see Attribute.CurrentThreshold) and
 	// the script prerequisites themselves (see ScriptPrereq.Evaluate); see resolveScript.
 	scriptsForPrereqs int
-	// judgedDefaults holds the defaults picked for the skills, by skill, excludes and whether a pool's threshold was
-	// being found, as the prerequisites being judged see the sheet, while the item judged carries a grant; see
-	// Skill.defaultExcept and judgedDefaultKey.
+	// judgedDefaults holds the defaults picked for the skills, by skill, excludes and view of the sheet, as the
+	// prerequisites being judged see the sheet, while the item judged carries a grant, as an editor previews a skill's
+	// level, and while a pool's base or thresholds are found without the trait bonuses those thresholds hold, until
+	// that ends (see untouchedByThresholdsWhile); see Skill.defaultExcept and judgedDefaultKey.
 	judgedDefaults map[judgedDefaultKey]*SkillDefault
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
@@ -197,10 +198,10 @@ type Entity struct {
 	// been found while those prerequisites are judged. See thresholdGrantsAsJudged.
 	judgedThresholdGrants      map[*Grant]bool
 	judgedThresholdGrantsFound bool
-	// judgedGrantStates holds what the grants give the items those grants touch, by item, as the prerequisites being
-	// judged see the thresholds, while judgedThresholdGrants is set, with nil for an item whose state is the sheet's or
-	// is being found; see grantsAsJudged.
-	judgedGrantStates map[grantHolder]*grantState
+	// judgedGrantStates holds what the grants give the items those grants touch, by item and view of the sheet, as the
+	// prerequisites being judged see the thresholds, while judgedThresholdGrants is set, with nil for an item whose
+	// state is the sheet's or is being found; see grantsAsJudged and judgedGrantStateKey.
+	judgedGrantStates map[judgedGrantStateKey]*grantState
 	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
 	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
 	judgedPoints map[*grantReprice]fxp.Int
@@ -247,7 +248,8 @@ type Entity struct {
 	baseThresholdGrantsFound bool
 	baseGrantStates          map[baseGrantStateKey]*grantState
 	// baseLevelReads holds the skills and spells whose levels Skill.CurrentLevel and Spell.CurrentLevel are computing
-	// at base. It guards the call stack, so discardCaches leaves it alone.
+	// at base, or while a pool's base or thresholds are found without the trait bonuses those thresholds hold. It
+	// guards the call stack, so discardCaches leaves it alone.
 	baseLevelReads map[LeveledOwner]bool
 	// untouchedByThresholds is set while the bonuses given a pool or the size modifier, which the pools' thresholds
 	// never alter, are totalled, and while the scripts giving a pool its base and its thresholds run, so that the
@@ -1211,14 +1213,15 @@ func (e *Entity) processFeature(into *features, owner, subOwner fmt.Stringer, f 
 // defenseAdjustment returns what the entity does to the parry or block defenseID names, and nothing for any other ID:
 // the bonus the items in effect give it, along with what the current thresholds and multipliers do to it. While the
 // prerequisites of an item carrying a grant are judged, it is what they see, without the bonuses from what the grant
-// put on the sheet (see JudgingPrereqsOf), and in a computation at base, what it sees (see atBaseWhile).
+// put on the sheet (see JudgingPrereqsOf), in a computation at base, what it sees (see atBaseWhile), and while a pool's
+// base or thresholds are found, what they see (see thresholdTraitBonusesLeftOut).
 func (e *Entity) defenseAdjustment(defenseID string) currentAdjustment {
 	if defenseID != ParryID && defenseID != BlockID {
 		return currentAdjustment{}
 	}
 	adj := e.adjustmentFor(defenseID, stlimit.None)
 	switch {
-	case e.carriesGrant(e.judging) || e.atBase > 0:
+	case e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut():
 		adj.bonus += e.AttributeBonusFor(defenseID, stlimit.None, nil).Floor()
 	case defenseID == ParryID:
 		adj.bonus += e.ParryBonus
@@ -2090,11 +2093,13 @@ func (e *Entity) hasWeaponBonusesBySkill() bool {
 
 // relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
 // fxp.Min when there are none. While the prerequisites of an item carrying a grant are judged, each is computed as they
-// see it, since the recorded one holds what the grant gave (see JudgingPrereqsOf), and at base, as it is there, since
-// the recorded one holds what alters current values alone (see atBaseWhile).
+// see it, since the recorded one holds what the grant gave (see JudgingPrereqsOf), at base, as it is there, since the
+// recorded one holds what alters current values alone (see atBaseWhile), and while a pool's base or thresholds are
+// found, as they see it, since the recorded one holds what the trait bonuses those thresholds hold add (see
+// thresholdTraitBonusesLeftOut).
 func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	rsl := fxp.Min
-	afresh := e.carriesGrant(e.judging) || e.atBase > 0
+	afresh := e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdTraitBonusesLeftOut()
 	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
 		level := sk.LevelData.RelativeLevel
 		if afresh {
@@ -2139,14 +2144,15 @@ func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string,
 // whose base reads Basic Move's current value as "$basic_move" (see Attribute.Current), or, without one, the current
 // Basic Move (never below 0) plus MoveBonus with what the current thresholds and multipliers do to Move applied (see
 // currentAdjustment), then reduced for the encumbrance, which leaves at least 1 while the move is above 0. In a
-// computation at base, the bonus is the one it sees; see atBaseWhile.
+// computation at base, the bonus is the one it sees, and while a pool's base or thresholds are found, the one they see;
+// see atBaseWhile and thresholdTraitBonusesLeftOut.
 func (e *Entity) Move(enc encumbrance.Level) int {
 	var initialMove fxp.Int
 	if e.ResolveAttribute(MoveID) != nil {
 		initialMove = e.ResolveAttributeCurrent(MoveID)
 	} else {
 		bonus := e.MoveBonus
-		if e.atBase > 0 {
+		if e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
 			bonus = e.AttributeBonusFor(MoveID, stlimit.None, nil).Floor()
 		}
 		initialMove = e.sheetAdjustment(MoveID, stlimit.None).apply((e.ResolveAttributeCurrent(BasicMoveID).Max(0) +
@@ -2292,13 +2298,14 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 // Basic Speed (never below 0) plus 3 and DodgeBonus, dropping any fraction, with what the current thresholds and
 // multipliers do to Dodge applied (see currentAdjustment), then less the encumbrance penalty, but never below 1. While
 // the prerequisites of an item carrying a grant are judged, it is the Dodge they see, without the bonuses from what the
-// grant put on the sheet and with the thresholds as they see them (see JudgingPrereqsOf), and in a computation at base,
-// the Dodge it sees (see atBaseWhile).
+// grant put on the sheet and with the thresholds as they see them (see JudgingPrereqsOf), in a computation at base,
+// the Dodge it sees (see atBaseWhile), and while a pool's base or thresholds are found, the Dodge they see (see
+// thresholdTraitBonusesLeftOut).
 func (e *Entity) Dodge(enc encumbrance.Level) int {
 	current, bonus := e.ResolveAttributeCurrent, e.DodgeBonus
 	if e.carriesGrant(e.judging) {
 		current, bonus = e.resolveAttributeCurrentForPrereqs, e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
-	} else if e.atBase > 0 {
+	} else if e.atBase > 0 || e.thresholdTraitBonusesLeftOut() {
 		bonus = e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
 	}
 	var dodge fxp.Int

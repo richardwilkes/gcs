@@ -282,6 +282,61 @@ func TestGrantFromPoolThreshold(t *testing.T) {
 	c.True(e.Unsettled(), "a grant lifting the pool out of its threshold, FP 8 of 15 not being Tired, never settles")
 }
 
+// TestGrantFromPoolThresholdJudgedAlikeInPoolBase verifies that the prerequisites of an item carrying a grant see what a
+// pool threshold's grant gives a skill alike whether they read it directly or through a pool's base, which leaves out
+// the trait bonuses the thresholds hold, though what the grant gives rests on them: a level set gives a skill the
+// points beyond those its default stands for, and the default here is Dodge, which such a trait bonus raises.
+func TestGrantFromPoolThresholdJudgedAlikeInPoolBase(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	dodge := newAttrBonus(DodgeID, fxp.One)
+	dodge.PerLevel = true
+	agile := addTraitWithFeatures(e, "Agile", dodge)
+	agile.CanLevel = true
+	agile.Levels = fxp.One
+	evade := newEasySkill("Evade", 0)
+	evade.Defaults = []*SkillDefault{{DefaultType: DodgeID}}
+	// Drained raises Agile to 5, and so Dodge to 13, a default standing for 8 of the 12 points that set Evade at 14,
+	// save in a pool's base, where Dodge is 9, a default standing for none.
+	drained := NewPoolThreshold()
+	drained.State = "Drained"
+	drained.Value = "5"
+	drained.Features = Features{
+		newTraitBonusTo("Agile", fxp.Four),
+		newSkillGrantOf(evade, grantadjust.SetLevel, fxp.FromInteger(14), grantmerge.Ignore),
+	}
+	fresh := NewPoolThreshold()
+	fresh.State = "Fresh"
+	fresh.Value = "$focus"
+	e.SheetSettings.Attributes.Set["focus"] = &AttributeDef{
+		DefID:      "focus",
+		Type:       attribute.Pool,
+		Name:       "Focus",
+		Base:       "10",
+		Thresholds: []*PoolThreshold{drained, fresh},
+	}
+	focus := NewAttribute(e, "focus", len(e.Attributes.Set))
+	focus.Damage = fxp.Seven
+	e.Attributes.Set["focus"] = focus
+	e.SheetSettings.Attributes.Set["calm"] = &AttributeDef{
+		DefID: "calm",
+		Type:  attribute.Pool,
+		Name:  "Calm",
+		Base:  `entity.skillLevel("Evade")`,
+	}
+	e.Attributes.Set["calm"] = NewAttribute(e, "calm", len(e.Attributes.Set))
+	// Hardy lifts Focus out of Drained, where the prerequisites of Training, which grants it, see Focus.
+	hardy := newGrantLeveledTrait("Hardy", fxp.One)
+	hardy.Features = Features{newAttrBonus("focus", fxp.Ten)}
+	training := addTraitWithFeatures(e, "Training", newTraitGrant(hardy, fxp.One, grantmerge.Ignore))
+	training.Prereq = NewPrereqList()
+	addScriptPrereq(training.Prereq, `const calm = $calm; const evade = entity.skillLevel("Evade");
+		calm == 14 && evade == 14 ? "" : "Calm " + calm + ", Evade " + evade`)
+	e.Recalculate()
+	c.Equal("", training.UnsatisfiedReason, "the prerequisites see Evade at 14 either way")
+	c.Equal("Fresh", focus.CurrentThreshold().State, "so Training's grant is in effect")
+}
+
 func TestGrantNotInEffectKeepsItsItemDisabled(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

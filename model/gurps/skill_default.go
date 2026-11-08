@@ -491,11 +491,13 @@ func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[st
 // there is none: the one with the highest already-calculated level among those it selects whose tech level satisfies
 // WhenTL, the first one encountered winning a tie. While the prerequisites of an item carrying a grant are judged, each
 // level is instead computed as they see it, as best computes it, since the recorded one holds what the grant gave (see
-// Entity.JudgingPrereqsOf), and at base, as it is there, since the recorded one holds what alters current values alone
-// (see Entity.atBaseWhile).
+// Entity.JudgingPrereqsOf), at base, as it is there, since the recorded one holds what alters current values alone
+// (see Entity.atBaseWhile), and while a pool's base or thresholds are found, as they see it, since the recorded one
+// holds what the trait bonuses those thresholds hold add (see Entity.thresholdTraitBonusesLeftOut).
 func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best *Skill, level fxp.Int) {
 	level = fxp.Min
-	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.atBase > 0)
+	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.atBase > 0 ||
+		entity.thresholdTraitBonusesLeftOut())
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
@@ -517,12 +519,13 @@ func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]str
 // while the prerequisites of an item carrying a grant are judged: the level is then computed without what that item's
 // grants did to the skill, which a curse among them leaves above the one recorded. Every level is computed too while
 // an editor previews a skill's level, since the recorded ones are those of the skill as it is on the sheet rather
-// than as edited, and of the skills resting on it (see Entity.matchLevelCapsAs), and at base, since they hold what
-// alters current values alone (see Entity.atBaseWhile).
+// than as edited, and of the skills resting on it (see Entity.matchLevelCapsAs), at base, since they hold what alters
+// current values alone (see Entity.atBaseWhile), and while a pool's base or thresholds are found, since they hold what
+// the trait bonuses those thresholds hold add (see Entity.thresholdTraitBonusesLeftOut).
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.previewingSkillEdit() ||
-		entity.atBase > 0)
+		entity.atBase > 0 || entity.thresholdTraitBonusesLeftOut())
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue

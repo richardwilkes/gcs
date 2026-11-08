@@ -200,10 +200,12 @@ const (
 // those thresholds put in effect (see collectGrantedFeaturesAsJudged), or with none at all while those thresholds are
 // being found, as the sheet's own are found without them; see Attribute.CurrentThreshold. A computation at base sees
 // none either, since they alter only the sheet's current state, nor those of the items the thresholds' grants alone put
-// in effect; see atBaseWhile and featuresAtBase. Each is built once while the same prerequisites are judged, or the
-// same computation at base runs, since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. Nothing
-// reads the grants they hold, which are not those the sheet applies: the sheet's are left out, and those the view as
-// judged collects along with the features of the thresholds and of the items their grants give go unused.
+// in effect, which the lists leave out, save while those thresholds are being found, when they hold them and the
+// bonuses of those items are left out as they are read instead (see grantedOutOfEffectAsJudged); see atBaseWhile and
+// featuresAtBase. Each is built once while the same prerequisites are judged, or the same computation at base runs,
+// since their view of the sheet holds still meanwhile; see JudgingPrereqsOf. Nothing reads the grants they hold, which
+// are not those the sheet applies: the sheet's are left out, and those the view as judged collects along with the
+// features of the thresholds and of the items their grants give go unused.
 func (e *Entity) bonusFeatures() *features {
 	if !e.carriesGrant(e.judging) {
 		if e.atBase == 0 {
@@ -287,22 +289,26 @@ func ownedByThreshold(owner fmt.Stringer) bool {
 }
 
 // untouchedByThresholdsWhile enters the view in which the levels of the traits leave out the trait bonuses the pools'
-// thresholds hold, unless already in it, and returns what leaves it; see Entity.untouchedByThresholds. e may be nil.
+// thresholds hold, unless already in it, and returns what leaves it, which restores the set of picked defaults it was
+// entered with, so that a default picked in the view outlasts neither the view nor the judging it was picked for; see
+// Entity.untouchedByThresholds and Skill.defaultExcept. e may be nil.
 func (e *Entity) untouchedByThresholdsWhile() func() {
 	if e == nil || e.untouchedByThresholds {
 		return func() {}
 	}
 	e.untouchedByThresholds = true
-	return func() { e.untouchedByThresholds = false }
+	saved := e.judgedDefaults
+	return func() { e.untouchedByThresholds, e.judgedDefaults = false, saved }
 }
 
 // thresholdTraitBonusesLeftOut returns true while, in the view untouchedByThresholdsWhile enters, the lists the bonuses
 // are read from (see bonusFeatures) hold a trait bonus a pool's threshold holds, which that view leaves out and a
 // computation at base never sees, so that what is found in it may differ from what the sheet has. The bonuses of the
-// attributes and of the limited STs are then totalled afresh, the results of the scripts and the level caps and
-// defaults resolved are kept apart from those found otherwise, the variables, Basic Lift, encumbrance, carried weight
-// and weapons are neither taken from the caches nor kept in them, and the levels of the skills and spells that scripts
-// read are not recorded. e may be nil.
+// attributes, the limited STs, Dodge, Move and the defenses are then totalled afresh, the levels of the skills and
+// spells, the defaults of the skills and the relative levels the weapon bonuses select by are computed afresh rather
+// than read as recorded, and are not recorded, the results of the scripts and the level caps and defaults resolved are
+// kept apart from those found otherwise, and the variables, Basic Lift, encumbrance, carried weight and weapons are
+// neither taken from the caches nor kept in them. e may be nil.
 func (e *Entity) thresholdTraitBonusesLeftOut() bool {
 	return e != nil && e.untouchedByThresholds && e.atBase == 0 &&
 		slices.ContainsFunc(e.bonusFeatures().traitBonuses, func(bonus *TraitBonus) bool {

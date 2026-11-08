@@ -10,11 +10,14 @@
 package gurps
 
 import (
+	"cmp"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -131,6 +134,160 @@ func TestEntityThresholdFeaturesTakeEffect(t *testing.T) {
 	c.Equal(1, len(reactions), "the reaction takes effect while Tired")
 	c.Equal("from everyone", reactions[0].From)
 	c.Equal([]string{"from Tired (FP)"}, reactions[0].Sources, "the threshold and its pool are the source")
+}
+
+// TestEntityPoolBaseLeavesOutThresholdTraitBonuses verifies that a pool's base leaves out what the trait bonuses its
+// thresholds hold add to anything it reads that the levels of the traits move, such as the level of a default, Dodge,
+// a defense, a skill or spell or a relative skill level, rather than read the values the sheet recorded with them, so
+// that the pool stays at the threshold whose features apply, and that nothing found for the base then is kept for the
+// next time it is found.
+func TestEntityPoolBaseLeavesOutThresholdTraitBonuses(t *testing.T) {
+	c := check.New(t)
+	perLevel := func(bonus Feature) Feature {
+		switch b := bonus.(type) {
+		case *AttributeBonus:
+			b.PerLevel = true
+		case *SkillBonus:
+			b.PerLevel = true
+		case *SpellBonus:
+			b.PerLevel = true
+		}
+		return bonus
+	}
+	defenseDefault := func(id string) func(e *Entity) Feature {
+		return func(e *Entity) Feature {
+			addSkill(e, "Sword", fxp.One)
+			def := newSkillDefaultTo("Sword", "", true, 0)
+			def.DefaultType = id
+			addSkill(e, "Riposte", 0).Defaults = []*SkillDefault{def}
+			return perLevel(newAttrBonus(id, fxp.One))
+		}
+	}
+	// Each setup puts on the sheet what the base reads and returns the per-level feature of Agile, which has levels (1
+	// unless given) and to which Drained holds a trait bonus of held (+4 unless given).
+	for _, one := range []struct {
+		name   string
+		base   string
+		want   fxp.Int
+		levels fxp.Int
+		held   fxp.Int
+		setup  func(e *Entity) Feature
+	}{
+		{
+			name: "a skill defaulting to Dodge", base: `entity.skillLevel("Evade")`, want: fxp.Nine,
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Evade", 0).Defaults = []*SkillDefault{{DefaultType: DodgeID}}
+				return perLevel(newAttrBonus(DodgeID, fxp.One))
+			},
+		},
+		{
+			name: "a skill defaulting to a parry", base: `entity.skillLevel("Riposte")`, want: fxp.Nine,
+			setup: defenseDefault(ParryID),
+		},
+		{
+			name: "a skill defaulting to a block", base: `entity.skillLevel("Riposte")`, want: fxp.Nine,
+			setup: defenseDefault(BlockID),
+		},
+		{
+			name: "a skill defaulting to the parry of the best of several skills", base: `entity.skillLevel("Riposte")`,
+			want: fxp.Ten, levels: fxp.Five, held: -fxp.Four, setup: func(e *Entity) Feature {
+				addSkill(e, "Sword", fxp.Four).Difficulty.Attribute = IntelligenceID
+				addSkill(e, "Sword", fxp.One)
+				def := newSkillDefaultTo("Sword", "", true, 0)
+				def.DefaultType = ParryID
+				addSkill(e, "Riposte", 0).Defaults = []*SkillDefault{def}
+				return perLevel(newAttrBonus(DexterityID, fxp.One))
+			},
+		},
+		{
+			name: "a skill defaulting to an attribute", base: `entity.skillLevel("Juggling")`, want: fxp.Nine,
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Juggling", 0).Defaults = []*SkillDefault{{DefaultType: DexterityID, Modifier: -fxp.Two}}
+				return perLevel(newAttrBonus(DexterityID, fxp.One))
+			},
+		},
+		{
+			name: "a skill a per-level bonus of a skill raises", base: `entity.skillLevel("Trance")`, want: fxp.FromInteger(21),
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Meditation", fxp.One).Features = Features{perLevel(newSkillBonusTo("Trance", fxp.One))}
+				addSkill(e, "Trance", fxp.One)
+				return perLevel(newSkillBonusTo("Meditation", fxp.One))
+			},
+		},
+		{
+			name: "a skill a per-level bonus of a spell raises", base: `entity.skillLevel("Trance")`, want: fxp.FromInteger(19),
+			setup: func(e *Entity) Feature {
+				addTestSpell(e, "Light", fxp.One).Features = Features{perLevel(newSkillBonusTo("Trance", fxp.One))}
+				addSkill(e, "Trance", fxp.One)
+				return perLevel(NewSpellBonus())
+			},
+		},
+		{
+			name: "a weapon's level", base: `entity.weapons[0].level`, want: fxp.Eleven,
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Sword", fxp.One)
+				blade := addTraitWithFeatures(e, "Blade")
+				swing := NewWeapon(blade, true)
+				swing.Defaults = []*SkillDefault{newSkillDefaultTo("Sword", "", true, 0)}
+				blade.Weapons = []*Weapon{swing}
+				return perLevel(newAttrBonus(DexterityID, fxp.One))
+			},
+		},
+		{
+			name: "a weapon bonus selecting by relative skill level", want: fxp.Ten,
+			base: `entity.weaponDamage("Fist", "Punch") == "1d-2 cr" ? 10 : 12`,
+			setup: func(e *Entity) Feature {
+				addSkill(e, "Brawling", fxp.One)
+				bonus := NewWeaponBonus(feature.WeaponBonus)
+				bonus.NameCriteria.Qualifier = "Brawling"
+				bonus.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three}
+				bonus.Amount = fxp.Five
+				fist := addTraitWithFeatures(e, "Fist", bonus)
+				punch := NewWeapon(fist, true)
+				punch.Usage = "Punch"
+				punch.Defaults = []*SkillDefault{newSkillDefaultTo("Brawling", "", true, 0)}
+				fist.Weapons = []*Weapon{punch}
+				return perLevel(newSkillBonusTo("Brawling", fxp.One))
+			},
+		},
+	} {
+		e := NewEntity()
+		agile := addTraitWithFeatures(e, "Agile", one.setup(e))
+		agile.CanLevel = true
+		agile.Levels = cmp.Or(one.levels, fxp.One)
+		held := cmp.Or(one.held, fxp.Four)
+		drained := NewPoolThreshold()
+		drained.State = "Drained"
+		drained.Value = "5"
+		drained.Features = Features{newTraitBonusTo("Agile", held)}
+		fresh := NewPoolThreshold()
+		fresh.State = "Fresh"
+		fresh.Value = "$focus"
+		e.SheetSettings.Attributes.Set["focus"] = &AttributeDef{
+			DefID:      "focus",
+			Type:       attribute.Pool,
+			Name:       "Focus",
+			Base:       one.base,
+			Thresholds: []*PoolThreshold{drained, fresh},
+		}
+		focus := NewAttribute(e, "focus", len(e.Attributes.Set))
+		e.Attributes.Set["focus"] = focus
+		e.Recalculate()
+		c.Equal(one.want, focus.Maximum(), "%s: the base while Fresh", one.name)
+		focus.Damage = one.want - fxp.One
+		e.Recalculate()
+		c.Equal("Drained", focus.CurrentThreshold().State, "%s", one.name)
+		c.Equal(agile.Levels+held, agile.CurrentLevel(), "%s: the trait bonus takes effect while Drained", one.name)
+		c.Equal(one.want, focus.Maximum(), "%s: the base doesn't follow it", one.name)
+		agile.Levels += fxp.One
+		focus.Damage = 0
+		e.Recalculate()
+		raised := focus.Maximum()
+		focus.Damage = raised - fxp.One
+		e.Recalculate()
+		c.Equal("Drained", focus.CurrentThreshold().State, "%s: once the trait gains a level", one.name)
+		c.Equal(raised, focus.Maximum(), "%s: the base once the trait gains a level", one.name)
+	}
 }
 
 // TestEntityMoveBonus verifies that a bonus to Move adds to Basic Move while the sheet defines no move attribute, and

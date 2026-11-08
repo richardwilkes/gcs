@@ -677,13 +677,15 @@ func (s *Skill) IsLeveled() bool {
 	return !s.Container()
 }
 
-// CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base the level of an
-// enabled skill is computed afresh, since the recorded one holds what alters current values alone (see
-// Entity.atBaseWhile), unless that computation is already under way for the skill, as when a per-level amount leads
-// back to it, which then reads the recorded one.
+// CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base, and while a pool's
+// base or thresholds are found without the trait bonuses those thresholds hold, the level of an enabled skill is
+// computed afresh, since the recorded one holds what alters current values alone, or what those trait bonuses add (see
+// Entity.atBaseWhile and Entity.thresholdTraitBonusesLeftOut), unless that computation is already under way for the
+// skill, as when a per-level amount leads back to it, which then reads the recorded one.
 func (s *Skill) CurrentLevel() fxp.Int {
 	e := EntityFromNode(s)
-	if e == nil || e.atBase == 0 || s.Container() || !s.Enabled() || e.baseLevelReads[s] {
+	if e == nil || (e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()) || s.Container() || !s.Enabled() ||
+		e.baseLevelReads[s] {
 		return s.LevelData.Level
 	}
 	if e.baseLevelReads == nil {
@@ -1033,22 +1035,25 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // prerequisites see the sheet, since the recorded one, or the lack of one, was picked, and its level taken, with what
 // the grants did to the skills it rests on. It is picked afresh too while an editor previews a skill's level, since the
 // recorded one was picked with that skill as it is on the sheet rather than as edited (see Entity.matchLevelCapsAs),
-// and at base, since it was picked, and its level taken, with what alters current values alone (see
-// Entity.atBaseWhile). It is picked as bestDefault picks, but with the levels taken with the skill added to the
-// excludes given rather than with it alone excluded, so that a chain of defaults never comes back to a skill it passes
-// through: the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the
-// skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged, the
-// edits previewed, or the computation at base runs, apart from those found otherwise, and reused only for the same
-// skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a pool's
-// threshold is found for those prerequisites, and the trait bonuses they hold while a pool's base or thresholds are
-// found (see judgedDefaultKey), so that the answers are those of picking afresh every time, while a pick beneath a
+// at base, since it was picked, and its level taken, with what alters current values alone (see Entity.atBaseWhile),
+// and while a pool's base or thresholds are found without the trait bonuses those thresholds hold, since it was
+// picked, and its level taken, with what they add (see Entity.thresholdTraitBonusesLeftOut). It is picked as
+// bestDefault picks, but with the levels taken with the skill added to the excludes given rather than with it alone
+// excluded, so that a chain of defaults never comes back to a skill it passes through: the recorded default, if the
+// skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill, and otherwise the best of the
+// skill's defaults. Each pick is kept while those prerequisites are judged, the edits previewed, the computation at
+// base runs, or the pool's base or thresholds are found, apart from those found otherwise, and reused only for the
+// same skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a
+// pool's threshold is found for those prerequisites, and the trait bonuses they hold while a pool's base or thresholds
+// are found (see judgedDefaultKey), so that the answers are those of picking afresh every time, while a pick beneath a
 // skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
 // as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
 // points that default to one another, so judging stays fast only while such a set stays small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
 	atBase := e != nil && e.atBase > 0
-	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit() && !atBase) {
+	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit() && !atBase &&
+		!e.thresholdTraitBonusesLeftOut()) {
 		return s.DefaultedFrom
 	}
 	excludes = maps.Clone(excludes)

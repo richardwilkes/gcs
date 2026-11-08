@@ -1073,13 +1073,15 @@ func (s *Spell) IsLeveled() bool {
 	return !s.Container()
 }
 
-// CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base the level of an
-// enabled spell is computed afresh, since the recorded one holds what alters current values alone (see
-// Entity.atBaseWhile), unless that computation is already under way for the spell, as when a per-level amount leads
-// back to it, which then reads the recorded one.
+// CurrentLevel implements LeveledOwner. It is the level the last pass recorded, except that at base, and while a pool's
+// base or thresholds are found without the trait bonuses those thresholds hold, the level of an enabled spell is
+// computed afresh, since the recorded one holds what alters current values alone, or what those trait bonuses add (see
+// Entity.atBaseWhile and Entity.thresholdTraitBonusesLeftOut), unless that computation is already under way for the
+// spell, as when a per-level amount leads back to it, which then reads the recorded one.
 func (s *Spell) CurrentLevel() fxp.Int {
 	e := EntityFromNode(s)
-	if e == nil || e.atBase == 0 || s.Container() || !s.Enabled() || e.baseLevelReads[s] {
+	if e == nil || (e.atBase == 0 && !e.thresholdTraitBonusesLeftOut()) || s.Container() || !s.Enabled() ||
+		e.baseLevelReads[s] {
 		return s.LevelData.Level
 	}
 	if e.baseLevelReads == nil {
