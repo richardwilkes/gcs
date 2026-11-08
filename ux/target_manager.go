@@ -33,6 +33,9 @@ type FocusRef struct {
 type TargetMgr struct {
 	root   *unison.Panel
 	lastID int
+	// reveal, when set, is asked by findRevealing to show the collapsed part of the content holding the widget with the
+	// reference key, reporting whether it did.
+	reveal func(refKey string) bool
 }
 
 // NewTargetMgr creates a new TargetMgr with the given root.
@@ -50,6 +53,15 @@ func (t *TargetMgr) NextPrefix() string {
 // Find searches the tree of panels starting at the root, looking for a specific refKey.
 func (t *TargetMgr) Find(refKey string) *unison.Panel {
 	return t.root.FindRefKey(refKey)
+}
+
+// findRevealing is Find for the widget an undo or redo applies to, which a collapsed part of the content may hide: when
+// Find comes up empty, reveal, if set, is asked to show the part holding it, and the search is made again.
+func (t *TargetMgr) findRevealing(refKey string) *unison.Panel {
+	if found := t.Find(refKey); found != nil || t.reveal == nil || !t.reveal(refKey) {
+		return found
+	}
+	return t.Find(refKey)
 }
 
 // CurrentFocusRef returns the current FocusRef, if any.

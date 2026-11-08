@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/weight"
 )
@@ -218,15 +217,7 @@ func (b *sentenceButton) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.
 }
 
 func (b *sentenceButton) draw(gc *unison.Canvas, _ geom.Rect) {
-	r := b.ContentRect(true)
-	radius := geom.NewUniformSize(compactCornerRadius)
-	if b.onClick != nil && b.hovered {
-		gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
-	}
-	if b.onClick != nil && b.Focused() {
-		ring := r.Inset(geom.NewUniformInsets(0.5))
-		gc.DrawRoundedRect(ring, radius, unison.ThemeFocus.Paint(gc, ring, paintstyle.Stroke))
-	}
+	drawDisclosureHighlight(gc, b.ContentRect(true), b.onClick != nil && b.hovered, b.onClick != nil && b.Focused())
 	rect := b.ContentRect(false)
 	y := rect.Y
 	for _, line := range b.lines(rect.Width) {

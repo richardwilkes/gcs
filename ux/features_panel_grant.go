@@ -388,6 +388,36 @@ func (p *featuresPanel) closeStaleGrantItemEditors() {
 // their features, once outer has rebuilt or removed the panels they were opened from, and closes, without asking, those
 // whose features no panel within outer shows any more, along with those closeStaleGrantItemEditors would close.
 func followGrantItemEditors(outer Rebuildable) {
+	eachGrantItemEditor(outer, func(d unison.Dockable, o *grantItemOwner) bool {
+		if !unison.AncestorIsOrSelf(o.panel, outer) || !o.current() {
+			if closer, canDiscard := d.(interface{ discardAndCloseAll() }); canDiscard {
+				closer.discardAndCloseAll()
+			}
+		}
+		return true
+	})
+}
+
+// closeGrantItemEditorsWithin closes the editors open on the items of the grants whose features are shown within the
+// panel, a part of outer, asking about their changes as applying outer does, and returns false if one of them stays
+// open. It is what collapsing such a part does first, since the next rebuild would otherwise close them without asking.
+func closeGrantItemEditorsWithin(outer Rebuildable, within unison.Paneler) bool {
+	closed := true
+	eachGrantItemEditor(outer, func(d unison.Dockable, o *grantItemOwner) bool {
+		if !unison.AncestorIsOrSelf(o.panel, within) {
+			return true
+		}
+		if closer, ok := d.(unison.TabCloser); ok {
+			closed = closer.MayAttemptClose() && closer.AttemptClose()
+		}
+		return closed
+	})
+	return closed
+}
+
+// eachGrantItemEditor calls f with each editor open on the item of a grant within outer and its owner, once the owner
+// has followed the panel now showing its grant's features (see grantItemOwner.follow), stopping when f returns false.
+func eachGrantItemEditor(outer Rebuildable, f func(d unison.Dockable, o *grantItemOwner) bool) {
 	for _, d := range AllDockables() {
 		owned, ok := d.AsPanel().Self.(Owned)
 		if !ok {
@@ -398,10 +428,8 @@ func followGrantItemEditors(outer Rebuildable) {
 			continue
 		}
 		o.follow()
-		if !unison.AncestorIsOrSelf(o.panel, outer) || !o.current() {
-			if closer, canDiscard := d.(interface{ discardAndCloseAll() }); canDiscard {
-				closer.discardAndCloseAll()
-			}
+		if !f(d, o) {
+			return
 		}
 	}
 }

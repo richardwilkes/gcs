@@ -35,6 +35,7 @@ func newTestThresholdDockable(defs *gurps.AttributeDefs, features gurps.Features
 	d := newTestAttributeSettingsDockableFor(defs)
 	d.addToStartToolbar(unison.NewPanel())
 	initTestSettingsContent(&d.undoableSettingsDockable)
+	expandAllAttributes(d)
 	return d
 }
 
@@ -220,6 +221,7 @@ func TestThresholdGrantItemEditorFollowsItsThreshold(t *testing.T) {
 				d.TabTitle = "Attributes"
 				d.TabIcon = svg.Attributes
 				d.show()
+				expandAllAttributes(d)
 				p := thresholdFeaturesPanel(c, d)
 				p.editGrantedItem(grantAt(t, p, 0))
 			})
@@ -314,6 +316,7 @@ func TestThresholdFeaturesKeepTheirViewAcrossRebuilds(t *testing.T) {
 				d.TabTitle = "Attributes"
 				d.TabIcon = svg.Attributes
 				d.show()
+				expandAllAttributes(d)
 			})
 			// thresholdFeatures returns the panels of the first and second thresholds' features.
 			thresholdFeatures := func() (reeling, tiring *featuresPanel) {
@@ -390,6 +393,7 @@ func TestThresholdFeaturesKeepAPendingCriterionAcrossRebuilds(t *testing.T) {
 		d.TabTitle = "Attributes"
 		d.TabIcon = svg.Attributes
 		d.show()
+		expandAllAttributes(d)
 		uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
 	})
 	// inGroupField returns true if the focus is in the group field of the first threshold's open row.
@@ -414,4 +418,98 @@ func TestThresholdFeaturesKeepAPendingCriterionAcrossRebuilds(t *testing.T) {
 	c.True(inGroupField(), "precondition: the focus is in the group field the button added")
 	screen.Do(d.undoMgr.Undo)
 	c.True(inGroupField(), "the group field is still there once undo rebuilds the content, with the focus in it")
+}
+
+// TestCollapsingAnAttributeRowClosesItsGrantItemEditorsFirst checks that collapsing a pool's row, by its header or by
+// the toolbar's toggle, first closes the editor open on the item one of its thresholds grants, asking whether to save
+// its changes as applying the settings does, and leaves the row expanded when that is canceled; and that collapsing
+// another row asks nothing and leaves the editor open.
+func TestCollapsingAnAttributeRowClosesItsGrantItemEditorsFirst(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		id        string // the row collapsed, or "" for the toolbar's toggle
+		prompts   bool   // whether the editor is expected to ask about its changes
+		answer    int    // the response to the prompt
+		collapsed bool   // whether the row of hp ends up collapsed
+		closed    bool   // whether the editor ends up closed
+		item      string // the name of the item the grant then gives
+	}{
+		{name: "cancel", id: "hp", prompts: true, answer: unison.ModalResponseCancel, item: "Night Vision"},
+		{
+			name: "save", id: "hp", prompts: true, answer: unison.ModalResponseOK, collapsed: true, closed: true,
+			item: "Dark Vision",
+		},
+		{
+			name: "discard", id: "hp", prompts: true, answer: unison.ModalResponseDiscard, collapsed: true, closed: true,
+			item: "Night Vision",
+		},
+		{name: "toolbar cancel", prompts: true, answer: unison.ModalResponseCancel, item: "Night Vision"},
+		{name: "another row", id: "st", item: "Night Vision"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			g := gurps.NewGrant(feature.GrantTrait)
+			g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+			isTraitEditor := func(one unison.Dockable) bool {
+				_, ok := one.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+				return ok
+			}
+			var d *attributeSettingsDockable
+			screen.Do(func() {
+				defs := testAttrDefs("st", "hp")
+				def := defs.Set["hp"]
+				def.Type = attribute.Pool
+				def.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", Features: gurps.Features{g}}}
+				d = newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				expandAllAttributes(d)
+				p := thresholdFeaturesPanel(c, d)
+				p.editGrantedItem(grantAt(t, p, 0))
+			})
+			nested := uxtest.SoleEditor[*editor[*gurps.Trait, *gurps.TraitEditData]](t, screen, isTraitEditor)
+			screen.Do(func() {
+				nested.editorData.Name = "Dark Vision"
+				nested.MarkModified(nil)
+			})
+			screen.Post(func() {
+				if tc.id == "" {
+					toolbarButtonWithTip(t, d.toolbar, toggleAttributesTip).ClickCallback()
+				} else {
+					askAttrRow(t, d, tc.id, false)
+				}
+			})
+			if tc.prompts {
+				_, dialog := modalDialog(t, screen, wnd)
+				screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, tc.answer)))
+			} else {
+				var dialog *unison.Dialog
+				screen.Do(func() {
+					for _, w := range unison.Windows() {
+						if one, ok := w.ClientData()[unison.DialogClientDataKey].(*unison.Dialog); ok {
+							dialog = one
+						}
+					}
+				})
+				c.Nil(dialog, "collapsing a row without the editor's grant asks nothing")
+				if dialog != nil {
+					screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+				}
+			}
+			screen.Do(func() {
+				c.Equal(tc.collapsed, attrRowExpanded(d, "hp") == false, "the pool's row is collapsed: %v", tc.collapsed)
+				c.Equal(tc.id == "st", !attrRowExpanded(d, "st"), "only the row asked to collapse without the editor does")
+				c.Equal(!tc.closed, len(AllMatchingDockables(isTraitEditor)) == 1, "the editor is open: %v", !tc.closed)
+				c.Equal(1, len(unison.Windows()), "no prompt is left up")
+				var item string
+				if one, ok := d.model.Set["hp"].Thresholds[0].Features[0].(*gurps.Grant); ok {
+					item = one.ItemName()
+				}
+				c.Equal(tc.item, item, "the grant gives the item the answer leaves it")
+				c.Equal(tc.item == "Dark Vision", d.applyButton.Enabled(), "saving the item changes the settings")
+			})
+		})
+	}
 }

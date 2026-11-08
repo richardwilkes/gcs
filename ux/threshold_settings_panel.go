@@ -98,7 +98,7 @@ func (p *thresholdSettingsPanel) createFeatures() *featuresPanel {
 	key := p.threshold.KeyPrefix + "features"
 	features.RefKey = key
 	features.live = func() *sentenceRows[featuresState] {
-		if found := d.targetMgr.Find(key); found != nil {
+		if found := d.targetMgr.findRevealing(key); found != nil {
 			if one, ok := found.Self.(*featuresPanel); ok {
 				return &one.sentenceRows
 			}

@@ -10,7 +10,9 @@
 package ux
 
 import (
+	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -23,7 +25,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestAddAttributeDefAssignsUniqueKeyPrefix verifies that an attribute added with the "Add Attribute" toolbar button is
@@ -70,7 +75,8 @@ func TestAddAttributeDefAssignsUniqueKeyPrefix(t *testing.T) {
 // TestAttributeDeleteButtonEnablement verifies that the "can't delete the last attribute" guard is recomputed whenever
 // the panels are added or rebuilt, rather than only when one is deleted. Adding an attribute after deleting down to one
 // used to leave the older attribute's delete button disabled forever, and any rebuild (type change, undo, load, reset)
-// used to restore an enabled delete button to a lone attribute.
+// used to restore an enabled delete button to a lone attribute, as did filling its row again to pack a window of its
+// own.
 func TestAttributeDeleteButtonEnablement(t *testing.T) {
 	c := check.New(t)
 	d := newTestAttributeSettingsDockableFor(&gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)})
@@ -99,6 +105,10 @@ func TestAttributeDeleteButtonEnablement(t *testing.T) {
 	c.Equal(1, len(d.content.Children()), "only the lone attribute should have a panel")
 	c.Equal(first.DefID, attrDefPanel(d, 0).def.DefID, "the lone attribute should be the one left in the set")
 	c.False(attrDeleteButtonEnabled(d, 0), "a rebuild with one attribute leaves its delete button disabled")
+
+	// Nor must filling the lone row again to pack a window of its own around it expanded.
+	d.showForOwnWindow(func() {})
+	c.False(attrDeleteButtonEnabled(d, 0), "packing a window around the lone attribute leaves its delete button disabled")
 
 	// A dockable opened with a single attribute starts with the guard in place.
 	d2 := newTestAttributeSettingsDockableFor(&gurps.AttributeDefs{Set: make(map[string]*gurps.AttributeDef)})
@@ -175,6 +185,12 @@ func initTestSettingsContent[T undoableSettingsModel](d *undoableSettingsDockabl
 	scroller.SetContent(content, behavior.Fill, behavior.Fill)
 	d.AddChild(scroller)
 	d.initContent(content)
+}
+
+// expandAllAttributes expands every attribute's row with the toolbar's toggle, which does so while all of them are
+// collapsed, as they are when the content is first built, for a test that reaches into the rows' fields or thresholds.
+func expandAllAttributes(d *attributeSettingsDockable) {
+	d.toggleAllExpanded()
 }
 
 func attrDefPanel(d *attributeSettingsDockable, index int) *attrDefSettingsPanel {
@@ -267,6 +283,7 @@ func TestPoolThresholdDragDropReorders(t *testing.T) {
 	}
 	d := newTestAttributeSettingsDockableFor(defs)
 	initTestSettingsContent(&d.undoableSettingsDockable)
+	expandAllAttributes(d)
 	pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
 	c.Equal(1, len(pools), "only the pool attribute has a threshold list")
 	rows := pools[0].Children()
@@ -299,6 +316,7 @@ func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
 	pool.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", KeyPrefix: "r"}}
 	d := newTestAttributeSettingsDockableFor(defs)
 	initTestSettingsContent(&d.undoableSettingsDockable)
+	expandAllAttributes(d)
 	rows := uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(1, len(rows))
 	c.False(rows[0].deleteButton.Enabled(), "the last threshold may not be deleted")
@@ -348,6 +366,7 @@ func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 			c := check.New(t)
 			d := newTestAttributeSettingsDockable()
 			initTestSettingsContent(&d.undoableSettingsDockable)
+			expandAllAttributes(d)
 			fp := d.model.Set[gurps.FatiguePointsID]
 			c.Equal(attribute.Pool, fp.Type)
 			c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
@@ -469,6 +488,7 @@ func TestThresholdFeaturesFollowAttributeEdits(t *testing.T) {
 				d.TabTitle = "Attributes"
 				d.TabIcon = svg.Attributes
 				d.show()
+				expandAllAttributes(d)
 				if p = thresholdFeaturesPanel(c, d); p == nil {
 					return
 				}
@@ -622,4 +642,494 @@ func TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity(t *testing.T) {
 	c.True(template.Skills.syncedAtStamp() > before, "the template's skills list must be synced")
 	c.True(list.table.RowFromIndex(0) != row, "the library list must be synced")
 	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "the loot sheet shows no attributes, so it must be left alone")
+}
+
+// attrRowHeader returns the header of the row of the definition with the ID: the disclosure that heads the row's
+// content, failing the test when the row has none.
+func attrRowHeader(t *testing.T, d *attributeSettingsDockable, id string) *unison.Panel {
+	t.Helper()
+	for _, row := range d.rows() {
+		if row.def.DefID != id {
+			continue
+		}
+		if parts := row.Children(); len(parts) == 3 {
+			if content := parts[2].Children(); len(content) != 0 &&
+				content[0].Accessibility.Role == role.DisclosureTriangle {
+				return content[0]
+			}
+		}
+		t.Fatalf("the row of %q has no header", id)
+	}
+	t.Fatalf("no row shows %q", id)
+	return nil
+}
+
+// askAttrRow asks the header of the row of the definition with the ID to expand or collapse the row, as a screen
+// reader would.
+func askAttrRow(t *testing.T, d *attributeSettingsDockable, id string, expand bool) {
+	t.Helper()
+	action := accessibility.Collapse
+	if expand {
+		action = accessibility.Expand
+	}
+	attrRowHeader(t, d, id).Accessibility.ActionCallback(accessibility.ActionRequest{Action: action})
+}
+
+// attrRowExpanded reports whether the row of the definition with the ID shows its fields, by the ID field being
+// registered with the dockable.
+func attrRowExpanded(d *attributeSettingsDockable, id string) bool {
+	return d.targetMgr.Find(d.model.Set[id].KeyPrefix+"id") != nil
+}
+
+// toolbarButtonWithTip returns the toolbar's button with the tooltip, failing the test if there is none.
+func toolbarButtonWithTip(t *testing.T, toolbar *unison.Panel, tip string) *unison.Button {
+	t.Helper()
+	for _, b := range uxtest.PanelsOfType[*unison.Button](toolbar) {
+		if b.Tooltip != nil && slices.Contains(uxtest.LabelTexts(b.Tooltip), tip) {
+			return b
+		}
+	}
+	t.Fatalf("the toolbar has no button with the tooltip %q", tip)
+	return nil
+}
+
+const toggleAttributesTip = "Expands/collapses all attribute definitions"
+
+// TestAttributeRowsStartCollapsedToTheirHeader verifies that every attribute's row is built collapsed: a drag handle, a
+// button column holding the delete button alone, and a header naming the definition by its ID, its name when it has
+// one, and its type, with none of its fields, nor the thresholds of a pool, nor the button that adds one, so that
+// nothing but deleting and rearranging can be done to a definition until its row is expanded.
+func TestAttributeRowsStartCollapsedToTheirHeader(t *testing.T) {
+	c := check.New(t)
+	defs := testAttrDefs("st", "hp", "sep", "nameless")
+	hp := defs.Set["hp"]
+	hp.Type = attribute.Pool
+	hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
+	sep := defs.Set["sep"]
+	sep.Type = attribute.PrimarySeparator
+	sep.Name = "Primary"
+	defs.Set["nameless"].Name = " "
+	d := newTestAttributeSettingsDockableFor(defs)
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	rows := d.content.Children()
+	c.Equal(4, len(rows))
+	for i, want := range []string{
+		"st · ST · Integer", "hp · HP · Pool", "sep · Primary · Primary Separator", "nameless · Integer",
+	} {
+		parts := rows[i].Children()
+		c.Equal(3, len(parts), "row %d: a drag handle, the buttons and the content", i)
+		if len(parts) != 3 {
+			continue
+		}
+		_, isHandle := parts[0].Self.(*DragHandle)
+		c.True(isHandle, "row %d: the drag handle comes first", i)
+		buttons := uxtest.PanelsOfType[*unison.Button](parts[1])
+		c.Equal(1, len(buttons), "row %d: only the delete button is offered", i)
+		if len(buttons) == 1 {
+			c.Equal([]string{"Remove attribute"}, uxtest.LabelTexts(buttons[0].Tooltip), "row %d", i)
+		}
+		content := parts[2].Children()
+		c.Equal(1, len(content), "row %d: the content is the header alone", i)
+		if len(content) == 1 {
+			c.Equal(role.DisclosureTriangle, content[0].Accessibility.Role, "row %d: the header is a disclosure", i)
+			c.Equal(want, content[0].Accessibility.Name, "row %d: the header names the definition", i)
+		}
+	}
+	c.Nil(d.targetMgr.Find(defs.Set["st"].KeyPrefix+"id"), "no field of a collapsed row is registered")
+	c.Equal(0, len(uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())), "a collapsed pool shows no thresholds")
+	c.Equal(0, len(uxtest.PanelsOfType[*StringField](d.AsPanel())), "a collapsed row has no fields")
+}
+
+// TestAttributeRowHeaderTogglesTheRow verifies that a click on a row's header, Space, Return or Enter while it has the
+// focus, or a screen reader's press or request to expand or collapse it, expands the row to the definition's fields,
+// the add threshold button and the thresholds of a pool, and collapses it again, with the header saying which; that
+// the focus stays on the header, built anew with the row; and that none of it is an edit, to be undone or applied.
+func TestAttributeRowHeaderTogglesTheRow(t *testing.T) {
+	type act func(screen *unison.HeadlessScreen, header *unison.Panel, expand bool)
+	key := func(code unison.KeyCode) act {
+		return func(screen *unison.HeadlessScreen, _ *unison.Panel, _ bool) { screen.KeyPress(code, mod.None) }
+	}
+	ask := func(action func(expand bool) accessibility.Action) act {
+		return func(screen *unison.HeadlessScreen, header *unison.Panel, expand bool) {
+			node := screen.AccessibilityNodeFor(header)
+			if node == nil {
+				return
+			}
+			screen.PerformAccessibilityAction(accessibility.ActionRequest{Node: node.ID, Action: action(expand)})
+		}
+	}
+	for _, tc := range []struct {
+		name  string
+		act   act
+		focus bool // whether the focus is expected on the header afterward, as a key or an action leaves it
+	}{
+		{name: "click", act: func(screen *unison.HeadlessScreen, header *unison.Panel, _ bool) {
+			screen.Click(screen.PanelCenter(header))
+		}},
+		{name: "space", act: key(unison.KeySpace), focus: true},
+		{name: "return", act: key(unison.KeyReturn), focus: true},
+		{name: "enter", act: key(unison.KeyNumPadEnter), focus: true},
+		{name: "press", act: ask(func(_ bool) accessibility.Action { return accessibility.Press }), focus: true},
+		{name: "expand and collapse", act: ask(func(expand bool) accessibility.Action {
+			if expand {
+				return accessibility.Expand
+			}
+			return accessibility.Collapse
+		}), focus: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			screen.EnableAccessibility()
+			var d *attributeSettingsDockable
+			screen.Do(func() {
+				defs := testAttrDefs("st", "hp")
+				hp := defs.Set["hp"]
+				hp.Type = attribute.Pool
+				hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
+				d = newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+			})
+			var header *unison.Panel
+			screen.Do(func() {
+				header = attrRowHeader(t, d, "hp")
+				header.RequestFocus()
+				c.True(wnd.Focus() == header, "precondition: the header has the focus")
+			})
+			node := screen.AccessibilityNodeFor(header)
+			c.NotNil(node, "the header is described")
+			if node != nil {
+				c.True(node.Expandable && !node.Expanded, "the header is described as collapsed")
+			}
+			unchanged := func(when string) {
+				c.False(d.undoMgr.CanUndo(), "%s: nothing is undone", when)
+				c.False(d.Modified(), "%s: nothing is modified", when)
+				c.False(d.applyButton.Enabled(), "%s: there is nothing to apply", when)
+			}
+			for _, expand := range []bool{true, false} {
+				tc.act(screen, header, expand)
+				screen.Do(func() {
+					c.Equal(expand, attrRowExpanded(d, "hp"), "the row is expanded: %v", expand)
+					buttons := uxtest.PanelsOfType[*unison.Button](d.rows()[1].Children()[1])
+					pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
+					if expand {
+						c.Equal(2, len(buttons), "the threshold can be added to while the row is expanded")
+						c.Equal(1, len(pools), "the thresholds are shown while the row is expanded")
+					} else {
+						c.Equal(1, len(buttons), "only deletion is offered while the row is collapsed")
+						c.Equal(0, len(pools), "the thresholds are hidden while the row is collapsed")
+					}
+					header = attrRowHeader(t, d, "hp")
+					c.Equal("hp · HP · Pool", header.Accessibility.Name, "the header still names the definition")
+					if tc.focus {
+						c.True(wnd.Focus() == header, "the focus stays on the header; it is on %T", wnd.Focus())
+					}
+				})
+				node = screen.AccessibilityNodeFor(header)
+				c.NotNil(node, "the header is described")
+				if node != nil {
+					c.Equal(expand, node.Expanded, "the header is described as expanded: %v", expand)
+				}
+				unchanged(fmt.Sprintf("expanded %v", expand))
+			}
+		})
+	}
+}
+
+// TestAttributeRowExpansionSurvivesRebuildsButNotReplacement verifies that an expanded row stays expanded, and the
+// collapsed ones collapsed, when the content is rebuilt from the same definitions, as a type change, undo and redo,
+// a drag, adding a threshold and bringing back a deleted definition do, while replacing the definitions, as resetting
+// and loading do, collapses every row, even one whose definition has the same ID as before.
+func TestAttributeRowExpansionSurvivesRebuildsButNotReplacement(t *testing.T) {
+	changeType := func(d *attributeSettingsDockable) { attrDefPanel(d, 0).applyAttributeType(attribute.Decimal) }
+	for _, tc := range []struct {
+		name         string
+		change       func(d *attributeSettingsDockable)
+		allCollapsed bool
+	}{
+		{name: "type change", change: changeType},
+		{name: "undo", change: func(d *attributeSettingsDockable) {
+			changeType(d)
+			d.undoMgr.Undo()
+		}},
+		{name: "redo", change: func(d *attributeSettingsDockable) {
+			changeType(d)
+			d.undoMgr.Undo()
+			d.undoMgr.Redo()
+		}},
+		{name: "drag", change: func(d *attributeSettingsDockable) {
+			d.reorderRows("Drag", func() bool { return d.moveAttributeDef(d.model.Set["hp"], 0) })
+		}},
+		{name: "add threshold", change: func(d *attributeSettingsDockable) {
+			uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())[0].addThreshold()
+		}},
+		{name: "delete and undo", change: func(d *attributeSettingsDockable) {
+			attrDefPanel(d, 2).deleteAttrDef()
+			d.undoMgr.Undo()
+		}},
+		{name: "reset", allCollapsed: true, change: (*attributeSettingsDockable).reset},
+		{name: "load", allCollapsed: true, change: func(d *attributeSettingsDockable) {
+			d.replaceModel("Load Attributes", d.model.Clone())
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			defs := testAttrDefs("st", "dx", "hp")
+			hp := defs.Set["hp"]
+			hp.Type = attribute.Pool
+			hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
+			d := newTestAttributeSettingsDockableFor(defs)
+			initTestSettingsContent(&d.undoableSettingsDockable)
+			askAttrRow(t, d, "hp", true)
+			c.True(attrRowExpanded(d, "hp"), "precondition: the pool's row is expanded")
+			c.False(attrRowExpanded(d, "st"), "precondition: the other rows are collapsed")
+
+			tc.change(d)
+			c.NotNil(d.model.Set["hp"], "precondition: a definition with the ID is still there")
+			c.Equal(!tc.allCollapsed, attrRowExpanded(d, "hp"), "the pool's row is expanded after the change")
+			c.False(attrRowExpanded(d, "st"), "the first row is collapsed after the change")
+			c.False(attrRowExpanded(d, "dx"), "the second row is collapsed after the change")
+		})
+	}
+}
+
+// TestAttributeToolbarToggleExpandsOnlyWhenAllAreCollapsed verifies that the toolbar's toggle expands every row while
+// all of them are collapsed, and otherwise collapses them all, whichever rows are expanded, and that doing so is no
+// edit.
+func TestAttributeToolbarToggleExpandsOnlyWhenAllAreCollapsed(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		expanded []string
+		expands  bool
+	}{
+		{name: "none expanded", expands: true},
+		{name: "first expanded", expanded: []string{"st"}},
+		{name: "another expanded", expanded: []string{"hp"}},
+		{name: "all expanded", expanded: []string{"st", "dx", "hp"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "hp"))
+			d.addToStartToolbar(unison.NewPanel())
+			initTestSettingsContent(&d.undoableSettingsDockable)
+			for _, id := range tc.expanded {
+				askAttrRow(t, d, id, true)
+			}
+			toolbarButtonWithTip(t, d.toolbar, toggleAttributesTip).ClickCallback()
+			for _, id := range []string{"st", "dx", "hp"} {
+				c.Equal(tc.expands, attrRowExpanded(d, id), "%s is expanded", id)
+			}
+			c.False(d.undoMgr.CanUndo(), "nothing is undone")
+			c.False(d.Modified(), "nothing is modified")
+		})
+	}
+}
+
+// TestAddedAttributeStartsExpandedWithFocusInItsID verifies that a definition added with the toolbar's button, alone
+// among the rows, starts out expanded, with the focus in its ID field, since it is there to be edited.
+func TestAddedAttributeStartsExpandedWithFocusInItsID(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.Do(func() {
+		d := newAttributeSettingsDockable(nil, testAttrDefs("st", "dx"))
+		d.TabTitle = "Attributes"
+		d.TabIcon = svg.Attributes
+		d.show()
+		toolbarButtonWithTip(t, d.toolbar, "Add Attribute").ClickCallback()
+		rows := d.rows()
+		c.Equal(3, len(rows), "the definition has a row")
+		if len(rows) != 3 {
+			return
+		}
+		added := rows[2].def
+		c.True(attrRowExpanded(d, added.DefID), "the added definition's row is expanded")
+		c.True(wnd.Focus() == d.targetMgr.Find(added.KeyPrefix+"id"), "the focus is in its ID field; it is on %T",
+			wnd.Focus())
+		c.False(attrRowExpanded(d, "st"), "the other rows stay collapsed")
+		c.False(attrRowExpanded(d, "dx"), "the other rows stay collapsed")
+	})
+}
+
+// TestCollapsingAnAttributeRowMovesTheFocusToItsHeader verifies that collapsing a row while one of its fields has the
+// focus, by its header or by the toolbar's toggle, hands the focus straight to the row's header rather than leaving it
+// on a field no longer shown. Collapsing a later row as well used to hand the focus to the window's first tab stop on
+// the way, since asking where the focus was seeded it afresh once the first row's field had gone.
+func TestCollapsingAnAttributeRowMovesTheFocusToItsHeader(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		collapse func(t *testing.T, d *attributeSettingsDockable)
+	}{
+		{name: "header", collapse: func(t *testing.T, d *attributeSettingsDockable) { askAttrRow(t, d, "st", false) }},
+		{name: "toolbar", collapse: func(t *testing.T, d *attributeSettingsDockable) {
+			toolbarButtonWithTip(t, d.toolbar, toggleAttributesTip).ClickCallback()
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			screen.Do(func() {
+				d := newAttributeSettingsDockable(nil, testAttrDefs("st", "dx"))
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				askAttrRow(t, d, "st", true)
+				askAttrRow(t, d, "dx", true)
+				field := d.targetMgr.Find(d.model.Set["st"].KeyPrefix + "name")
+				c.NotNil(field, "precondition: the expanded row has a name field")
+				if field == nil {
+					return
+				}
+				field.RequestFocus()
+				c.True(wnd.Focus() == field, "precondition: the field has the focus")
+				var focused []*unison.Panel
+				wnd.Content().FocusChangeInHierarchyCallback = func(_, to *unison.Panel) { focused = append(focused, to) }
+				tc.collapse(t, d)
+				wnd.Content().FocusChangeInHierarchyCallback = nil
+				c.False(attrRowExpanded(d, "st"), "the row is collapsed")
+				header := attrRowHeader(t, d, "st")
+				c.True(wnd.Focus() == header, "the focus is on the row's header; it is on %T", wnd.Focus())
+				c.NotEqual(0, len(focused), "precondition: the focus changes are seen")
+				for _, one := range focused {
+					c.True(one == header, "the focus goes nowhere but the header; it went to %T", one.Self)
+				}
+			})
+		})
+	}
+}
+
+// TestUndoReachesAnEditMadeInACollapsedAttributeRow verifies that undoing an edit made in a row that has since been
+// collapsed, of a field of the definition or of the features of one of its thresholds, expands the row and lands in
+// the definitions the dockable holds, even once another edit has replaced them with a copy, and leaves the dockable
+// as unmodified as the undo makes it.
+func TestUndoReachesAnEditMadeInACollapsedAttributeRow(t *testing.T) {
+	rename := func(t *testing.T, d *attributeSettingsDockable) {
+		t.Helper()
+		askAttrRow(t, d, "st", true)
+		widgetFor[*StringField](t, d, d.model.Set["st"].KeyPrefix+"name").SetText("Brawn")
+		askAttrRow(t, d, "st", false)
+	}
+	for _, tc := range []struct {
+		name string
+		id   string // the row edited
+		edit func(t *testing.T, d *attributeSettingsDockable)
+		undo func(d *attributeSettingsDockable)
+	}{
+		{name: "field", id: "st", edit: rename, undo: func(d *attributeSettingsDockable) { d.undoMgr.Undo() }},
+		{
+			name: "field after a copy", id: "st",
+			edit: func(t *testing.T, d *attributeSettingsDockable) {
+				rename(t, d)
+				attrDefPanel(d, 1).applyAttributeType(attribute.Decimal) // Replaces the definitions with a copy.
+			},
+			undo: func(d *attributeSettingsDockable) {
+				d.undoMgr.Undo()
+				d.undoMgr.Undo()
+			},
+		},
+		{
+			name: "features", id: "hp",
+			edit: func(t *testing.T, d *attributeSettingsDockable) {
+				askAttrRow(t, d, "hp", true)
+				p := uxtest.PanelsOfType[*featuresPanel](d.AsPanel())[0]
+				add, ok := p.FindRefKey(featureAddKey).Self.(*unison.Button)
+				if ok {
+					add.ClickCallback()
+				}
+				askAttrRow(t, d, "hp", false)
+			},
+			undo: func(d *attributeSettingsDockable) { d.undoMgr.Undo() },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			screen.Do(func() {
+				defs := testAttrDefs("st", "dx", "hp")
+				hp := defs.Set["hp"]
+				hp.Type = attribute.Pool
+				hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
+				d := newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				before := gurps.Hash64(d.model)
+				tc.edit(t, d)
+				c.True(d.undoMgr.CanUndo(), "precondition: the edit is recorded")
+				c.NotEqual(before, gurps.Hash64(d.model), "precondition: the edit changes the definitions")
+				c.True(d.applyButton.Enabled(), "precondition: the edit is there to be applied")
+				c.False(attrRowExpanded(d, tc.id), "precondition: the row is collapsed")
+
+				tc.undo(d)
+				c.Equal(before, gurps.Hash64(d.model), "undo restores the definitions the dockable holds")
+				c.True(attrRowExpanded(d, tc.id), "undo expands the row it reaches into")
+				c.False(d.applyButton.Enabled(), "the dockable shows as unmodified")
+				c.Equal("st · ST · Integer", attrRowHeader(t, d, "st").Accessibility.Name,
+					"the header names the definition as restored")
+			})
+		})
+	}
+}
+
+// TestAttributeRowHeaderNamesTheAttributeAsEdited verifies that a row's header follows the edits made in the row: to
+// the ID, to the name, including emptying it, which leaves it out, and to the type, and that undoing an edit does too.
+func TestAttributeRowHeaderNamesTheAttributeAsEdited(t *testing.T) {
+	c := check.New(t)
+	d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx"))
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	askAttrRow(t, d, "st", true)
+	prefix := d.model.Set["st"].KeyPrefix
+	for _, tc := range []struct {
+		name string
+		id   string // the ID the definition has after the edit
+		edit func()
+		want string
+	}{
+		{name: "id", id: "zz", want: "zz · ST · Integer", edit: func() {
+			widgetFor[*StringField](t, d, prefix+"id").SetText("zz")
+		}},
+		{name: "name", id: "zz", want: "zz · Zest · Integer", edit: func() {
+			widgetFor[*StringField](t, d, prefix+"name").SetText("Zest")
+		}},
+		{name: "no name", id: "zz", want: "zz · Integer", edit: func() {
+			widgetFor[*StringField](t, d, prefix+"name").SetText("")
+		}},
+		{name: "type", id: "zz", want: "zz · Decimal", edit: func() {
+			widgetFor[*Popup[attribute.Type]](t, d, prefix+"type").Select(attribute.Decimal)
+		}},
+		{name: "undo", id: "zz", want: "zz · Integer", edit: func() { d.undoMgr.Undo() }},
+	} {
+		tc.edit()
+		c.Equal(tc.want, attrRowHeader(t, d, tc.id).Accessibility.Name, "%s: the header follows the edit", tc.name)
+	}
+}
+
+// TestAttributeSettingsWindowFitsAnExpandedRow verifies that the window the attribute settings are given when they are
+// taken out of the workspace has room for a typical row expanded. The rows start out collapsed, and the window used to
+// be packed around their headers alone, leaving too little room to edit a definition in.
+func TestAttributeSettingsWindowFitsAnExpandedRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen.Do(func() { ShowAttributeSettings(nil) })
+	d := uxtest.SoleEditor[*attributeSettingsDockable](t, screen, func(d unison.Dockable) bool {
+		s, ok := d.AsPanel().Self.(*attributeSettingsDockable)
+		return ok && s.owner == nil
+	})
+	screen.Do(func() {
+		wnd, err := MoveDockableToWindow(d)
+		c.NoError(err)
+		c.NotNil(wnd, "the settings are given a window of their own")
+		if wnd == nil {
+			return
+		}
+		c.False(attrRowExpanded(d, gurps.StrengthID), "precondition: the rows are collapsed")
+		askAttrRow(t, d, gurps.StrengthID, true)
+		_, pref, _ := d.Sizes(geom.Size{})
+		content := wnd.ContentRect()
+		c.True(pref.Width <= content.Width, "the window is wide enough for a row expanded: %v within %v", pref, content)
+		c.True(pref.Height <= content.Height, "the window is tall enough for a row expanded: %v within %v", pref,
+			content)
+		c.True(d.AttemptClose(), "the window closes with the unmodified settings")
+	})
 }

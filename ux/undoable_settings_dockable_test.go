@@ -64,6 +64,7 @@ func TestUndoableSettingsButtonsCloseTheirSubEditorsFirst(t *testing.T) {
 				d.TabTitle = "Attributes"
 				d.TabIcon = svg.Attributes
 				d.show()
+				expandAllAttributes(d)
 				p := thresholdFeaturesPanel(c, d)
 				p.editGrantedItem(grantAt(t, p, 0))
 			})

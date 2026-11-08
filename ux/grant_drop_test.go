@@ -1083,6 +1083,7 @@ func TestAddAsGrantReachesThresholdFeatures(t *testing.T) {
 		d.TabTitle = "Attributes"
 		d.TabIcon = svg.Attributes
 		d.show()
+		expandAllAttributes(d)
 		items := collectGrantItems(gurps.LibraryFile{}, []*gurps.Trait{newGrantTestTrait("Night Vision", 0)})
 		for _, one := range grantDestinations(items) {
 			names = append(names, one.String())
