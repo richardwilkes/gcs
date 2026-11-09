@@ -74,19 +74,19 @@ type NoteSyncData struct {
 
 // NewNotesFromFile loads a Note list from a file.
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
-	return loadRows[*Note](fileSystem, filePath)
+	return loadRows[*Note](fileSystem, filePath, NoteListDataKind)
 }
 
 // NewNotesFromFileWithSavedCalc loads a Note list from a file, keeping the resolved text that the file's "calc" objects
 // record (see StringWithSavedCalc), so that a reader which only needs the text of the notes need not run the scripts
 // embedded in them. It is the counterpart of NewEntityFromFileWithSavedCalc for note lists.
 func NewNotesFromFileWithSavedCalc(fileSystem fs.FS, filePath string) ([]*Note, error) {
-	return loadRows[*Note](fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
+	return loadRows[*Note](fileSystem, filePath, NoteListDataKind, json.WithUnmarshalers(savedCalcMarker))
 }
 
 // SaveNotes writes the Note list to the file as JSON.
 func SaveNotes(notes []*Note, filePath string) error {
-	return saveRows(filePath, notes)
+	return saveRows(filePath, NoteListDataKind, notes)
 }
 
 // NewNote creates a new Note.

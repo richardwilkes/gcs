@@ -143,13 +143,17 @@ func NewGeneralSettings() *GeneralSettings {
 	}
 }
 
-// NewGeneralSettingsFromFile loads new settings from a file.
+// NewGeneralSettingsFromFile loads new settings from a file. The settings are held under the "general" member, beside
+// the header. Files written before they carried a header hold them either there or at the top level, where "version" is
+// the settings' own revision rather than a data version; that revision is never above 3, so checking it as a data
+// version with no minimum refuses none of them. The header is not embedded in the struct decoded here, since its
+// "version" would then sit at the same depth as the one in the embedded settings and json would drop both.
 func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSettings, error) {
 	var data struct {
 		GeneralSettings
 		OldLocation *GeneralSettings `json:"general"`
 	}
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &data, GeneralSettingsDataKind, 0); err != nil {
 		return nil, err
 	}
 	var s *GeneralSettings
@@ -163,10 +167,17 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 	return s, nil
 }
 
-// Save writes the settings to the file as JSON.
+// Save writes the settings to the file as JSON, under the "general" member beside the header, since the settings' own
+// "version" would otherwise collide with the header's.
 func (s *GeneralSettings) Save(filePath string) error {
 	s.EnsureValidity()
-	return jio.SaveToFile(filePath, s)
+	return jio.SaveToFile(filePath, &struct {
+		jio.Header
+		General *GeneralSettings `json:"general"`
+	}{
+		Header:  jio.NewHeader(GeneralSettingsDataKind),
+		General: s,
+	})
 }
 
 // UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.

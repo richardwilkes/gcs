@@ -1,4 +1,6 @@
 {
-  "type": "simple",
-  "built_in_training_data": "unweighted_american_female"
+	"file_type": "names",
+	"version": 5,
+	"type": "simple",
+	"built_in_training_data": "unweighted_american_female"
 }

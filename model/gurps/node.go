@@ -250,10 +250,10 @@ func dropNilNodes[T Node[T]](list []T) []T {
 	return slices.DeleteFunc(list, func(one T) bool { return xreflect.IsNil(one) })
 }
 
-// listData is the on-disk form of a standalone list file: the data version and the top-level rows.
+// listData is the on-disk form of a standalone list file: the header and the top-level rows.
 type listData[T any] struct {
-	Version int `json:"version"`
-	Rows    []T `json:"rows"`
+	jio.Header
+	Rows []T `json:"rows"`
 }
 
 // loadRows loads the rows of a standalone list file. Giving each top-level row a nil data owner attaches the weapons
@@ -261,9 +261,9 @@ type listData[T any] struct {
 // template may hold template picker data or the flag to pick from a group separately, and only a character sheet may
 // hold study, a trait's user description or a disabled skill, spell or piece of equipment, so any of these a list file
 // carries is removed.
-func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
+func loadRows[T Node[T]](fileSystem fs.FS, filePath, fileType string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, fileType, opts...); err != nil {
 		return nil, err
 	}
 	data.Rows = dropNilNodes(data.Rows)
@@ -275,9 +275,9 @@ func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options
 	return data.Rows, nil
 }
 
-// saveRows writes the rows to the file as a standalone list stamped with the current data version.
-func saveRows[T any](filePath string, rows []T) error {
-	return jio.SaveToFile(filePath, &listData[T]{Version: jio.CurrentDataVersion, Rows: rows})
+// saveRows writes the rows to the file as a standalone list of the given kind, stamped with the current header.
+func saveRows[T any](filePath, fileType string, rows []T) error {
+	return jio.SaveToFile(filePath, &listData[T]{Header: jio.NewHeader(fileType), Rows: rows})
 }
 
 // fixupLegacyTID gives a node whose ID is not a TID of one of ownKinds, the kinds its type can have, a fresh TID whose

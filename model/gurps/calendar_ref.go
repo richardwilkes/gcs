@@ -47,13 +47,20 @@ func LookupCalendarRef(name string, libraries *library.Libraries) *CalendarRef {
 	return nil
 }
 
-// NewCalendarRefFromFS creates a new CalendarRef from a file.
+// calendarData is the on-disk form of a calendar file: the configuration at the top level beside the header.
+type calendarData struct {
+	jio.Header
+	calendar.Config
+}
+
+// NewCalendarRefFromFS creates a new CalendarRef from a file. Files written before they carried a header have no
+// version, so none is too old to load.
 func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, error) {
-	var cfg calendar.Config
-	if err := jio.LoadFromFile(fileSystem, filePath, &cfg); err != nil {
+	var data calendarData
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &data, CalendarDataKind, 0); err != nil {
 		return nil, err
 	}
-	c, err := calendar.New(&cfg)
+	c, err := calendar.New(&data.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +68,14 @@ func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, erro
 		Name:     xfilepath.BaseName(filePath),
 		Calendar: c,
 	}, nil
+}
+
+// Save writes the calendar to the file as JSON.
+func (c *CalendarRef) Save(filePath string) error {
+	return jio.SaveToFile(filePath, &calendarData{
+		Header: jio.NewHeader(CalendarDataKind),
+		Config: *c.Calendar.Config(),
+	})
 }
 
 // RandomBirthday generates a random birthday month and day, retrying a few times to avoid returning not.

@@ -79,7 +79,7 @@ func TestLoadingOffASheetClearsStudy(t *testing.T) {
 	c.Equal(0, len(loadedTemplate.Spells[0].Study), "a template must not keep a spell's study")
 	c.Equal(study.Standard, loadedTemplate.Spells[0].StudyHoursNeeded, "a template must not keep a spell's hours needed")
 
-	list, err := json.Marshal(&listData[*Skill]{Version: jio.CurrentDataVersion, Rows: []*Skill{skill}})
+	list, err := json.Marshal(&listData[*Skill]{Header: jio.NewHeader(SkillListDataKind), Rows: []*Skill{skill}})
 	c.NoError(err)
 	rows, err := NewSkillsFromFile(fstest.MapFS{"list.skl": &fstest.MapFile{Data: list}}, "list.skl")
 	c.NoError(err)

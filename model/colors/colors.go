@@ -15,7 +15,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/themeset"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -23,6 +22,9 @@ import (
 // minimumVersion is the oldest theme color data that can be loaded. Files from before the theme rework hold a different
 // set of colors, so they are refused rather than silently loaded as a mostly factory theme.
 const minimumVersion = 5
+
+// DataKind is the kind of data named by the header of a theme color file.
+const DataKind = "colors"
 
 var (
 	_       themeset.Entry[unison.ThemeColor]                  = &ThemedColor{}
@@ -107,8 +109,8 @@ func (provider) Applied() {
 }
 
 type fileData struct {
-	Version int    `json:"version"`
-	Colors  Colors `json:"colors"`
+	jio.Header
+	Colors Colors `json:"colors"`
 }
 
 // Current returns the current theme.
@@ -178,10 +180,7 @@ func initialize() {
 // NewFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	var data fileData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.Wrap(err)
-	}
-	if err := jio.CheckVersionWithMinimum(data.Version, minimumVersion); err != nil {
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &data, DataKind, minimumVersion); err != nil {
 		return nil, err
 	}
 	return &data.Colors, nil
@@ -190,7 +189,7 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &fileData{
-		Version: jio.CurrentDataVersion,
-		Colors:  *c,
+		Header: jio.NewHeader(DataKind),
+		Colors: *c,
 	})
 }

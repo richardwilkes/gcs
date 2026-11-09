@@ -91,7 +91,7 @@ func TestPickSeparatelyClearing(t *testing.T) {
 	c.False(inner.PickSeparately)
 
 	choice, outer, inner = newOrganizedChoice()
-	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{choice}})
+	list, err := json.Marshal(&listData[*Trait]{Header: jio.NewHeader(TraitListDataKind), Rows: []*Trait{choice}})
 	c.NoError(err)
 	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)

@@ -161,12 +161,12 @@ type RitualOverrides struct {
 
 // NewSpellsFromFile loads a Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
-	return loadRows[*Spell](fileSystem, filePath)
+	return loadRows[*Spell](fileSystem, filePath, SpellListDataKind)
 }
 
 // SaveSpells writes the Spell list to the file as JSON.
 func SaveSpells(spells []*Spell, filePath string) error {
-	return saveRows(filePath, spells)
+	return saveRows(filePath, SpellListDataKind, spells)
 }
 
 // NewSpellChoiceContainer creates a new template choice container for spells.

@@ -178,13 +178,15 @@ func FactorySheetSettings() *SheetSettings {
 	}
 }
 
-// NewSheetSettingsFromFile loads new settings from a file.
+// NewSheetSettingsFromFile loads new settings from a file. The settings sit at the top level beside the header, where
+// the unmarshaler ignores the header members, or, in older files, under the legacy "sheet_settings" member. Files
+// written before they carried a header have no version, so none is too old to load.
 func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings, error) {
 	// The raw document is captured first because SheetSettings has a custom unmarshaler. Embedding SheetSettings in a
 	// wrapper struct would promote that unmarshaler onto the wrapper, causing it to consume the entire document and
 	// leaving the legacy "sheet_settings" field permanently unpopulated.
 	var raw jsontext.Value
-	if err := jio.LoadFromFile(fileSystem, filePath, &raw); err != nil {
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &raw, SheetSettingsDataKind, 0); err != nil {
 		return nil, err
 	}
 	var data struct {
@@ -431,7 +433,14 @@ func (s *SheetSettings) SetOwningEntity(entity *Entity) {
 	s.BodyType.Update(entity)
 }
 
-// Save writes the settings to the file as JSON.
+// Save writes the settings to the file as JSON, at the top level beside the header. The plain data struct is embedded
+// rather than the SheetSettings, whose marshaler would otherwise take over the whole document.
 func (s *SheetSettings) Save(filePath string) error {
-	return jio.SaveToFile(filePath, s)
+	return jio.SaveToFile(filePath, &struct {
+		jio.Header
+		SheetSettingsData
+	}{
+		Header:            jio.NewHeader(SheetSettingsDataKind),
+		SheetSettingsData: s.SheetSettingsData,
+	})
 }

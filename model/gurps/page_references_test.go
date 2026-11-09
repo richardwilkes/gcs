@@ -10,9 +10,11 @@
 package gurps
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -56,6 +58,58 @@ func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 	c.NotNil(refs)
 	c.Equal(1, len(refs.List()))
 	c.Nil(refs.Lookup("B"))
+}
+
+// TestPageRefsFileRoundTrip verifies that a page reference file loads whether it holds the bare map written before such
+// files carried a header, even when a book key of its is one of the header's member names, or the current form, and
+// that saving writes the current form with the header first and the references intact.
+func TestPageRefsFileRoundTrip(t *testing.T) {
+	const ref = `{"path":"/refs/basic.pdf","offset":2}`
+	for name, tc := range map[string]struct {
+		data string
+		want []string
+	}{
+		"bare": {data: `{"B":` + ref + `}`, want: []string{"B"}},
+		"bare with header names as keys": {
+			data: `{"file_type":` + ref + `,"version":` + ref + `}`,
+			want: []string{"file_type", "version"},
+		},
+		"current": {
+			data: fmt.Sprintf(`{"file_type":%q,"version":%d,"refs":{"B":%s}}`, PageRefsDataKind, jio.CurrentDataVersion, ref),
+			want: []string{"B"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			p := filepath.Join(t.TempDir(), "refs.refs")
+			c.NoError(os.WriteFile(p, []byte(tc.data), 0o600))
+			refs, err := NewPageRefsFromFS(nil, p)
+			c.NoError(err)
+			c.Equal(tc.want, pageRefIDs(c, refs))
+
+			c.NoError(refs.Save(p))
+			var saved []byte
+			saved, err = os.ReadFile(p)
+			c.NoError(err)
+			c.True(strings.HasPrefix(string(saved), headerPrefix(PageRefsDataKind)), "the header is written first: %s",
+				saved)
+			refs, err = NewPageRefsFromFS(nil, p)
+			c.NoError(err)
+			c.Equal(tc.want, pageRefIDs(c, refs), "the references survive a save and load")
+		})
+	}
+}
+
+// pageRefIDs returns the IDs of the page references, checking that each points at the test's PDF.
+func pageRefIDs(c check.Checker, refs *PageRefs) []string {
+	list := refs.List()
+	ids := make([]string, 0, len(list))
+	for _, one := range list {
+		c.Equal("/refs/basic.pdf", one.Path)
+		c.Equal(2, one.Offset)
+		ids = append(ids, one.ID)
+	}
+	return ids
 }
 
 // A settings file holding a null in place of a page reference or a library must be survivable. Decoding one used to

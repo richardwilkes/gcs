@@ -1,4 +1,5 @@
 {
+	"file_type": "attributes",
 	"version": 5,
 	"rows": [
 		{
@@ -130,6 +131,11 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
 					]
 				},
 				{
@@ -157,6 +163,11 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
 					]
 				},
 				{
@@ -184,6 +195,11 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
 					]
 				},
 				{
@@ -224,6 +240,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -244,6 +264,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -264,6 +288,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -284,6 +312,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -304,6 +336,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -324,6 +360,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{
@@ -344,6 +384,10 @@
 							"multiply": true,
 							"amount": 0.5
 						}
+					],
+					"ops": [
+						"halve_move",
+						"halve_dodge"
 					]
 				},
 				{

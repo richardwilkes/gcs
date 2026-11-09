@@ -71,8 +71,8 @@ func FactoryAttributeDefs() *AttributeDefs {
 }
 
 type attributeDefsData struct {
-	Version int            `json:"version"`
-	Rows    *AttributeDefs `json:"rows"`
+	jio.Header
+	Rows *AttributeDefs `json:"rows"`
 }
 
 // NewAttributeDefsFromFile loads an AttributeDef set from a file.
@@ -82,7 +82,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldRows   *AttributeDefs `json:"attributes"`
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, AttributesDataKind); err != nil {
 		return nil, err
 	}
 	if data.Rows == nil && data.OldRows != nil {
@@ -104,8 +104,8 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 // Save writes the AttributeDefs to the file as JSON.
 func (a *AttributeDefs) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &attributeDefsData{
-		Version: jio.CurrentDataVersion,
-		Rows:    a,
+		Header: jio.NewHeader(AttributesDataKind),
+		Rows:   a,
 	})
 }
 

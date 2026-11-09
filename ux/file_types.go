@@ -122,9 +122,6 @@ func RegisterGCSFileTypes() {
 	registerGCSFileInfo("GCS Template", gurps.TemplatesExt, []string{gurps.TemplatesExt}, svg.GCSTemplate,
 		NewTemplateFromFile)
 	registerGCSFileInfo("GCS Loot", gurps.LootExt, []string{gurps.LootExt}, svg.GCSLoot, NewLootSheetFromFile)
-	// TODO: Re-enable Campaign files
-	// registerGCSFileInfo("GCS Campaign", gurps.CampaignExt, []string{gurps.CampaignExt}, svg.GCSCampaign,
-	// 	NewCampaignFromFile)
 	groupWith := []string{
 		gurps.TraitsExt,
 		gurps.TraitModifiersExt,

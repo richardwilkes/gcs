@@ -11,7 +11,6 @@ package kinds
 
 // The various kinds of nodes
 const (
-	Campaign                     = 'C'
 	ConditionalModifier          = 'c'
 	ConditionalModifierContainer = 'D'
 	Entity                       = 'A'

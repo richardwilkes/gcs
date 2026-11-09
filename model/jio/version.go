@@ -23,24 +23,38 @@ const (
 	// CurrentDataVersion holds the current version for data files written with the current release. Note that this is
 	// intentionally the same for all data files that GCS processes.
 	CurrentDataVersion = 5
-	// MinimumDataVersion holds the oldest version for data files that can be loaded, unless a file type sets a higher
-	// minimum through CheckVersionWithMinimum.
+	// MinimumDataVersion holds the oldest version for data files that can be loaded, unless a file type passes
+	// CheckHeader a minimum of its own.
 	MinimumDataVersion    = 2
 	MinimumLibraryVersion = 3
 )
 
-// CheckVersion returns an error if the data version is out of the acceptable range.
-func CheckVersion(version int) error {
-	return CheckVersionWithMinimum(version, MinimumDataVersion)
+// Header holds the members every data and settings file starts with: the kind of data the file holds and the data
+// version it was written with.
+type Header struct {
+	FileType string `json:"file_type"`
+	Version  int    `json:"version"`
 }
 
-// CheckVersionWithMinimum is like CheckVersion, but for data whose format changed after MinimumDataVersion, so that
-// files older than the given minimum are refused rather than loaded.
-func CheckVersionWithMinimum(version, minimum int) error {
-	if version > CurrentDataVersion {
+// NewHeader returns the header to write for a file holding the given kind of data.
+func NewHeader(fileType string) Header {
+	return Header{FileType: fileType, Version: CurrentDataVersion}
+}
+
+// CheckHeader returns an error if the header describes data this release cannot load: data written by a newer release,
+// data of another kind than expectedFileType, or data older than minimum. minimum is MinimumDataVersion unless the
+// kind's format changed after that, which raises it, or the kind's older files carry no version, which makes it 0.
+// Data written by a newer release is reported as such whatever kind it claims, since that release may have renamed the
+// kind. A header with no file type, as every file written before headers carried one has, is checked for its version
+// alone.
+func CheckHeader(h Header, expectedFileType string, minimum int) error {
+	if h.Version > CurrentDataVersion {
 		return errs.New(xstrings.Wrap("", i18n.Text("The data was written with a newer version of %[1]s and cannot be loaded. Please update %[1]s and try again.", xos.AppName), 76))
 	}
-	if version < minimum {
+	if h.FileType != "" && h.FileType != expectedFileType {
+		return errs.New(xstrings.Wrap("", i18n.Text("The file holds %q data, but %q data was expected.", h.FileType, expectedFileType), 76))
+	}
+	if h.Version < minimum {
 		return errs.New(xstrings.Wrap("", i18n.Text("The data was written with an older version of %s and cannot be loaded. You will need to load it with an earlier version that can read this version of the data and write the current format.", xos.AppName), 76))
 	}
 	return nil

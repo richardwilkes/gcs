@@ -12,6 +12,7 @@ package gurps
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -22,6 +23,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -43,42 +45,99 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	c.HasError(err)
 }
 
+// TestLoadSettingsOrDefaultsWithValidFile verifies that a settings file loads whether or not it carries a header, which
+// files written before headers existed lack, without logging an error or leaving a stray backup behind, and that saving
+// the settings writes the header first.
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
-	c := check.New(t)
-	count := countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]}`), 0o600))
-	settings := loadSettingsOrDefaults(p)
-	c.Equal("1.2.3", settings.LastSeenGCSVersion)
-	c.Equal([]string{"alpha"}, settings.DeepSearch)
-	c.Equal(int32(0), count.Load())
-	_, err := os.Stat(p + ".bad")
-	c.HasError(err)
+	const content = `"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]`
+	for name, data := range map[string]string{
+		"no header":   `{` + content + `}`,
+		"with header": fmt.Sprintf(`{"file_type":%q,"version":%d,`, SettingsDataKind, jio.CurrentDataVersion) + content + `}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			count := countLogs(t, slog.LevelError)
+			dir := t.TempDir()
+			p := filepath.Join(dir, "settings.json")
+			c.NoError(os.WriteFile(p, []byte(data), 0o600))
+			settings := loadSettingsOrDefaults(p)
+			c.Equal("1.2.3", settings.LastSeenGCSVersion)
+			c.Equal([]string{"alpha"}, settings.DeepSearch)
+			c.Equal(int32(0), count.Load())
+			_, err := os.Stat(p + ".bad")
+			c.HasError(err)
+
+			prevPath := SettingsPath
+			SettingsPath = filepath.Join(dir, "saved.json")
+			t.Cleanup(func() { SettingsPath = prevPath })
+			c.NoError(settings.Save())
+			var saved []byte
+			saved, err = os.ReadFile(SettingsPath)
+			c.NoError(err)
+			c.True(strings.HasPrefix(string(saved), headerPrefix(SettingsDataKind)), "the header is written first: %s",
+				saved)
+		})
+	}
 }
 
-// TestLoadSettingsOrDefaultsWithCorruptFile verifies that a settings file that exists but can't be loaded is reported
-// and set aside rather than silently discarded. Prior to this, the load error was thrown away, so a corrupt file was
-// indistinguishable from a missing one and the next Save quietly overwrote whatever the user had.
+// TestLoadSettingsOrDefaultsWithCorruptFile verifies that a settings file that exists but can't be loaded, whether
+// damaged, holding another kind of data or written by a newer version, is reported and set aside rather than silently
+// discarded. Prior to this, the load error was thrown away, so a corrupt file was indistinguishable from a missing one
+// and the next Save quietly overwrote whatever the user had.
 func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
-	c := check.New(t)
-	count := countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	const corrupt = `{"last_seen_gcs_version":"1.2.3",`
-	c.NoError(os.WriteFile(p, []byte(corrupt), 0o600))
-	settings := loadSettingsOrDefaults(p)
+	for name, data := range map[string]string{
+		"damaged": `{"last_seen_gcs_version":"1.2.3",`,
+		"other kind of data": fmt.Sprintf(`{"file_type":%q,"version":%d,"last_seen_gcs_version":"1.2.3"}`,
+			CharacterDataKind, jio.CurrentDataVersion),
+		"newer version": fmt.Sprintf(`{"file_type":%q,"version":%d,"last_seen_gcs_version":"1.2.3"}`,
+			SettingsDataKind, jio.CurrentDataVersion+1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			count := countLogs(t, slog.LevelError)
+			p := filepath.Join(t.TempDir(), "settings.json")
+			c.NoError(os.WriteFile(p, []byte(data), 0o600))
+			settings := loadSettingsOrDefaults(p)
 
-	// Factory defaults are used, and the failure was reported.
-	c.Equal(xos.AppVersion, settings.LastSeenGCSVersion)
-	c.NotNil(settings.General)
-	c.NotNil(settings.Sheet)
-	c.NotEqual(int32(0), count.Load())
+			// Factory defaults are used, and the failure was reported.
+			c.Equal(xos.AppVersion, settings.LastSeenGCSVersion)
+			c.NotNil(settings.General)
+			c.NotNil(settings.Sheet)
+			c.NotEqual(int32(0), count.Load())
 
-	// The damaged file was moved aside intact, so a subsequent Save can't overwrite it.
-	_, err := os.Stat(p)
-	c.HasError(err)
-	data, err := os.ReadFile(p + ".bad")
-	c.NoError(err)
-	c.Equal(corrupt, string(data))
+			// The file was moved aside intact, so a subsequent Save can't overwrite it.
+			_, err := os.Stat(p)
+			c.HasError(err)
+			var saved []byte
+			saved, err = os.ReadFile(p + ".bad")
+			c.NoError(err)
+			c.Equal(data, string(saved))
+		})
+	}
+}
+
+// TestLoadWrappedOrBareFileRefusesAHeaderWithoutTheMember verifies that a file carrying a header but not the member the
+// data belongs under, such as an export from the Java release, is refused rather than loaded as holding no data.
+func TestLoadWrappedOrBareFileRefusesAHeaderWithoutTheMember(t *testing.T) {
+	for name, tc := range map[string]struct {
+		data string
+		load func(fs.FS, string) error
+	}{
+		"page refs": {
+			data: `{"version":2,"page_refs":{"B":{"path":"/refs/basic.pdf","offset":2}}}`,
+			load: loadOnly(NewPageRefsFromFS),
+		},
+		"key bindings": {
+			data: `{"version":2,"key_bindings":{"cut":"ctrl pressed X"}}`,
+			load: loadOnly(NewKeyBindingsFromFS),
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			fileSystem := fstest.MapFS{"file": &fstest.MapFile{Data: []byte(tc.data)}}
+			c.HasError(tc.load(fileSystem, "file"), "the file is refused")
+		})
+	}
 }
 
 // TestSettingsSaveWithNullMapEntries verifies that a settings file holding a JSON null in place of a navigator node, a

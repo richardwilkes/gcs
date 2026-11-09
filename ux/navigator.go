@@ -1368,9 +1368,6 @@ func extractContentForCache(p string) string {
 				prepareForContentCacheWith(data.Notes, (*gurps.Note).StringWithSavedCalc),
 			}, "\n")
 		}
-	// TODO: Re-enable Campaign files
-	// case gurps.CampaignExt:
-	// TODO: Implement
 	case gurps.TraitModifiersExt:
 		if data, err := gurps.NewTraitModifiersFromFile(dir, fileName); err == nil {
 			content = prepareForContentCache(data)
@@ -1767,10 +1764,6 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		case fi.UTI.Extensions[0] == gurps.LootExt:
 			g := dgroup.LootSheets
 			group = &g
-		// TODO: Re-enable Campaign files
-		// case fi.UTI.Extensions[0] == gurps.CampaignExt:
-		// 	g := dgroup.Campaigns
-		// 	group = &g
 		case fi.UTI.Extensions[0] == gurps.TraitsExt,
 			fi.UTI.Extensions[0] == gurps.TraitModifiersExt,
 			fi.UTI.Extensions[0] == gurps.EquipmentExt,

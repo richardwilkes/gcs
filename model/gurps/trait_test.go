@@ -420,7 +420,7 @@ func TestLoadingOffASheetClearsUserDesc(t *testing.T) {
 	c.NoError(json.Unmarshal(data, &loadedTemplate))
 	c.Equal([]string{"", ""}, descs(loadedTemplate.Traits[0]), "a template must not keep them")
 
-	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{described()}})
+	list, err := json.Marshal(&listData[*Trait]{Header: jio.NewHeader(TraitListDataKind), Rows: []*Trait{described()}})
 	c.NoError(err)
 	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)

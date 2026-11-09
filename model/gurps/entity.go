@@ -71,7 +71,7 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Version          int                    `json:"version"`
+	jio.Header
 	ID               tid.TID                `json:"id"`
 	TotalPoints      fxp.Int                `json:"total_points"`
 	PointsRecord     []*PointsRecord        `json:"points_record,omitempty"`
@@ -322,7 +322,7 @@ func NewEntityFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Entity,
 func newEntityFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, &e.Version, opts...); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, CharacterDataKind, opts...); err != nil {
 		return nil, err
 	}
 	return &e, nil
@@ -394,7 +394,7 @@ func (e *Entity) Save(filePath string) error {
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		data := e.EntityData
-		data.Version = jio.CurrentDataVersion
+		data.Header = jio.NewHeader(CharacterDataKind)
 		return json.MarshalEncode(enc, &data)
 	}
 	type calc struct {
@@ -435,7 +435,7 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
 	}
-	data.Version = jio.CurrentDataVersion
+	data.Header = jio.NewHeader(CharacterDataKind)
 	return json.MarshalEncode(enc, &data)
 }
 

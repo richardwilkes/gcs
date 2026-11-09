@@ -73,13 +73,36 @@ func TestNewTraitsFromFileAttachesContainerModifiers(t *testing.T) {
 		"the child's modifier resolves the child's replacements")
 }
 
-func TestLoadRowsRejectsFutureVersion(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	c.NoError(jio.SaveToFile(filepath.Join(dir, "Test"+NotesExt),
-		&listData[*Note]{Version: jio.CurrentDataVersion + 1}))
-	_, err := NewNotesFromFile(os.DirFS(dir), "Test"+NotesExt)
-	c.HasError(err, "a list from a newer release is rejected")
+// TestLoadRowsRefusesWrongHeader verifies that a list file is refused when its header names a newer release or another
+// kind of data, with the header's own message rather than a decode failure.
+func TestLoadRowsRefusesWrongHeader(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		header jio.Header
+		want   string
+	}{
+		{
+			name:   "newer release",
+			header: jio.Header{FileType: NoteListDataKind, Version: jio.CurrentDataVersion + 1},
+			want:   "newer version",
+		},
+		{
+			name:   "other kind of data",
+			header: jio.NewHeader(TraitListDataKind),
+			want:   `"` + TraitListDataKind + `"`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			c.NoError(jio.SaveToFile(filepath.Join(dir, "Test"+NotesExt),
+				&listData[*Note]{Header: tc.header, Rows: []*Note{NewNote(nil, nil, false)}}))
+			_, err := NewNotesFromFile(os.DirFS(dir), "Test"+NotesExt)
+			c.HasError(err)
+			c.Contains(err.Error(), tc.want)
+			c.NotContains(err.Error(), jio.InvalidFileData())
+		})
+	}
 }
 
 // TestLegacyNodeUnmarshal verifies the fix-ups applied to nodes written before TIDs and tags existed: the kind is taken
@@ -434,12 +457,12 @@ func TestLoadingOffASheetClearsDisabled(t *testing.T) {
 	c.NoError(json.Unmarshal(data, &loadedLoot))
 	c.False(loadedLoot.Equipment[0].IsDisabled(), "a loot sheet must not keep disabled equipment")
 
-	list, err := json.Marshal(&listData[*Skill]{Version: jio.CurrentDataVersion, Rows: []*Skill{skill}})
+	list, err := json.Marshal(&listData[*Skill]{Header: jio.NewHeader(SkillListDataKind), Rows: []*Skill{skill}})
 	c.NoError(err)
 	skills, err := NewSkillsFromFile(fstest.MapFS{"list.skl": &fstest.MapFile{Data: list}}, "list.skl")
 	c.NoError(err)
 	c.False(skills[0].IsDisabled(), "a skill list must not keep a disabled skill")
-	list, err = json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{trait}})
+	list, err = json.Marshal(&listData[*Trait]{Header: jio.NewHeader(TraitListDataKind), Rows: []*Trait{trait}})
 	c.NoError(err)
 	traits, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)

@@ -306,7 +306,7 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c.NoError(json.Unmarshal(data, &loadedLoot))
 	c.False(HasTemplatePickerData(loadedLoot.Equipment...), "a loot sheet must not keep picker data")
 
-	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{choices}})
+	list, err := json.Marshal(&listData[*Trait]{Header: jio.NewHeader(TraitListDataKind), Rows: []*Trait{choices}})
 	c.NoError(err)
 	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)
@@ -314,8 +314,8 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c.False(HasTemplatePickerData(rows...), "a standalone list must not keep picker data")
 
 	list, err = json.Marshal(&listData[*Equipment]{
-		Version: jio.CurrentDataVersion,
-		Rows:    []*Equipment{newEquipmentChoice("Sword", "Axe")},
+		Header: jio.NewHeader(EquipmentListDataKind),
+		Rows:   []*Equipment{newEquipmentChoice("Sword", "Axe")},
 	})
 	c.NoError(err)
 	eqpRows, err := NewEquipmentFromFile(fstest.MapFS{"list.eqp": &fstest.MapFile{Data: list}}, "list.eqp")

@@ -1,4 +1,6 @@
 {
-  "type": "simple",
-  "built_in_training_data": "unweighted_american_male"
+	"file_type": "names",
+	"version": 5,
+	"type": "simple",
+	"built_in_training_data": "unweighted_american_male"
 }

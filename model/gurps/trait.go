@@ -184,12 +184,12 @@ type TraitContainerSyncData struct {
 
 // NewTraitsFromFile loads a Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
-	return loadRows[*Trait](fileSystem, filePath)
+	return loadRows[*Trait](fileSystem, filePath, TraitListDataKind)
 }
 
 // SaveTraits writes the Trait list to the file as JSON.
 func SaveTraits(traits []*Trait, filePath string) error {
-	return saveRows(filePath, traits)
+	return saveRows(filePath, TraitListDataKind, traits)
 }
 
 // NewTrait creates a new Trait.

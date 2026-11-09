@@ -133,6 +133,7 @@ func TestNameGeneratorRoundTripCompound(t *testing.T) {
 	reloaded, text := saveAndReload(t, c, n)
 	c.Contains(text, `"separator": "-"`, "the separator is written")
 	c.Contains(text, `"compound"`, "the children are written")
+	c.Equal(1, strings.Count(text, `"file_type"`), "only the file carries the header, not the children")
 	c.Equal(namegen.Compound, reloaded.Type)
 	c.Equal("-", reloaded.Separator)
 	c.True(reloaded.NoLowered, "flags round-trip")

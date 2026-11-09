@@ -163,7 +163,7 @@ type SkillContainerOnlySyncData struct {
 
 // NewSkillsFromFile loads a Skill list from a file.
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
-	rows, err := loadRows[*Skill](fileSystem, filePath)
+	rows, err := loadRows[*Skill](fileSystem, filePath, SkillListDataKind)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 
 // SaveSkills writes the Skill list to the file as JSON.
 func SaveSkills(skills []*Skill, filePath string) error {
-	return saveRows(filePath, skills)
+	return saveRows(filePath, SkillListDataKind, skills)
 }
 
 // NewSkillChoiceContainer creates a new template choice container for skills.

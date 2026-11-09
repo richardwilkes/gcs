@@ -33,7 +33,6 @@ const (
 	NewSheetItemID = unison.UserBaseID + iota
 	NewTemplateItemID
 	NewLootSheetItemID
-	NewCampaignItemID
 	NewTraitsLibraryItemID
 	NewTraitModifiersLibraryItemID
 	NewEquipmentLibraryItemID
@@ -266,8 +265,6 @@ func (s menuBarScope) createFileNewMenu(f unison.MenuFactory) unison.Menu {
 		newCharacterSheetAction,
 		newCharacterTemplateAction,
 		newLootSheetAction,
-		// TODO: Re-enable Campaign files
-		// newCampaignAction,
 		nil,
 		newTraitsLibraryAction,
 		newTraitModifiersLibraryAction,

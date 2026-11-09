@@ -8,6 +8,6 @@
 // defined by the Mozilla Public License, version 2.0.
 
 // Package ux is the GCS user interface, built on unison: the workspace window with its navigator and document dock,
-// the dockables that show and edit character sheets, templates, campaigns, loot, library lists, settings and the other
+// the dockables that show and edit character sheets, templates, loot, library lists, settings and the other
 // files GCS opens, the editors for their rows, and the menus, actions and dialogs that drive them.
 package ux

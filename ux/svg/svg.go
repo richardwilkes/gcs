@@ -108,10 +108,6 @@ var (
 	forwardData string
 	Forward     = unison.MustSVGFromContentString(forwardData)
 
-	//go:embed gcs_campaign.svg
-	gcsCampaignData string
-	GCSCampaign     = unison.MustSVGFromContentString(gcsCampaignData)
-
 	//go:embed gcs_equipment.svg
 	gcsEquipmentData string
 	GCSEquipment     = unison.MustSVGFromContentString(gcsEquipmentData)

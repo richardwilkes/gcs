@@ -28,60 +28,58 @@ var licenseMarkdownContent string
 
 // These actions are registered for key bindings.
 var (
-	addAsGrantAction               *unison.Action
-	addNaturalAttacksAction        *unison.Action
-	applyModifierAction            *unison.Action
-	applyTemplateAction            *unison.Action
-	buyEquipmentAction             *unison.Action
-	buySelectedEquipmentAction     *unison.Action
-	calculatorAction               *unison.Action
-	clearPortraitAction            *unison.Action
-	clearSourceAction              *unison.Action
-	cloneSheetAction               *unison.Action
-	closeTabAction                 *unison.Action
-	colorSettingsAction            *unison.Action
-	convertToContainerAction       *unison.Action
-	convertToNonContainerAction    *unison.Action
-	convertToChoiceContainerAction *unison.Action
-	convertToGroupContainerAction  *unison.Action
-	copyToSheetAction              *unison.Action
-	copyToTemplateAction           *unison.Action
-	decreaseEquipmentLevelAction   *unison.Action
-	decreaseSkillLevelAction       *unison.Action
-	decreaseTechLevelAction        *unison.Action
-	decreaseUsesAction             *unison.Action
-	decrementAction                *unison.Action
-	defaultAttributeSettingsAction *unison.Action
-	defaultBodyTypeSettingsAction  *unison.Action
-	defaultSheetSettingsAction     *unison.Action
-	dockUnDockAction               *unison.Action
-	downloadRulesFileAction        *unison.Action
-	duplicateAction                *unison.Action
-	editSheetLayoutAction          *unison.Action
-	exportAsJPEGAction             *unison.Action
-	exportAsPDFAction              *unison.Action
-	exportAsPNGAction              *unison.Action
-	exportAsWEBPAction             *unison.Action
-	exportPortraitAction           *unison.Action
-	fontSettingsAction             *unison.Action
-	generalSettingsAction          *unison.Action
-	increaseEquipmentLevelAction   *unison.Action
-	increaseSkillLevelAction       *unison.Action
-	increaseTechLevelAction        *unison.Action
-	increaseUsesAction             *unison.Action
-	incrementAction                *unison.Action
-	jumpToSearchFilterAction       *unison.Action
-	listFilterSettingsAction       *unison.Action
-	menuKeySettingsAction          *unison.Action
-	moveDownAction                 *unison.Action
-	moveIntoContainerAction        *unison.Action
-	moveOutOfContainerAction       *unison.Action
-	moveToCarriedEquipmentAction   *unison.Action
-	moveToOtherEquipmentAction     *unison.Action
-	moveUpAction                   *unison.Action
-	newAncestryAction              *unison.Action
-	// TODO: Re-enable Campaign files
-	// newCampaignAction                   *unison.Action
+	addAsGrantAction                    *unison.Action
+	addNaturalAttacksAction             *unison.Action
+	applyModifierAction                 *unison.Action
+	applyTemplateAction                 *unison.Action
+	buyEquipmentAction                  *unison.Action
+	buySelectedEquipmentAction          *unison.Action
+	calculatorAction                    *unison.Action
+	clearPortraitAction                 *unison.Action
+	clearSourceAction                   *unison.Action
+	cloneSheetAction                    *unison.Action
+	closeTabAction                      *unison.Action
+	colorSettingsAction                 *unison.Action
+	convertToContainerAction            *unison.Action
+	convertToNonContainerAction         *unison.Action
+	convertToChoiceContainerAction      *unison.Action
+	convertToGroupContainerAction       *unison.Action
+	copyToSheetAction                   *unison.Action
+	copyToTemplateAction                *unison.Action
+	decreaseEquipmentLevelAction        *unison.Action
+	decreaseSkillLevelAction            *unison.Action
+	decreaseTechLevelAction             *unison.Action
+	decreaseUsesAction                  *unison.Action
+	decrementAction                     *unison.Action
+	defaultAttributeSettingsAction      *unison.Action
+	defaultBodyTypeSettingsAction       *unison.Action
+	defaultSheetSettingsAction          *unison.Action
+	dockUnDockAction                    *unison.Action
+	downloadRulesFileAction             *unison.Action
+	duplicateAction                     *unison.Action
+	editSheetLayoutAction               *unison.Action
+	exportAsJPEGAction                  *unison.Action
+	exportAsPDFAction                   *unison.Action
+	exportAsPNGAction                   *unison.Action
+	exportAsWEBPAction                  *unison.Action
+	exportPortraitAction                *unison.Action
+	fontSettingsAction                  *unison.Action
+	generalSettingsAction               *unison.Action
+	increaseEquipmentLevelAction        *unison.Action
+	increaseSkillLevelAction            *unison.Action
+	increaseTechLevelAction             *unison.Action
+	increaseUsesAction                  *unison.Action
+	incrementAction                     *unison.Action
+	jumpToSearchFilterAction            *unison.Action
+	listFilterSettingsAction            *unison.Action
+	menuKeySettingsAction               *unison.Action
+	moveDownAction                      *unison.Action
+	moveIntoContainerAction             *unison.Action
+	moveOutOfContainerAction            *unison.Action
+	moveToCarriedEquipmentAction        *unison.Action
+	moveToOtherEquipmentAction          *unison.Action
+	moveUpAction                        *unison.Action
+	newAncestryAction                   *unison.Action
 	newCarriedEquipmentAction           *unison.Action
 	newCarriedEquipmentContainerAction  *unison.Action
 	newCarriedEquipmentGroupAction      *unison.Action
@@ -395,14 +393,6 @@ func registerActions() {
 			DisplayNewDockable(NewLootSheet("untitled"+gurps.LootExt, gurps.NewLoot()))
 		},
 	})
-	// TODO: Re-enable Campaign files
-	// newCampaignAction = registerKeyBindableAction("new.campaign", &unison.Action{
-	// 	ID:    NewCampaignItemID,
-	// 	Title: i18n.Text("New Campaign"),
-	// 	ExecuteCallback: func(_ *unison.Action, _ any) {
-	// 		DisplayNewDockable(NewCampaign("untitled"+gurps.CampaignExt, gurps.NewCampaign()))
-	// 	},
-	// })
 	newEquipmentContainerModifierAction = registerFocusAction("new.eqm.container", NewEquipmentContainerModifierItemID,
 		i18n.Text("New Equipment Modifier Group"),
 		unison.KeyBinding{KeyCode: unison.KeyF, Modifiers: mod.Shift | mod.Option | mod.OSMenuCommand()})

@@ -47,7 +47,7 @@ type Body struct {
 }
 
 type standaloneBodyData struct {
-	Version int `json:"version"`
+	jio.Header
 	BodyData
 	OldHitLocations *Body `json:"hit_locations,omitzero"`
 }
@@ -67,7 +67,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, BodyDataKind); err != nil {
 		return nil, err
 	}
 	var body Body
@@ -120,7 +120,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &standaloneBodyData{
-		Version:  jio.CurrentDataVersion,
+		Header:   jio.NewHeader(BodyDataKind),
 		BodyData: b.BodyData,
 	})
 }

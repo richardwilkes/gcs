@@ -60,9 +60,10 @@ type NameGenerator struct {
 	namer     names.Namer
 }
 
-// nameGeneratorData is the on-disk form of a NameGenerator. Files carry neither a version nor a wrapper, and this
-// layout must not change, as it is what every existing .names file is written in. Of the two training data lists, only
-// one is used: "weighted_training_data" when it is non-empty, otherwise "training_data".
+// nameGeneratorData is the on-disk form of a NameGenerator, both for a file, where it sits at the top level beside the
+// header, and for each generator a compound one combines. This layout must not change, as it is what every existing
+// .names file is written in; the header is additive, and files written before they carried one still load. Of the two
+// training data lists, only one is used: "weighted_training_data" when it is non-empty, otherwise "training_data".
 type nameGeneratorData struct {
 	Type           namegen.Type     `json:"type"`
 	NoLowered      bool             `json:"no_lowered,omitzero"`
@@ -116,21 +117,39 @@ func NewNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, 
 // ReadNameGeneratorFromFS loads a NameGenerator from a file without preparing it to generate names, so that files
 // whose definitions are incomplete can still be opened for editing. Normalize is not called, so null entries the file
 // may contain are preserved as-is; an editor should call it before binding to the data. Use SampleNames to try the
-// definition out, or NewNameGeneratorFromFS to load a generator for use.
+// definition out, or NewNameGeneratorFromFS to load a generator for use. Files written before they carried a header
+// have no version, so none is too old to load.
 func ReadNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, error) {
-	return jio.LoadNew[NameGenerator](fileSystem, filePath)
+	var n NameGenerator
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &n, NamesDataKind, 0); err != nil {
+		return nil, err
+	}
+	return &n, nil
 }
 
-// Save writes the NameGenerator to the file as JSON. Matching the existing files, there is no version wrapper.
+// Save writes the NameGenerator to the file as JSON, at the top level beside the header. Only the file carries the
+// header: the generators a compound one combines are written by MarshalJSONTo without one.
 func (n *NameGenerator) Save(filePath string) error {
-	return jio.SaveToFile(filePath, n)
+	return jio.SaveToFile(filePath, &struct {
+		jio.Header
+		nameGeneratorData
+	}{
+		Header:            jio.NewHeader(NamesDataKind),
+		nameGeneratorData: n.fileData(),
+	})
 }
 
-// MarshalJSONTo implements json.MarshalerTo. Entries are written as "training_data" when every weight is 1 and as
-// "weighted_training_data" otherwise; in the weighted form, the weights of a name that appears more than once add
+// MarshalJSONTo implements json.MarshalerTo. See fileData for what is written.
+func (n *NameGenerator) MarshalJSONTo(enc *jsontext.Encoder) error {
+	data := n.fileData()
+	return json.MarshalEncode(enc, &data)
+}
+
+// fileData returns the on-disk form of the generator. Entries are written as "training_data" when every weight is 1 and
+// as "weighted_training_data" otherwise; in the weighted form, the weights of a name that appears more than once add
 // together, which is also what the plain list's repeated names amount to. Nil entries are skipped, and no training data
 // key is written when there are none to write.
-func (n *NameGenerator) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (n *NameGenerator) fileData() nameGeneratorData {
 	data := nameGeneratorData{
 		Type:           n.Type,
 		NoLowered:      n.NoLowered,
@@ -163,7 +182,7 @@ func (n *NameGenerator) MarshalJSONTo(enc *jsontext.Encoder) error {
 			data.Weighted[one.Value] += one.Weight
 		}
 	}
-	return json.MarshalEncode(enc, &data)
+	return data
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom. A non-empty "weighted_training_data" map becomes the Entries,
@@ -202,8 +221,9 @@ func (n *NameGenerator) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Hash writes this object's contents into the hasher. The hash is of the JSON content that Save would write, so it
-// answers exactly "has the file content changed", and the runtime-only KeyPrefix fields never take part.
+// Hash writes this object's contents into the hasher. The hash is of the generator's own JSON content, without the
+// header that Save adds beside it, so it answers exactly "has the file content changed", and the runtime-only KeyPrefix
+// fields never take part.
 func (n *NameGenerator) Hash(h hash.Hash) {
 	HashJSON(h, n)
 }

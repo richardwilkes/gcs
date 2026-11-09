@@ -112,12 +112,12 @@ type TraitModifierNonContainerSyncData struct {
 
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
-	return loadRows[*TraitModifier](fileSystem, filePath)
+	return loadRows[*TraitModifier](fileSystem, filePath, TraitModifierListDataKind)
 }
 
 // SaveTraitModifiers writes the TraitModifier list to the file as JSON.
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
-	return saveRows(filePath, modifiers)
+	return saveRows(filePath, TraitModifierListDataKind, modifiers)
 }
 
 // NewTraitModifier creates a TraitModifier.

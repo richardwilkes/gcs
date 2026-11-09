@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // TestConvertWalkerUnreadableRoot verifies that the conversion walker tolerates a root it can't stat. filepath.WalkDir
@@ -95,8 +97,8 @@ func TestConvertersCoverCollectedExtensions(t *testing.T) {
 }
 
 // TestConvertRewritesCollectedFiles verifies that Convert brings each collected file up to the current data version,
-// including files that use an alternate extension, and leaves files whose type carries no version information
-// untouched.
+// including files that use an alternate extension and files written before they carried a header, which gain one with
+// their content kept.
 func TestConvertRewritesCollectedFiles(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -104,17 +106,68 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 	saveWithOldVersion(c, bodyPath, gurps.FactoryBody().Save)
 	attrPath := filepath.Join(dir, "attributes"+gurps.AttributesExtAlt1)
 	saveWithOldVersion(c, attrPath, gurps.FactoryAttributeDefs().Save)
-	calendarPath := filepath.Join(dir, "calendar"+gurps.CalendarExt)
-	calendarData := []byte(`{"version":1}`)
-	c.NoError(os.WriteFile(calendarPath, calendarData, 0o600))
+	binding := unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Control | mod.Shift}.Key()
+	headerless := []struct {
+		ext, kind, content string
+		// want is the member the content must still hold after conversion, as a path from the top level.
+		want []string
+	}{
+		{
+			ext: gurps.GeneralSettingsExt, kind: gurps.GeneralSettingsDataKind,
+			content: `{"version":2,"default_player_name":"Converted"}`,
+			want:    []string{"general", "default_player_name"},
+		},
+		{
+			ext: gurps.SheetSettingsExt, kind: gurps.SheetSettingsDataKind,
+			content: `{"damage_progression":"knowing_your_own_strength"}`,
+			want:    []string{"damage_progression"},
+		},
+		{
+			ext: gurps.KeySettingsExt, kind: gurps.KeyBindingsDataKind,
+			content: `{"cut":"` + binding + `"}`,
+			want:    []string{"bindings", "cut"},
+		},
+		{
+			ext: gurps.PageRefSettingsExt, kind: gurps.PageRefsDataKind,
+			content: `{"B":{"path":"/refs/basic.pdf","offset":2}}`,
+			want:    []string{"refs", "B", "path"},
+		},
+		{
+			ext: gurps.NamesExt, kind: gurps.NamesDataKind,
+			content: `{"type":"simple","training_data":["Zelda"]}`,
+			want:    []string{"training_data"},
+		},
+		{
+			ext: gurps.CalendarExt, kind: gurps.CalendarDataKind,
+			content: `{"weekdays":["One","Two"],"months":[{"name":"Only","days":30}],"day_zero_weekday":0}`,
+			want:    []string{"months"},
+		},
+	}
+	for _, one := range headerless {
+		c.NoError(os.WriteFile(filepath.Join(dir, "legacy"+one.ext), []byte(one.content), 0o600))
+	}
 
 	c.NoError(Convert(dir))
 
 	c.Equal(jio.CurrentDataVersion, fileVersion(c, bodyPath), "the body file is rewritten in the current format")
 	c.Equal(jio.CurrentDataVersion, fileVersion(c, attrPath), "the attributes file is rewritten in the current format")
-	data, err := os.ReadFile(calendarPath)
-	c.NoError(err)
-	c.Equal(calendarData, data, "a file type with no version information is left untouched")
+	for _, one := range headerless {
+		p := filepath.Join(dir, "legacy"+one.ext)
+		data, err := os.ReadFile(p)
+		c.NoError(err)
+		h, err := jio.ReadHeader(data)
+		c.NoError(err)
+		c.Equal(jio.NewHeader(one.kind), h, "the %s file is rewritten with the header", one.ext)
+		var content map[string]any
+		c.NoError(jio.Unmarshal(data, &content))
+		var value any = content
+		for _, key := range one.want {
+			m, ok := value.(map[string]any)
+			c.True(ok, "the %s file holds an object at %q", one.ext, key)
+			value, ok = m[key]
+			c.True(ok, "the %s file keeps %q", one.ext, key)
+		}
+	}
 }
 
 // TestConvertFile verifies that the converter built for a list file type reloads the file and writes it back out
@@ -135,11 +188,13 @@ func TestConvertFile(t *testing.T) {
 }
 
 // saveWithOldVersion writes a file at the given path with save, the way the application does, and then rewinds the data
-// version recorded in it by one, which gives a conversion something to update.
+// version recorded in it by one and drops the file type, as a file written before headers existed has neither, which
+// gives a conversion something to update.
 func saveWithOldVersion(c check.Checker, p string, save func(string) error) {
 	c.NoError(save(p))
 	var data map[string]any
 	c.NoError(jio.LoadFromFile(nil, p, &data))
+	delete(data, "file_type")
 	data["version"] = jio.CurrentDataVersion - 1
 	c.NoError(jio.SaveToFile(p, data))
 	c.Equal(jio.CurrentDataVersion-1, fileVersion(c, p))

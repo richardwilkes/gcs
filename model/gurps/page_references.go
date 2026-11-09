@@ -33,14 +33,27 @@ type PageRef struct {
 	Offset int    `json:"offset,omitzero"`
 }
 
-// NewPageRefsFromFS creates a new set of page references from a file.
+// pageRefsData is the on-disk form of a page reference file: the references under a member beside the header, since
+// the references themselves are a bare map.
+type pageRefsData struct {
+	jio.Header
+	Refs *PageRefs `json:"refs"`
+}
+
+// NewPageRefsFromFS creates a new set of page references from a file, which may hold the bare map written before such
+// files carried a header.
 func NewPageRefsFromFS(fileSystem fs.FS, filePath string) (*PageRefs, error) {
-	return jio.LoadNew[PageRefs](fileSystem, filePath)
+	return loadWrappedOrBareFile(fileSystem, filePath, PageRefsDataKind, func(data *pageRefsData) *PageRefs {
+		return data.Refs
+	})
 }
 
 // Save writes the PageRefs to the file as JSON.
 func (p *PageRefs) Save(filePath string) error {
-	return jio.SaveToFile(filePath, p)
+	return jio.SaveToFile(filePath, &pageRefsData{
+		Header: jio.NewHeader(PageRefsDataKind),
+		Refs:   p,
+	})
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

@@ -92,6 +92,7 @@ type PDFInfo struct {
 
 // Settings holds the application settings.
 type Settings struct {
+	jio.Header
 	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
 	General            *GeneralSettings           `json:"general,omitzero"`
 	Libraries          *library.Libraries         `json:"libraries,omitempty"`
@@ -159,11 +160,12 @@ func GlobalSettings() *Settings {
 
 // loadSettingsOrDefaults loads the settings from the given path. A missing file is the normal first-run case, so
 // factory defaults are returned silently for it. Any other failure -- most notably a corrupt or unreadable settings
-// file -- is logged and the offending file is set aside with a ".bad" suffix, since the next Save would otherwise
-// overwrite the user's settings without a trace.
+// file, or one holding another kind of data or written by a newer version -- is logged and the offending file is set
+// aside with a ".bad" suffix, since the next Save would otherwise overwrite the user's settings without a trace.
 func loadSettingsOrDefaults(filePath string) Settings {
+	// Settings files written before they carried a header have no version, so none is too old to load.
 	var settings Settings
-	if err := jio.LoadFromFile(nil, filePath, &settings); err != nil {
+	if err := jio.LoadVersionedFileWithMinimum(nil, filePath, &settings, SettingsDataKind, 0); err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
 			errs.Log(errs.NewWithCause("unable to load settings; reverting to factory defaults", err), "path", filePath)
 			setAsideDamagedSettings(filePath)
@@ -171,6 +173,32 @@ func loadSettingsOrDefaults(filePath string) Settings {
 		return FactorySettings()
 	}
 	return settings
+}
+
+// loadWrappedOrBareFile loads the given kind of data from the file at filePath. A file in the current form holds a W:
+// the header and, beside it, the data under the member that member returns. A file with no header predates that form
+// and holds the data alone. A file with a header but no such member, such as one exported by the Java release, is
+// refused rather than loaded as holding no data. Files of either form that carry no version are accepted.
+func loadWrappedOrBareFile[W, T any](fileSystem fs.FS, filePath, fileType string, member func(*W) *T) (*T, error) {
+	h, buf, err := jio.ReadVersionedFile(fileSystem, filePath, fileType, 0)
+	if err != nil {
+		return nil, err
+	}
+	if h == (jio.Header{}) {
+		var bare T
+		if err = jio.Unmarshal(buf, &bare); err != nil {
+			return nil, errs.NewWithCause(jio.InvalidFileData(), err)
+		}
+		return &bare, nil
+	}
+	var wrapped W
+	if err = jio.Unmarshal(buf, &wrapped); err != nil {
+		return nil, errs.NewWithCause(jio.InvalidFileData(), err)
+	}
+	if data := member(&wrapped); data != nil {
+		return data, nil
+	}
+	return nil, errs.New(jio.InvalidFileData())
 }
 
 // FactorySettings returns the settings used when no usable settings file is available.
@@ -244,6 +272,7 @@ func (s *Settings) Save() error {
 	s.Colors.CaptureCurrent()
 	s.Fonts.CaptureCurrent()
 	s.EnsureValidity()
+	s.Header = jio.NewHeader(SettingsDataKind)
 	return jio.SaveToFile(SettingsPath, s)
 }
 

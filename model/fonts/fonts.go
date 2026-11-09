@@ -97,9 +97,12 @@ func (provider) Applied() {
 	}
 }
 
+// DataKind is the kind of data named by the header of a theme font file.
+const DataKind = "fonts"
+
 type fileData struct {
-	Version int   `json:"version"`
-	Fonts   Fonts `json:"fonts"`
+	jio.Header
+	Fonts Fonts `json:"fonts"`
 }
 
 // CurrentFonts returns the current theme fonts.
@@ -151,10 +154,7 @@ func initialize() {
 // NewFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	var data fileData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.Wrap(err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, DataKind); err != nil {
 		return nil, err
 	}
 	return &data.Fonts, nil
@@ -163,7 +163,7 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &fileData{
-		Version: jio.CurrentDataVersion,
-		Fonts:   *f,
+		Header: jio.NewHeader(DataKind),
+		Fonts:  *f,
 	})
 }

@@ -148,13 +148,13 @@ type EquipmentContainerSyncData struct {
 
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
-	return loadRows[*Equipment](fileSystem, filePath)
+	return loadRows[*Equipment](fileSystem, filePath, EquipmentListDataKind)
 }
 
 // SaveEquipment writes the Equipment list to the file as JSON.
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	AdjustEquipmentUsesForSave(equipment)
-	return saveRows(filePath, equipment)
+	return saveRows(filePath, EquipmentListDataKind, equipment)
 }
 
 // defaultLegalityClass is the legality class new equipment starts out with.

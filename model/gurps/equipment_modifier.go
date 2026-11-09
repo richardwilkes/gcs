@@ -112,12 +112,12 @@ type EquipmentModifierNonContainerSyncData struct {
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
-	return loadRows[*EquipmentModifier](fileSystem, filePath)
+	return loadRows[*EquipmentModifier](fileSystem, filePath, EquipmentModifierListDataKind)
 }
 
 // SaveEquipmentModifiers writes the EquipmentModifier list to the file as JSON.
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
-	return saveRows(filePath, modifiers)
+	return saveRows(filePath, EquipmentModifierListDataKind, modifiers)
 }
 
 // NewEquipmentModifier creates an EquipmentModifier.

@@ -39,7 +39,7 @@ type Ancestry struct {
 }
 
 type ancestryData struct {
-	Version int `json:"version"`
+	jio.Header
 	Ancestry
 }
 
@@ -79,14 +79,9 @@ func NewAncestry() *Ancestry {
 
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
+	// Some older ancestry files carry no version at all, so the minimum is 0 rather than jio.MinimumDataVersion.
 	var ancestry ancestryData
-	if err := jio.LoadFromFile(fileSystem, filePath, &ancestry); err != nil {
-		return nil, err
-	}
-	if ancestry.Version == 0 { // for some older files
-		ancestry.Version = jio.MinimumDataVersion
-	}
-	if err := jio.CheckVersion(ancestry.Version); err != nil {
+	if err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &ancestry, AncestryDataKind, 0); err != nil {
 		return nil, err
 	}
 	if ancestry.Name == "" {
@@ -98,7 +93,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 // Save writes the Ancestry to the file as JSON.
 func (a *Ancestry) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &ancestryData{
-		Version:  jio.CurrentDataVersion,
+		Header:   jio.NewHeader(AncestryDataKind),
 		Ancestry: *a,
 	})
 }
@@ -122,7 +117,7 @@ func (a *Ancestry) Clone() *Ancestry {
 }
 
 // Hash writes this object's contents into the hasher. The hash is of the ancestry's own JSON content, without the
-// version wrapper that Save adds around it, so it answers exactly "has the file content changed", and the runtime-only
+// header that Save adds beside it, so it answers exactly "has the file content changed", and the runtime-only
 // KeyPrefix fields never take part.
 func (a *Ancestry) Hash(h hash.Hash) {
 	HashJSON(h, a)
