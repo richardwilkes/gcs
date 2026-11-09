@@ -9,7 +9,12 @@
 
 package gurps
 
-import "github.com/richardwilkes/toolbox/v2/xrand"
+import (
+	"encoding/json/jsontext"
+	"slices"
+
+	"github.com/richardwilkes/toolbox/v2/xrand"
+)
 
 // WeightedStringOption is a string that has a weight associated with it.
 type WeightedStringOption struct {
@@ -17,11 +22,17 @@ type WeightedStringOption struct {
 	Value  string `json:"value"`
 	// KeyPrefix is a runtime-only key the editor uses to give each option's widgets a stable identity.
 	KeyPrefix string `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Clone returns a deep copy of this option, or nil if this option is nil.
 func (o *WeightedStringOption) Clone() *WeightedStringOption {
-	return clonePtr(o)
+	clone := clonePtr(o)
+	if clone != nil {
+		clone.Unknown = slices.Clone(o.Unknown)
+	}
+	return clone
 }
 
 // Valid returns true if this option has a valid weight. A file may contain a null entry, so this must be checked before

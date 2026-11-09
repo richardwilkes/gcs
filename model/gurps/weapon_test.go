@@ -10,6 +10,8 @@
 package gurps_test
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"strings"
 	"testing"
 
@@ -1229,4 +1231,36 @@ func cloneWithWeapon[T interface {
 	dup := n.Clone(gurps.LibraryFile{}, nil, nil, gurps.Reference)
 	dup.NameableReplacements()["kind"] = "Ice"
 	return n, dup, (*weapons(n))[0], (*weapons(dup))[0]
+}
+
+// jsonMember returns the compact JSON of the named member of the object data holds, or "" when it has none.
+func jsonMember(t *testing.T, data []byte, name string) string {
+	t.Helper()
+	var members map[string]jsontext.Value
+	if err := json.Unmarshal(data, &members); err != nil {
+		t.Fatal(err)
+	}
+	value := members[name]
+	if len(value) == 0 {
+		return ""
+	}
+	if err := value.Compact(); err != nil {
+		t.Fatal(err)
+	}
+	return string(value)
+}
+
+// TestWeaponKeepsUnknownMembers verifies that the members of a weapon this release does not know survive loading and
+// saving it, and cloning it, which an editor's round trip goes through, so that an older release keeps what a newer
+// one wrote.
+func TestWeaponKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var w gurps.Weapon
+	c.NoError(jio.Unmarshal([]byte(`{"damage":{"type":"cr","base":"1d"},"zzz_weapon":[1,2]}`), &w))
+	data, err := jio.Marshal(&w)
+	c.NoError(err)
+	c.Equal("[1,2]", jsonMember(t, data, "zzz_weapon"), "saving")
+	data, err = jio.Marshal(w.Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate))
+	c.NoError(err)
+	c.Equal("[1,2]", jsonMember(t, data, "zzz_weapon"), "a clone")
 }

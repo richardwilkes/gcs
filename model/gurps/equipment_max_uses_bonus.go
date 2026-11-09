@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -36,7 +37,11 @@ func NewEquipmentMaxUsesBonus() *EquipmentMaxUsesBonus {
 
 // Clone implements Feature.
 func (e *EquipmentMaxUsesBonus) Clone() Feature {
-	return clonePtr(e)
+	clone := clonePtr(e)
+	if clone != nil {
+		clone.Unknown = slices.Clone(e.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.

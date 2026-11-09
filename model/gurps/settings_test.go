@@ -22,6 +22,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -43,42 +44,71 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 	c.HasError(err)
 }
 
+// TestLoadSettingsOrDefaultsWithValidFile verifies that a settings file loads whether it predates the header, which
+// leaves it with no version, or was written by a newer version that declared it readable by this one, and that saving
+// either writes this version's header.
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
-	c := check.New(t)
-	count := countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]}`), 0o600))
-	settings := loadSettingsOrDefaults(p)
-	c.Equal("1.2.3", settings.LastSeenGCSVersion)
-	c.Equal([]string{"alpha"}, settings.DeepSearch)
-	c.Equal(int32(0), count.Load())
-	_, err := os.Stat(p + ".bad")
-	c.HasError(err)
+	const content = `"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]`
+	for name, data := range map[string]string{
+		"no header": `{` + content + `}`,
+		"newer":     `{"type":"settings","version":7,"min_version":6,"new_member":true,` + content + `}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			count := countLogs(t, slog.LevelError)
+			dir := t.TempDir()
+			p := filepath.Join(dir, "settings.json")
+			c.NoError(os.WriteFile(p, []byte(data), 0o600))
+			settings := loadSettingsOrDefaults(p)
+			c.Equal("1.2.3", settings.LastSeenGCSVersion)
+			c.Equal([]string{"alpha"}, settings.DeepSearch)
+			c.Equal(int32(0), count.Load())
+			_, err := os.Stat(p + ".bad")
+			c.HasError(err)
+
+			prevPath := SettingsPath
+			SettingsPath = filepath.Join(dir, "saved.json")
+			t.Cleanup(func() { SettingsPath = prevPath })
+			c.NoError(settings.Save())
+			var h jio.Header
+			h, _, err = jio.ReadHeader(nil, SettingsPath)
+			c.NoError(err)
+			c.Equal(jio.NewHeader(SettingsDataKind), h)
+		})
+	}
 }
 
-// TestLoadSettingsOrDefaultsWithCorruptFile verifies that a settings file that exists but can't be loaded is reported
-// and set aside rather than silently discarded. Prior to this, the load error was thrown away, so a corrupt file was
-// indistinguishable from a missing one and the next Save quietly overwrote whatever the user had.
+// TestLoadSettingsOrDefaultsWithCorruptFile verifies that a settings file that exists but can't be loaded, whether
+// damaged or from a newer version that declared this one unable to read it, is reported and set aside rather than
+// silently discarded. Prior to this, the load error was thrown away, so a corrupt file was indistinguishable from a
+// missing one and the next Save quietly overwrote whatever the user had.
 func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
-	c := check.New(t)
-	count := countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	const corrupt = `{"last_seen_gcs_version":"1.2.3",`
-	c.NoError(os.WriteFile(p, []byte(corrupt), 0o600))
-	settings := loadSettingsOrDefaults(p)
+	for name, data := range map[string]string{
+		"damaged": `{"last_seen_gcs_version":"1.2.3",`,
+		"too new": `{"type":"settings","version":7,"min_version":7,"last_seen_gcs_version":"1.2.3"}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			count := countLogs(t, slog.LevelError)
+			p := filepath.Join(t.TempDir(), "settings.json")
+			c.NoError(os.WriteFile(p, []byte(data), 0o600))
+			settings := loadSettingsOrDefaults(p)
 
-	// Factory defaults are used, and the failure was reported.
-	c.Equal(xos.AppVersion, settings.LastSeenGCSVersion)
-	c.NotNil(settings.General)
-	c.NotNil(settings.Sheet)
-	c.NotEqual(int32(0), count.Load())
+			// Factory defaults are used, and the failure was reported.
+			c.Equal(xos.AppVersion, settings.LastSeenGCSVersion)
+			c.NotNil(settings.General)
+			c.NotNil(settings.Sheet)
+			c.NotEqual(int32(0), count.Load())
 
-	// The damaged file was moved aside intact, so a subsequent Save can't overwrite it.
-	_, err := os.Stat(p)
-	c.HasError(err)
-	data, err := os.ReadFile(p + ".bad")
-	c.NoError(err)
-	c.Equal(corrupt, string(data))
+			// The file was moved aside intact, so a subsequent Save can't overwrite it.
+			_, err := os.Stat(p)
+			c.HasError(err)
+			var saved []byte
+			saved, err = os.ReadFile(p + ".bad")
+			c.NoError(err)
+			c.Equal(data, string(saved))
+		})
+	}
 }
 
 // TestSettingsSaveWithNullMapEntries verifies that a settings file holding a JSON null in place of a navigator node, a

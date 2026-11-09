@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -44,6 +45,8 @@ type SpellBonusData struct {
 	TagsCriteria   criteria.Text   `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSpellBonus creates a new SpellBonus.
@@ -137,7 +140,11 @@ func (s *SpellBonus) applies() bool {
 
 // Clone implements Feature.
 func (s *SpellBonus) Clone() Feature {
-	return clonePtr(s)
+	clone := clonePtr(s)
+	if clone != nil {
+		clone.Unknown = slices.Clone(s.Unknown)
+	}
+	return clone
 }
 
 // Hash writes this object's contents into the hasher.

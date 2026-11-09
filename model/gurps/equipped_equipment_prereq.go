@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -33,6 +35,8 @@ type EquippedEquipmentPrereq struct {
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 	ModifierCriteria
 	TitleNoteCriteria criteria.Text `json:"title_note,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -71,6 +75,7 @@ func (p *EquippedEquipmentPrereq) SetParentList(list *PrereqList) {
 func (p *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

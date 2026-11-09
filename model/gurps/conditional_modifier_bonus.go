@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -26,6 +28,8 @@ type ConditionalModifierBonus struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
 	situationBonus
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.
@@ -43,7 +47,11 @@ func (c *ConditionalModifierBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *ConditionalModifierBonus) Clone() Feature {
-	return clonePtr(c)
+	clone := clonePtr(c)
+	if clone != nil {
+		clone.Unknown = slices.Clone(c.Unknown)
+	}
+	return clone
 }
 
 // Describe implements Feature.

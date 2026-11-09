@@ -38,9 +38,7 @@ func jsonArrayElement(c check.Checker, in string, index int) string {
 }
 
 // TestUnknownFeaturePreserved verifies that a feature whose type this build doesn't recognize doesn't prevent the data
-// from loading, isn't silently reinterpreted as some other feature, and is written back out unchanged. The enum's
-// UnmarshalText maps anything it doesn't recognize onto the first value, so before this was addressed such a feature
-// became an AttributeBonus with an empty attribute and was permanently rewritten as "attribute_bonus" on save.
+// from loading, isn't silently reinterpreted as some other feature, and is written back out unchanged.
 func TestUnknownFeaturePreserved(t *testing.T) {
 	c := check.New(t)
 

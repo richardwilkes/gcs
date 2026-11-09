@@ -95,9 +95,18 @@ func libraryCheckTitle(libs []*library.Library) string {
 
 // reportNoLibraryReleases tells the user that a library they asked to update, or to see the release notes of, has no
 // release to offer. Until a check has been made the buttons are enabled on the strength of the repository alone, so
-// this is the first they hear of it.
+// this is the first they hear of it. A library on disk that was written for a newer version of the app is unusable
+// even so, which is said as well.
 func reportNoLibraryReleases(lib *library.Library) {
 	unison.WarningDialogWithMessage(i18n.Text("No releases are available for %s", lib.Data().Title),
-		xstrings.Wrap("", i18n.Text("The library's repository has no release that this version of %s can use.",
-			xos.AppName), 100))
+		xstrings.Wrap("", noLibraryReleasesMessage(lib), 100))
+}
+
+// noLibraryReleasesMessage returns the explanation reportNoLibraryReleases gives for the given library.
+func noLibraryReleasesMessage(lib *library.Library) string {
+	if lib.NeedsNewerApp() {
+		return i18n.Text("The library on disk was written for a newer version of %s, and this version cannot use it. The library's repository has no release that this version can use either.",
+			xos.AppName)
+	}
+	return i18n.Text("The library's repository has no release that this version of %s can use.", xos.AppName)
 }

@@ -1379,3 +1379,22 @@ func TestNewMergedListFilter(t *testing.T) {
 	group, ok = merged.Root.Children[4].(*gurps.FilterGroup)
 	c.True(ok && group.Not, "a negated source stays a group")
 }
+
+// TestListFilterKeepsUnknownMembers verifies that a filter, and its clone, write back the members of the filter and of
+// its root group that this release does not know.
+func TestListFilterKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var f gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(`{"name":"Future","zzz_filter":1,"root":{"type":"group","all":true,"zzz_group":2}}`),
+		&f))
+	for _, one := range []struct {
+		name   string
+		filter *gurps.ListFilter
+	}{
+		{name: "the filter", filter: &f},
+		{name: "its clone", filter: f.Clone()},
+	} {
+		c.Equal("1", memberJSON(c, one.filter, "zzz_filter"), one.name)
+		c.Equal("2", memberJSON(c, one.filter.Root, "zzz_group"), one.name)
+	}
+}

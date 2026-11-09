@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -156,4 +157,44 @@ func TestInitialSheetPaginatedDefaultsToOn(t *testing.T) {
 	loaded, err = NewGeneralSettingsFromFile(nil, p)
 	c.NoError(err)
 	c.False(loaded.InitialSheetPaginated, "turning the setting off survives a save and load")
+}
+
+// TestGeneralSettingsFileKeepsTheRevision verifies that the settings are saved under a header with their own revision
+// kept inside, which versions from before the header still read so as not to repeat their migrations, and that a
+// revision newer than this version's is left as it is, so that the newer version doesn't repeat its own.
+func TestGeneralSettingsFileKeepsTheRevision(t *testing.T) {
+	c := check.New(t)
+	p := filepath.Join(t.TempDir(), "general.json")
+	readRevision := func() int {
+		h, _, err := jio.ReadHeader(nil, p)
+		c.NoError(err)
+		c.Equal(jio.NewHeader(GeneralSettingsDataKind), h)
+		var data struct {
+			General struct {
+				Version int `json:"version"`
+			} `json:"general"`
+		}
+		c.NoError(jio.LoadFromFile(nil, p, &data))
+		return data.General.Version
+	}
+
+	s := NewGeneralSettings()
+	s.DefaultPlayerName = "Round Trip"
+	c.NoError(s.Save(p))
+	c.Equal(currentGeneralSettingsVersion, readRevision(), "the current revision is written inside the header")
+	loaded, err := NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.Equal("Round Trip", loaded.DefaultPlayerName, "the settings survive a save and load")
+
+	c.NoError(jio.SaveToFile(p, map[string]any{
+		"type":        GeneralSettingsDataKind,
+		"version":     jio.CurrentDataVersion,
+		"min_version": jio.MinimumReaderVersion,
+		"general":     map[string]any{"version": currentGeneralSettingsVersion + 1},
+	}))
+	loaded, err = NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.Equal(currentGeneralSettingsVersion+1, loaded.Version, "a newer revision is kept")
+	c.NoError(loaded.Save(p))
+	c.Equal(currentGeneralSettingsVersion+1, readRevision(), "a newer revision is written back")
 }

@@ -35,7 +35,8 @@ type TemplatePickerNode[T TemplatePickerNode[T]] interface {
 // assertTemplatePickerNode causes a compile-time constraint validation
 func assertTemplatePickerNode[T TemplatePickerNode[T]]() {}
 
-// TemplatePicker holds the data necessary to allow a template choice to be made.
+// TemplatePicker holds the data necessary to allow a template choice to be made. It has no Unknown field to keep the
+// members this release does not know, since pickers are compared with ==.
 type TemplatePicker struct {
 	Type      picker.Type     `json:"type"`
 	Qualifier criteria.Number `json:"qualifier,omitzero"`

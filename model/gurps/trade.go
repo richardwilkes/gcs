@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"bytes"
 	"maps"
 	"math"
 	"slices"
@@ -83,18 +84,21 @@ func (e *Equipment) MergeMatches(other *Equipment) bool {
 		e.Preconfigured == other.Preconfigured &&
 		e.PickSeparately == other.PickSeparately &&
 		maps.Equal(e.Replacements, other.Replacements) &&
+		bytes.Equal(e.Unknown, other.Unknown) &&
 		weaponsMatch(e.Weapons, other.Weapons) &&
 		equipmentModifiersMatch(e.Modifiers, other.Modifiers, e.NameableLinks, other.NameableLinks)
 }
 
-// weaponsMatch returns true if the weapons match in what WeaponData.Hash leaves out: whether each is hidden. The rest of
-// their data, and their number, is compared through the hash of the equipment holding them.
+// weaponsMatch returns true if the weapons match in what WeaponData.Hash leaves out: whether each is hidden and the
+// members this release does not know, its damage's included. The rest of their data, and their number, is compared
+// through the hash of the equipment holding them.
 func weaponsMatch(a, b []*Weapon) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	for i, one := range a {
-		if one.Hide != b[i].Hide {
+		if one.Hide != b[i].Hide || !bytes.Equal(one.Unknown, b[i].Unknown) ||
+			!bytes.Equal(one.Damage.Unknown, b[i].Damage.Unknown) {
 			return false
 		}
 	}
@@ -114,6 +118,7 @@ func equipmentModifiersMatch(a, b []*EquipmentModifier, aLinks, bLinks map[tid.T
 			one.Disabled != other.Disabled ||
 			one.VTTNotes != other.VTTNotes ||
 			!maps.Equal(one.Replacements, other.Replacements) ||
+			!bytes.Equal(one.Unknown, other.Unknown) ||
 			!weaponsMatch(one.Weapons, other.Weapons) ||
 			!maps.Equal(aLinks[one.TID], bLinks[other.TID]) ||
 			!equipmentModifiersMatch(one.Children, other.Children, aLinks, bLinks) {

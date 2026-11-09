@@ -43,8 +43,7 @@ func keysOf[T interface {
 	return m
 }
 
-// TestNumericComparisonJSONRoundTrip verifies that the numeric comparison is written as its key, and that a key no
-// release has ever written loads as "is anything" rather than failing.
+// TestNumericComparisonJSONRoundTrip verifies that the numeric comparison is written as its key and read back from it.
 func TestNumericComparisonJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 	data, err := jio.Marshal(&criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Five})
@@ -55,8 +54,6 @@ func TestNumericComparisonJSONRoundTrip(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"compare":"at_most","qualifier":3}`), &num))
 	c.Equal(criteria.AtMostNumber, num.Compare)
 	c.Equal(fxp.Three, num.Qualifier)
-	c.NoError(jio.Unmarshal([]byte(`{"compare":"bogus","qualifier":3}`), &num))
-	c.Equal(criteria.AnyNumber, num.Compare)
 }
 
 func TestNumericComparisonPluralClause(t *testing.T) {

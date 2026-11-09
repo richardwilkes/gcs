@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -35,6 +37,8 @@ type PrereqList struct {
 	Not     bool            `json:"not,omitzero"`
 	WhenTL  criteria.Number `json:"when_tl,omitzero"`
 	Prereqs Prereqs         `json:"prereqs,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewPrereqList creates a new PrereqList.
@@ -77,6 +81,7 @@ func (p *PrereqList) Clone(parent *PrereqList) Prereq {
 func (p *PrereqList) CloneAsPrereqList(parent *PrereqList) *PrereqList {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	clone.Prereqs = make(Prereqs, len(p.Prereqs))
 	for i := range p.Prereqs {
 		clone.Prereqs[i] = p.Prereqs[i].Clone(&clone)

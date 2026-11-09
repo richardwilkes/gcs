@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"net/http"
 	"os"
 	"strconv"
@@ -48,6 +49,8 @@ type Profile struct {
 	SizeModifier        int           `json:"SM,omitzero"`
 	SizeModifierBonus   fxp.Int       `json:"-"`
 	portraitUndecodable bool
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Update any derived values.

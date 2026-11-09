@@ -29,8 +29,7 @@ import (
 // Entity.capLevel). The criteria match the item's own values, as a prerequisite's do: the specialization criteria
 // applies only to skills and the college and power source criteria only to spells, each ignored for the other kind, so
 // that a cap on skills and spells alike can still narrow either by name and tags. A container is never matched. Cap is
-// never nil once the cap has been constructed or loaded. A target this version of GCS doesn't know selects nothing,
-// and its key is written back out as it was read.
+// never nil once the cap has been constructed or loaded.
 type SkillLevelCap struct {
 	Target                 levelcap.Target `json:"target"`
 	NameCriteria           criteria.Text   `json:"name,omitzero"`
@@ -39,18 +38,12 @@ type SkillLevelCap struct {
 	CollegeCriteria        criteria.Text   `json:"college,omitzero"`
 	PowerSourceCriteria    criteria.Text   `json:"power_source,omitzero"`
 	Cap                    *LevelCapGroup  `json:"cap"`
-	unknownTarget          string
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // skillLevelCapData avoids recursion into the JSON methods of SkillLevelCap.
 type skillLevelCapData SkillLevelCap
-
-// skillLevelCapJSON is a SkillLevelCap as JSON holds it, with the key of its target, if present, in place of the
-// target.
-type skillLevelCapJSON struct {
-	Target *string `json:"target"`
-	skillLevelCapData
-}
 
 // NewSkillLevelCap creates a new cap that applies to every skill and holds nothing to cap at yet.
 func NewSkillLevelCap() *SkillLevelCap {
@@ -62,6 +55,7 @@ func NewSkillLevelCap() *SkillLevelCap {
 // Clone creates a deep copy of this cap.
 func (c *SkillLevelCap) Clone() *SkillLevelCap {
 	clone := *c
+	clone.Unknown = slices.Clone(c.Unknown)
 	if c.Cap != nil {
 		clone.Cap = c.Cap.CloneAsLevelCapGroup(nil)
 	}
@@ -79,28 +73,13 @@ func (c *SkillLevelCap) EnsureValidity() {
 	ensureLevelCapValidity(c.Cap, nil)
 }
 
-// MarshalJSONTo implements json.MarshalerTo.
-func (c *SkillLevelCap) MarshalJSONTo(enc *jsontext.Encoder) error {
-	target := c.Target.Key()
-	if c.Target == levelcap.UnknownTarget && c.unknownTarget != "" {
-		target = c.unknownTarget
-	}
-	return json.MarshalEncode(enc, &skillLevelCapJSON{Target: &target, skillLevelCapData: skillLevelCapData(*c)})
-}
-
 // UnmarshalJSONFrom implements json.UnmarshalerFrom. A cap without a target applies to skills.
 func (c *SkillLevelCap) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	var data skillLevelCapJSON
+	var data skillLevelCapData
 	if err := json.UnmarshalDecode(dec, &data); err != nil {
 		return err
 	}
-	*c = SkillLevelCap(data.skillLevelCapData)
-	if data.Target != nil {
-		var known bool
-		if c.Target, known = levelcap.ExtractKnownTarget(*data.Target); !known {
-			c.unknownTarget = *data.Target
-		}
-	}
+	*c = SkillLevelCap(data)
 	c.EnsureValidity()
 	return nil
 }
@@ -112,9 +91,6 @@ func (c *SkillLevelCap) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, c.Target)
-	if c.Target == levelcap.UnknownTarget {
-		xhash.StringWithLen(h, c.unknownTarget)
-	}
 	c.NameCriteria.Hash(h)
 	c.SpecializationCriteria.Hash(h)
 	c.TagsCriteria.Hash(h)

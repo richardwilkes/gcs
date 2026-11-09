@@ -28,8 +28,15 @@ import (
 const libraryUpdateTimeout = 30 * time.Minute
 
 func initiateLibraryUpdate(lib *library.Library, rel *library.Release) bool {
-	if unison.QuestionDialog(i18n.Text("Update %s to %s?", lib.Data().Title, filterVersion(rel.Version)),
-		i18n.Text(`Existing content for this library will be removed and replaced.
+	var question string
+	if lib.NeedsNewerApp() {
+		// The release being installed is older than what is on disk, so this is really a downgrade.
+		question = i18n.Text("%s on disk was written for a newer version of GCS. Replace it with %s?", lib.Data().Title,
+			filterVersion(rel.Version))
+	} else {
+		question = i18n.Text("Update %s to %s?", lib.Data().Title, filterVersion(rel.Version))
+	}
+	if unison.QuestionDialog(question, i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
 	}

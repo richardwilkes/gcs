@@ -12,10 +12,13 @@ package ux
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // TestLibraryUpdateButtonsEnabledBeforeAnyCheck verifies that the Library Explorer's update and release-notes buttons
@@ -45,4 +48,16 @@ func TestCheckLibraryReleasesSkipsLibrariesWithNothingToCheck(t *testing.T) {
 	local := library.NewLibrary("Local", "", "", "local", t.TempDir())
 	c.True(checkLibraryReleases(nil))
 	c.True(checkLibraryReleases([]*library.Library{local}))
+}
+
+// TestNoLibraryReleasesMessageExplainsALibraryNeedingNewerApp verifies that the warning given when a library has no
+// release to offer also says when the library on disk was written for a newer version of the app, which is why the
+// user can't use it, while the warning for any other library says only that there is no release.
+func TestNoLibraryReleasesMessageExplainsALibraryNeedingNewerApp(t *testing.T) {
+	c := check.New(t)
+	newer := "newer version of " + xos.AppName
+	msg := noLibraryReleasesMessage(newLibraryWithVersionOnDisk(t, strconv.Itoa(jio.CurrentDataVersion+1)+".0.0"))
+	c.Contains(msg, newer)
+	msg = noLibraryReleasesMessage(newLibraryWithVersionOnDisk(t, strconv.Itoa(jio.CurrentDataVersion)+".0.0"))
+	c.NotContains(msg, newer)
 }

@@ -58,6 +58,26 @@ func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 	c.Nil(refs.Lookup("B"))
 }
 
+// A page reference file loads whether it holds the bare map written before such files carried a header or the current
+// form, which is what saving writes.
+func TestPageRefsFileRoundTrip(t *testing.T) {
+	c := check.New(t)
+	p := filepath.Join(t.TempDir(), "refs.refs")
+	c.NoError(os.WriteFile(p, []byte(`{"B":{"path":"/refs/basic.pdf","offset":2}}`), 0o600))
+	want := []*PageRef{{ID: "B", Path: "/refs/basic.pdf", Offset: 2}}
+	refs, err := NewPageRefsFromFS(nil, p)
+	c.NoError(err)
+	c.Equal(want, refs.List(), "the bare map loads")
+
+	c.NoError(refs.Save(p))
+	h, _, err := jio.ReadHeader(nil, p)
+	c.NoError(err)
+	c.Equal(jio.NewHeader(PageRefsDataKind), h)
+	refs, err = NewPageRefsFromFS(nil, p)
+	c.NoError(err)
+	c.Equal(want, refs.List(), "the page references survive a save and load")
+}
+
 // A settings file holding a null in place of a page reference or a library must be survivable. Decoding one used to
 // panic, which bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup rather than leaving it
 // with usable settings.

@@ -325,16 +325,10 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 
 // TestLoadingDropsPickerTypesANodeDoesNotAllow verifies that a picker of a type that means nothing for its node, as
 // only a hand-edited or foreign file can hold, is dropped when the node is loaded, while one of a type the node allows
-// is kept. A type this version doesn't know loads as no picker at all rather than one with a type nothing can handle,
-// which is what lets the rest of the code read a picker's type without checking it first. A count, value or weight
-// qualifier below nothing is raised to nothing, while a points qualifier, which may be less than nothing, is kept.
+// is kept. A count, value or weight qualifier below nothing is raised to nothing, while a points qualifier, which may
+// be less than nothing, is kept.
 func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
 	c := check.New(t)
-	var tp TemplatePicker
-	c.NoError(json.Unmarshal([]byte(`{"type":"not_a_real_picker_type"}`), &tp))
-	c.Equal(picker.NotApplicable, tp.Type, "a type this version doesn't know must load as no picker at all")
-	c.True(tp.IsZero())
-
 	load := func(templatePicker string, node any) {
 		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
 			`","template_picker":`+templatePicker+`}`), node))

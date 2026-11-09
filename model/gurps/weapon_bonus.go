@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -105,6 +106,8 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	PerDie     bool      `json:"per_die,omitzero"`
 	BonusOwner `json:"-"`
 	WeaponOwnerCriteria
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewWeaponBonus creates a new weapon bonus of the given type, which must satisfy feature.Type.IsWeaponBonus.
@@ -129,7 +132,11 @@ func (w *WeaponBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (w *WeaponBonus) Clone() Feature {
-	return clonePtr(w)
+	clone := clonePtr(w)
+	if clone != nil {
+		clone.Unknown = slices.Clone(w.Unknown)
+	}
+	return clone
 }
 
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon. As a side effect, it records the weapon's

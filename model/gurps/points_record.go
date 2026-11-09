@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -21,13 +22,17 @@ type PointsRecord struct {
 	When   jio.Time `json:"when"`
 	Points fxp.Int  `json:"points"`
 	Reason string   `json:"reason,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // ClonePointsRecordList creates a clone of the provided PointsRecord list.
 func ClonePointsRecordList(list []*PointsRecord) []*PointsRecord {
 	clone := make([]*PointsRecord, len(list))
 	for i, one := range list {
-		clone[i] = clonePtr(one)
+		if clone[i] = clonePtr(one); clone[i] != nil {
+			clone[i].Unknown = slices.Clone(one.Unknown)
+		}
 	}
 	return clone
 }

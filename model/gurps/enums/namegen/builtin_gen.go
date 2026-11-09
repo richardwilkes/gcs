@@ -14,6 +14,7 @@ package namegen
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -108,9 +109,13 @@ func (enum Builtin) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Builtin) UnmarshalText(text []byte) error {
-	*enum = ExtractBuiltin(string(text))
+	v, known := ExtractKnownBuiltin(string(text))
+	if !known {
+		return errs.Newf("unknown namegen builtin %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

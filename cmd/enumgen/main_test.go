@@ -73,7 +73,7 @@ func TestNoOrphanedGeneratedFiles(t *testing.T) {
 }
 
 // TestEnumInfoAccessors covers the branches of the value-picking accessors that the enums in allEnums don't reach: an
-// enum with no values, and DefaultUnknown without DefaultLast.
+// enum with no values, and PlaceholderDefault without DefaultLast.
 func TestEnumInfoAccessors(t *testing.T) {
 	c := check.New(t)
 	a := &enumValue{Key: "a"}
@@ -98,7 +98,7 @@ func TestEnumInfoAccessors(t *testing.T) {
 	c.True(info.HasOldKeys())
 	c.True(info.NeedI18N())
 
-	info.DefaultUnknown = true
+	info.PlaceholderDefault = true
 	c.Equal(a, info.Default())
 	c.Equal([]*enumValue{b, z}, info.RealValues())
 
@@ -106,7 +106,7 @@ func TestEnumInfoAccessors(t *testing.T) {
 	c.Equal(z, info.Default())
 	c.Equal([]*enumValue{a, b}, info.RealValues())
 
-	info.DefaultUnknown = false
+	info.PlaceholderDefault = false
 	c.Equal(z, info.Default())
 	c.Equal([]*enumValue{a, b, z}, info.RealValues())
 
@@ -115,7 +115,7 @@ func TestEnumInfoAccessors(t *testing.T) {
 }
 
 // TestDefaultKey verifies that DefaultKey makes the named value the default, its constant the first (or the last, with
-// DefaultLast), while the slices of values keep declaration order, less the default with DefaultUnknown, and that a
+// DefaultLast), while the slices of values keep declaration order, less the default with PlaceholderDefault, and that a
 // DefaultKey which names no value is refused.
 func TestDefaultKey(t *testing.T) {
 	c := check.New(t)
@@ -157,7 +157,7 @@ func TestDefaultKey(t *testing.T) {
 	c.Equal(normal, info.Last())
 	c.Equal([]*enumValue{low, normal, high, higher}, info.RealValues())
 
-	info.DefaultUnknown = true
+	info.PlaceholderDefault = true
 	c.Equal([]*enumValue{low, high, higher}, info.RealValues())
 	info.DefaultLast = false
 	c.Equal(normal, info.First())

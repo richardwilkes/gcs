@@ -29,7 +29,8 @@ var skillBasedDefaultTypes = map[string]bool{
 	BlockID: true,
 }
 
-// SkillDefault holds data for a Skill default.
+// SkillDefault holds data for a Skill default. It has no Unknown field to keep the members this release does not know,
+// since defaults are compared with ==.
 type SkillDefault struct {
 	DefaultType    string          `json:"type"`
 	Name           criteria.Text   `json:"name,omitzero"`

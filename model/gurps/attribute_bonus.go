@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -35,6 +37,8 @@ type AttributeBonus struct {
 	Multiply bool `json:"multiply,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewAttributeBonus creates a new AttributeBonus.
@@ -62,7 +66,11 @@ func (a *AttributeBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (a *AttributeBonus) Clone() Feature {
-	return clonePtr(a)
+	clone := clonePtr(a)
+	if clone != nil {
+		clone.Unknown = slices.Clone(a.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.

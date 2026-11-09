@@ -33,6 +33,9 @@ type pageView struct {
 	// awaitingUpdate is set while the dockable is being marked as modified; MarkModified does nothing while it is set
 	// (see ownerRecalculates for one consequence of that).
 	awaitingUpdate bool
+	// newerFormatBanner is shown between the toolbar and the page when the file was written by a newer version of GCS
+	// (see markNewerFormat), and is nil otherwise.
+	newerFormatBanner *hazardBanner
 }
 
 // pageDockable is a dockable built on a pageView, as the shared scaffolding sees it: the file-backed dockable itself
@@ -80,6 +83,14 @@ func (pv *pageView) finishPageDockable(d pageDockable, content unison.Paneler) {
 	pv.AddChild(pv.scroll)
 	pv.InstallCmdHandlers(SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { pv.save(false) })
 	pv.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { pv.save(true) })
+}
+
+// markNewerFormat implements newerFormatMarker by putting a banner between the toolbar and the page, which stays for as
+// long as the dockable is open.
+func (pv *pageView) markNewerFormat() {
+	pv.newerFormatBanner = newHazardBanner(newerVersionBannerText(), newerVersionBannerTooltip())
+	pv.AddChildAtIndex(pv.newerFormatBanner, pv.IndexOfChild(pv.scroll))
+	pv.MarkForLayoutAndRedraw()
 }
 
 // UndoManager implements unison.UndoManagerProvider.

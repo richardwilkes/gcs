@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
@@ -35,7 +36,11 @@ func NewTraitMaxLevelBonus() *TraitMaxLevelBonus {
 
 // Clone implements Feature.
 func (t *TraitMaxLevelBonus) Clone() Feature {
-	return clonePtr(t)
+	clone := clonePtr(t)
+	if clone != nil {
+		clone.Unknown = slices.Clone(t.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.

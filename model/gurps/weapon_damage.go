@@ -33,6 +33,14 @@ import (
 type WeaponDamage struct {
 	attack.DamageData
 	Owner *Weapon
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
+}
+
+// weaponDamageData is the on-disk form of a WeaponDamage.
+type weaponDamageData struct {
+	attack.DamageData
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Hash writes this object's contents into the hasher.
@@ -58,6 +66,7 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
 	other.Owner = owner
+	other.Unknown = slices.Clone(w.Unknown)
 	other.Normalize()
 	return &other
 }
@@ -65,7 +74,7 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 // MarshalJSONTo implements json.MarshalerTo.
 func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 	// Marshal a copy so that suppressing "default" values for output doesn't mutate the receiver.
-	data := w.DamageData
+	data := weaponDamageData{DamageData: w.DamageData, Unknown: w.Unknown}
 	data.Normalize()
 	// A ST multiplier or armor divisor of 1 is very common, so suppress its output.
 	if data.StrengthMultiplier == fxp.One {
@@ -82,9 +91,12 @@ func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (w *WeaponDamage) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	if err := json.UnmarshalDecode(dec, &w.DamageData); err != nil {
+	data := weaponDamageData{DamageData: w.DamageData}
+	if err := json.UnmarshalDecode(dec, &data); err != nil {
 		return err
 	}
+	w.DamageData = data.DamageData
+	w.Unknown = data.Unknown
 	switch w.StrengthType {
 	case stdmg.OldLeveledThrust:
 		w.StrengthType = stdmg.Thrust

@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -30,6 +31,8 @@ type AttributeData struct {
 	AttrID     string  `json:"attr_id"`
 	Adjustment fxp.Int `json:"adj"`
 	Damage     fxp.Int `json:"damage,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Attribute holds the current state of an AttributeDef.
@@ -81,14 +84,23 @@ func (a *Attribute) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (a *Attribute) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	a.AttributeData = AttributeData{}
-	return json.UnmarshalDecode(dec, &a.AttributeData)
+	var data struct {
+		AttributeData
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
+	}
+	if err := json.UnmarshalDecode(dec, &data); err != nil {
+		return err
+	}
+	a.AttributeData = data.AttributeData
+	return nil
 }
 
 // Clone returns a copy of this Attribute, bound to the given Entity.
 func (a *Attribute) Clone(entity *Entity) *Attribute {
 	clone := *a
 	clone.Entity = entity
+	clone.Unknown = slices.Clone(a.Unknown)
 	return &clone
 }
 

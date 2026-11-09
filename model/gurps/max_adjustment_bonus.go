@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -34,6 +35,8 @@ type maxAdjustmentBonusData[S ~byte] struct {
 	TagsCriteria  criteria.Text `json:"tags,omitzero"`
 	MaxUsesModAmount
 	BonusOwner `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // newMaxAdjustmentBonusData returns the data for a new bonus of the given feature type: one that applies to the item it

@@ -14,6 +14,7 @@ package criteria
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -147,9 +148,13 @@ func (enum StringComparison) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *StringComparison) UnmarshalText(text []byte) error {
-	*enum = ExtractStringComparison(string(text))
+	v, known := ExtractKnownStringComparison(string(text))
+	if !known {
+		return errs.Newf("unknown criteria string comparison %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

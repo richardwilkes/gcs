@@ -71,7 +71,7 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Version          int                    `json:"version"`
+	jio.Header
 	ID               tid.TID                `json:"id"`
 	TotalPoints      fxp.Int                `json:"total_points"`
 	PointsRecord     []*PointsRecord        `json:"points_record,omitempty"`
@@ -88,6 +88,8 @@ type EntityData struct {
 	CreatedOn        jio.Time               `json:"created_date"`
 	ModifiedOn       jio.Time               `json:"modified_date"`
 	ThirdParty       map[string]any         `json:"third_party,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 type features struct {
@@ -322,7 +324,7 @@ func NewEntityFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Entity,
 func newEntityFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Entity, error) {
 	var e Entity
 	e.DiscardCaches()
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &e, &e.Version, opts...); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &e, CharacterDataKind, opts...); err != nil {
 		return nil, err
 	}
 	return &e, nil
@@ -394,7 +396,7 @@ func (e *Entity) Save(filePath string) error {
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		data := e.EntityData
-		data.Version = jio.CurrentDataVersion
+		data.Header = jio.NewHeader(CharacterDataKind)
 		return json.MarshalEncode(enc, &data)
 	}
 	type calc struct {
@@ -435,7 +437,7 @@ func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
 	}
-	data.Version = jio.CurrentDataVersion
+	data.Header = jio.NewHeader(CharacterDataKind)
 	return json.MarshalEncode(enc, &data)
 }
 
@@ -445,6 +447,8 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var content struct {
 		EntityData
 		OldTraits []*Trait `json:"advantages"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err

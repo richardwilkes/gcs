@@ -34,6 +34,8 @@ type DRBonusData struct {
 	Locations      []string `json:"locations,omitempty"`
 	Specialization string   `json:"specialization,omitzero"`
 	LeveledAmount
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // DRBonus holds the data for a DR adjustment.
@@ -61,6 +63,7 @@ func (d *DRBonus) FeatureType() feature.Type {
 func (d *DRBonus) Clone() Feature {
 	other := *d
 	other.Locations = slices.Clone(d.Locations)
+	other.Unknown = slices.Clone(d.Unknown)
 	return &other
 }
 

@@ -292,3 +292,43 @@ func TestPageDockablesShowSourceStatesOnOpen(t *testing.T) {
 		c.Equal(srcstate.Matched.String(), state, "%s: the sourced row must show that it matches its source", one.name)
 	}
 }
+
+// TestPageDockablesShowTheNewerFormatBanner verifies that a character sheet, template or loot sheet opened from a file
+// written by a newer version of GCS that this one can still read shows the banner saying so, between its toolbar and
+// its page.
+func TestPageDockablesShowTheNewerFormatBanner(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	dir := t.TempDir()
+	for _, one := range []struct {
+		name string
+		ext  string
+		save func(filePath string) error
+		open func(filePath string) (unison.Dockable, error)
+	}{
+		{"character sheet", gurps.SheetExt, gurps.NewEntity().Save, NewSheetFromFile},
+		{"template", gurps.TemplatesExt, gurps.NewTemplate().Save, NewTemplateFromFile},
+		{"loot sheet", gurps.LootExt, gurps.NewLoot().Save, NewLootSheetFromFile},
+	} {
+		p := filepath.Join(dir, "newer"+one.ext)
+		c.NoError(one.save(p), one.name)
+		markWrittenByNewerVersion(t, c, p)
+		dockable, err := one.open(p)
+		c.NoError(err, "%s: a newer file that declares itself readable by this version must load", one.name)
+		var pv *pageView
+		switch d := dockable.(type) {
+		case *Sheet:
+			pv = &d.pageView
+		case *Template:
+			pv = &d.pageView
+		case *LootSheet:
+			pv = &d.pageView
+		default:
+			t.Fatalf("%s: the file must open as a page dockable", one.name)
+		}
+		c.Equal(0, pv.IndexOfChild(pv.toolbar), "%s: the toolbar comes first", one.name)
+		c.Equal(1, pv.IndexOfChild(pv.newerFormatBanner), "%s: the banner sits right after the toolbar", one.name)
+		c.Equal(2, pv.IndexOfChild(pv.scroll), "%s: and right before the page", one.name)
+	}
+}

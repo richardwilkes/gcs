@@ -57,7 +57,8 @@ func RegisterTitledKeyBinding(id, title string, action *unison.Action) {
 	}
 }
 
-// FactoryKeyBinding returns the key binding the ID was registered with, or a zero KeyBinding if the ID isn't registered.
+// FactoryKeyBinding returns the key binding the ID was registered with, or a zero KeyBinding if the ID isn't
+// registered.
 func FactoryKeyBinding(id string) unison.KeyBinding {
 	if f, ok := factoryBindings[id]; ok {
 		return f.KeyBinding
@@ -86,36 +87,58 @@ func CurrentBindings() []*Binding {
 	return list
 }
 
+type keyBindingsData struct {
+	jio.Header
+	Bindings *KeyBindings `json:"bindings"`
+}
+
 // NewKeyBindingsFromFS creates a new set of key bindings from a file. Any missing values will be filled in with
 // defaults.
 func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, error) {
-	return jio.LoadNew[KeyBindings](fileSystem, filePath)
+	var data keyBindingsData
+	var bare KeyBindings
+	if err := loadWrappedOrBareFile(fileSystem, filePath, KeyBindingsDataKind, &data, &bare); err != nil {
+		return nil, err
+	}
+	if data.Bindings != nil {
+		return data.Bindings, nil
+	}
+	return &bare, nil
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
 func (b *KeyBindings) IsZero() bool {
-	for k, v := range b.data {
-		if info, ok := factoryBindings[k]; ok && v != info.KeyBinding {
-			return false
-		}
-	}
-	return true
+	return len(b.overrides()) == 0
 }
 
 // Save writes the key bindings to the file as JSON.
 func (b *KeyBindings) Save(filePath string) error {
-	return jio.SaveToFile(filePath, b)
+	return jio.SaveToFile(filePath, &keyBindingsData{
+		Header:   jio.NewHeader(KeyBindingsDataKind),
+		Bindings: b,
+	})
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (b *KeyBindings) MarshalJSONTo(enc *jsontext.Encoder) error {
+	data := b.overrides()
+	return json.MarshalEncode(enc, &data)
+}
+
+// overrides returns the bindings that differ from the factory ones, which are what gets written. With no factory
+// bindings registered, as in the --convert run mode, where the UI never registers its actions, there is nothing to tell
+// them apart by, so all of them are returned rather than none.
+func (b *KeyBindings) overrides() map[string]unison.KeyBinding {
+	if len(factoryBindings) == 0 {
+		return b.data
+	}
 	data := make(map[string]unison.KeyBinding, len(b.data))
 	for k, v := range b.data {
 		if info, ok := factoryBindings[k]; ok && info.KeyBinding != v {
 			data[k] = v
 		}
 	}
-	return json.MarshalEncode(enc, &data)
+	return data
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

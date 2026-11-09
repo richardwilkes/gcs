@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -30,6 +32,8 @@ type TitleNote struct {
 	Text string       `json:"text,omitzero"`
 	// BeforeBuiltIn places the note ahead of the item's built-in parts, such as a skill's specialization.
 	BeforeBuiltIn bool `json:"before_built_in,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewTitleNote creates a new TitleNote.
@@ -44,7 +48,11 @@ func (n *TitleNote) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (n *TitleNote) Clone() Feature {
-	return clonePtr(n)
+	clone := clonePtr(n)
+	if clone != nil {
+		clone.Unknown = slices.Clone(n.Unknown)
+	}
+	return clone
 }
 
 // IsSwitchable implements Feature. A title note is never switchable.

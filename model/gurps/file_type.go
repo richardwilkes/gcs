@@ -60,6 +60,31 @@ const (
 	SkillLevelCapsExt  = ".caps"
 )
 
+// The kinds of data written into the "type" member of a data file's header.
+const (
+	CharacterDataKind             = "character"
+	TemplateDataKind              = "template"
+	LootDataKind                  = "loot"
+	CampaignDataKind              = "campaign"
+	TraitListDataKind             = "trait_list"
+	TraitModifierListDataKind     = "trait_modifier_list"
+	EquipmentListDataKind         = "equipment_list"
+	EquipmentModifierListDataKind = "equipment_modifier_list"
+	SkillListDataKind             = "skill_list"
+	SpellListDataKind             = "spell_list"
+	NoteListDataKind              = "note_list"
+	BodyDataKind                  = "body"
+	AttributesDataKind            = "attributes"
+	AncestryDataKind              = "ancestry"
+	FiltersDataKind               = "filters"
+	SkillLevelCapsDataKind        = "skill_level_caps"
+	SettingsDataKind              = "settings"
+	GeneralSettingsDataKind       = "general"
+	SheetSettingsDataKind         = "sheet_settings"
+	KeyBindingsDataKind           = "key_bindings"
+	PageRefsDataKind              = "page_refs"
+)
+
 // FileInfo contains some static information about a given file type.
 type FileInfo struct {
 	Name             string

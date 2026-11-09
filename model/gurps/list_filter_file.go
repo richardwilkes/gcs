@@ -15,8 +15,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 )
 
+// listFiltersData is the on-disk form of a saved filters file. It carries no fallback for unknown members, since only
+// the filters are handed on by NewListFiltersFromFile, so any other top-level member would be dropped on save in any
+// case.
 type listFiltersData struct {
-	Version     int                      `json:"version"`
+	jio.Header
 	ListFilters map[string][]*ListFilter `json:"list_filters,omitempty"`
 }
 
@@ -24,7 +27,7 @@ type listFiltersData struct {
 // in the settings are.
 func NewListFiltersFromFile(fileSystem fs.FS, filePath string) (map[string][]*ListFilter, error) {
 	var data listFiltersData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, FiltersDataKind); err != nil {
 		return nil, err
 	}
 	s := Settings{ListFilters: data.ListFilters}
@@ -35,7 +38,7 @@ func NewListFiltersFromFile(fileSystem fs.FS, filePath string) (map[string][]*Li
 // SaveListFilters writes saved filters, by list type key, to a file.
 func SaveListFilters(filters map[string][]*ListFilter, filePath string) error {
 	return jio.SaveToFile(filePath, &listFiltersData{
-		Version:     jio.CurrentDataVersion,
+		Header:      jio.NewHeader(FiltersDataKind),
 		ListFilters: filters,
 	})
 }

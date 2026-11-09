@@ -36,7 +36,7 @@ type Loot struct {
 
 // LootData holds the Loot data that is written to disk.
 type LootData struct {
-	Version    int          `json:"version"`
+	jio.Header
 	ID         tid.TID      `json:"id"`
 	Name       string       `json:"name,omitzero"`
 	Location   string       `json:"location,omitzero"`
@@ -44,6 +44,8 @@ type LootData struct {
 	ModifiedOn jio.Time     `json:"modified_date"`
 	Equipment  []*Equipment `json:"equipment,omitempty"`
 	Notes      []*Note      `json:"notes,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewLootFromFile loads Loot from a file.
@@ -60,7 +62,7 @@ func NewLootFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Loot, err
 
 func newLootFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Loot, error) {
 	var l Loot
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &l, &l.Version, opts...); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &l, LootDataKind, opts...); err != nil {
 		return nil, err
 	}
 	return &l, nil
@@ -83,8 +85,9 @@ func (l *Loot) Save(filePath string) error {
 // MarshalJSONTo implements json.MarshalerTo.
 func (l *Loot) MarshalJSONTo(enc *jsontext.Encoder) error {
 	l.EnsureAttachments()
-	l.Version = jio.CurrentDataVersion
-	return json.MarshalEncode(enc, &l.LootData)
+	data := l.LootData
+	data.Header = jio.NewHeader(LootDataKind)
+	return json.MarshalEncode(enc, &data)
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

@@ -11,11 +11,16 @@ package gurps
 
 import (
 	"context"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"log/slog"
 	"maps"
+	"os"
+	"path/filepath"
 	"slices"
 	"sync/atomic"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -311,4 +316,39 @@ func newMultiplier(attrID string, factor fxp.Int) *AttributeBonus {
 	bonus.Multiply = true
 	bonus.Amount = factor
 	return bonus
+}
+
+// jsonMember returns the compact JSON of the named member of the object data holds, or "" when it has none.
+func jsonMember(t *testing.T, data []byte, name string) string {
+	t.Helper()
+	var members map[string]jsontext.Value
+	if err := json.Unmarshal(data, &members); err != nil {
+		t.Fatal(err)
+	}
+	value := members[name]
+	if len(value) == 0 {
+		return ""
+	}
+	if err := value.Compact(); err != nil {
+		t.Fatal(err)
+	}
+	return string(value)
+}
+
+// resavedEntity loads a character sheet whose file holds content, saves it and returns what was saved.
+func resavedEntity(t *testing.T, content string) []byte {
+	t.Helper()
+	e, err := NewEntityFromFile(fstest.MapFS{"in.gcs": &fstest.MapFile{Data: []byte(content)}}, "in.gcs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "out.gcs")
+	if err = e.Save(path); err != nil {
+		t.Fatal(err)
+	}
+	var data []byte
+	if data, err = os.ReadFile(path); err != nil {
+		t.Fatal(err)
+	}
+	return data
 }

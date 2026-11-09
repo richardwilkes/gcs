@@ -10,12 +10,15 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -485,7 +488,8 @@ func TestAncestrySaveLoadRoundTrip(t *testing.T) {
 
 	data, err := os.ReadFile(path)
 	c.NoError(err, "the saved file can be read")
-	c.Contains(string(data), `"version": 5`, "the file carries the current data version")
+	c.Contains(string(data), fmt.Sprintf(`"version": %d`, jio.CurrentDataVersion),
+		"the file carries the current data version")
 	c.NotContains(string(data), "KeyPrefix", "the runtime-only key prefixes are not written")
 	c.NotContains(string(data), "p1", "no key prefix value leaks into the file")
 
@@ -493,4 +497,47 @@ func TestAncestrySaveLoadRoundTrip(t *testing.T) {
 	c.NoError(err, "the saved file loads")
 	c.Equal(Hash64(a), Hash64(loaded), "the loaded ancestry has the same content")
 	c.Equal("", loaded.KeyPrefix, "a loaded ancestry has no key prefix")
+}
+
+// TestAncestryFileKeepsUnknownMembers verifies that saving an ancestry loaded from a file, or a clone of it, writes
+// back the members of the file, of its options and of its weighted choices that this release does not know, but not
+// the legacy formulas its options read.
+func TestAncestryFileKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	const data = `{"version":5,"name":"Elf","zzz_file":1,
+"common_options":{"height_formula":"68","hair_options":[{"weight":1,"value":"Black","zzz_hair":2}],"zzz_options":3},
+"gender_options":[{"weight":1,"value":{"name":"Male"},"zzz_gender":4}]}`
+	a, err := NewAncestryFromFile(fstest.MapFS{"Elf.ancestry": {Data: []byte(data)}}, "Elf.ancestry")
+	c.NoError(err)
+	path := filepath.Join(t.TempDir(), "Elf.ancestry")
+	for _, one := range []struct {
+		name     string
+		ancestry *Ancestry
+	}{
+		{name: "the ancestry", ancestry: a},
+		{name: "its clone", ancestry: a.Clone()},
+	} {
+		c.NoError(one.ancestry.Save(path), one.name)
+		var saved []byte
+		saved, err = os.ReadFile(path)
+		c.NoError(err, one.name)
+		var file struct {
+			CommonOptions jsontext.Value   `json:"common_options"`
+			GenderOptions []jsontext.Value `json:"gender_options"`
+		}
+		c.NoError(json.Unmarshal(saved, &file), one.name)
+		var options struct {
+			HairOptions []jsontext.Value `json:"hair_options"`
+		}
+		c.NoError(json.Unmarshal(file.CommonOptions, &options), one.name)
+		c.Equal("1", jsonMember(t, saved, "zzz_file"), one.name)
+		c.Equal("3", jsonMember(t, file.CommonOptions, "zzz_options"), one.name)
+		c.Equal("", jsonMember(t, file.CommonOptions, "height_formula"), one.name)
+		c.Equal(1, len(options.HairOptions), one.name)
+		c.Equal(1, len(file.GenderOptions), one.name)
+		if len(options.HairOptions) == 1 && len(file.GenderOptions) == 1 {
+			c.Equal("2", jsonMember(t, options.HairOptions[0], "zzz_hair"), one.name)
+			c.Equal("4", jsonMember(t, file.GenderOptions[0], "zzz_gender"), one.name)
+		}
+	}
 }

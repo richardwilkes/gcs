@@ -74,6 +74,8 @@ type EquipmentModifierEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"` // Legacy; kept only to migrate old data
 	EquipmentModifierEditDataNonContainerOnly
 	ModifierContainerSyncData
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // EquipmentModifierEditDataNonContainerOnly holds the EquipmentModifier data that is only applicable to
@@ -112,12 +114,12 @@ type EquipmentModifierNonContainerSyncData struct {
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
-	return loadRows[*EquipmentModifier](fileSystem, filePath)
+	return loadRows[*EquipmentModifier](fileSystem, filePath, EquipmentModifierListDataKind)
 }
 
 // SaveEquipmentModifiers writes the EquipmentModifier list to the file as JSON.
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
-	return saveRows(filePath, modifiers)
+	return saveRows(filePath, EquipmentModifierListDataKind, modifiers)
 }
 
 // NewEquipmentModifier creates an EquipmentModifier.
@@ -226,6 +228,8 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
@@ -834,4 +838,5 @@ func (e *EquipmentModifierEditData) copyFrom(holder *EquipmentModifier, other *E
 	e.Nameables = nameable.CloneDetails(other.Nameables)
 	e.Weapons = cloneWeaponsHeldBy(other.Weapons, holder.WeaponOwner(), holder, mode)
 	e.Features = other.Features.Clone()
+	e.Unknown = slices.Clone(other.Unknown)
 }

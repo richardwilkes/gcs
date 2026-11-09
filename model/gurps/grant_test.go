@@ -15,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"testing"
 	"time"
 
@@ -1502,9 +1501,6 @@ func TestGrantSurvivesSaveAndLoad(t *testing.T) {
 	c.NoError(err)
 	c.Contains(string(saved), `"amount":2,"adjust":"set_level",`,
 		"a trait grant saves that it sets the level, since a kind left out loads as adding levels")
-	var unknown Grant
-	c.NoError(json.Unmarshal([]byte(strings.Replace(string(saved), `"set_level"`, `"set_levels"`, 1)), &unknown))
-	c.Equal(grantadjust.SetLevel, unknown.EffectiveAdjust(), "a kind unknown to the trait grant falls back")
 	var loaded Entity
 	c.NoError(json.Unmarshal(data, &loaded))
 	traits, skills := grantedOf(loaded.Traits), grantedOf(loaded.Skills)

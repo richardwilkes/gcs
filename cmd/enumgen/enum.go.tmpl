@@ -16,8 +16,9 @@ import (
 	"slices"
 	{{- end}}
 	"strings"
-    {{- if .NeedI18N}}
 
+	"github.com/richardwilkes/toolbox/v2/errs"
+    {{- if .NeedI18N}}
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	{{- end}}
 )
@@ -73,7 +74,7 @@ func (enum {{$name}}) Key() string {
         return "{{.Key}}"
     {{- end}}
     default:
-        {{- if .DefaultUnknown}}
+        {{- if .PlaceholderDefault}}
         return "{{.Default.Key}}"
         {{- else}}
         return Default{{$name}}.Key()
@@ -89,7 +90,7 @@ func (enum {{$name}}) oldKeys() []string {
         return {{if .OldKeys}}[]string{ {{join .OldKeys}} }{{else}}nil{{end}}
     {{- end}}
     default:
-        {{- if .DefaultUnknown}}
+        {{- if .PlaceholderDefault}}
         return {{if .Default.OldKeys}}[]string{ {{join .Default.OldKeys}} }{{else}}nil{{end}}
         {{- else}}
         return Default{{$name}}.oldKeys()
@@ -106,7 +107,7 @@ func (enum {{$name}}) String() string {
         return {{if not .NoLocalize}}i18n.Text({{end}}{{printf "%#q" .StringValue}}{{if not .NoLocalize}}){{end}}
     {{- end}}
     default:
-        {{- if .DefaultUnknown}}
+        {{- if .PlaceholderDefault}}
         return {{if not .Default.NoLocalize}}i18n.Text({{end}}{{printf "%#q" .Default.StringValue}}{{if not .Default.NoLocalize}}){{end}}
         {{- else}}
         return Default{{$name}}.String()
@@ -123,7 +124,7 @@ func (enum {{$name}}) AltString() string {
         return {{if not .NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Alt}}{{if not .NoLocalizeAlt}}){{end}}
     {{- end}}
     default:
-        {{- if .DefaultUnknown}}
+        {{- if .PlaceholderDefault}}
         return {{if not .Default.NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Default.Alt}}{{if not .Default.NoLocalizeAlt}}){{end}}
         {{- else}}
         return Default{{$name}}.AltString()
@@ -137,9 +138,13 @@ func (enum {{$name}}) MarshalText() (text []byte, err error) {
     return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *{{$name}}) UnmarshalText(text []byte) error {
-    *enum = Extract{{$name}}(string(text))
+    v, known := ExtractKnown{{$name}}(string(text))
+    if !known {
+        return errs.Newf("unknown {{.Noun}} %q", string(text))
+    }
+    *enum = v
     return nil
 }
 

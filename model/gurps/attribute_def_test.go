@@ -10,6 +10,10 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 
@@ -278,4 +282,37 @@ func TestAttributeDefReservedIDRefusedOnLoad(t *testing.T) {
 	}
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","type":"integer","name":"X","base":"10"}`), &AttributeDef{}),
 		"an ID SetID would turn a reserved one into loads")
+}
+
+// TestAttributeDefsFileKeepsUnknownMembers verifies that saving an attribute set loaded from a file, or a clone of it,
+// writes back the members of the file and of its definitions that this release does not know, but not the legacy
+// "attribute_base" a definition reads.
+func TestAttributeDefsFileKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	const data = `{"version":5,"zzz_file":1,"rows":[{"id":"st","type":"integer","name":"ST","attribute_base":"10","zzz_def":{"a":1}}]}`
+	defs, err := NewAttributeDefsFromFile(fstest.MapFS{"Test.attr": {Data: []byte(data)}}, "Test.attr")
+	c.NoError(err)
+	path := filepath.Join(t.TempDir(), "Test.attr")
+	for _, one := range []struct {
+		name string
+		defs *AttributeDefs
+	}{
+		{name: "the set", defs: defs},
+		{name: "its clone", defs: defs.Clone()},
+	} {
+		c.NoError(one.defs.Save(path), one.name)
+		var saved []byte
+		saved, err = os.ReadFile(path)
+		c.NoError(err, one.name)
+		c.Equal("1", jsonMember(t, saved, "zzz_file"), one.name)
+		var file struct {
+			Rows []jsontext.Value `json:"rows"`
+		}
+		c.NoError(json.Unmarshal(saved, &file), one.name)
+		c.Equal(1, len(file.Rows), one.name)
+		if len(file.Rows) == 1 {
+			c.Equal(`{"a":1}`, jsonMember(t, file.Rows[0], "zzz_def"), one.name)
+			c.Equal("", jsonMember(t, file.Rows[0], "attribute_base"), one.name)
+		}
+	}
 }

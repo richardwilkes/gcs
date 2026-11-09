@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -30,6 +32,8 @@ type AttributePrereq struct {
 	CombinedWith      string          `json:"combined_with,omitzero"`
 	QualifierCriteria criteria.Number `json:"qualifier,omitzero"`
 	Which             string          `json:"which"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewAttributePrereq creates a new AttributePrereq. 'entity' may be nil.
@@ -62,6 +66,7 @@ func (p *AttributePrereq) SetParentList(list *PrereqList) {
 func (p *AttributePrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

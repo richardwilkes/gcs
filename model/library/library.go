@@ -550,6 +550,8 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	l.checked = true
 	l.releases = releases
 	l.current = current
+	prevNeedsNewerApp := versionNeedsNewerApp(prevCurrent, l.data.UseLatest)
+	needsNewerApp := versionNeedsNewerApp(current, l.data.UseLatest)
 	l.lock.Unlock()
 	// A notification reloads the entire library tree, restarting the filesystem watches, dropping caches and disturbing
 	// anything in progress, so one is sent only when this check found something the previous one didn't: an update
@@ -558,13 +560,27 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	// update that was already pending, which raises the indicator at startup. A library with no releases to compare
 	// against -- a local one, or a repo whose releases were all rejected as incompatible -- has nothing to announce,
 	// even though the "0" that stands in for an unknown version on disk differs from the empty version of a missing
-	// release.
-	prevUpdateAvailable := prevLastRelease != "" && prevCurrent != prevLastRelease
-	updateAvailable := lastRelease != "" && current != lastRelease
+	// release. Nor does a library written for a newer version of the app, since every release this version accepts is
+	// older than what is on disk, but its moving into or out of that state changes what the navigator shows for it.
+	prevUpdateAvailable := !prevNeedsNewerApp && prevLastRelease != "" && prevCurrent != prevLastRelease
+	updateAvailable := !needsNewerApp && lastRelease != "" && current != lastRelease
 	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) ||
-		prevUpdateAvailable && !updateAvailable {
+		prevUpdateAvailable && !updateAvailable || prevNeedsNewerApp != needsNewerApp {
 		NotifyOfLibraryChange()
 	}
+}
+
+// versionNeedsNewerApp returns true if the version on disk, as VersionOnDisk() reports it, names a data version newer
+// than this version of the app can read. Only its leading number, up to the first '.', is considered. A library that
+// follows its repository's latest commit records a commit hash rather than a version, so it never qualifies, and
+// neither does the "" of the User Library or the "0" of a library without a release file.
+func versionNeedsNewerApp(version string, useLatest bool) bool {
+	if useLatest {
+		return false
+	}
+	major, _, _ := strings.Cut(version, ".")
+	n, err := strconv.Atoi(major)
+	return err == nil && n > jio.CurrentDataVersion
 }
 
 // AvailableReleases returns the available releases.
@@ -572,6 +588,15 @@ func (l *Library) AvailableReleases() (current string, releases []Release) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 	return l.current, l.releases
+}
+
+// NeedsNewerApp returns true if the library on disk was written for a newer version of the app than this one, which
+// therefore cannot use it. No release is then an update, since every one this version accepts is older than what is on
+// disk. It is judged from the version on disk alone, so it is known without an update check.
+func (l *Library) NeedsNewerApp() bool {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	return versionNeedsNewerApp(l.current, l.data.UseLatest)
 }
 
 // NeedsUpgradeCheck returns true if the library is backed by a GitHub repository and no update check of it has

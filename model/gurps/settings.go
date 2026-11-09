@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -92,6 +93,7 @@ type PDFInfo struct {
 
 // Settings holds the application settings.
 type Settings struct {
+	jio.Header
 	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
 	General            *GeneralSettings           `json:"general,omitzero"`
 	Libraries          *library.Libraries         `json:"libraries,omitempty"`
@@ -116,6 +118,8 @@ type Settings struct {
 	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
 	LootGenMinValue    fxp.Int                    `json:"loot_gen_min_value"`
 	LootGenMaxValue    fxp.Int                    `json:"loot_gen_max_value"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // IDer defines the methods required of objects that have an ID.
@@ -159,18 +163,42 @@ func GlobalSettings() *Settings {
 
 // loadSettingsOrDefaults loads the settings from the given path. A missing file is the normal first-run case, so
 // factory defaults are returned silently for it. Any other failure -- most notably a corrupt or unreadable settings
-// file -- is logged and the offending file is set aside with a ".bad" suffix, since the next Save would otherwise
-// overwrite the user's settings without a trace.
+// file, or one from a newer version that this one cannot read -- is logged and the offending file is set aside with a
+// ".bad" suffix, since the next Save would otherwise overwrite the user's settings without a trace.
 func loadSettingsOrDefaults(filePath string) Settings {
 	var settings Settings
-	if err := jio.LoadFromFile(nil, filePath, &settings); err != nil {
+	// Settings files written before they carried a header have no version, so none is too old to load.
+	h, err := jio.LoadVersionedFileWithMinimum(nil, filePath, &settings, SettingsDataKind, 0)
+	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
 			errs.Log(errs.NewWithCause("unable to load settings; reverting to factory defaults", err), "path", filePath)
 			setAsideDamagedSettings(filePath)
 		}
 		return FactorySettings()
 	}
+	if h.Version > jio.CurrentDataVersion {
+		slog.Info("the settings were written by a newer version; what this version does not know will not be saved",
+			"path", filePath, "version", h.Version)
+	}
 	return settings
+}
+
+// loadWrappedOrBareFile loads the settings file at filePath into wrapped, which holds the header for the given kind
+// and the data under a member of its own. A file with neither a type nor a version predates that form and holds the
+// data alone, so it is loaded into bare instead.
+func loadWrappedOrBareFile(fileSystem fs.FS, filePath, kind string, wrapped, bare any) error {
+	h, buf, err := jio.ReadHeader(fileSystem, filePath)
+	if err != nil {
+		return errs.NewWithCause(jio.InvalidFileData(), err)
+	}
+	if h.Type == "" && h.Version == 0 {
+		if err = jio.Unmarshal(buf, bare); err != nil {
+			return errs.NewWithCause(jio.InvalidFileData(), err)
+		}
+		return nil
+	}
+	_, err = jio.LoadVersionedFile(fileSystem, filePath, wrapped, kind)
+	return err
 }
 
 // FactorySettings returns the settings used when no usable settings file is available.
@@ -244,6 +272,7 @@ func (s *Settings) Save() error {
 	s.Colors.CaptureCurrent()
 	s.Fonts.CaptureCurrent()
 	s.EnsureValidity()
+	s.Header = jio.NewHeader(SettingsDataKind)
 	return jio.SaveToFile(SettingsPath, s)
 }
 

@@ -10,6 +10,7 @@
 package fonts
 
 import (
+	"encoding/json/jsontext"
 	"os"
 	"path/filepath"
 	"testing"
@@ -132,4 +133,23 @@ func TestMakeCurrentAppliesToLiveFonts(t *testing.T) {
 	c.Equal(larger, first.Font.Descriptor(), "the loaded font is applied")
 	c.Equal(FactoryFonts()[1].Font.Descriptor(), CurrentFonts()[1].Font.Descriptor(),
 		"fonts the file didn't mention are set to their factory values")
+}
+
+// TestSaveKeepsUnknownMembers verifies that saving fonts loaded from a file writes back the members of the file this
+// release does not know.
+func TestSaveKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	p := filepath.Join(dir, "test.fonts")
+	c.NoError(os.WriteFile(p, []byte(`{"type":"fonts","version":6,"fonts":{},"zzz_future":{"a": 1}}`), 0o600))
+	loaded, err := NewFromFS(os.DirFS(dir), "test.fonts")
+	c.NoError(err)
+	c.NoError(loaded.Save(p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	var members map[string]jsontext.Value
+	c.NoError(jio.Unmarshal(data, &members))
+	value := members["zzz_future"]
+	c.NoError(value.Compact())
+	c.Equal(`{"a":1}`, string(value))
 }

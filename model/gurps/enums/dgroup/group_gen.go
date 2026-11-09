@@ -14,6 +14,7 @@ package dgroup
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -126,9 +127,13 @@ func (enum Group) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Group) UnmarshalText(text []byte) error {
-	*enum = ExtractGroup(string(text))
+	v, known := ExtractKnownGroup(string(text))
+	if !known {
+		return errs.Newf("unknown dgroup group %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

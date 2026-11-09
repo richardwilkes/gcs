@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"reflect"
 	"slices"
 	"testing"
 	"time"
@@ -277,7 +278,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 		c.Equal(uncheck.FromBool(*one.value), one.box.State, "%q should show its setting", title)
 		before := *gs
 		*one.value = !*one.value
-		c.True(before != *gs, "%q should edit the live settings", title)
+		c.False(reflect.DeepEqual(before, *gs), "%q should edit the live settings", title)
 		*one.value = !*one.value
 	}
 
@@ -290,7 +291,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 		c.Equal(one.field.Format(*one.value), one.field.Text(), "%q should show its setting", title)
 		before := *gs
 		*one.value++
-		c.True(before != *gs, "%q should edit the live settings", title)
+		c.False(reflect.DeepEqual(before, *gs), "%q should edit the live settings", title)
 		*one.value--
 	}
 
@@ -309,7 +310,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 	d.sync()
 	box.box.State = uncheck.FromBool(!*box.value)
 	box.box.ClickCallback()
-	c.True(*gs != *defaults, "clicking the checkbox should change the live settings")
+	c.False(reflect.DeepEqual(*gs, *defaults), "clicking the checkbox should change the live settings")
 	c.Equal(box.box.State, uncheck.FromBool(*box.value), "clicking the checkbox should record its state")
 	field := d.initialScaleFields[0]
 	scale := gurps.InitialUIScaleMin
@@ -332,7 +333,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 	// The widgets must still be editing the live settings, not a copy the reset left behind.
 	box.box.State = uncheck.FromBool(!*box.value)
 	box.box.ClickCallback()
-	c.True(*gurps.GlobalSettings().General != *defaults, "clicking the checkbox after the reset should change the live settings")
+	c.False(reflect.DeepEqual(*gurps.GlobalSettings().General, *defaults), "clicking the checkbox after the reset should change the live settings")
 	field.field.SetText(field.field.Format(scale))
 	c.Equal(scale, *field.value, "editing the field after the reset should record its value")
 }

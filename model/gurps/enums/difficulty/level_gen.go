@@ -13,6 +13,8 @@ package difficulty
 
 import (
 	"strings"
+
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // Possible values.
@@ -94,9 +96,13 @@ func (enum Level) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Level) UnmarshalText(text []byte) error {
-	*enum = ExtractLevel(string(text))
+	v, known := ExtractKnownLevel(string(text))
+	if !known {
+		return errs.Newf("unknown difficulty level %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

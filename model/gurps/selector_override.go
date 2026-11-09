@@ -77,6 +77,8 @@ type SelectorOverrideData struct { //nolint:govet // Field order is kept readabl
 	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 	WeaponOwnerCriteria
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSelectorOverride creates a new SelectorOverride targeting the given field. A weapon-scoped one starts out
@@ -113,7 +115,11 @@ func (o *SelectorOverride) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (o *SelectorOverride) Clone() Feature {
-	return clonePtr(o)
+	clone := clonePtr(o)
+	if clone != nil {
+		clone.Unknown = slices.Clone(o.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature. Only the criteria the override matches on are consulted.

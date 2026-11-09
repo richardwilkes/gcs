@@ -10,8 +10,10 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"fmt"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -29,6 +31,8 @@ type ScriptPrereq struct {
 	Type   prereq.Type `json:"type"`
 	Name   string      `json:"name,omitzero"`
 	Script string      `json:"script"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewScriptPrereq creates a new ScriptPrereq.
@@ -57,6 +61,7 @@ func (s *ScriptPrereq) SetParentList(list *PrereqList) {
 func (s *ScriptPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *s
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(s.Unknown)
 	return &clone
 }
 

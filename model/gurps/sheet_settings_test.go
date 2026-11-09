@@ -36,21 +36,30 @@ func writeSheetSettingsFile(t *testing.T, content string) string {
 	return p
 }
 
-// TestNewSheetSettingsFromFileAppliesEnsureValidity verifies that a file with the settings at the top level, or nested
-// under the legacy "sheet_settings" key, loads them, and that the pieces that must always be present but that the file
-// lacks are filled in with the factory defaults. Embedding SheetSettings in the wrapper struct used to decode the file
-// once made the legacy key go unseen, silently yielding factory defaults (which the --convert path would then write
-// back over the original file).
+// TestNewSheetSettingsFromFileAppliesEnsureValidity verifies that a file with the settings at the top level, nested
+// under the "sheet_settings" key of a legacy wrapper, or in the current form under a header, loads them, that the
+// pieces that must always be present but that the file lacks are filled in with the factory defaults, and that saving
+// them writes the current form. Embedding SheetSettings in the wrapper struct used to decode the file once made the
+// nested key go unseen, silently yielding factory defaults (which the --convert path would then write back over the
+// original file).
 func TestNewSheetSettingsFromFileAppliesEnsureValidity(t *testing.T) {
+	const settings = `{"damage_progression":"knowing_your_own_strength","default_length_units":"in",` +
+		`"use_multiplicative_modifiers":true,"notes_display":"tooltip"}`
 	for name, content := range map[string]string{
-		"current": `{"damage_progression":"knowing_your_own_strength","default_length_units":"in",` +
-			`"use_multiplicative_modifiers":true,"notes_display":"tooltip"}`,
-		"old": `{"type":"settings","version":5,"sheet_settings":{"damage_progression":"knowing_your_own_strength",` +
-			`"default_length_units":"in","use_multiplicative_modifiers":true,"notes_display":"tooltip"}}`,
+		"bare":    settings,
+		"old":     `{"type":"settings","version":5,"sheet_settings":` + settings + `}`,
+		"current": `{"type":"sheet_settings","version":6,"min_version":6,"sheet_settings":` + settings + `}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			c := check.New(t)
-			s, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, content))
+			p := writeSheetSettingsFile(t, content)
+			s, err := NewSheetSettingsFromFile(nil, p)
+			c.NoError(err)
+			c.NoError(s.Save(p))
+			h, _, err := jio.ReadHeader(nil, p)
+			c.NoError(err)
+			c.Equal(jio.NewHeader(SheetSettingsDataKind), h)
+			s, err = NewSheetSettingsFromFile(nil, p)
 			c.NoError(err)
 			c.Equal(progression.KnowingYourOwnStrength, s.DamageProgression)
 			c.Equal(fxp.Inch, s.DefaultLengthUnits)
@@ -109,9 +118,9 @@ func TestNewSheetSettingsFromFileErrors(t *testing.T) {
 	c.HasError(err)
 }
 
-// TestSheetSettingsNumberFormatsRoundTrip verifies that the display formats survive a save and load, that an unknown
-// decimal places key falls back to As Needed, and that settings which have never expressed a display preference are
-// written exactly as they were before the formats existed, so existing files and their content hashes are unaffected.
+// TestSheetSettingsNumberFormatsRoundTrip verifies that the display formats survive a save and load, and that settings
+// which have never expressed a display preference are written exactly as they were before the formats existed, so
+// existing files and their content hashes are unaffected.
 func TestSheetSettingsNumberFormatsRoundTrip(t *testing.T) {
 	c := check.New(t)
 	s := FactorySheetSettings()
@@ -127,13 +136,6 @@ func TestSheetSettingsNumberFormatsRoundTrip(t *testing.T) {
 	c.Equal(s.BodyWeightFormat, loaded.BodyWeightFormat)
 	c.Equal(s.EquipmentWeightFormat, loaded.EquipmentWeightFormat)
 	c.Equal(s.EquipmentValueFormat, loaded.EquipmentValueFormat)
-
-	loaded, err = NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t,
-		`{"height_format":{"decimal_places":"bogus","pad_with_zeros":true},"equipment_value_format":{"decimal_places":"2"}}`))
-	c.NoError(err)
-	c.Equal(fxp.NumberFormat{Places: fxp.AsNeeded, PadWithZeros: true}, loaded.HeightFormat)
-	c.Equal(fxp.NumberFormat{Places: fxp.TwoPlaces}, loaded.EquipmentValueFormat)
-	c.Equal(fxp.NumberFormat{}, loaded.BodyWeightFormat)
 
 	before, err := jio.Marshal(FactorySheetSettings())
 	c.NoError(err)
@@ -168,7 +170,7 @@ func TestSheetSettingsFormatHelpers(t *testing.T) {
 
 // TestSheetSettingsEnsureValidityRepairsNumberFormats verifies that EnsureValidity replaces an out-of-range decimal
 // places choice in each of the four display formats with As Needed, leaving the padding flag alone. An unknown key in a
-// file is already repaired by the enum's UnmarshalText on the way in, so this has to assign the bad values directly.
+// file fails to load, so this has to assign the bad values directly.
 func TestSheetSettingsEnsureValidityRepairsNumberFormats(t *testing.T) {
 	c := check.New(t)
 	s := FactorySheetSettings()

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -109,6 +110,8 @@ type GeneralSettings struct {
 	InitialSheetPaginated bool `json:"initial_sheet_paginated"`
 	// InitialListLocked is whether a list file opens locked against changes. A new list always opens unlocked.
 	InitialListLocked bool `json:"initial_list_locked,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -145,19 +148,19 @@ func NewGeneralSettings() *GeneralSettings {
 
 // NewGeneralSettingsFromFile loads new settings from a file.
 func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSettings, error) {
+	// Files written before they carried a header hold the settings either under a "general" member, as they still are,
+	// or at the top level, where "version" is the settings' own revision rather than a data version. That revision is
+	// never above 3, so checking it as a data version with no minimum refuses none of them.
 	var data struct {
 		GeneralSettings
-		OldLocation *GeneralSettings `json:"general"`
+		Nested *GeneralSettings `json:"general"`
 	}
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
+	if _, err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &data, GeneralSettingsDataKind, 0); err != nil {
 		return nil, err
 	}
-	var s *GeneralSettings
-	if data.OldLocation != nil {
-		s = data.OldLocation
-	} else {
-		settings := data.GeneralSettings
-		s = &settings
+	s := data.Nested
+	if s == nil {
+		s = &data.GeneralSettings
 	}
 	s.EnsureValidity()
 	return s, nil
@@ -166,7 +169,13 @@ func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSett
 // Save writes the settings to the file as JSON.
 func (s *GeneralSettings) Save(filePath string) error {
 	s.EnsureValidity()
-	return jio.SaveToFile(filePath, s)
+	return jio.SaveToFile(filePath, &struct {
+		jio.Header
+		General *GeneralSettings `json:"general"`
+	}{
+		Header:  jio.NewHeader(GeneralSettingsDataKind),
+		General: s,
+	})
 }
 
 // UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.
@@ -218,7 +227,8 @@ func monitorPPIForDisplay(d *unison.Display) int {
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *GeneralSettings) EnsureValidity() {
-	if s.Version != currentGeneralSettingsVersion {
+	// A newer revision is left as it is, so that saving does not make a newer version repeat its migrations.
+	if s.Version < currentGeneralSettingsVersion {
 		if s.Version < 1 {
 			// Adjust from old default of 150% to new default of 100%
 			s.InitialSheetUIScale = s.InitialSheetUIScale * 100 / 150

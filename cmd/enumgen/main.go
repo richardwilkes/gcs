@@ -56,13 +56,15 @@ type enumValue struct {
 }
 
 type enumInfo struct {
-	Pkg            string
-	Name           string
-	Desc           string
-	Values         []*enumValue
-	DefaultKey     string
-	DefaultLast    bool
-	DefaultUnknown bool
+	Pkg         string
+	Name        string
+	Desc        string
+	Values      []*enumValue
+	DefaultKey  string
+	DefaultLast bool
+	// PlaceholderDefault marks the default value (see Default) as a placeholder that tags a wrapper type for an
+	// unrecognized kind. It is hidden from the slice of values, and so from pickers, and decoding never produces it.
+	PlaceholderDefault bool
 }
 
 func main() {
@@ -211,6 +213,12 @@ func (e *enumInfo) IDFor(v *enumValue) string {
 	return id
 }
 
+// Noun names the enum in messages: its package and name, with underscores as spaces, such as "criteria numeric
+// comparison".
+func (e *enumInfo) Noun() string {
+	return filepath.Base(e.Pkg) + " " + strings.ReplaceAll(e.Name, "_", " ")
+}
+
 func (e *enumInfo) HasAlt() bool {
 	return slices.ContainsFunc(e.Values, func(v *enumValue) bool { return v.Alt != "" })
 }
@@ -270,10 +278,10 @@ func (e *enumInfo) Last() *enumValue {
 	return values[len(values)-1]
 }
 
-// RealValues returns the values that represent something real, which is all of them unless DefaultUnknown is set, in
-// which case the default value (see Default) is a placeholder for "unrecognized" and is left out.
+// RealValues returns the values that represent something real, which is all of them unless PlaceholderDefault is set,
+// in which case the default value (see Default) is left out.
 func (e *enumInfo) RealValues() []*enumValue {
-	if !e.DefaultUnknown || len(e.Values) == 0 {
+	if !e.PlaceholderDefault || len(e.Values) == 0 {
 		return e.Values
 	}
 	def := e.Default()
@@ -1088,23 +1096,20 @@ var allEnums = []*enumInfo{
 				String: "Is an unknown feature type",
 			},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
+		DefaultLast:        true,
+		PlaceholderDefault: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/grantadjust",
 		Name: "kind",
 		Desc: "holds how the amount of a grant adjusts the item it grants",
 		Values: []*enumValue{
+			// The zero value, AddLevels, is what a grant that leaves the kind out loads as. A kind that means nothing
+			// for the granted item falls back to the first one the item allows (see gurps.Grant.EffectiveAdjust).
 			{Key: "add_levels", Alt: "adjusting its level by"},
 			{Key: "add_points", Alt: "adjusting its points by"},
 			{Key: "set_level", Alt: "setting its level to"},
-			// An unknown kind means nothing to any item, so that a grant falls back to the kind its item allows first
-			// (see gurps.Grant.EffectiveAdjust), while the zero value, which a file leaves out, stays AddLevels.
-			{Key: "unknown", String: "Unknown", Alt: "adjusting it in an unknown way"},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/grantmerge",
@@ -1266,8 +1271,8 @@ var allEnums = []*enumInfo{
 				String: "an unknown filter node type",
 			},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
+		DefaultLast:        true,
+		PlaceholderDefault: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/levelcap",
@@ -1317,8 +1322,8 @@ var allEnums = []*enumInfo{
 				Alt:    "Unknown",
 			},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
+		DefaultLast:        true,
+		PlaceholderDefault: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/levelcap",
@@ -1340,14 +1345,7 @@ var allEnums = []*enumInfo{
 				Key:    "skills_and_spells",
 				String: "Skills and spells",
 			},
-			{
-				Name:   "UnknownTarget",
-				Key:    "unknown",
-				String: "Items of an unknown kind",
-			},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/prereq",
@@ -1422,8 +1420,8 @@ var allEnums = []*enumInfo{
 				Alt:    "Unknown Prerequisite",
 			},
 		},
-		DefaultLast:    true,
-		DefaultUnknown: true,
+		DefaultLast:        true,
+		PlaceholderDefault: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/progression",

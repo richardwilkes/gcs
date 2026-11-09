@@ -33,14 +33,30 @@ type PageRef struct {
 	Offset int    `json:"offset,omitzero"`
 }
 
+type pageRefsData struct {
+	jio.Header
+	Refs *PageRefs `json:"refs"`
+}
+
 // NewPageRefsFromFS creates a new set of page references from a file.
 func NewPageRefsFromFS(fileSystem fs.FS, filePath string) (*PageRefs, error) {
-	return jio.LoadNew[PageRefs](fileSystem, filePath)
+	var data pageRefsData
+	var bare PageRefs
+	if err := loadWrappedOrBareFile(fileSystem, filePath, PageRefsDataKind, &data, &bare); err != nil {
+		return nil, err
+	}
+	if data.Refs != nil {
+		return data.Refs, nil
+	}
+	return &bare, nil
 }
 
 // Save writes the PageRefs to the file as JSON.
 func (p *PageRefs) Save(filePath string) error {
-	return jio.SaveToFile(filePath, p)
+	return jio.SaveToFile(filePath, &pageRefsData{
+		Header: jio.NewHeader(PageRefsDataKind),
+		Refs:   p,
+	})
 }
 
 // MarshalJSONTo implements json.MarshalerTo.

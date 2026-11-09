@@ -10,6 +10,7 @@
 package colors
 
 import (
+	"encoding/json/jsontext"
 	"os"
 	"path/filepath"
 	"testing"
@@ -149,4 +150,23 @@ func TestNewFromFSRefusesOldFormats(t *testing.T) {
 	c.NoError(os.WriteFile(filepath.Join(dir, "new.colors"), []byte(`{"version":5,"colors":{}}`), 0o600))
 	_, err = NewFromFS(os.DirFS(dir), "new.colors")
 	c.NoError(err)
+}
+
+// TestSaveKeepsUnknownMembers verifies that saving colors loaded from a file writes back the members of the file this
+// release does not know.
+func TestSaveKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	p := filepath.Join(dir, "test.colors")
+	c.NoError(os.WriteFile(p, []byte(`{"type":"colors","version":6,"colors":{},"zzz_future":{"a": 1}}`), 0o600))
+	loaded, err := NewFromFS(os.DirFS(dir), "test.colors")
+	c.NoError(err)
+	c.NoError(loaded.Save(p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	var members map[string]jsontext.Value
+	c.NoError(jio.Unmarshal(data, &members))
+	value := members["zzz_future"]
+	c.NoError(value.Compact())
+	c.Equal(`{"a":1}`, string(value))
 }

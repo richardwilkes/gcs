@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -34,6 +36,8 @@ type SkillPrereq struct {
 	PointsCriteria                 criteria.Number `json:"points,omitzero"`
 	TagsCriteria                   criteria.Text   `json:"tags,omitzero"`
 	TitleNoteCriteria              criteria.Text   `json:"title_note,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
@@ -68,6 +72,7 @@ func (p *SkillPrereq) SetParentList(list *PrereqList) {
 func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

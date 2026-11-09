@@ -14,6 +14,7 @@ package levelcap
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -22,17 +23,16 @@ const (
 	Skills Target = iota
 	Spells
 	SkillsAndSpells
-	UnknownTarget
 )
 
 // DefaultTarget is the default value.
-const DefaultTarget Target = UnknownTarget
+const DefaultTarget Target = Skills
 
 // FirstTarget is the first valid value.
 const FirstTarget Target = Skills
 
 // LastTarget is the last valid value.
-const LastTarget Target = UnknownTarget
+const LastTarget Target = SkillsAndSpells
 
 // Targets holds all possible values.
 var Targets = []Target{
@@ -62,7 +62,7 @@ func (enum Target) Key() string {
 	case SkillsAndSpells:
 		return "skills_and_spells"
 	default:
-		return "unknown"
+		return DefaultTarget.Key()
 	}
 }
 
@@ -75,10 +75,8 @@ func (enum Target) String() string {
 		return i18n.Text(`Spells`)
 	case SkillsAndSpells:
 		return i18n.Text(`Skills and spells`)
-	case UnknownTarget:
-		return i18n.Text(`Items of an unknown kind`)
 	default:
-		return i18n.Text(`Items of an unknown kind`)
+		return DefaultTarget.String()
 	}
 }
 
@@ -87,9 +85,13 @@ func (enum Target) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Target) UnmarshalText(text []byte) error {
-	*enum = ExtractTarget(string(text))
+	v, known := ExtractKnownTarget(string(text))
+	if !known {
+		return errs.Newf("unknown levelcap target %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

@@ -12,6 +12,7 @@ package gurps
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json/jsontext"
 	"io"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -24,6 +25,8 @@ type Document struct {
 	Ext        string `json:"ext"`
 	Content    []byte `json:"content"`
 	Compressed bool   `json:"compressed,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewDocument creates a new document.

@@ -99,6 +99,8 @@ type SheetSettingsData struct {
 	// SkillLevelCaps holds the caps on the levels of skills and spells (see SkillLevelCap and Entity.capLevel), none
 	// meaning no caps. Unlike the sell money, the entries are edited in place, so a clone of the settings copies them.
 	SkillLevelCaps SkillLevelCaps `json:"skill_level_caps,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // SellMoneyList holds the sell money of a SheetSettings (see SheetSettingsData.SellMoney). It marshals without the
@@ -182,18 +184,20 @@ func FactorySheetSettings() *SheetSettings {
 func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings, error) {
 	// The raw document is captured first because SheetSettings has a custom unmarshaler. Embedding SheetSettings in a
 	// wrapper struct would promote that unmarshaler onto the wrapper, causing it to consume the entire document and
-	// leaving the legacy "sheet_settings" field permanently unpopulated.
+	// leaving the "sheet_settings" field permanently unpopulated. Files written before they carried a header hold the
+	// settings either under that member, as they still are, or at the top level, some with a "type" of "settings",
+	// which the check ignores at their versions. None is too old to load, as their versions were never checked.
 	var raw jsontext.Value
-	if err := jio.LoadFromFile(fileSystem, filePath, &raw); err != nil {
+	if _, err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &raw, SheetSettingsDataKind, 0); err != nil {
 		return nil, err
 	}
 	var data struct {
-		OldLocation *SheetSettings `json:"sheet_settings"`
+		Nested *SheetSettings `json:"sheet_settings"`
 	}
 	if err := jio.Unmarshal(raw, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	s := data.OldLocation
+	s := data.Nested
 	if s == nil {
 		s = &SheetSettings{}
 		if err := jio.Unmarshal(raw, s); err != nil {
@@ -391,6 +395,7 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone := *s
 	clone.Entity = entity
+	clone.Unknown = slices.Clone(s.Unknown)
 	clone.Page = s.Page.Clone()
 	clone.Layout = s.Layout.Clone()
 	clone.Attributes = s.Attributes.Clone()
@@ -433,5 +438,11 @@ func (s *SheetSettings) SetOwningEntity(entity *Entity) {
 
 // Save writes the settings to the file as JSON.
 func (s *SheetSettings) Save(filePath string) error {
-	return jio.SaveToFile(filePath, s)
+	return jio.SaveToFile(filePath, &struct {
+		jio.Header
+		Sheet *SheetSettings `json:"sheet_settings"`
+	}{
+		Header: jio.NewHeader(SheetSettingsDataKind),
+		Sheet:  s,
+	})
 }

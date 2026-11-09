@@ -31,6 +31,20 @@ func InvalidFileData() string {
 // LoadFromFile loads JSON data from the specified filesystem path. 'fileSystem' may be nil, in which case os.Open() is
 // used instead. Any 'opts' are applied to the decode.
 func LoadFromFile(fileSystem fs.FS, path string, result any, opts ...json.Options) error {
+	f, err := openFile(fileSystem, path)
+	if err != nil {
+		return err
+	}
+	defer xio.CloseIgnoringErrors(f)
+	var r io.Reader
+	if r, err = xio.NewBOMStripper(f); err != nil {
+		return err
+	}
+	return UnmarshalRead(r, result, opts...)
+}
+
+// openFile opens the file at path from fileSystem, or from the local disk when 'fileSystem' is nil.
+func openFile(fileSystem fs.FS, path string) (fs.File, error) {
 	var f fs.File
 	var err error
 	if fileSystem == nil {
@@ -39,14 +53,9 @@ func LoadFromFile(fileSystem fs.FS, path string, result any, opts ...json.Option
 		f, err = fileSystem.Open(path)
 	}
 	if err != nil {
-		return errs.NewWithCause(path, err)
+		return nil, errs.NewWithCause(path, err)
 	}
-	defer xio.CloseIgnoringErrors(f)
-	var r io.Reader
-	if r, err = xio.NewBOMStripper(f); err != nil {
-		return err
-	}
-	return UnmarshalRead(r, result, opts...)
+	return f, nil
 }
 
 // LoadNew allocates a new T, loads the JSON file at path from fileSystem into it and returns it. As with LoadFromFile,
@@ -59,15 +68,90 @@ func LoadNew[T any](fileSystem fs.FS, path string) (*T, error) {
 	return &result, nil
 }
 
-// LoadVersionedFile loads the JSON file at path from fileSystem into data, reporting any failure to open or decode it
-// as InvalidFileData(), then checks that the data version it carries is one this release can load. 'version' must
-// point at the version field inside data, so that the check sees the value that was just read. Any 'opts' are applied
-// to the decode.
-func LoadVersionedFile(fileSystem fs.FS, path string, data any, version *int, opts ...json.Options) error {
-	if err := LoadFromFile(fileSystem, path, data, opts...); err != nil {
-		return errs.NewWithCause(InvalidFileData(), err)
+// ReadHeader reads the file at path from fileSystem and returns the header members found at the top level of the JSON
+// object it holds, wherever they appear in it, along with the file's content, less any byte order mark. 'fileSystem'
+// may be nil, in which case os.Open() is used instead. Nothing beyond the header is decoded.
+func ReadHeader(fileSystem fs.FS, path string) (Header, []byte, error) {
+	f, err := openFile(fileSystem, path)
+	if err != nil {
+		return Header{}, nil, err
 	}
-	return CheckVersion(*version)
+	defer xio.CloseIgnoringErrors(f)
+	var r io.Reader
+	if r, err = xio.NewBOMStripper(f); err != nil {
+		return Header{}, nil, err
+	}
+	var buf []byte
+	if buf, err = io.ReadAll(r); err != nil {
+		return Header{}, nil, errs.NewWithCause(path, err)
+	}
+	var h Header
+	dec := jsontext.NewDecoder(bytes.NewReader(buf))
+	var tok jsontext.Token
+	if tok, err = dec.ReadToken(); err != nil {
+		return Header{}, nil, errs.Wrap(err)
+	}
+	if tok.Kind() != '{' {
+		return Header{}, nil, errs.New("the data is not a JSON object")
+	}
+	var hasType, hasVersion, hasMinVersion bool
+	for !hasType || !hasVersion || !hasMinVersion {
+		if tok, err = dec.ReadToken(); err != nil {
+			return Header{}, nil, errs.Wrap(err)
+		}
+		if tok.Kind() == '}' {
+			break
+		}
+		switch tok.String() {
+		case "type":
+			err = json.UnmarshalDecode(dec, &h.Type)
+			hasType = true
+		case "version":
+			err = json.UnmarshalDecode(dec, &h.Version)
+			hasVersion = true
+		case "min_version":
+			err = json.UnmarshalDecode(dec, &h.MinVersion)
+			hasMinVersion = true
+		default:
+			err = dec.SkipValue()
+		}
+		if err != nil {
+			return Header{}, nil, errs.Wrap(err)
+		}
+	}
+	return h, buf, nil
+}
+
+// LoadVersionedFile is LoadVersionedFileWithMinimum with MinimumDataVersion as the minimum.
+func LoadVersionedFile(fileSystem fs.FS, path string, data any, expectedType string,
+	opts ...json.Options,
+) (Header, error) {
+	return LoadVersionedFileWithMinimum(fileSystem, path, data, expectedType, MinimumDataVersion, opts...)
+}
+
+// LoadVersionedFileWithMinimum reads the header of the JSON file at path from fileSystem and checks it with
+// CheckHeaderWithMinimum before decoding the file into data, so that data this release cannot load is never decoded.
+// A failure to read the file or its header is reported as InvalidFileData(), as is a failure to decode the data, unless
+// the file came from a newer release, in which case the failure is reported as needing that newer release. Any 'opts'
+// are applied to the decode. The header is returned.
+func LoadVersionedFileWithMinimum(fileSystem fs.FS, path string, data any, expectedType string, minimum int,
+	opts ...json.Options,
+) (Header, error) {
+	h, buf, err := ReadHeader(fileSystem, path)
+	if err != nil {
+		return h, errs.NewWithCause(InvalidFileData(), err)
+	}
+	var newer bool
+	if newer, err = CheckHeaderWithMinimum(h, expectedType, minimum); err != nil {
+		return h, err
+	}
+	if err = Unmarshal(buf, data, opts...); err != nil {
+		if newer {
+			return h, errs.NewWithCause(newerVersionMessage(), err)
+		}
+		return h, errs.NewWithCause(InvalidFileData(), err)
+	}
+	return h, nil
 }
 
 // DecompressAndDeserialize decompresses the buffer, then loads JSON data from it.

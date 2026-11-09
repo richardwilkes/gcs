@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"fmt"
 	"hash"
 	"maps"
@@ -54,6 +55,8 @@ type Grant struct {
 	// CheckPrereqs is whether the prerequisites of the item the grant puts on the sheet are checked as for any other
 	// item. Otherwise, the item is treated as having them met.
 	CheckPrereqs bool `json:"check_prereqs,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // GrantedBy ties a trait, skill or spell on a sheet to the grant that put it there.
@@ -65,6 +68,8 @@ type GrantedBy struct {
 	// Hash is the hash of the grant, the answers of what carries it and, for an item with an empty tech level, the
 	// sheet's tech level, as they were when the item was last made from them, so that a change to any is noticed.
 	Hash string `json:"hash"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // grantState is what a recalculation decided about the grants touching a trait, skill or spell. It is never saved.
@@ -602,6 +607,7 @@ func (g *Grant) FeatureType() feature.Type {
 // Clone implements Feature. The granted item's copy keeps its ID, since that is the grant's key.
 func (g *Grant) Clone() Feature {
 	other := *g
+	other.Unknown = slices.Clone(g.Unknown)
 	if g.Trait != nil {
 		other.Trait = g.Trait.Clone(LibraryFile{}, nil, nil, Copy)
 	}
@@ -936,7 +942,9 @@ func cloneGrantedBy[T Node[T]](link *GrantedBy, original, clone T) *GrantedBy {
 	if e := EntityFromNode(clone); e == nil || e != EntityFromNode(original) {
 		return nil
 	}
-	return clonePtr(link)
+	cloned := clonePtr(link)
+	cloned.Unknown = slices.Clone(link.Unknown)
+	return cloned
 }
 
 // grantedByText returns how a cell describes where a granted item came from, or an empty string for an item no grant

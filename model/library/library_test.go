@@ -673,6 +673,91 @@ func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
 	c.Equal(0, len(releases))
 }
 
+// TestCheckForAvailableUpgradeKeepsOnlyCompatibleReleases verifies the bounds of the releases a check accepts: those
+// for data versions jio.MinimumLibraryVersion through jio.CurrentDataVersion, whatever their minor and patch numbers,
+// and none from before or after, since those are the only libraries this version of the app can read.
+func TestCheckForAvailableUpgradeKeepsOnlyCompatibleReleases(t *testing.T) {
+	c := check.New(t)
+	isolateLibraryChangeNotification(t)
+
+	oldest := jio.MinimumLibraryVersion
+	newest := jio.CurrentDataVersion
+	kept := []string{fmt.Sprintf("%d.1.2", newest), strconv.Itoa(newest), fmt.Sprintf("%d.0.0", oldest)}
+	dropped := []string{fmt.Sprintf("%d.9", oldest-1), strconv.Itoa(newest + 1), fmt.Sprintf("%d.0.0", newest+1)}
+	client, _ := newReleasesServer(t, slices.Concat(dropped, kept)...)
+	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	_, releases := lib.AvailableReleases()
+	versions := make([]string, 0, len(releases))
+	for _, one := range releases {
+		versions = append(versions, one.Version)
+	}
+	c.Equal(kept, versions)
+}
+
+// TestNeedsNewerApp verifies that a library whose release file names a data version newer than this version of the app
+// can read is reported as needing a newer app, before any check as well as after one, and that no update is announced
+// for it, since every release this version accepts is older than what is on disk. Its moving into or out of that state
+// is announced, since that changes what the navigator shows for it.
+func TestNeedsNewerApp(t *testing.T) {
+	c := check.New(t)
+	calls := countLibraryChangeNotifications(t)
+
+	newestRelease := strconv.Itoa(jio.CurrentDataVersion) + ".1"
+	tooNew := strconv.Itoa(jio.CurrentDataVersion+1) + ".0.0"
+	client, _ := newReleasesServer(t, newestRelease, strconv.Itoa(jio.CurrentDataVersion)+".0.0")
+	dir := t.TempDir()
+	setVersionOnDisk := func(version string) {
+		c.NoError(os.WriteFile(filepath.Join(dir, releaseFile), []byte(version+"\n"), 0o600))
+	}
+	setVersionOnDisk(tooNew)
+	lib := NewLibrary("Test", "someone", "", "repo", dir)
+	c.True(lib.NeedsNewerApp(), "the release file alone must tell, without a check")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.True(lib.NeedsNewerApp())
+	c.Equal(int64(0), calls.Load(), "an older release must not be announced as an update")
+	current, _ := lib.AvailableReleases()
+	c.Equal(tooNew, current, "the version on disk must still be reported")
+
+	setVersionOnDisk(newestRelease)
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.False(lib.NeedsNewerApp())
+	c.Equal(int64(1), calls.Load(), "leaving the state must be announced")
+
+	setVersionOnDisk(tooNew)
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.True(lib.NeedsNewerApp())
+	c.Equal(int64(2), calls.Load(), "entering the state must be announced")
+	lib.CheckForAvailableUpgrade(t.Context(), client)
+	c.Equal(int64(2), calls.Load(), "...but only once")
+}
+
+// TestVersionNeedsNewerApp verifies which versions on disk count as written for a newer version of the app: only one
+// whose leading number exceeds jio.CurrentDataVersion, and never a commit hash, recorded by a library following its
+// repository's latest commit, even one that happens to start with such a number.
+func TestVersionNeedsNewerApp(t *testing.T) {
+	c := check.New(t)
+	current := strconv.Itoa(jio.CurrentDataVersion)
+	newer := strconv.Itoa(jio.CurrentDataVersion + 1)
+	for _, one := range []struct {
+		version   string
+		useLatest bool
+		expected  bool
+	}{
+		{version: ""},
+		{version: "0"},
+		{version: current},
+		{version: current + ".9.9"},
+		{version: newer, expected: true},
+		{version: newer + ".0.0", expected: true},
+		{version: newer + ".0.0", useLatest: true},
+		{version: newer + "f3e2a1b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3"},
+	} {
+		c.Equal(one.expected, versionNeedsNewerApp(one.version, one.useLatest), "version %q, use latest %v",
+			one.version, one.useLatest)
+	}
+}
+
 // TestNeedsUpgradeCheck verifies what the Library Explorer relies on to keep its update buttons usable when the
 // periodic checks are turned off: a library with a repository behind it reports that it needs a check until one
 // completes, a check that couldn't reach the repository leaves it needing one so that it can be tried again, and a

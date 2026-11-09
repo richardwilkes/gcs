@@ -1,0 +1,1294 @@
+version 6 min_reader 6
+enum affects.Option base_only
+enum affects.Option levels_only
+enum affects.Option total
+enum attribute.Placement automatic
+enum attribute.Placement hidden
+enum attribute.Placement primary
+enum attribute.Placement secondary
+enum attribute.Type decimal
+enum attribute.Type decimal_ref
+enum attribute.Type integer
+enum attribute.Type integer_ref
+enum attribute.Type pool
+enum attribute.Type pool_ref
+enum attribute.Type pool_separator
+enum attribute.Type primary_separator
+enum attribute.Type secondary_separator
+enum autoscale.Option fit_page
+enum autoscale.Option fit_width
+enum autoscale.Option no
+enum container.Type alternative_abilities
+enum container.Type ancestry
+enum container.Type attributes
+enum container.Type group
+enum container.Type meta_trait
+enum criteria.NumericComparison ""
+enum criteria.NumericComparison at_least
+enum criteria.NumericComparison at_most
+enum criteria.NumericComparison is
+enum criteria.NumericComparison is_not
+enum criteria.StringComparison ""
+enum criteria.StringComparison contains
+enum criteria.StringComparison does_not_contain
+enum criteria.StringComparison does_not_end_with
+enum criteria.StringComparison does_not_start_with
+enum criteria.StringComparison ends_with
+enum criteria.StringComparison is
+enum criteria.StringComparison is_not
+enum criteria.StringComparison starts_with
+enum dgroup.Group character_sheets
+enum dgroup.Group character_templates
+enum dgroup.Group editors
+enum dgroup.Group images
+enum dgroup.Group libraries
+enum dgroup.Group loot_sheets
+enum dgroup.Group markdown
+enum dgroup.Group pdfs
+enum dgroup.Group settings
+enum dgroup.Group sub-editors
+enum difficulty.Level a
+enum difficulty.Level e
+enum difficulty.Level h
+enum difficulty.Level vh
+enum difficulty.Level w
+enum display.Option inline
+enum display.Option inline_and_tooltip
+enum display.Option not_shown
+enum display.Option tooltip
+enum emcost.Type to_base_cost
+enum emcost.Type to_final_base_cost
+enum emcost.Type to_final_cost
+enum emcost.Type to_original_cost
+enum emweight.Type to_base_weight
+enum emweight.Type to_final_base_weight
+enum emweight.Type to_final_weight
+enum emweight.Type to_original_weight
+enum eqcontainer.Type container
+enum eqcontainer.Type group
+enum equipmentsel.Type equipment_with_name
+enum equipmentsel.Type this_equipment
+enum feature.Type attribute_bonus
+enum feature.Type conditional_modifier
+enum feature.Type contained_weight_reduction
+enum feature.Type cost_reduction
+enum feature.Type dr_bonus
+enum feature.Type equipment_max_uses_bonus
+enum feature.Type grant_skill
+enum feature.Type grant_spell
+enum feature.Type grant_trait
+enum feature.Type reaction_bonus
+enum feature.Type selector_override
+enum feature.Type skill_bonus
+enum feature.Type skill_point_bonus
+enum feature.Type spell_bonus
+enum feature.Type spell_point_bonus
+enum feature.Type title_note
+enum feature.Type trait_bonus
+enum feature.Type trait_max_level_bonus
+enum feature.Type unknown
+enum feature.Type weapon_acc_bonus
+enum feature.Type weapon_block_bonus
+enum feature.Type weapon_bonus
+enum feature.Type weapon_bulk_bonus
+enum feature.Type weapon_chamber_shots_bonus
+enum feature.Type weapon_dr_divisor_bonus
+enum feature.Type weapon_effective_st_bonus
+enum feature.Type weapon_half_damage_range_bonus
+enum feature.Type weapon_max_range_bonus
+enum feature.Type weapon_max_reach_bonus
+enum feature.Type weapon_min_range_bonus
+enum feature.Type weapon_min_reach_bonus
+enum feature.Type weapon_min_st_bonus
+enum feature.Type weapon_non_chamber_shots_bonus
+enum feature.Type weapon_parry_bonus
+enum feature.Type weapon_recoil_bonus
+enum feature.Type weapon_reload_time_bonus
+enum feature.Type weapon_rof_mode_1_secondary_bonus
+enum feature.Type weapon_rof_mode_1_shots_bonus
+enum feature.Type weapon_rof_mode_2_secondary_bonus
+enum feature.Type weapon_rof_mode_2_shots_bonus
+enum feature.Type weapon_scope_acc_bonus
+enum feature.Type weapon_shot_duration_bonus
+enum feature.Type weapon_switch
+enum filternode.Type condition
+enum filternode.Type group
+enum filternode.Type unknown
+enum frequency.Roll 0
+enum frequency.Roll 12
+enum frequency.Roll 15
+enum frequency.Roll 18
+enum frequency.Roll 6
+enum frequency.Roll 9
+enum fxp.DecimalPlace 0
+enum fxp.DecimalPlace 1
+enum fxp.DecimalPlace 2
+enum fxp.DecimalPlace 3
+enum fxp.DecimalPlace 4
+enum fxp.DecimalPlace as_needed
+enum fxp.LengthUnit cm
+enum fxp.LengthUnit ft
+enum fxp.LengthUnit ft_in
+enum fxp.LengthUnit in
+enum fxp.LengthUnit km
+enum fxp.LengthUnit m
+enum fxp.LengthUnit mi
+enum fxp.LengthUnit yd
+enum fxp.WeightUnit #
+enum fxp.WeightUnit g
+enum fxp.WeightUnit kg
+enum fxp.WeightUnit lb
+enum fxp.WeightUnit oz
+enum fxp.WeightUnit t
+enum fxp.WeightUnit tn
+enum grantadjust.Kind add_levels
+enum grantadjust.Kind add_points
+enum grantadjust.Kind set_level
+enum grantmerge.Mode ignore
+enum grantmerge.Mode keep_highest
+enum grantmerge.Mode keep_lowest
+enum layoutnode.Type block
+enum layoutnode.Type column
+enum layoutnode.Type row
+enum levelcap.Target skills
+enum levelcap.Target skills_and_spells
+enum levelcap.Target spells
+enum levelcap.Type attribute
+enum levelcap.Type fixed
+enum levelcap.Type group
+enum levelcap.Type skill
+enum levelcap.Type spell
+enum levelcap.Type trait
+enum levelcap.Type unknown
+enum namegen.Builtin american_female
+enum namegen.Builtin american_last
+enum namegen.Builtin american_male
+enum namegen.Builtin none
+enum namegen.Builtin unweighted_american_female
+enum namegen.Builtin unweighted_american_last
+enum namegen.Builtin unweighted_american_male
+enum namegen.Type compound
+enum namegen.Type markov_letter
+enum namegen.Type markov_run
+enum namegen.Type simple
+enum paper.Orientation landscape
+enum paper.Orientation portrait
+enum paper.Unit cm
+enum paper.Unit in
+enum paper.Unit mm
+enum picker.Type count
+enum picker.Type not_applicable
+enum picker.Type points
+enum picker.Type value
+enum picker.Type weight
+enum prereq.Type attribute_prereq
+enum prereq.Type carried_equipment
+enum prereq.Type contained_quantity_prereq
+enum prereq.Type contained_weight_prereq
+enum prereq.Type equipped_equipment
+enum prereq.Type prereq_list
+enum prereq.Type script_prereq
+enum prereq.Type skill_prereq
+enum prereq.Type spell_prereq
+enum prereq.Type trait_prereq
+enum prereq.Type unknown_prereq
+enum progression.Option basic_set
+enum progression.Option knowing_your_own_strength
+enum progression.Option knowing_your_own_strength_no_lift
+enum progression.Option no_school_grognard_damage
+enum progression.Option phoenix_flame_d3
+enum progression.Option swing_equals_thrust_plus_2
+enum progression.Option tbone_1
+enum progression.Option tbone_1_clean
+enum progression.Option tbone_2
+enum progression.Option tbone_2_clean
+enum progression.Option thrust_equals_swing_minus_2
+enum selector.Field trait_frequency
+enum selector.Field trait_self_control_adjustment
+enum selector.Field trait_self_control_roll
+enum selector.Field weapon_armor_divisor
+enum selector.Field weapon_base_damage_dice
+enum selector.Field weapon_base_damage_dice_per_level
+enum selector.Field weapon_damage_per_die_modifier
+enum selector.Field weapon_damage_strength_basis
+enum selector.Field weapon_damage_strength_multiplier
+enum selector.Field weapon_damage_type
+enum selector.Field weapon_fragmentation_armor_divisor
+enum selector.Field weapon_fragmentation_dice
+enum selector.Field weapon_fragmentation_type
+enum selfctrl.Adjustment action_penalty
+enum selfctrl.Adjustment fright_check_bonus
+enum selfctrl.Adjustment fright_check_penalty
+enum selfctrl.Adjustment major_cost_of_living_increase
+enum selfctrl.Adjustment minor_cost_of_living_increase
+enum selfctrl.Adjustment none
+enum selfctrl.Adjustment reaction_penalty
+enum selfctrl.Roll 0
+enum selfctrl.Roll 1
+enum selfctrl.Roll 10
+enum selfctrl.Roll 11
+enum selfctrl.Roll 12
+enum selfctrl.Roll 13
+enum selfctrl.Roll 14
+enum selfctrl.Roll 15
+enum selfctrl.Roll 6
+enum selfctrl.Roll 7
+enum selfctrl.Roll 8
+enum selfctrl.Roll 9
+enum skillsel.Type skills_with_name
+enum skillsel.Type this_weapon
+enum skillsel.Type weapons_with_name
+enum spellcmp.Type any
+enum spellcmp.Type college
+enum spellcmp.Type college_count
+enum spellcmp.Type name
+enum spellcmp.Type tag
+enum spellcmp.Type title_note
+enum spellmatch.Type all_colleges
+enum spellmatch.Type college_name
+enum spellmatch.Type power_source_name
+enum spellmatch.Type spell_name
+enum stdmg.Option iq_sw
+enum stdmg.Option iq_thr
+enum stdmg.Option lift_sw
+enum stdmg.Option lift_thr
+enum stdmg.Option none
+enum stdmg.Option sw
+enum stdmg.Option sw_leveled
+enum stdmg.Option thr
+enum stdmg.Option thr_leveled
+enum stdmg.Option tk_sw
+enum stdmg.Option tk_thr
+enum stlimit.Option lifting_only
+enum stlimit.Option none
+enum stlimit.Option striking_only
+enum stlimit.Option throwing_only
+enum study.Level ""
+enum study.Level 120
+enum study.Level 140
+enum study.Level 160
+enum study.Level 180
+enum study.Type intensive
+enum study.Type job
+enum study.Type self
+enum study.Type teacher
+enum thememode.Enum auto
+enum thememode.Enum dark
+enum thememode.Enum light
+enum traitsel.Type this_trait
+enum traitsel.Type trait_with_name
+enum updatecheck.Option at_launch
+enum updatecheck.Option daily
+enum updatecheck.Option hourly
+enum updatecheck.Option never
+enum wsel.Type this_weapon
+enum wsel.Type weapons_with_name
+enum wsel.Type weapons_with_required_skill
+enum wswitch.Type bipod
+enum wswitch.Type can_block
+enum wswitch.Type can_parry
+enum wswitch.Type close_combat
+enum wswitch.Type controlled_bursts_1
+enum wswitch.Type controlled_bursts_2
+enum wswitch.Type fencing
+enum wswitch.Type full_auto_1
+enum wswitch.Type full_auto_2
+enum wswitch.Type jet
+enum wswitch.Type mounted
+enum wswitch.Type muscle_powered
+enum wswitch.Type musket_rest
+enum wswitch.Type not_switched
+enum wswitch.Type range_in_miles
+enum wswitch.Type reach_change_requires_ready
+enum wswitch.Type reload_time_is_per_shot
+enum wswitch.Type retracting_stock
+enum wswitch.Type thrown
+enum wswitch.Type two-handed
+enum wswitch.Type two-handed_and_unready_after_attack
+enum wswitch.Type unbalanced
+keys colors alert
+keys colors banding
+keys colors cursor_bg
+keys colors cursor_fg
+keys colors error
+keys colors failure
+keys colors focus
+keys colors grouping_1
+keys colors grouping_2
+keys colors header
+keys colors success
+keys colors surface
+keys colors tint_body
+keys colors tint_carried_equipment
+keys colors tint_conditions
+keys colors tint_damage
+keys colors tint_description
+keys colors tint_encumbrance
+keys colors tint_identity
+keys colors tint_lifting
+keys colors tint_melee
+keys colors tint_misc
+keys colors tint_notes
+keys colors tint_other_equipment
+keys colors tint_points
+keys colors tint_pools
+keys colors tint_portrait
+keys colors tint_primary_attributes
+keys colors tint_ranged
+keys colors tint_reactions
+keys colors tint_secondary_attributes
+keys colors tint_skills
+keys colors tint_spells
+keys colors tint_traits
+keys colors tooltip
+keys colors warning
+keys fonts field
+keys fonts field.secondary
+keys fonts keyboard
+keys fonts label
+keys fonts markdown.base
+keys fonts monospaced
+keys fonts page.field.primary
+keys fonts page.field.secondary
+keys fonts page.footer.primary
+keys fonts page.footer.secondary
+keys fonts page.label.primary
+keys fonts page.label.secondary
+keys fonts system
+keys fonts system.emphasized
+kind Feature attribute_bonus AttributeBonus
+kind Feature conditional_modifier ConditionalModifierBonus
+kind Feature contained_weight_reduction ContainedWeightReduction
+kind Feature cost_reduction CostReduction
+kind Feature dr_bonus DRBonus
+kind Feature equipment_max_uses_bonus EquipmentMaxUsesBonus
+kind Feature grant_skill Grant
+kind Feature grant_spell Grant
+kind Feature grant_trait Grant
+kind Feature reaction_bonus ReactionBonus
+kind Feature selector_override SelectorOverride
+kind Feature skill_bonus SkillBonus
+kind Feature skill_point_bonus SkillPointBonus
+kind Feature spell_bonus SpellBonus
+kind Feature spell_point_bonus SpellPointBonus
+kind Feature title_note TitleNote
+kind Feature trait_bonus TraitBonus
+kind Feature trait_max_level_bonus TraitMaxLevelBonus
+kind Feature weapon_acc_bonus WeaponBonus
+kind Feature weapon_block_bonus WeaponBonus
+kind Feature weapon_bonus WeaponBonus
+kind Feature weapon_bulk_bonus WeaponBonus
+kind Feature weapon_chamber_shots_bonus WeaponBonus
+kind Feature weapon_dr_divisor_bonus WeaponBonus
+kind Feature weapon_effective_st_bonus WeaponBonus
+kind Feature weapon_half_damage_range_bonus WeaponBonus
+kind Feature weapon_max_range_bonus WeaponBonus
+kind Feature weapon_max_reach_bonus WeaponBonus
+kind Feature weapon_min_range_bonus WeaponBonus
+kind Feature weapon_min_reach_bonus WeaponBonus
+kind Feature weapon_min_st_bonus WeaponBonus
+kind Feature weapon_non_chamber_shots_bonus WeaponBonus
+kind Feature weapon_parry_bonus WeaponBonus
+kind Feature weapon_recoil_bonus WeaponBonus
+kind Feature weapon_reload_time_bonus WeaponBonus
+kind Feature weapon_rof_mode_1_secondary_bonus WeaponBonus
+kind Feature weapon_rof_mode_1_shots_bonus WeaponBonus
+kind Feature weapon_rof_mode_2_secondary_bonus WeaponBonus
+kind Feature weapon_rof_mode_2_shots_bonus WeaponBonus
+kind Feature weapon_scope_acc_bonus WeaponBonus
+kind Feature weapon_shot_duration_bonus WeaponBonus
+kind Feature weapon_switch WeaponBonus
+kind FilterNode condition FilterCondition
+kind FilterNode group FilterGroup
+kind LevelCap attribute ReferenceLevelCap
+kind LevelCap fixed FixedLevelCap
+kind LevelCap group LevelCapGroup
+kind LevelCap skill ReferenceLevelCap
+kind LevelCap spell ReferenceLevelCap
+kind LevelCap trait ReferenceLevelCap
+kind Prereq attribute_prereq AttributePrereq
+kind Prereq carried_equipment EquippedEquipmentPrereq
+kind Prereq contained_quantity_prereq ContainedQuantityPrereq
+kind Prereq contained_weight_prereq ContainedWeightPrereq
+kind Prereq equipped_equipment EquippedEquipmentPrereq
+kind Prereq prereq_list PrereqList
+kind Prereq script_prereq ScriptPrereq
+kind Prereq skill_prereq SkillPrereq
+kind Prereq spell_prereq SpellPrereq
+kind Prereq trait_prereq TraitPrereq
+struct AncestryOptions age_script string
+struct AncestryOptions eye_options []WeightedStringOption
+struct AncestryOptions hair_options []WeightedStringOption
+struct AncestryOptions handedness_options []WeightedStringOption
+struct AncestryOptions height_script string
+struct AncestryOptions name string
+struct AncestryOptions name_generators []string
+struct AncestryOptions skin_options []WeightedStringOption
+struct AncestryOptions weight_script string
+struct Attribute adj fixed64.Int[fixed.D4]
+struct Attribute attr_id string
+struct Attribute damage fixed64.Int[fixed.D4]
+struct AttributeBonus amount fixed64.Int[fixed.D4]
+struct AttributeBonus attribute string
+struct AttributeBonus limitation stlimit.Option
+struct AttributeBonus multiply bool
+struct AttributeBonus per_level bool
+struct AttributeBonus switchable bool
+struct AttributeBonus type feature.Type
+struct AttributeDef base string
+struct AttributeDef cost_adj_percent_per_sm fixed64.Int[fixed.D4]
+struct AttributeDef cost_per_point fixed64.Int[fixed.D4]
+struct AttributeDef full_name string
+struct AttributeDef id string
+struct AttributeDef name string
+struct AttributeDef placement attribute.Placement
+struct AttributeDef placement_trait string
+struct AttributeDef placement_when_present attribute.Placement
+struct AttributeDef thresholds []PoolThreshold
+struct AttributeDef type attribute.Type
+struct AttributePrereq combined_with string
+struct AttributePrereq has bool
+struct AttributePrereq qualifier criteria.Number
+struct AttributePrereq type prereq.Type
+struct AttributePrereq which string
+struct Body locations []HitLocation
+struct Body name string
+struct Body roll dice.Dice
+struct CampaignData characters []Entity
+struct CampaignData documents []Document
+struct CampaignData equipment []Equipment
+struct CampaignData equipment_modifiers []EquipmentModifier
+struct CampaignData id tid.TID
+struct CampaignData min_version int
+struct CampaignData notes []Note
+struct CampaignData settings SheetSettings
+struct CampaignData skills []Skill
+struct CampaignData spells []Spell
+struct CampaignData templates []Template
+struct CampaignData trait_modifiers []TraitModifier
+struct CampaignData traits []Trait
+struct CampaignData type string
+struct CampaignData version int
+struct ConditionalModifierBonus amount fixed64.Int[fixed.D4]
+struct ConditionalModifierBonus group string
+struct ConditionalModifierBonus per_level bool
+struct ConditionalModifierBonus situation string
+struct ConditionalModifierBonus switchable bool
+struct ConditionalModifierBonus type feature.Type
+struct ContainedQuantityPrereq has bool
+struct ContainedQuantityPrereq qualifier criteria.Number
+struct ContainedQuantityPrereq type prereq.Type
+struct ContainedWeightPrereq has bool
+struct ContainedWeightPrereq qualifier criteria.Weight
+struct ContainedWeightPrereq type prereq.Type
+struct ContainedWeightReduction reduction string
+struct ContainedWeightReduction switchable bool
+struct ContainedWeightReduction type feature.Type
+struct CostReduction attribute string
+struct CostReduction percentage fixed64.Int[fixed.D4]
+struct CostReduction switchable bool
+struct CostReduction type feature.Type
+struct DRBonus amount fixed64.Int[fixed.D4]
+struct DRBonus locations []string
+struct DRBonus per_level bool
+struct DRBonus specialization string
+struct DRBonus switchable bool
+struct DRBonus type feature.Type
+struct Document compressed bool
+struct Document content []uint8
+struct Document ext string
+struct Document name string
+struct Entity attributes Attributes
+struct Entity created_date jio.Time
+struct Entity equipment []Equipment
+struct Entity id tid.TID
+struct Entity min_version int
+struct Entity modified_date jio.Time
+struct Entity notes []Note
+struct Entity other_equipment []Equipment
+struct Entity points_record []PointsRecord
+struct Entity profile Profile
+struct Entity settings SheetSettings
+struct Entity shopping_record []ShoppingRecordEntry
+struct Entity skills []Skill
+struct Entity spells []Spell
+struct Entity third_party map[string]any
+struct Entity total_points fixed64.Int[fixed.D4]
+struct Entity traits []Trait
+struct Entity type string
+struct Entity version int
+struct EntityData attributes Attributes
+struct EntityData created_date jio.Time
+struct EntityData equipment []Equipment
+struct EntityData id tid.TID
+struct EntityData min_version int
+struct EntityData modified_date jio.Time
+struct EntityData notes []Note
+struct EntityData other_equipment []Equipment
+struct EntityData points_record []PointsRecord
+struct EntityData profile Profile
+struct EntityData settings SheetSettings
+struct EntityData shopping_record []ShoppingRecordEntry
+struct EntityData skills []Skill
+struct EntityData spells []Spell
+struct EntityData third_party map[string]any
+struct EntityData total_points fixed64.Int[fixed.D4]
+struct EntityData traits []Trait
+struct EntityData type string
+struct EntityData version int
+struct Equipment base_value string
+struct Equipment base_weight string
+struct Equipment children []Equipment
+struct Equipment container_type eqcontainer.Type
+struct Equipment description string
+struct Equipment disabled bool
+struct Equipment equipped bool
+struct Equipment features Features
+struct Equipment id tid.TID
+struct Equipment ignore_weight_for_skills bool
+struct Equipment legality_class string
+struct Equipment level fixed64.Int[fixed.D4]
+struct Equipment local_notes string
+struct Equipment max_uses int
+struct Equipment modifiers []EquipmentModifier
+struct Equipment nameable_links map[tid.TID]map[string]string
+struct Equipment nameables map[string]nameable.Detail
+struct Equipment pick_separately bool
+struct Equipment preconfigured bool
+struct Equipment prereqs PrereqList
+struct Equipment quantity fixed64.Int[fixed.D4]
+struct Equipment rated_strength fixed64.Int[fixed.D4]
+struct Equipment reference string
+struct Equipment reference_highlight string
+struct Equipment replacements map[string]string
+struct Equipment source Source
+struct Equipment switched_on bool
+struct Equipment tags []string
+struct Equipment tech_level string
+struct Equipment template_picker TemplatePicker
+struct Equipment third_party map[string]any
+struct Equipment uses int
+struct Equipment vtt_notes string
+struct Equipment weapons []Weapon
+struct EquipmentMaxUsesBonus amount string
+struct EquipmentMaxUsesBonus name criteria.Text
+struct EquipmentMaxUsesBonus per_level bool
+struct EquipmentMaxUsesBonus selection_type equipmentsel.Type
+struct EquipmentMaxUsesBonus switchable bool
+struct EquipmentMaxUsesBonus tags criteria.Text
+struct EquipmentMaxUsesBonus type feature.Type
+struct EquipmentModifier children []EquipmentModifier
+struct EquipmentModifier choice TemplatePicker
+struct EquipmentModifier cost string
+struct EquipmentModifier cost_is_per_level bool
+struct EquipmentModifier cost_is_per_pound bool
+struct EquipmentModifier cost_type emcost.Type
+struct EquipmentModifier disabled bool
+struct EquipmentModifier features Features
+struct EquipmentModifier hide_notes bool
+struct EquipmentModifier id tid.TID
+struct EquipmentModifier local_notes string
+struct EquipmentModifier name string
+struct EquipmentModifier nameables map[string]nameable.Detail
+struct EquipmentModifier reference string
+struct EquipmentModifier reference_highlight string
+struct EquipmentModifier replacements map[string]string
+struct EquipmentModifier show_in_title bool
+struct EquipmentModifier show_notes_on_weapon bool
+struct EquipmentModifier source Source
+struct EquipmentModifier tags []string
+struct EquipmentModifier tech_level string
+struct EquipmentModifier third_party map[string]any
+struct EquipmentModifier vtt_notes string
+struct EquipmentModifier weapons []Weapon
+struct EquipmentModifier weight string
+struct EquipmentModifier weight_is_per_level bool
+struct EquipmentModifier weight_type emweight.Type
+struct EquippedEquipmentPrereq modifier_name criteria.Text
+struct EquippedEquipmentPrereq modifier_notes criteria.Text
+struct EquippedEquipmentPrereq modifier_tags criteria.Text
+struct EquippedEquipmentPrereq name criteria.Text
+struct EquippedEquipmentPrereq not bool
+struct EquippedEquipmentPrereq tags criteria.Text
+struct EquippedEquipmentPrereq title_note criteria.Text
+struct EquippedEquipmentPrereq type prereq.Type
+struct FilterCondition field string
+struct FilterCondition include_disabled bool
+struct FilterCondition not bool
+struct FilterCondition number criteria.Number
+struct FilterCondition text criteria.Text
+struct FilterCondition type filternode.Type
+struct FilterCondition weight criteria.Weight
+struct FilterGroup all bool
+struct FilterGroup children FilterNodes
+struct FilterGroup not bool
+struct FilterGroup type filternode.Type
+struct FixedLevelCap level fixed64.Int[fixed.D4]
+struct FixedLevelCap type levelcap.Type
+struct GeneralSettings add_natural_attacks bool
+struct GeneralSettings app_update_check updatecheck.Option
+struct GeneralSettings auto_fill_profile bool
+struct GeneralSettings calendar_ref string
+struct GeneralSettings cursor_size int
+struct GeneralSettings default_player_name string
+struct GeneralSettings default_tech_level string
+struct GeneralSettings expand_page_references bool
+struct GeneralSettings external_pdf_cmd_line string
+struct GeneralSettings focus_for_reading bool
+struct GeneralSettings group_containers_on_sort bool
+struct GeneralSettings image_resolution int
+struct GeneralSettings initial_editor_scale int
+struct GeneralSettings initial_field_click_selects_all bool
+struct GeneralSettings initial_img_scale int
+struct GeneralSettings initial_list_locked bool
+struct GeneralSettings initial_list_scale int
+struct GeneralSettings initial_md_scale int
+struct GeneralSettings initial_pdf_scale int
+struct GeneralSettings initial_points fixed64.Int[fixed.D4]
+struct GeneralSettings initial_sheet_paginated bool
+struct GeneralSettings initial_sheet_scale int
+struct GeneralSettings library_update_check updatecheck.Option
+struct GeneralSettings maximum_auto_col_width int
+struct GeneralSettings monitor_resolution int
+struct GeneralSettings navigator_scale int
+struct GeneralSettings pdf_auto_scaling autoscale.Option
+struct GeneralSettings permitted_per_script_exec_time fixed64.Int[fixed.D4]
+struct GeneralSettings restore_workspace_on_start bool
+struct GeneralSettings scroll_wheel_multiplier fixed64.Int[fixed.D4]
+struct GeneralSettings tooltip_delay fixed64.Int[fixed.D4]
+struct GeneralSettings tooltip_dismissal fixed64.Int[fixed.D4]
+struct GeneralSettings version int
+struct Grant adjust grantadjust.Kind
+struct Grant amount fixed64.Int[fixed.D4]
+struct Grant check_prereqs bool
+struct Grant merge grantmerge.Mode
+struct Grant skill Skill
+struct Grant spell Spell
+struct Grant switchable bool
+struct Grant trait Trait
+struct Grant type feature.Type
+struct GrantedBy grantor tid.TID
+struct GrantedBy hash string
+struct GrantedBy key tid.TID
+struct HitLocation choice_name string
+struct HitLocation description string
+struct HitLocation dr_bonus int
+struct HitLocation hit_penalty int
+struct HitLocation id string
+struct HitLocation notes string
+struct HitLocation slots int
+struct HitLocation sub_table Body
+struct HitLocation table_name string
+struct Level Level fixed64.Int[fixed.D4]
+struct Level RelativeLevel fixed64.Int[fixed.D4]
+struct Level Tooltip string
+struct LevelCapGroup children LevelCaps
+struct LevelCapGroup highest bool
+struct LevelCapGroup type levelcap.Type
+struct ListFilter name string
+struct ListFilter root FilterGroup
+struct LootData equipment []Equipment
+struct LootData id tid.TID
+struct LootData location string
+struct LootData min_version int
+struct LootData modified_date jio.Time
+struct LootData name string
+struct LootData notes []Note
+struct LootData session string
+struct LootData type string
+struct LootData version int
+struct NavNodeInfo id tid.TID
+struct NavNodeInfo last int64
+struct NavigatorSettings nodes map[string]NavNodeInfo
+struct Note children []Note
+struct Note id tid.TID
+struct Note markdown string
+struct Note nameables map[string]nameable.Detail
+struct Note preconfigured bool
+struct Note reference string
+struct Note reference_highlight string
+struct Note replacements map[string]string
+struct Note source Source
+struct Note tags []string
+struct Note third_party map[string]any
+struct NumericRange max fixed64.Int[fixed.D4]
+struct NumericRange min fixed64.Int[fixed.D4]
+struct PDFInfo last int64
+struct PDFInfo toc map[string]map[int]tid.TID
+struct PageRef offset int
+struct PageRef path string
+struct PageSettings bottom_margin paper.Length
+struct PageSettings left_margin paper.Length
+struct PageSettings orientation paper.Orientation
+struct PageSettings paper_size string
+struct PageSettings right_margin paper.Length
+struct PageSettings top_margin paper.Length
+struct PointsRecord points fixed64.Int[fixed.D4]
+struct PointsRecord reason string
+struct PointsRecord when jio.Time
+struct PoolThreshold explanation string
+struct PoolThreshold features Features
+struct PoolThreshold id tid.TID
+struct PoolThreshold state string
+struct PoolThreshold value string
+struct PrereqList all bool
+struct PrereqList not bool
+struct PrereqList prereqs Prereqs
+struct PrereqList type prereq.Type
+struct PrereqList when_tl criteria.Number
+struct Profile SM int
+struct Profile age string
+struct Profile birthday string
+struct Profile eyes string
+struct Profile gender string
+struct Profile hair string
+struct Profile handedness string
+struct Profile height fxp.Length
+struct Profile name string
+struct Profile organization string
+struct Profile player_name string
+struct Profile portrait []uint8
+struct Profile religion string
+struct Profile skin string
+struct Profile tech_level string
+struct Profile title string
+struct Profile weight fxp.Weight
+struct ReactionBonus amount fixed64.Int[fixed.D4]
+struct ReactionBonus group string
+struct ReactionBonus per_level bool
+struct ReactionBonus situation string
+struct ReactionBonus switchable bool
+struct ReactionBonus type feature.Type
+struct ReferenceLevelCap attribute string
+struct ReferenceLevelCap modifier fixed64.Int[fixed.D4]
+struct ReferenceLevelCap name criteria.Text
+struct ReferenceLevelCap specialization criteria.Text
+struct ReferenceLevelCap type levelcap.Type
+struct RitualOverrides cost string
+struct RitualOverrides ritual string
+struct RitualOverrides time string
+struct ScriptPrereq name string
+struct ScriptPrereq script string
+struct ScriptPrereq type prereq.Type
+struct SelectorOverride damage_type criteria.Text
+struct SelectorOverride field selector.Field
+struct SelectorOverride level criteria.Number
+struct SelectorOverride name criteria.Text
+struct SelectorOverride owner_level criteria.Number
+struct SelectorOverride owner_optional_specialization criteria.Text
+struct SelectorOverride owner_specialization criteria.Text
+struct SelectorOverride owner_tech_level criteria.Text
+struct SelectorOverride owner_title_note criteria.Text
+struct SelectorOverride priority int
+struct SelectorOverride selection_type wsel.Type
+struct SelectorOverride specialization criteria.Text
+struct SelectorOverride switchable bool
+struct SelectorOverride tags criteria.Text
+struct SelectorOverride type feature.Type
+struct SelectorOverride usage criteria.Text
+struct SelectorOverride value string
+struct Settings closed map[string]int64
+struct Settings column_sizing map[string]map[int]float32
+struct Settings deep_search []string
+struct Settings doc_dock_state unison.DockState
+struct Settings focused_dock_key string
+struct Settings fonts fonts.Fonts
+struct Settings general GeneralSettings
+struct Settings key_bindings KeyBindings
+struct Settings last_dirs map[string]string
+struct Settings last_seen_gcs_version string
+struct Settings libraries library.Libraries
+struct Settings library_explorer NavigatorSettings
+struct Settings list_filters map[string][]ListFilter
+struct Settings loot_gen_max_value fixed64.Int[fixed.D4]
+struct Settings loot_gen_min_value fixed64.Int[fixed.D4]
+struct Settings min_version int
+struct Settings open_in_window []dgroup.Group
+struct Settings page_refs PageRefs
+struct Settings pdfs map[string]PDFInfo
+struct Settings recent_files []string
+struct Settings sheet_settings SheetSettings
+struct Settings theme_colors colors.Colors
+struct Settings theme_mode thememode.Enum
+struct Settings top_dock_state unison.DockState
+struct Settings type string
+struct Settings version int
+struct Settings workspace_frame geom.Rect
+struct SheetLayout hidden []string
+struct SheetLayout root SheetLayoutNode
+struct SheetLayoutNode children []SheetLayoutNode
+struct SheetLayoutNode key string
+struct SheetLayoutNode min_height paper.Length
+struct SheetLayoutNode square bool
+struct SheetLayoutNode type layoutnode.Type
+struct SheetLayoutNode weight fixed64.Int[fixed.D4]
+struct SheetSettings attributes AttributeDefs
+struct SheetSettings body_type Body
+struct SheetSettings body_weight_format fxp.NumberFormat
+struct SheetSettings buy_percent int
+struct SheetSettings damage_progression progression.Option
+struct SheetSettings default_length_units fxp.LengthUnit
+struct SheetSettings default_weight_units fxp.WeightUnit
+struct SheetSettings enforce_trait_prereqs bool
+struct SheetSettings equipment_value_format fxp.NumberFormat
+struct SheetSettings equipment_weight_format fxp.NumberFormat
+struct SheetSettings exclude_unspent_points_from_total bool
+struct SheetSettings height_format fxp.NumberFormat
+struct SheetSettings hide_lc_column bool
+struct SheetSettings hide_page_ref_column bool
+struct SheetSettings hide_source_mismatch bool
+struct SheetSettings hide_tl_column bool
+struct SheetSettings hide_unused_weapon_columns bool
+struct SheetSettings hide_zero_value_conditional_modifiers bool
+struct SheetSettings layout SheetLayout
+struct SheetSettings modifiers_display display.Option
+struct SheetSettings notes_display display.Option
+struct SheetSettings page PageSettings
+struct SheetSettings sell_money SellMoneyList
+struct SheetSettings sell_percent int
+struct SheetSettings show_all_weapons bool
+struct SheetSettings show_equipment_modifier_adj bool
+struct SheetSettings show_iq_based_damage bool
+struct SheetSettings show_lifting_st_damage bool
+struct SheetSettings show_spell_adj bool
+struct SheetSettings show_trait_modifier_adj bool
+struct SheetSettings skill_level_adj_display display.Option
+struct SheetSettings skill_level_caps SkillLevelCaps
+struct SheetSettings use_half_stat_defaults bool
+struct SheetSettings use_modifying_dice_plus_adds bool
+struct SheetSettings use_multiplicative_modifiers bool
+struct SheetSettings use_title_in_footer bool
+struct SheetSettings user_description_display display.Option
+struct ShoppingRecordEntry exchanged fixed64.Int[fixed.D4]
+struct ShoppingRecordEntry id tid.TID
+struct ShoppingRecordEntry items []ShoppingRecordItem
+struct ShoppingRecordEntry kind ShoppingKind
+struct ShoppingRecordEntry money []ShoppingRecordItem
+struct ShoppingRecordEntry name string
+struct ShoppingRecordEntry when jio.Time
+struct ShoppingRecordItem name string
+struct ShoppingRecordItem quantity fixed64.Int[fixed.D4]
+struct ShoppingRecordItem value fixed64.Int[fixed.D4]
+struct Skill children []Skill
+struct Skill default SkillDefault
+struct Skill defaulted_from SkillDefault
+struct Skill defaults []SkillDefault
+struct Skill difficulty AttributeDifficulty
+struct Skill disabled bool
+struct Skill encumbrance_penalty_multiplier fixed64.Int[fixed.D4]
+struct Skill features Features
+struct Skill granted_by GrantedBy
+struct Skill id tid.TID
+struct Skill limit fixed64.Int[fixed.D4]
+struct Skill local_notes string
+struct Skill name string
+struct Skill nameables map[string]nameable.Detail
+struct Skill optional_specialization string
+struct Skill pick_separately bool
+struct Skill points fixed64.Int[fixed.D4]
+struct Skill preconfigured bool
+struct Skill prereqs PrereqList
+struct Skill reference string
+struct Skill reference_highlight string
+struct Skill replacements map[string]string
+struct Skill source Source
+struct Skill specialization string
+struct Skill study []Study
+struct Skill study_hours_needed study.Level
+struct Skill switched_on bool
+struct Skill tags []string
+struct Skill tech_level string
+struct Skill template_picker TemplatePicker
+struct Skill third_party map[string]any
+struct Skill vtt_notes string
+struct Skill weapons []Weapon
+struct SkillBonus amount fixed64.Int[fixed.D4]
+struct SkillBonus damage_type criteria.Text
+struct SkillBonus name criteria.Text
+struct SkillBonus optional_specialization criteria.Text
+struct SkillBonus owner_level criteria.Number
+struct SkillBonus owner_optional_specialization criteria.Text
+struct SkillBonus owner_specialization criteria.Text
+struct SkillBonus owner_tech_level criteria.Text
+struct SkillBonus owner_title_note criteria.Text
+struct SkillBonus per_level bool
+struct SkillBonus selection_type skillsel.Type
+struct SkillBonus specialization criteria.Text
+struct SkillBonus switchable bool
+struct SkillBonus tags criteria.Text
+struct SkillBonus type feature.Type
+struct SkillDefault adjusted_level fixed64.Int[fixed.D4]
+struct SkillDefault level fixed64.Int[fixed.D4]
+struct SkillDefault modifier fixed64.Int[fixed.D4]
+struct SkillDefault name criteria.Text
+struct SkillDefault points fixed64.Int[fixed.D4]
+struct SkillDefault specialization criteria.Text
+struct SkillDefault tags criteria.Text
+struct SkillDefault type string
+struct SkillDefault when_tl criteria.Number
+struct SkillLevelCap cap LevelCapGroup
+struct SkillLevelCap college criteria.Text
+struct SkillLevelCap name criteria.Text
+struct SkillLevelCap power_source criteria.Text
+struct SkillLevelCap specialization criteria.Text
+struct SkillLevelCap tags criteria.Text
+struct SkillLevelCap target levelcap.Target
+struct SkillPointBonus amount fixed64.Int[fixed.D4]
+struct SkillPointBonus name criteria.Text
+struct SkillPointBonus optional_specialization criteria.Text
+struct SkillPointBonus per_level bool
+struct SkillPointBonus specialization criteria.Text
+struct SkillPointBonus switchable bool
+struct SkillPointBonus tags criteria.Text
+struct SkillPointBonus type feature.Type
+struct SkillPrereq has bool
+struct SkillPrereq level criteria.Number
+struct SkillPrereq name criteria.Text
+struct SkillPrereq optional_specialization criteria.Text
+struct SkillPrereq points criteria.Number
+struct SkillPrereq specialization criteria.Text
+struct SkillPrereq tags criteria.Text
+struct SkillPrereq title_note criteria.Text
+struct SkillPrereq type prereq.Type
+struct Source id tid.TID
+struct Source library string
+struct Source path string
+struct Spell base_skill string
+struct Spell casting_cost string
+struct Spell casting_time string
+struct Spell children []Spell
+struct Spell college CollegeList
+struct Spell difficulty AttributeDifficulty
+struct Spell disabled bool
+struct Spell duration string
+struct Spell features Features
+struct Spell granted_by GrantedBy
+struct Spell id tid.TID
+struct Spell item string
+struct Spell local_notes string
+struct Spell maintenance_cost string
+struct Spell name string
+struct Spell nameables map[string]nameable.Detail
+struct Spell pick_separately bool
+struct Spell points fixed64.Int[fixed.D4]
+struct Spell power_source string
+struct Spell preconfigured bool
+struct Spell prereq_count int
+struct Spell prereqs PrereqList
+struct Spell reference string
+struct Spell reference_highlight string
+struct Spell replacements map[string]string
+struct Spell resist string
+struct Spell rituals RitualOverrides
+struct Spell source Source
+struct Spell spell_class string
+struct Spell study []Study
+struct Spell study_hours_needed study.Level
+struct Spell switched_on bool
+struct Spell tags []string
+struct Spell tech_level string
+struct Spell template_picker TemplatePicker
+struct Spell third_party map[string]any
+struct Spell vtt_notes string
+struct Spell weapons []Weapon
+struct SpellBonus amount fixed64.Int[fixed.D4]
+struct SpellBonus match spellmatch.Type
+struct SpellBonus name criteria.Text
+struct SpellBonus per_level bool
+struct SpellBonus switchable bool
+struct SpellBonus tags criteria.Text
+struct SpellBonus type feature.Type
+struct SpellPointBonus amount fixed64.Int[fixed.D4]
+struct SpellPointBonus match spellmatch.Type
+struct SpellPointBonus name criteria.Text
+struct SpellPointBonus per_level bool
+struct SpellPointBonus switchable bool
+struct SpellPointBonus tags criteria.Text
+struct SpellPointBonus type feature.Type
+struct SpellPrereq has bool
+struct SpellPrereq level criteria.Number
+struct SpellPrereq power_source criteria.Text
+struct SpellPrereq qualifier criteria.Text
+struct SpellPrereq quantity criteria.Number
+struct SpellPrereq same_power_source bool
+struct SpellPrereq sub_type spellcmp.Type
+struct SpellPrereq type prereq.Type
+struct Study hours fixed64.Int[fixed.D4]
+struct Study note string
+struct Study type study.Type
+struct Template body_type Body
+struct Template equipment []Equipment
+struct Template id tid.TID
+struct Template local_notes string
+struct Template min_version int
+struct Template name string
+struct Template notes []Note
+struct Template reference string
+struct Template reference_highlight string
+struct Template skills []Skill
+struct Template spells []Spell
+struct Template target_points NumericRange
+struct Template traits []Trait
+struct Template type string
+struct Template version int
+struct TemplateData body_type Body
+struct TemplateData equipment []Equipment
+struct TemplateData id tid.TID
+struct TemplateData local_notes string
+struct TemplateData min_version int
+struct TemplateData name string
+struct TemplateData notes []Note
+struct TemplateData reference string
+struct TemplateData reference_highlight string
+struct TemplateData skills []Skill
+struct TemplateData spells []Spell
+struct TemplateData target_points NumericRange
+struct TemplateData traits []Trait
+struct TemplateData type string
+struct TemplateData version int
+struct TemplatePicker qualifier criteria.Number
+struct TemplatePicker type picker.Type
+struct TitleNote before_built_in bool
+struct TitleNote text string
+struct TitleNote type feature.Type
+struct Trait alternative_slots int
+struct Trait ancestry string
+struct Trait base_points fixed64.Int[fixed.D4]
+struct Trait can_level bool
+struct Trait children []Trait
+struct Trait container_type container.Type
+struct Trait cr selfctrl.Roll
+struct Trait cr_adj selfctrl.Adjustment
+struct Trait disabled bool
+struct Trait features Features
+struct Trait frequency frequency.Roll
+struct Trait granted_by GrantedBy
+struct Trait id tid.TID
+struct Trait levels fixed64.Int[fixed.D4]
+struct Trait local_notes string
+struct Trait max_levels string
+struct Trait modifiers []TraitModifier
+struct Trait name string
+struct Trait nameable_links map[tid.TID]map[string]string
+struct Trait nameables map[string]nameable.Detail
+struct Trait pick_separately bool
+struct Trait points_per_level fixed64.Int[fixed.D4]
+struct Trait preconfigured bool
+struct Trait prereqs PrereqList
+struct Trait reference string
+struct Trait reference_highlight string
+struct Trait replacements map[string]string
+struct Trait round_down bool
+struct Trait source Source
+struct Trait study []Study
+struct Trait study_hours_needed study.Level
+struct Trait switched_on bool
+struct Trait tags []string
+struct Trait template_picker TemplatePicker
+struct Trait third_party map[string]any
+struct Trait userdesc string
+struct Trait vtt_notes string
+struct Trait weapons []Weapon
+struct TraitBonus amount fixed64.Int[fixed.D4]
+struct TraitBonus name criteria.Text
+struct TraitBonus per_level bool
+struct TraitBonus switchable bool
+struct TraitBonus tags criteria.Text
+struct TraitBonus type feature.Type
+struct TraitMaxLevelBonus amount string
+struct TraitMaxLevelBonus name criteria.Text
+struct TraitMaxLevelBonus per_level bool
+struct TraitMaxLevelBonus selection_type traitsel.Type
+struct TraitMaxLevelBonus switchable bool
+struct TraitMaxLevelBonus tags criteria.Text
+struct TraitMaxLevelBonus type feature.Type
+struct TraitModifier affects affects.Option
+struct TraitModifier children []TraitModifier
+struct TraitModifier choice TemplatePicker
+struct TraitModifier cost_adj string
+struct TraitModifier cost_ignores_level bool
+struct TraitModifier disabled bool
+struct TraitModifier features Features
+struct TraitModifier hide_notes bool
+struct TraitModifier id tid.TID
+struct TraitModifier levels fixed64.Int[fixed.D4]
+struct TraitModifier local_notes string
+struct TraitModifier name string
+struct TraitModifier nameables map[string]nameable.Detail
+struct TraitModifier reference string
+struct TraitModifier reference_highlight string
+struct TraitModifier replacements map[string]string
+struct TraitModifier show_in_title bool
+struct TraitModifier show_notes_on_weapon bool
+struct TraitModifier source Source
+struct TraitModifier tags []string
+struct TraitModifier third_party map[string]any
+struct TraitModifier use_level_from_trait bool
+struct TraitModifier vtt_notes string
+struct TraitModifier weapons []Weapon
+struct TraitModifier weapons_use_level bool
+struct TraitPrereq has bool
+struct TraitPrereq level criteria.Number
+struct TraitPrereq modifier_name criteria.Text
+struct TraitPrereq modifier_notes criteria.Text
+struct TraitPrereq modifier_tags criteria.Text
+struct TraitPrereq name criteria.Text
+struct TraitPrereq notes criteria.Text
+struct TraitPrereq points criteria.Number
+struct TraitPrereq tags criteria.Text
+struct TraitPrereq title_note criteria.Text
+struct TraitPrereq type prereq.Type
+struct Weapon accuracy attack.Accuracy
+struct Weapon block attack.Block
+struct Weapon bulk attack.Bulk
+struct Weapon damage WeaponDamage
+struct Weapon defaults []SkillDefault
+struct Weapon hide bool
+struct Weapon id tid.TID
+struct Weapon parry attack.Parry
+struct Weapon range attack.Range
+struct Weapon rate_of_fire attack.RoF
+struct Weapon reach attack.Reach
+struct Weapon recoil attack.Recoil
+struct Weapon shots attack.Shots
+struct Weapon strength attack.Strength
+struct Weapon sv int
+struct Weapon usage string
+struct Weapon usage_notes string
+struct WeaponBonus amount fixed64.Int[fixed.D4]
+struct WeaponBonus damage_type criteria.Text
+struct WeaponBonus dice BonusDice
+struct WeaponBonus level criteria.Number
+struct WeaponBonus leveled bool
+struct WeaponBonus name criteria.Text
+struct WeaponBonus optional_specialization criteria.Text
+struct WeaponBonus owner_level criteria.Number
+struct WeaponBonus owner_optional_specialization criteria.Text
+struct WeaponBonus owner_specialization criteria.Text
+struct WeaponBonus owner_tech_level criteria.Text
+struct WeaponBonus owner_title_note criteria.Text
+struct WeaponBonus per_die bool
+struct WeaponBonus percent bool
+struct WeaponBonus selection_type wsel.Type
+struct WeaponBonus specialization criteria.Text
+struct WeaponBonus switch_type wswitch.Type
+struct WeaponBonus switch_type_value bool
+struct WeaponBonus switchable bool
+struct WeaponBonus tags criteria.Text
+struct WeaponBonus type feature.Type
+struct WeaponBonus usage criteria.Text
+struct WeaponDamage armor_divisor fixed64.Int[fixed.D4]
+struct WeaponDamage base string
+struct WeaponDamage base_leveled string
+struct WeaponDamage fragmentation string
+struct WeaponDamage fragmentation_armor_divisor fixed64.Int[fixed.D4]
+struct WeaponDamage fragmentation_type string
+struct WeaponDamage leveled bool
+struct WeaponDamage modifier_per_die fixed64.Int[fixed.D4]
+struct WeaponDamage st stdmg.Option
+struct WeaponDamage st_mul fixed64.Int[fixed.D4]
+struct WeaponDamage type string
+struct WeightedAncestryOptions value AncestryOptions
+struct WeightedAncestryOptions weight int
+struct WeightedStringOption value string
+struct WeightedStringOption weight int
+struct ancestryData common_options AncestryOptions
+struct ancestryData gender_options []WeightedAncestryOptions
+struct ancestryData min_version int
+struct ancestryData name string
+struct ancestryData type string
+struct ancestryData version int
+struct attack.RoFMode FullAutoOnly bool
+struct attack.RoFMode HighCyclicControlledBursts bool
+struct attack.RoFMode SecondaryProjectiles fixed64.Int[fixed.D4]
+struct attack.RoFMode ShotsPerAttack fixed64.Int[fixed.D4]
+struct attributeDefsData min_version int
+struct attributeDefsData rows AttributeDefs
+struct attributeDefsData type string
+struct attributeDefsData version int
+struct criteria.Number compare criteria.NumericComparison
+struct criteria.Number qualifier fixed64.Int[fixed.D4]
+struct criteria.Text compare criteria.StringComparison
+struct criteria.Text qualifier string
+struct criteria.Weight compare criteria.NumericComparison
+struct criteria.Weight qualifier fxp.Weight
+struct fxp.NumberFormat decimal_places fxp.DecimalPlace
+struct fxp.NumberFormat pad_with_zeros bool
+struct geom.Rect h float32
+struct geom.Rect w float32
+struct geom.Rect x float32
+struct geom.Rect y float32
+struct keyBindingsData bindings KeyBindings
+struct keyBindingsData min_version int
+struct keyBindingsData type string
+struct keyBindingsData version int
+struct listData[EquipmentModifier] min_version int
+struct listData[EquipmentModifier] rows []EquipmentModifier
+struct listData[EquipmentModifier] type string
+struct listData[EquipmentModifier] version int
+struct listData[Equipment] min_version int
+struct listData[Equipment] rows []Equipment
+struct listData[Equipment] type string
+struct listData[Equipment] version int
+struct listData[Note] min_version int
+struct listData[Note] rows []Note
+struct listData[Note] type string
+struct listData[Note] version int
+struct listData[Skill] min_version int
+struct listData[Skill] rows []Skill
+struct listData[Skill] type string
+struct listData[Skill] version int
+struct listData[Spell] min_version int
+struct listData[Spell] rows []Spell
+struct listData[Spell] type string
+struct listData[Spell] version int
+struct listData[TraitModifier] min_version int
+struct listData[TraitModifier] rows []TraitModifier
+struct listData[TraitModifier] type string
+struct listData[TraitModifier] version int
+struct listData[Trait] min_version int
+struct listData[Trait] rows []Trait
+struct listData[Trait] type string
+struct listData[Trait] version int
+struct listFiltersData list_filters map[string][]ListFilter
+struct listFiltersData min_version int
+struct listFiltersData type string
+struct listFiltersData version int
+struct nameGeneratorData built_in_training_data namegen.Builtin
+struct nameGeneratorData compound []NameGenerator
+struct nameGeneratorData depth int
+struct nameGeneratorData no_first_to_upper bool
+struct nameGeneratorData no_lowered bool
+struct nameGeneratorData separator string
+struct nameGeneratorData training_data []string
+struct nameGeneratorData type namegen.Type
+struct nameGeneratorData weighted_training_data map[string]int
+struct nameable.Detail free_form bool
+struct nameable.Detail label string
+struct nameable.Detail not_blank bool
+struct nameable.Detail options []string
+struct nameable.Detail tooltip string
+struct pageRefsData min_version int
+struct pageRefsData refs PageRefs
+struct pageRefsData type string
+struct pageRefsData version int
+struct skillLevelCapsData min_version int
+struct skillLevelCapsData skill_level_caps SkillLevelCaps
+struct skillLevelCapsData type string
+struct skillLevelCapsData version int
+struct standaloneBodyData hit_locations Body
+struct standaloneBodyData locations []HitLocation
+struct standaloneBodyData min_version int
+struct standaloneBodyData name string
+struct standaloneBodyData roll dice.Dice
+struct standaloneBodyData type string
+struct standaloneBodyData version int
+struct unison.DockState below_minimum [2]bool
+struct unison.DockState children []unison.DockState
+struct unison.DockState current_index int
+struct unison.DockState divider float32
+struct unison.DockState divider_extent float32
+struct unison.DockState horizontal bool
+struct unison.DockState key string
+struct unison.DockState rescale_extent float32
+struct unison.DockState type string

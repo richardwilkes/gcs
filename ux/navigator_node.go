@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
@@ -280,6 +281,9 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 		Size: geom.NewSize(size, size),
 	}
 	if n.IsLibrary() && !n.library.IsUser() {
+		if n.library.NeedsNewerApp() {
+			return newRequiresNewerAppCell(label)
+		}
 		if current, releases := n.library.AvailableReleases(); len(releases) != 0 && releases[0].HasUpdate() {
 			if relVersion := filterVersion(releases[0].Version); filterVersion(current) != relVersion {
 				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
@@ -293,6 +297,24 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 		}
 	}
 	return label
+}
+
+// newRequiresNewerAppCell returns a cell holding the title label of a library that was written for a newer version of
+// the app, followed by a tag saying so in place of the update button such a library would otherwise be offered.
+func newRequiresNewerAppCell(title *unison.Label) *unison.Panel {
+	cell := unison.NewPanel()
+	cell.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	cell.AddChild(title)
+	tag := unison.NewTag()
+	tag.BackgroundInk = unison.ThemeWarning
+	tag.OnBackgroundInk = unison.ThemeOnWarning
+	tag.SetTitle(i18n.Text("Requires a newer version of %s", xos.AppName))
+	tag.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+	cell.AddChild(tag)
+	return cell
 }
 
 // IsOpen implements unison.TableRowData.

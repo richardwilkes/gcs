@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -32,7 +33,11 @@ func NewSpellPointBonus() *SpellPointBonus {
 
 // Clone implements Feature.
 func (s *SpellPointBonus) Clone() Feature {
-	return clonePtr(s)
+	clone := clonePtr(s)
+	if clone != nil {
+		clone.Unknown = slices.Clone(s.Unknown)
+	}
+	return clone
 }
 
 // Hash writes this object's contents into the hasher.

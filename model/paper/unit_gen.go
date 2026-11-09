@@ -13,6 +13,8 @@ package paper
 
 import (
 	"strings"
+
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // Possible values.
@@ -82,9 +84,13 @@ func (enum Unit) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Unit) UnmarshalText(text []byte) error {
-	*enum = ExtractUnit(string(text))
+	v, known := ExtractKnownUnit(string(text))
+	if !known {
+		return errs.Newf("unknown paper unit %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

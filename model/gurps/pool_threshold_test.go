@@ -198,3 +198,25 @@ func TestPoolThresholdCloneCopiesFeatures(t *testing.T) {
 	c.Equal(hash, Hash64(original), "a change to the clone's feature leaves the original alone")
 	c.NotEqual(hash, Hash64(clone), "the clone's hash reflects its feature")
 }
+
+// TestPoolThresholdKeepsUnknownMembers verifies that a threshold, and its clone, write back the members this release
+// does not know, but none of the legacy members it reads, other than the operations it writes for older versions.
+func TestPoolThresholdKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var threshold PoolThreshold
+	c.NoError(jio.Unmarshal([]byte(`{"state":"Tired","expression":"$self","ops":["halve_move"],"zzz_future":{"a":1}}`),
+		&threshold))
+	for _, one := range []struct {
+		name      string
+		threshold *PoolThreshold
+	}{
+		{name: "the threshold", threshold: &threshold},
+		{name: "its clone", threshold: threshold.Clone()},
+	} {
+		data, err := jio.Marshal(one.threshold)
+		c.NoError(err, one.name)
+		c.Equal(`{"a":1}`, jsonMember(t, data, "zzz_future"), one.name)
+		c.Equal(`["halve_move"]`, jsonMember(t, data, "ops"), one.name)
+		c.Equal("", jsonMember(t, data, "expression"), one.name)
+	}
+}

@@ -38,7 +38,7 @@ type Template struct {
 
 // TemplateData holds the GURPS Template data that is written to disk.
 type TemplateData struct {
-	Version int     `json:"version"`
+	jio.Header
 	ID      tid.TID `json:"id"`
 	Name    string  `json:"name,omitzero"`
 	PageRef string  `json:"reference,omitzero"`
@@ -55,6 +55,8 @@ type TemplateData struct {
 	Equipment    []*Equipment `json:"equipment,omitempty"`
 	Notes        []*Note      `json:"notes,omitempty"`
 	BodyType     *Body        `json:"body_type,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewTemplateFromFile loads a Template from a file.
@@ -72,7 +74,7 @@ func NewTemplateFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Templ
 
 func newTemplateFromFile(fileSystem fs.FS, filePath string, opts ...json.Options) (*Template, error) {
 	var t Template
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &t, &t.Version, opts...); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &t, TemplateDataKind, opts...); err != nil {
 		return nil, err
 	}
 	return &t, nil
@@ -88,8 +90,9 @@ func NewTemplate() *Template {
 // MarshalJSONTo implements json.MarshalerTo.
 func (t *Template) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t.EnsureAttachments()
-	t.Version = jio.CurrentDataVersion
-	return json.MarshalEncode(enc, &t.TemplateData)
+	data := t.TemplateData
+	data.Header = jio.NewHeader(TemplateDataKind)
+	return json.MarshalEncode(enc, &data)
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

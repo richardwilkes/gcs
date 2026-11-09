@@ -10,6 +10,7 @@
 package fonts
 
 import (
+	"encoding/json/jsontext"
 	"io/fs"
 	"sync"
 
@@ -75,6 +76,9 @@ func (t *ThemedFont) SetValue(v unison.FontDescriptor) {
 // Fonts holds a set of themed fonts.
 type Fonts struct {
 	themeset.Set[unison.FontDescriptor, *ThemedFont, provider]
+	// fileUnknown holds the members of the file the fonts were loaded from that this release does not know, which
+	// Save writes back.
+	fileUnknown jsontext.Value
 }
 
 // provider connects a Fonts to the live and factory theme fonts.
@@ -97,9 +101,15 @@ func (provider) Applied() {
 	}
 }
 
+// dataKind is the kind of data written into the header of a theme font file.
+const dataKind = "fonts"
+
+// fileData is the on-disk form of a theme font file. The set itself keeps no unknown keys.
 type fileData struct {
-	Version int   `json:"version"`
-	Fonts   Fonts `json:"fonts"`
+	jio.Header
+	Fonts Fonts `json:"fonts"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // CurrentFonts returns the current theme fonts.
@@ -151,19 +161,18 @@ func initialize() {
 // NewFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	var data fileData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.Wrap(err)
-	}
-	if err := jio.CheckVersion(data.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, dataKind); err != nil {
 		return nil, err
 	}
+	data.Fonts.fileUnknown = data.Unknown
 	return &data.Fonts, nil
 }
 
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &fileData{
-		Version: jio.CurrentDataVersion,
+		Header:  jio.NewHeader(dataKind),
 		Fonts:   *f,
+		Unknown: f.fileUnknown,
 	})
 }

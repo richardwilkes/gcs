@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
 	"io/fs"
 	"slices"
@@ -36,10 +37,14 @@ type Ancestry struct {
 	// KeyPrefix is a runtime-only key the editor uses to give the ancestry's widgets a stable identity. It is never
 	// written to disk.
 	KeyPrefix string `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
+// ancestryData is the on-disk form of an ancestry file. It has no fallback of its own: the one Ancestry holds is the
+// shallowest it reaches, so the ancestry keeps the members of the file this release does not know.
 type ancestryData struct {
-	Version int `json:"version"`
+	jio.Header
 	Ancestry
 }
 
@@ -79,14 +84,9 @@ func NewAncestry() *Ancestry {
 
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
+	// Some older ancestry files carry no version at all, so the minimum is 0 rather than jio.MinimumDataVersion.
 	var ancestry ancestryData
-	if err := jio.LoadFromFile(fileSystem, filePath, &ancestry); err != nil {
-		return nil, err
-	}
-	if ancestry.Version == 0 { // for some older files
-		ancestry.Version = jio.MinimumDataVersion
-	}
-	if err := jio.CheckVersion(ancestry.Version); err != nil {
+	if _, err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &ancestry, AncestryDataKind, 0); err != nil {
 		return nil, err
 	}
 	if ancestry.Name == "" {
@@ -98,7 +98,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 // Save writes the Ancestry to the file as JSON.
 func (a *Ancestry) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &ancestryData{
-		Version:  jio.CurrentDataVersion,
+		Header:   jio.NewHeader(AncestryDataKind),
 		Ancestry: *a,
 	})
 }
@@ -111,6 +111,7 @@ func (a *Ancestry) Clone() *Ancestry {
 		return nil
 	}
 	clone := *a
+	clone.Unknown = slices.Clone(a.Unknown)
 	clone.CommonOptions = a.CommonOptions.Clone()
 	if a.GenderOptions != nil {
 		clone.GenderOptions = make([]*WeightedAncestryOptions, len(a.GenderOptions))

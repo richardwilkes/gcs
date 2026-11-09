@@ -39,6 +39,8 @@ type HitLocationData struct {
 	Description string `json:"description,omitzero"`
 	Notes       string `json:"notes,omitzero"`
 	SubTable    *Body  `json:"sub_table,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // HitLocation holds a single hit location.
@@ -64,6 +66,7 @@ func NewHitLocation(entity *Entity, keyPrefix string) *HitLocation {
 // Clone returns a copy of this HitLocation, owned by the given entity and table.
 func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 	clone := *h
+	clone.Unknown = slices.Clone(h.Unknown)
 	clone.Entity = entity
 	clone.owningTable = owningTable
 	if h.SubTable != nil {
@@ -101,10 +104,15 @@ func (h *HitLocation) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (h *HitLocation) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	h.HitLocationData = HitLocationData{}
-	if err := json.UnmarshalDecode(dec, &h.HitLocationData); err != nil {
+	var data struct {
+		HitLocationData
+		// Calc is what MarshalJSONTo derives, read only so that the fallback doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
+	}
+	if err := json.UnmarshalDecode(dec, &data); err != nil {
 		return err
 	}
+	h.HitLocationData = data.HitLocationData
 	if slices.Contains(ReservedIDs, h.LocID) {
 		return errs.Newf("hit location %q uses a reserved ID", h.LocID)
 	}

@@ -9,7 +9,12 @@
 
 package gurps
 
-import "github.com/richardwilkes/toolbox/v2/xrand"
+import (
+	"encoding/json/jsontext"
+	"slices"
+
+	"github.com/richardwilkes/toolbox/v2/xrand"
+)
 
 // WeightedAncestryOptions is a set of AncestryOptions that has a weight associated with it.
 type WeightedAncestryOptions struct {
@@ -17,6 +22,8 @@ type WeightedAncestryOptions struct {
 	Value  *AncestryOptions `json:"value"`
 	// KeyPrefix is a runtime-only key the editor uses to give each entry's widgets a stable identity.
 	KeyPrefix string `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Clone returns a deep copy of this entry, or nil if this entry is nil.
@@ -26,6 +33,7 @@ func (o *WeightedAncestryOptions) Clone() *WeightedAncestryOptions {
 	}
 	clone := *o
 	clone.Value = o.Value.Clone()
+	clone.Unknown = slices.Clone(o.Unknown)
 	return &clone
 }
 

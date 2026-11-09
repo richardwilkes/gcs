@@ -131,6 +131,8 @@ type LevelCapGroup struct {
 	Type     levelcap.Type  `json:"type"`
 	Highest  bool           `json:"highest,omitzero"`
 	Children LevelCaps      `json:"children,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewLevelCapGroup creates a new, empty group that takes the lowest of its children.
@@ -165,6 +167,7 @@ func (g *LevelCapGroup) Clone(parent *LevelCapGroup) LevelCap {
 func (g *LevelCapGroup) CloneAsLevelCapGroup(parent *LevelCapGroup) *LevelCapGroup {
 	clone := *g
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(g.Unknown)
 	clone.Children = make(LevelCaps, len(g.Children))
 	for i, child := range g.Children {
 		clone.Children[i] = child.Clone(&clone)
@@ -239,6 +242,8 @@ type FixedLevelCap struct {
 	Parent *LevelCapGroup `json:"-"`
 	Type   levelcap.Type  `json:"type"`
 	Level  fxp.Int        `json:"level"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewFixedLevelCap creates a new FixedLevelCap at the level.
@@ -265,6 +270,7 @@ func (c *FixedLevelCap) SetParentGroup(parent *LevelCapGroup) {
 func (c *FixedLevelCap) Clone(parent *LevelCapGroup) LevelCap {
 	clone := *c
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(c.Unknown)
 	return &clone
 }
 
@@ -305,6 +311,8 @@ type ReferenceLevelCap struct {
 	// names them.
 	Attribute string  `json:"attribute,omitzero"`
 	Modifier  fxp.Int `json:"modifier,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewReferenceLevelCap creates a new ReferenceLevelCap of the type, which must be Skill, Spell, Trait or Attribute: one
@@ -357,6 +365,7 @@ func (c *ReferenceLevelCap) SetParentGroup(parent *LevelCapGroup) {
 func (c *ReferenceLevelCap) Clone(parent *LevelCapGroup) LevelCap {
 	clone := *c
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(c.Unknown)
 	return &clone
 }
 

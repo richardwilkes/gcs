@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
 	"slices"
 	"strings"
@@ -207,6 +208,8 @@ type SheetLayoutNode struct {
 	// Square is Block only. In a Row, the block's width is taken from the row's height so that its content is square,
 	// instead of from its weight; ignored elsewhere.
 	Square bool `json:"square,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Clone creates a deep copy of this node.
@@ -215,6 +218,7 @@ func (n *SheetLayoutNode) Clone() *SheetLayoutNode {
 		return nil
 	}
 	clone := *n
+	clone.Unknown = slices.Clone(n.Unknown)
 	if len(n.Children) != 0 {
 		clone.Children = make([]*SheetLayoutNode, len(n.Children))
 		for i, child := range n.Children {
@@ -265,6 +269,8 @@ func (n *SheetLayoutNode) Hash(h hash.Hash) {
 type SheetLayout struct {
 	Root   *SheetLayoutNode `json:"root"`
 	Hidden []string         `json:"hidden,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func blockNode(key string) *SheetLayoutNode {
@@ -415,7 +421,7 @@ func (l *SheetLayout) Clone() *SheetLayout {
 	if l == nil {
 		return nil
 	}
-	clone := &SheetLayout{Root: l.Root.Clone()}
+	clone := &SheetLayout{Root: l.Root.Clone(), Unknown: slices.Clone(l.Unknown)}
 	if len(l.Hidden) != 0 {
 		clone.Hidden = slices.Clone(l.Hidden)
 	}

@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -53,6 +54,8 @@ type SkillBonusData struct {
 	WeaponOwnerCriteria
 	LeveledAmount
 	BonusOwner `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSkillBonus creates a new SkillBonus.
@@ -76,7 +79,11 @@ func (s *SkillBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (s *SkillBonus) Clone() Feature {
-	return clonePtr(s)
+	clone := clonePtr(s)
+	if clone != nil {
+		clone.Unknown = slices.Clone(s.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature. Only the criteria the selection consults contribute keys: the specialization

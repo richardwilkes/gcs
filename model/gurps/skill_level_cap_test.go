@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"encoding/json/jsontext"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -1234,7 +1235,7 @@ func newTestSkillLevelCap() *SkillLevelCap {
 
 // TestSkillLevelCapsJSON verifies that sheet settings holding every kind of cap node round trip through JSON, with
 // the nodes decoded to their types and their parents set, and a node of a kind this version doesn't know preserved as
-// it was, as is a target this version doesn't know, which selects nothing.
+// it was, while a cap whose target this version doesn't know fails to load with an error naming the target.
 func TestSkillLevelCapsJSON(t *testing.T) {
 	c := check.New(t)
 	s := FactorySheetSettings()
@@ -1274,21 +1275,14 @@ func TestSkillLevelCapsJSON(t *testing.T) {
 	c.NoError(err)
 	c.Equal(string(data), string(again), "saving what was loaded writes the same JSON")
 	c.Contains(string(again), `{"type":"future","foo":1}`, "the unknown node is written back as it was")
-	data, err = jio.Marshal(loaded.SkillLevelCaps)
+	data, err = jio.Marshal(levelCap)
 	c.NoError(err)
 	future := strings.Replace(string(data), `"target":"skills_and_spells"`, `"target":"techniques"`, 1)
-	var futureCaps SkillLevelCaps
-	c.NoError(jio.Unmarshal([]byte(future), &futureCaps))
-	c.Equal(1, len(futureCaps), "the cap with an unknown target is loaded")
-	subject := &levelCapSubject{name: "Magic", tags: []string{"Occult"}, colleges: []string{"Fire"}, powerSource: "Arcane"}
-	for _, spell := range []bool{false, true} {
-		subject.spell = spell
-		c.True(levelCap.applies(subject), "spell=%t: the known target selects the subject", spell)
-		c.False(futureCaps[0].applies(subject), "spell=%t: an unknown target selects nothing", spell)
-	}
-	again, err = jio.Marshal(futureCaps)
-	c.NoError(err)
-	c.Equal(future, string(again), "an unknown target is written back as it was read")
+	c.NotEqual(string(data), future)
+	var futureCap *SkillLevelCap
+	err = jio.Unmarshal([]byte(future), &futureCap)
+	c.HasError(err, "a cap with an unknown target fails to load")
+	c.Contains(fmt.Sprint(err), `"techniques"`, "the error names the unknown target")
 }
 
 // TestSkillLevelCapsSkipWhatCanNotBeRead verifies that a cap that can't be read is left out rather than failing the
@@ -1348,7 +1342,7 @@ func TestSheetSettingsSkillLevelCapsEnsureValidity(t *testing.T) {
 	}
 	s.EnsureValidity()
 	c.Equal(2, len(s.SkillLevelCaps), "the missing cap is dropped")
-	c.Equal(levelcap.UnknownTarget, s.SkillLevelCaps[0].Target, "an invalid target becomes unknown")
+	c.Equal(levelcap.Skills, s.SkillLevelCaps[0].Target, "an invalid target becomes skills")
 	c.NotNil(s.SkillLevelCaps[0].Cap, "a cap without a root gets one")
 	c.Equal(levelcap.Group, s.SkillLevelCaps[0].Cap.Type)
 	root := s.SkillLevelCaps[1].Cap
@@ -1361,8 +1355,9 @@ func TestSheetSettingsSkillLevelCapsEnsureValidity(t *testing.T) {
 	c.Equal("Fire", ref.SpecializationCriteria.Qualifier, "a skill reference keeps its specialization")
 }
 
-// TestSkillLevelCapsFileRoundTrip verifies that caps saved to a file of their own load back as they were saved, valid
-// and at the current data version, and that a file holding none loads as none.
+// TestSkillLevelCapsFileRoundTrip verifies that caps saved to a file of their own load back as they were saved, valid,
+// at the current data version and with no members this release does not know, and that a file holding none loads as
+// none.
 func TestSkillLevelCapsFileRoundTrip(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -1375,6 +1370,7 @@ func TestSkillLevelCapsFileRoundTrip(t *testing.T) {
 	loaded, err := NewSkillLevelCapsFromFile(os.DirFS(dir), name)
 	c.NoError(err)
 	c.Equal(len(caps), len(loaded))
+	c.Equal([]string(nil), filledFallbacks(loaded), "every member written is read")
 	for i := range caps {
 		c.Equal(Hash64(caps[i]), Hash64(loaded[i]), "cap %d loads as it was saved", i)
 		for _, child := range loaded[i].Cap.Children {
@@ -1385,4 +1381,24 @@ func TestSkillLevelCapsFileRoundTrip(t *testing.T) {
 	loaded, err = NewSkillLevelCapsFromFile(os.DirFS(dir), name)
 	c.NoError(err)
 	c.Equal(0, len(loaded), "a file holding no caps loads as none")
+}
+
+// TestSkillLevelCapKeepsUnknownMembers verifies that a cap, and its clone, write back the members of the cap and of its
+// root group that this release does not know.
+func TestSkillLevelCapKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var levelCap SkillLevelCap
+	c.NoError(jio.Unmarshal([]byte(`{"target":"skills","zzz_cap":1,"cap":{"type":"group","zzz_group":2}}`), &levelCap))
+	for _, one := range []struct {
+		name     string
+		levelCap *SkillLevelCap
+	}{
+		{name: "the cap", levelCap: &levelCap},
+		{name: "its clone", levelCap: levelCap.Clone()},
+	} {
+		data, err := jio.Marshal(one.levelCap)
+		c.NoError(err, one.name)
+		c.Equal("1", jsonMember(t, data, "zzz_cap"), one.name)
+		c.Equal("2", jsonMember(t, []byte(jsonMember(t, data, "cap")), "zzz_group"), one.name)
+	}
 }

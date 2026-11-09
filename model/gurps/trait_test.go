@@ -10,7 +10,10 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 
@@ -452,4 +455,39 @@ func TestTraitLevelBonusUsesResolvedName(t *testing.T) {
 	bonus.NameCriteria.Qualifier = "Talent (@which@)"
 	e.Recalculate()
 	c.Equal(fxp.Two, talent.CurrentLevel(), "a TraitBonus on the raw @placeholder@ name must not apply")
+}
+
+// TestTraitKeepsUnknownMembers verifies that the members of a trait this release does not know survive loading and
+// saving its list, cloning it and an editor's round trip through its edit data, so that an older release keeps what a
+// newer one wrote.
+func TestTraitKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	const future = `{"a":1}`
+	traits, err := NewTraitsFromFile(fstest.MapFS{"in.adq": &fstest.MapFile{
+		Data: []byte(`{"type":"trait_list","version":6,"rows":[{"name":"Future","zzz_future":` + future + `}]}`),
+	}}, "in.adq")
+	c.NoError(err)
+	c.Equal(1, len(traits))
+	path := filepath.Join(t.TempDir(), "out.adq")
+	c.NoError(SaveTraits(traits, path))
+	data, err := os.ReadFile(path)
+	c.NoError(err)
+	var saved struct {
+		Rows []jsontext.Value `json:"rows"`
+	}
+	c.NoError(json.Unmarshal(data, &saved))
+	c.Equal(1, len(saved.Rows))
+	c.Equal(future, jsonMember(t, saved.Rows[0], "zzz_future"), "saving the list")
+
+	data, err = jio.Marshal(traits[0].Clone(LibraryFile{}, nil, nil, Duplicate))
+	c.NoError(err)
+	c.Equal(future, jsonMember(t, data, "zzz_future"), "a clone")
+
+	var editData TraitEditData
+	editData.CopyFrom(traits[0])
+	edited := NewTrait(nil, nil, false)
+	editData.ApplyTo(edited)
+	data, err = jio.Marshal(edited)
+	c.NoError(err)
+	c.Equal(future, jsonMember(t, data, "zzz_future"), "an editor's round trip")
 }

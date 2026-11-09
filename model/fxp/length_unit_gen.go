@@ -14,6 +14,7 @@ package fxp
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -116,9 +117,13 @@ func (enum LengthUnit) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *LengthUnit) UnmarshalText(text []byte) error {
-	*enum = ExtractLengthUnit(string(text))
+	v, known := ExtractKnownLengthUnit(string(text))
+	if !known {
+		return errs.Newf("unknown fxp length unit %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

@@ -23,8 +23,8 @@ import (
 // load/save cycle unchanged rather than being discarded.
 //
 // The type is extracted as a string and resolved with extract rather than being unmarshaled directly into the enum:
-// the generated enums' UnmarshalText maps anything they don't recognize onto their first value, which would silently
-// turn data written by a newer version of GCS into a bogus value of that first type.
+// the generated enums' UnmarshalText rejects a key they don't recognize, which would fail the whole load rather than
+// preserve data written by a newer version of GCS.
 func unmarshalTypedList[T, K comparable](dec *jsontext.Decoder, extract func(string) (K, bool), alloc func(K) T, unknown func(kind string, raw jsontext.Value) T) ([]T, error) {
 	var v []jsontext.Value
 	if err := json.UnmarshalDecode(dec, &v); err != nil {

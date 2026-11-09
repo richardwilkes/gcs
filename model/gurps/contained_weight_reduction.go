@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -26,6 +28,8 @@ type ContainedWeightReduction struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
 	Reduction string `json:"reduction"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewContainedWeightReduction creates a new ContainedWeightReduction.
@@ -43,7 +47,11 @@ func (c *ContainedWeightReduction) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *ContainedWeightReduction) Clone() Feature {
-	return clonePtr(c)
+	clone := clonePtr(c)
+	if clone != nil {
+		clone.Unknown = slices.Clone(c.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.

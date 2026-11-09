@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -36,6 +38,8 @@ type SpellPrereq struct {
 	SamePowerSource     bool            `json:"same_power_source,omitzero"`
 	PowerSourceCriteria criteria.Text   `json:"power_source,omitzero"`
 	LevelCriteria       criteria.Number `json:"level,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
@@ -71,6 +75,7 @@ func (p *SpellPrereq) SetParentList(list *PrereqList) {
 func (p *SpellPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

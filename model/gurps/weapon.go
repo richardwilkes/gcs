@@ -121,6 +121,8 @@ type WeaponData struct {
 	Recoil     attack.Recoil   `json:"recoil,omitzero"`
 	Defaults   []*SkillDefault `json:"defaults,omitempty"`
 	Hide       bool            `json:"hide,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Weapon holds the stats for a weapon. What its methods, and those of its damage, resolve is kept until its entity's
@@ -221,6 +223,7 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, mode CloneMode) *W
 	}
 	other.Damage = *w.Damage.Clone(&other)
 	other.Defaults = cloneSkillDefaults(w.Defaults)
+	other.Unknown = slices.Clone(w.Unknown)
 	return &other
 }
 
@@ -377,6 +380,8 @@ func (w *Weapon) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		WeaponData
 		// Old data fields
 		Type string `json:"type"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err

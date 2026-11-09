@@ -55,3 +55,9 @@ Every `-f` or `-l` run asks GitHub for the latest golangci-lint release and inst
 when the local copy differs, so those runs need network access and may upgrade the tool. Set `GOLANGCI_LINT` to the
 path of a binary to use it as is. Running `go test` directly on a single package, such as `go test ./model/gurps/...`,
 is fine for a quick check. The tests under `ux` drive the UI headlessly and need no display.
+
+`model/gurps/testdata/data_schema.golden` records what the data files held at the last release: struct members, enum
+keys, list kinds and theme keys. Any change to that must raise `jio.CurrentDataVersion`, and a removal must also raise
+`jio.MinimumReaderVersion`, or `TestDataSchemaChangesBumpTheVersion` fails. Leave the golden alone between releases:
+`go test ./model/gurps -run TestDataSchema -update` regenerates it as the last step before tagging, and the release
+workflow runs the test with `-release`, which fails unless the golden matches the code and both constants.

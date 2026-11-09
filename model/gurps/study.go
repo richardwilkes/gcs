@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -20,11 +23,17 @@ type Study struct {
 	Type  study.Type `json:"type"`
 	Hours fxp.Int    `json:"hours"`
 	Note  string     `json:"note,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Clone creates a copy of the Study.
 func (s *Study) Clone() *Study {
-	return clonePtr(s)
+	clone := clonePtr(s)
+	if clone != nil {
+		clone.Unknown = slices.Clone(s.Unknown)
+	}
+	return clone
 }
 
 // cloneStudyList creates a deep copy of the provided Study list, or nil when it is empty.

@@ -36,8 +36,7 @@ func TestStringComparisonKeysMatchOnDiskForm(t *testing.T) {
 }
 
 // TestStringComparisonJSONRoundTrip verifies that "is anything" is omitted entirely when the string comparison is
-// written, that the comparison is read from its key, and that a key no release has ever written loads as "is anything"
-// rather than failing.
+// written, and that the comparison is read from its key.
 func TestStringComparisonJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 	data, err := jio.Marshal(&criteria.Text{Compare: criteria.AnyText, Qualifier: "x"})
@@ -47,8 +46,6 @@ func TestStringComparisonJSONRoundTrip(t *testing.T) {
 	var text criteria.Text
 	c.NoError(jio.Unmarshal([]byte(`{"compare":"does_not_end_with","qualifier":"y"}`), &text))
 	c.Equal(criteria.DoesNotEndWithText, text.Compare)
-	c.NoError(jio.Unmarshal([]byte(`{"compare":"bogus","qualifier":"y"}`), &text))
-	c.Equal(criteria.AnyText, text.Compare)
 }
 
 // TestStringComparisonAltStringOnlyDiffersForNotTypes verifies the alternate (plural) string is only distinct for the

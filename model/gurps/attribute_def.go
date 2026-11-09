@@ -59,6 +59,8 @@ type AttributeDefData struct {
 	CostPerPoint         fxp.Int             `json:"cost_per_point,omitzero"`
 	CostAdjPercentPerSM  fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
 	Thresholds           []*PoolThreshold    `json:"thresholds,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
@@ -97,6 +99,7 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 // Clone returns a copy of this AttributeDef. Thresholds are only carried over for the pool types.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
+	clone.Unknown = slices.Clone(a.Unknown)
 	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
 		if a.Thresholds != nil {
 			clone.Thresholds = make([]*PoolThreshold, len(a.Thresholds))

@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -35,6 +37,8 @@ type TraitPrereq struct {
 	NotesCriteria  criteria.Text   `json:"notes,omitzero"`
 	ModifierCriteria
 	TitleNoteCriteria criteria.Text `json:"title_note,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
@@ -68,6 +72,7 @@ func (p *TraitPrereq) SetParentList(list *PrereqList) {
 func (p *TraitPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

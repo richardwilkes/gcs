@@ -26,6 +26,9 @@ var _ Hashable = &AttributeDefs{}
 // AttributeDefs holds a set of AttributeDef objects.
 type AttributeDefs struct {
 	Set map[string]*AttributeDef
+	// fileUnknown holds the members of the file the set was loaded from that this release does not know, which Save
+	// writes back.
+	fileUnknown jsontext.Value
 }
 
 // ResolveAttributeName returns the name of the attribute, or its full name or ID when it has none (see
@@ -71,8 +74,10 @@ func FactoryAttributeDefs() *AttributeDefs {
 }
 
 type attributeDefsData struct {
-	Version int            `json:"version"`
-	Rows    *AttributeDefs `json:"rows"`
+	jio.Header
+	Rows *AttributeDefs `json:"rows"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewAttributeDefsFromFile loads an AttributeDef set from a file.
@@ -82,7 +87,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldRows   *AttributeDefs `json:"attributes"`
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, AttributesDataKind); err != nil {
 		return nil, err
 	}
 	if data.Rows == nil && data.OldRows != nil {
@@ -98,14 +103,16 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 	if defs == nil {
 		defs = FactoryAttributeDefs()
 	}
+	defs.fileUnknown = data.Unknown
 	return defs, nil
 }
 
 // Save writes the AttributeDefs to the file as JSON.
 func (a *AttributeDefs) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &attributeDefsData{
-		Version: jio.CurrentDataVersion,
+		Header:  jio.NewHeader(AttributesDataKind),
 		Rows:    a,
+		Unknown: a.fileUnknown,
 	})
 }
 
@@ -131,7 +138,7 @@ func (a *AttributeDefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // Clone returns a copy of this AttributeDefs.
 func (a *AttributeDefs) Clone() *AttributeDefs {
-	clone := &AttributeDefs{Set: make(map[string]*AttributeDef)}
+	clone := &AttributeDefs{Set: make(map[string]*AttributeDef), fileUnknown: slices.Clone(a.fileUnknown)}
 	for k, v := range a.Set {
 		clone.Set[k] = v.Clone()
 	}

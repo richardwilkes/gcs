@@ -36,6 +36,8 @@ var (
 type ListFilter struct {
 	Name string       `json:"name"`
 	Root *FilterGroup `json:"root"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // FilterNode is a node in a filter tree: a group of other nodes, a condition on one field, or a node this version of
@@ -67,6 +69,8 @@ type FilterGroup struct {
 	Not      bool            `json:"not,omitzero"`
 	All      bool            `json:"all"`
 	Children FilterNodes     `json:"children,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // FilterCondition compares one field of a node against a criteria. Which of the criteria is consulted depends on the
@@ -83,6 +87,8 @@ type FilterCondition struct {
 	Weight criteria.Weight `json:"weight,omitzero"`
 	// IncludeDisabled makes a field drawn from modifiers include the disabled ones; other fields ignore it.
 	IncludeDisabled bool `json:"include_disabled,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // UnknownFilterNode holds a filter node whose type this version of GCS doesn't recognize. It can't be checked, and its
@@ -105,7 +111,7 @@ func NewListFilter(name string) *ListFilter {
 
 // Clone creates a deep copy of this filter.
 func (f *ListFilter) Clone() *ListFilter {
-	clone := &ListFilter{Name: f.Name}
+	clone := &ListFilter{Name: f.Name, Unknown: slices.Clone(f.Unknown)}
 	if f.Root != nil {
 		clone.Root = f.Root.CloneAsFilterGroup(nil)
 	}
@@ -201,6 +207,7 @@ func (g *FilterGroup) Clone(parent *FilterGroup) FilterNode {
 func (g *FilterGroup) CloneAsFilterGroup(parent *FilterGroup) *FilterGroup {
 	clone := *g
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(g.Unknown)
 	clone.Children = make(FilterNodes, len(g.Children))
 	for i, child := range g.Children {
 		clone.Children[i] = child.Clone(&clone)
@@ -286,6 +293,7 @@ func (c *FilterCondition) SetParentGroup(parent *FilterGroup) {
 func (c *FilterCondition) Clone(parent *FilterGroup) FilterNode {
 	clone := *c
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(c.Unknown)
 	return &clone
 }
 

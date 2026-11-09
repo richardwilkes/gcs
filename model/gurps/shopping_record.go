@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -35,6 +36,8 @@ type ShoppingRecordItem struct {
 	Name     string  `json:"name"`
 	Quantity fxp.Int `json:"quantity"`
 	Value    fxp.Int `json:"value"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // ShoppingRecordEntry holds one sale or purchase made from this sheet. Items lists what was sold or bought, and Money
@@ -48,6 +51,8 @@ type ShoppingRecordEntry struct {
 	Items     []ShoppingRecordItem `json:"items,omitempty"`
 	Money     []ShoppingRecordItem `json:"money,omitempty"`
 	Exchanged fxp.Int              `json:"exchanged"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // CloneShoppingRecordList creates a clone of the provided ShoppingRecordEntry list.
@@ -55,9 +60,19 @@ func CloneShoppingRecordList(list []*ShoppingRecordEntry) []*ShoppingRecordEntry
 	clone := make([]*ShoppingRecordEntry, len(list))
 	for i, one := range list {
 		entry := *one
-		entry.Items = slices.Clone(one.Items)
-		entry.Money = slices.Clone(one.Money)
+		entry.Items = cloneShoppingRecordItems(one.Items)
+		entry.Money = cloneShoppingRecordItems(one.Money)
+		entry.Unknown = slices.Clone(one.Unknown)
 		clone[i] = &entry
+	}
+	return clone
+}
+
+// cloneShoppingRecordItems returns a copy of the items.
+func cloneShoppingRecordItems(items []ShoppingRecordItem) []ShoppingRecordItem {
+	clone := slices.Clone(items)
+	for i := range clone {
+		clone[i].Unknown = slices.Clone(items[i].Unknown)
 	}
 	return clone
 }

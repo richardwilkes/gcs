@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -333,8 +332,8 @@ func TestSkillLevelCapPanelGroupKinds(t *testing.T) {
 
 // TestSkillLevelCapPanelMatcher checks that the matcher offers the criteria its target consults, a specialization for
 // skills and a college and power source for spells, and tags for either, with the buttons that add them after the
-// chips in use; that a change of target clears, in the same step, the criteria it no longer consults; that undo puts
-// them back; and that a target this version doesn't know is shown, with a generic name hint.
+// chips in use; that a change of target clears, in the same step, the criteria it no longer consults; and that undo
+// puts them back.
 func TestSkillLevelCapPanelMatcher(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -395,19 +394,6 @@ func TestSkillLevelCapPanelMatcher(t *testing.T) {
 		})
 		c.Equal(before, gurps.Hash64(lc), "undoing the change to %s puts back what it cleared", one.target)
 	}
-
-	var future *gurps.SkillLevelCap
-	c.NoError(jio.Unmarshal([]byte(`{"target":"techniques","name":{"compare":"is"}}`), &future))
-	p, _ = showSkillLevelCapPanel(t, screen, future)
-	screen.Do(func() {
-		if popup, ok := refAs[*unison.PopupMenu[levelcap.Target]](t, p.AsPanel(), levelCapMatcherKey+":target"); ok {
-			c.False(slices.Contains(levelcap.Targets, future.Target), "the target isn't one this version knows")
-			c.Equal(future.Target.String(), popup.Text(), "a target this version doesn't know is shown as such")
-		}
-		if name, ok := refAs[*StringField](t, p.AsPanel(), levelCapMatcherKey+":name"); ok {
-			c.Equal("Item name", name.Watermark, "the name hint of a target this version doesn't know")
-		}
-	})
 }
 
 // TestSkillLevelCapPanelControlNamesDiffer checks that no two controls of an open value of each kind share an

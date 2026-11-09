@@ -14,6 +14,7 @@ package selfctrl
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -130,9 +131,13 @@ func (enum Adjustment) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Adjustment) UnmarshalText(text []byte) error {
-	*enum = ExtractAdjustment(string(text))
+	v, known := ExtractKnownAdjustment(string(text))
+	if !known {
+		return errs.Newf("unknown selfctrl adjustment %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

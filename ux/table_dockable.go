@@ -45,7 +45,7 @@ type TableDockable[T gurps.Node[T]] struct {
 	hierarchyButton  *unison.Button
 	noteToggleButton *unison.Button
 	filterField      *unison.Field
-	filterBanner     *filterBanner
+	filterBanner     *hazardBanner
 	savedFilters     *listFilterPopup
 	selectedFilter   *gurps.ListFilter
 	tagFilter        *listTagFilterPopup
@@ -61,6 +61,9 @@ type TableDockable[T gurps.Node[T]] struct {
 	// when it was locked (see applyLocked).
 	lockedUndoMgr *unison.UndoManager
 	scaleAtLock   *unison.FieldState
+	// newerFormatBanner is shown above the filter banner's place when the file was written by a newer version of GCS
+	// (see markNewerFormat), and is nil otherwise.
+	newerFormatBanner *hazardBanner
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
@@ -69,7 +72,7 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 	d := &TableDockable[T]{
 		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		provider:     provider,
-		filterBanner: newFilterBanner(),
+		filterBanner: newHazardBanner(filterBannerText(), ""),
 		scroll:       unison.NewScrollPanel(),
 		tableHeader:  header,
 		table:        table,
@@ -239,6 +242,21 @@ func (d *TableDockable[T]) markLoadedFromFile() {
 	if gurps.GlobalSettings().General.InitialListLocked {
 		d.applyLocked(true)
 	}
+}
+
+// markNewerFormat implements newerFormatMarker. The list starts locked, whatever the settings say, so that a file this
+// version cannot fully show is not changed by accident, and says why in a banner that stays for as long as the list is
+// open. The user may still unlock it. The banner goes right below the toolbar, so that it sits above the filter banner
+// when both are shown.
+func (d *TableDockable[T]) markNewerFormat() {
+	d.applyLocked(true)
+	d.newerFormatBanner = newHazardBanner(newerVersionBannerText(), newerVersionBannerTooltip())
+	i := d.IndexOfChild(d.filterBanner)
+	if i == -1 {
+		i = d.IndexOfChild(d.scroll)
+	}
+	d.AddChildAtIndex(d.newerFormatBanner, i)
+	d.MarkForLayoutAndRedraw()
 }
 
 // isReadOnly implements readOnlyView.
@@ -493,9 +511,9 @@ func (d *TableDockable[T]) applyFilter() (synced bool) {
 	return true
 }
 
-// showFilterBanner puts the banner between the toolbar and the table, or takes it away again, and has the dockable
-// laid out afresh when that changes anything. The banner is added and removed rather than hidden, since a hidden panel
-// still takes up its space in a FlexLayout.
+// showFilterBanner puts the banner between the toolbar, or the newer format banner below it, and the table, or takes it
+// away again, and has the dockable laid out afresh when that changes anything. The banner is added and removed rather
+// than hidden, since a hidden panel still takes up its space in a FlexLayout.
 func (d *TableDockable[T]) showFilterBanner(show bool) {
 	if show == (d.filterBanner.Parent() != nil) {
 		return

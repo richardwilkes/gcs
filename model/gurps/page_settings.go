@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/paper"
@@ -98,6 +100,8 @@ type PageSettings struct {
 	LeftMargin   paper.Length      `json:"left_margin"`
 	BottomMargin paper.Length      `json:"bottom_margin"`
 	RightMargin  paper.Length      `json:"right_margin"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewPageSettings returns new settings with factory defaults.
@@ -124,7 +128,9 @@ func (p *PageSettings) EnsureValidity() {
 
 // Clone returns a copy of this.
 func (p *PageSettings) Clone() *PageSettings {
-	return clonePtr(p)
+	clone := clonePtr(p)
+	clone.Unknown = slices.Clone(p.Unknown)
+	return clone
 }
 
 // EnsurePageSizeIsValid returns the given page size in canonical form, or the first standard paper size if it isn't

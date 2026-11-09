@@ -27,7 +27,7 @@ type Campaign struct {
 
 // CampaignData holds the campaign file data.
 type CampaignData struct {
-	Version            int                  `json:"version"`
+	jio.Header
 	ID                 tid.TID              `json:"id"`
 	SheetSettings      *SheetSettings       `json:"settings,omitzero"`
 	Traits             []*Trait             `json:"traits,omitempty"`
@@ -40,12 +40,14 @@ type CampaignData struct {
 	Templates          []*Template          `json:"templates,omitempty"`
 	Characters         []*Entity            `json:"characters,omitempty"`
 	Documents          []*Document          `json:"documents,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewCampaignFromFile loads a Campaign from a file.
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &campaign, &campaign.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &campaign, CampaignDataKind); err != nil {
 		return nil, err
 	}
 	return &campaign, nil
@@ -66,8 +68,9 @@ func (c *Campaign) Save(filePath string) error {
 
 // MarshalJSONTo implements json.MarshalerTo.
 func (c *Campaign) MarshalJSONTo(enc *jsontext.Encoder) error {
-	c.Version = jio.CurrentDataVersion
-	return json.MarshalEncode(enc, &c.CampaignData)
+	data := c.CampaignData
+	data.Header = jio.NewHeader(CampaignDataKind)
+	return json.MarshalEncode(enc, &data)
 }
 
 // Hash writes this object's contents into the hasher.

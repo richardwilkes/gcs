@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"reflect"
 	"slices"
 	"strings"
@@ -166,6 +167,12 @@ func TestMergeMatches(t *testing.T) {
 		{name: "weapons", change: func(eqp *Equipment) { eqp.Weapons = append(eqp.Weapons, NewWeapon(eqp, true)) }},
 		{name: "weapon data", change: func(eqp *Equipment) { eqp.Weapons[0].Usage = "Thrust" }},
 		{name: "weapon hidden", change: func(eqp *Equipment) { eqp.Weapons[0].Hide = true }},
+		{name: "weapon unknown members", change: func(eqp *Equipment) {
+			eqp.Weapons[0].Unknown = jsontext.Value(`{"z":1}`)
+		}},
+		{name: "weapon damage unknown members", change: func(eqp *Equipment) {
+			eqp.Weapons[0].Damage.Unknown = jsontext.Value(`{"z":1}`)
+		}},
 		{name: "features", change: func(eqp *Equipment) { eqp.Features = append(eqp.Features, NewDRBonus()) }},
 		{name: "weight ignored for skills", change: func(eqp *Equipment) { eqp.WeightIgnoredForSkills = true }},
 		{name: "level", change: func(eqp *Equipment) { eqp.Level = fxp.Three }},
@@ -175,6 +182,7 @@ func TestMergeMatches(t *testing.T) {
 		{name: "switched on", change: func(eqp *Equipment) { eqp.SwitchedOn = false }},
 		{name: "preconfigured", change: func(eqp *Equipment) { eqp.Preconfigured = true }},
 		{name: "pick separately", change: func(eqp *Equipment) { eqp.PickSeparately = true }},
+		{name: "unknown members", change: func(eqp *Equipment) { eqp.Unknown = jsontext.Value(`{"z":1}`) }},
 		{name: "replacement value", change: func(eqp *Equipment) { eqp.Replacements["Price"] = "25" }},
 		{name: "replacement added", change: func(eqp *Equipment) { eqp.Replacements["Size"] = "Large" }},
 		{name: "replacements removed", change: func(eqp *Equipment) { eqp.Replacements = nil }},
@@ -191,6 +199,9 @@ func TestMergeMatches(t *testing.T) {
 		}},
 		{name: "modifier weapon data", change: func(eqp *Equipment) { eqp.Modifiers[0].Weapons[0].Usage = "Bash" }},
 		{name: "modifier weapon hidden", change: func(eqp *Equipment) { eqp.Modifiers[0].Weapons[0].Hide = true }},
+		{name: "modifier unknown members", change: func(eqp *Equipment) {
+			eqp.Modifiers[0].Unknown = jsontext.Value(`{"z":1}`)
+		}},
 		{name: "nameables", change: func(eqp *Equipment) { eqp.Nameables["Price"] = nameable.Detail{Label: "Cost"} }},
 		{name: "modifier nameables", change: func(eqp *Equipment) { eqp.Modifiers[0].Nameables = nil }},
 		{name: "nameable link", change: func(eqp *Equipment) {
@@ -250,7 +261,7 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 			typ: reflect.TypeFor[WeaponData](),
 			expected: []string{
 				"TID", "SubVersion", "Damage", "Strength", "Usage", "UsageNotes", "Reach", "Parry", "Block", "Accuracy",
-				"Range", "RateOfFire", "Shots", "Bulk", "Recoil", "Defaults", "Hide",
+				"Range", "RateOfFire", "Shots", "Bulk", "Recoil", "Defaults", "Hide", "Unknown",
 			},
 		},
 		{
@@ -260,7 +271,7 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 				"LegalityClass", "Tags", "BaseValue", "BaseWeight", "MaxUses", "Prereq", "Weapons", "Features",
 				"WeightIgnoredForSkills", "Nameables", "TemplatePicker", "VTTNotes", "Replacements", "Modifiers",
 				"RatedST", "Quantity", "Level", "Uses", "Equipped", "Disabled", "NameableLinks", "SwitchedOn",
-				"Preconfigured", "PickSeparately", "ThirdParty", "Children", "parent",
+				"Preconfigured", "PickSeparately", "Unknown", "ThirdParty", "Children", "parent",
 			},
 		},
 		{
@@ -269,7 +280,7 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 				"TID", "Source", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "Tags", "Nameables", "VTTNotes",
 				"Replacements", "CostType", "CostIsPerLevel", "CostIsPerPound", "WeightType", "WeightIsPerLevel",
 				"ShowNotesOnWeapon", "TechLevel", "CostAmount", "WeightAmount", "Weapons", "Features", "HideNotes",
-				"ShowInTitle", "Disabled", "Choice", "ThirdParty", "Children", "parent",
+				"ShowInTitle", "Disabled", "Choice", "Unknown", "ThirdParty", "Children", "parent",
 			},
 		},
 	}

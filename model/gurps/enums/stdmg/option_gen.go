@@ -14,6 +14,7 @@ package stdmg
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -132,9 +133,13 @@ func (enum Option) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Option) UnmarshalText(text []byte) error {
-	*enum = ExtractOption(string(text))
+	v, known := ExtractKnownOption(string(text))
+	if !known {
+		return errs.Newf("unknown stdmg option %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

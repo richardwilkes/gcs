@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -593,4 +594,18 @@ func TestKickDamageUsesBaseSkill(t *testing.T) {
 	// Brawling is at DX+2 (RSL +2), so its "+1 per die, RSL >= 2" weapon damage bonus must apply even though the
 	// best skill default for the Kick is the Kicking technique (RSL -1 vs Brawling). 1d-2 base + 1 = 1d-1.
 	c.Equal("1d-1 cr", kick.Damage.ResolvedDamage(nil))
+}
+
+// TestWeaponDamageKeepsUnknownMembers verifies that the members of a weapon's damage this release does not know survive
+// loading and saving the weapon, and cloning it, so that an older release keeps what a newer one wrote.
+func TestWeaponDamageKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var w gurps.Weapon
+	c.NoError(jio.Unmarshal([]byte(`{"damage":{"type":"cr","base":"1d","zzz_damage":"x"}}`), &w))
+	data, err := jio.Marshal(&w.Damage)
+	c.NoError(err)
+	c.Equal(`"x"`, jsonMember(t, data, "zzz_damage"), "saving")
+	data, err = jio.Marshal(&w.Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate).Damage)
+	c.NoError(err)
+	c.Equal(`"x"`, jsonMember(t, data, "zzz_damage"), "a clone")
 }

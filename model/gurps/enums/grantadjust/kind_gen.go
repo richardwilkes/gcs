@@ -14,6 +14,7 @@ package grantadjust
 import (
 	"strings"
 
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
@@ -22,17 +23,16 @@ const (
 	AddLevels Kind = iota
 	AddPoints
 	SetLevel
-	Unknown
 )
 
 // DefaultKind is the default value.
-const DefaultKind Kind = Unknown
+const DefaultKind Kind = AddLevels
 
 // FirstKind is the first valid value.
 const FirstKind Kind = AddLevels
 
 // LastKind is the last valid value.
-const LastKind Kind = Unknown
+const LastKind Kind = SetLevel
 
 // Kinds holds all possible values.
 var Kinds = []Kind{
@@ -62,7 +62,7 @@ func (enum Kind) Key() string {
 	case SetLevel:
 		return "set_level"
 	default:
-		return "unknown"
+		return DefaultKind.Key()
 	}
 }
 
@@ -75,10 +75,8 @@ func (enum Kind) String() string {
 		return i18n.Text(`Add Points`)
 	case SetLevel:
 		return i18n.Text(`Set Level`)
-	case Unknown:
-		return i18n.Text(`Unknown`)
 	default:
-		return i18n.Text(`Unknown`)
+		return DefaultKind.String()
 	}
 }
 
@@ -91,10 +89,8 @@ func (enum Kind) AltString() string {
 		return i18n.Text(`adjusting its points by`)
 	case SetLevel:
 		return i18n.Text(`setting its level to`)
-	case Unknown:
-		return i18n.Text(`adjusting it in an unknown way`)
 	default:
-		return i18n.Text(`adjusting it in an unknown way`)
+		return DefaultKind.AltString()
 	}
 }
 
@@ -103,9 +99,13 @@ func (enum Kind) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Kind) UnmarshalText(text []byte) error {
-	*enum = ExtractKind(string(text))
+	v, known := ExtractKnownKind(string(text))
+	if !known {
+		return errs.Newf("unknown grantadjust kind %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

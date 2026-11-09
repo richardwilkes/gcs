@@ -140,6 +140,18 @@ func (n *nameablesSyncData) hash(h hash.Hash) {
 	}
 }
 
+// A struct written to disk keeps the members this release does not know, so that a file from a newer release survives
+// a load/save cycle unchanged, by ending with this field, comment and all:
+//
+//	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+//	Unknown jsontext.Value `json:",embed"`
+//
+// The tag takes no name and no other option. Of the fallbacks a struct reaches through its embedded fields, json uses
+// the shallowest, and none at all when two share that depth, so none goes on a helper embedded beside others, such as
+// SourcedID, NodeSyncData or ItemSwitch. Every member a hand-written unmarshal reads, and every one a marshaler adds,
+// such as "calc", must be a named field of what the data is decoded into, or the fallback takes it and the next save
+// fails on the duplicate name.
+
 // marshalNodeData writes a node's data and, unless the encoder was asked to omit the derived values, the "calc" object
 // calc builds for it. A nil calc is left out. data is the node's own, or a copy of it, so the caller is responsible for
 // clearing whatever must not be written before calling this.
@@ -250,10 +262,12 @@ func dropNilNodes[T Node[T]](list []T) []T {
 	return slices.DeleteFunc(list, func(one T) bool { return xreflect.IsNil(one) })
 }
 
-// listData is the on-disk form of a standalone list file: the data version and the top-level rows.
+// listData is the on-disk form of a standalone list file: the header and the top-level rows. It carries no fallback
+// for unknown members, since only the rows are handed on by loadRows, so any other top-level member would be dropped
+// on save in any case.
 type listData[T any] struct {
-	Version int `json:"version"`
-	Rows    []T `json:"rows"`
+	jio.Header
+	Rows []T `json:"rows"`
 }
 
 // loadRows loads the rows of a standalone list file. Giving each top-level row a nil data owner attaches the weapons
@@ -261,9 +275,9 @@ type listData[T any] struct {
 // template may hold template picker data or the flag to pick from a group separately, and only a character sheet may
 // hold study, a trait's user description or a disabled skill, spell or piece of equipment, so any of these a list file
 // carries is removed.
-func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
+func loadRows[T Node[T]](fileSystem fs.FS, filePath, kind string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, kind, opts...); err != nil {
 		return nil, err
 	}
 	data.Rows = dropNilNodes(data.Rows)
@@ -275,9 +289,9 @@ func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options
 	return data.Rows, nil
 }
 
-// saveRows writes the rows to the file as a standalone list stamped with the current data version.
-func saveRows[T any](filePath string, rows []T) error {
-	return jio.SaveToFile(filePath, &listData[T]{Version: jio.CurrentDataVersion, Rows: rows})
+// saveRows writes the rows to the file as a standalone list of the given kind, stamped with the current header.
+func saveRows[T any](filePath, kind string, rows []T) error {
+	return jio.SaveToFile(filePath, &listData[T]{Header: jio.NewHeader(kind), Rows: rows})
 }
 
 // fixupLegacyTID gives a node whose ID is not a TID of one of ownKinds, the kinds its type can have, a fresh TID whose
@@ -332,28 +346,20 @@ func finishNodeUnmarshal[T Node[T]](node T, tags *[]string, legacyCategories []s
 	}
 }
 
-// unmarshalWithLegacyTags decodes a bonus's persisted data from dec and, when the tags criteria it holds comes back
-// empty, adopts the one an older file stored under the "category" name instead, if there is one. tags must point into
-// data so that it reflects what was decoded.
-func unmarshalWithLegacyTags(dec *jsontext.Decoder, data any, tags *criteria.Text) error {
-	var raw jsontext.Value
-	if err := json.UnmarshalDecode(dec, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(raw, data, dec.Options()); err != nil {
-		return err
-	}
-	if !tags.IsZero() {
-		return nil
-	}
-	var legacy struct {
+// unmarshalWithLegacyTags decodes a bonus's persisted data from dec into data and, when the tags criteria it holds
+// comes back empty, adopts the one an older file stored under the "category" name instead, if there is one. tags must
+// point into data so that it reflects what was decoded. The "category" member is read beside the data, so that the
+// data's fallback never keeps it.
+func unmarshalWithLegacyTags[T any](dec *jsontext.Decoder, data *T, tags *criteria.Text) error {
+	content := struct {
+		Data     *T            `json:",embed"`
 		Category criteria.Text `json:"category"`
-	}
-	if err := json.Unmarshal(raw, &legacy, dec.Options()); err != nil {
+	}{Data: data}
+	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
-	if !legacy.Category.IsZero() {
-		*tags = legacy.Category
+	if tags.IsZero() && !content.Category.IsZero() {
+		*tags = content.Category
 	}
 	return nil
 }

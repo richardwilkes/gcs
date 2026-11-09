@@ -127,13 +127,8 @@ func (p *skillLevelCapPanel) matcher() *unison.Panel {
 	fields := newFlow()
 	box.AddChild(fields)
 	key := levelCapMatcherKey + ":"
-	// A target this version of GCS doesn't know, which a file can still hold, is shown but not offered for others.
-	targets := levelcap.Targets
-	if !slices.Contains(targets, lc.Target) {
-		targets = append(slices.Clone(targets), lc.Target)
-	}
-	addCentered(fields, compactPopup(&p.sentenceRows, key+"target", i18n.Text("Applies To"), targets, lc.Target,
-		levelcap.Target.String, func(t levelcap.Target) { setLevelCapTarget(lc, t) }))
+	addCentered(fields, compactPopup(&p.sentenceRows, key+"target", i18n.Text("Applies To"), levelcap.Targets,
+		lc.Target, levelcap.Target.String, func(t levelcap.Target) { setLevelCapTarget(lc, t) }))
 	whose := i18n.Text("whose name")
 	p.textCriteria(fields, key+"name", i18n.Text("Name"), levelCapNameHint(lc.Target), whose, whose, &lc.NameCriteria,
 		true)
@@ -170,18 +165,15 @@ func setLevelCapTarget(lc *gurps.SkillLevelCap, target levelcap.Target) {
 	}
 }
 
-// levelCapNameHint returns the hint the matcher's name field shows while empty, which names no particular kind of item
-// for a target this version of GCS doesn't know.
+// levelCapNameHint returns the hint the matcher's name field shows while empty.
 func levelCapNameHint(target levelcap.Target) string {
 	switch target {
-	case levelcap.Skills:
-		return i18n.Text("Skill name")
 	case levelcap.Spells:
 		return i18n.Text("Spell name")
 	case levelcap.SkillsAndSpells:
 		return i18n.Text("Skill or spell name")
 	default:
-		return i18n.Text("Item name")
+		return i18n.Text("Skill name")
 	}
 }
 

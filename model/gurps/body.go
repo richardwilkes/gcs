@@ -36,6 +36,8 @@ type BodyData struct {
 	Name      string         `json:"name,omitzero"`
 	Roll      dice.Dice      `json:"roll"`
 	Locations []*HitLocation `json:"locations,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Body holds a set of hit locations.
@@ -46,8 +48,10 @@ type Body struct {
 	locationLookup map[string]*HitLocation
 }
 
+// standaloneBodyData is the on-disk form of a body type file. It has no fallback of its own: the one BodyData holds is
+// the shallowest it reaches, so the body keeps the members of the file this release does not know.
 type standaloneBodyData struct {
-	Version int `json:"version"`
+	jio.Header
 	BodyData
 	OldHitLocations *Body `json:"hit_locations,omitzero"`
 }
@@ -67,7 +71,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, BodyDataKind); err != nil {
 		return nil, err
 	}
 	var body Body
@@ -108,6 +112,7 @@ func (b *Body) Rewrap() {
 // Clone returns a copy of this Body, bound to the given Entity and owning HitLocation.
 func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 	clone := *b
+	clone.Unknown = slices.Clone(b.Unknown)
 	clone.owningLocation = owningLocation
 	clone.Locations = make([]*HitLocation, len(b.Locations))
 	for i, one := range b.Locations {
@@ -120,7 +125,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &standaloneBodyData{
-		Version:  jio.CurrentDataVersion,
+		Header:   jio.NewHeader(BodyDataKind),
 		BodyData: b.BodyData,
 	})
 }

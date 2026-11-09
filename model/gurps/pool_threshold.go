@@ -49,6 +49,8 @@ type PoolThresholdData struct {
 	Value       string   `json:"value"`
 	Explanation string   `json:"explanation,omitzero"`
 	Features    Features `json:"features,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewPoolThreshold returns an empty threshold with an ID of its own.
@@ -221,6 +223,7 @@ func convertToExpression(multiplier, divisor, addition fxp.Int) string {
 func (p *PoolThreshold) Clone() *PoolThreshold {
 	clone := *p
 	clone.Features = p.Features.Clone()
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

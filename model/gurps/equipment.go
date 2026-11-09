@@ -119,6 +119,8 @@ type EquipmentEditData struct {
 	ItemSwitch
 	preconfigurable
 	choiceGrouping
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -148,13 +150,13 @@ type EquipmentContainerSyncData struct {
 
 // NewEquipmentFromFile loads an Equipment list from a file.
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
-	return loadRows[*Equipment](fileSystem, filePath)
+	return loadRows[*Equipment](fileSystem, filePath, EquipmentListDataKind)
 }
 
 // SaveEquipment writes the Equipment list to the file as JSON.
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	AdjustEquipmentUsesForSave(equipment)
-	return saveRows(filePath, equipment)
+	return saveRows(filePath, EquipmentListDataKind, equipment)
 }
 
 // defaultLegalityClass is the legality class new equipment starts out with.
@@ -420,6 +422,8 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		Value      fxp.Int    `json:"value"`
 		Weight     fxp.Weight `json:"weight"`
 		IsOpen     bool       `json:"open"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
@@ -1418,6 +1422,7 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
 	e.Weapons = CloneWeapons(other.Weapons, equipment, mode)
 	e.Features = other.Features.Clone()
+	e.Unknown = slices.Clone(other.Unknown)
 }
 
 // CanPreconfigureContainer implements Preconfigurable. The data an editor edits doesn't say what kind of container it

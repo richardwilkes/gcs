@@ -10,12 +10,12 @@
 package colors
 
 import (
+	"encoding/json/jsontext"
 	"io/fs"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/themeset"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -23,6 +23,9 @@ import (
 // minimumVersion is the oldest theme color data that can be loaded. Files from before the theme rework hold a different
 // set of colors, so they are refused rather than silently loaded as a mostly factory theme.
 const minimumVersion = 5
+
+// dataKind is the kind of data written into the header of a theme color file.
+const dataKind = "colors"
 
 var (
 	_       themeset.Entry[unison.ThemeColor]                  = &ThemedColor{}
@@ -89,6 +92,9 @@ func (t *ThemedColor) SetValue(v unison.ThemeColor) {
 // Colors holds a set of themed colors.
 type Colors struct {
 	themeset.Set[unison.ThemeColor, *ThemedColor, provider]
+	// fileUnknown holds the members of the file the colors were loaded from that this release does not know, which
+	// Save writes back.
+	fileUnknown jsontext.Value
 }
 
 // provider connects a Colors to the live and factory theme colors.
@@ -106,9 +112,12 @@ func (provider) Applied() {
 	unison.ThemeChanged()
 }
 
+// fileData is the on-disk form of a theme color file. The set itself keeps no unknown keys.
 type fileData struct {
-	Version int    `json:"version"`
-	Colors  Colors `json:"colors"`
+	jio.Header
+	Colors Colors `json:"colors"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // Current returns the current theme.
@@ -178,19 +187,18 @@ func initialize() {
 // NewFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
 func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	var data fileData
-	if err := jio.LoadFromFile(fileSystem, filePath, &data); err != nil {
-		return nil, errs.Wrap(err)
-	}
-	if err := jio.CheckVersionWithMinimum(data.Version, minimumVersion); err != nil {
+	if _, err := jio.LoadVersionedFileWithMinimum(fileSystem, filePath, &data, dataKind, minimumVersion); err != nil {
 		return nil, err
 	}
+	data.Colors.fileUnknown = data.Unknown
 	return &data.Colors, nil
 }
 
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
 	return jio.SaveToFile(filePath, &fileData{
-		Version: jio.CurrentDataVersion,
+		Header:  jio.NewHeader(dataKind),
 		Colors:  *c,
+		Unknown: c.fileUnknown,
 	})
 }

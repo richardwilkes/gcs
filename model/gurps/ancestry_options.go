@@ -49,6 +49,8 @@ type AncestryOptionsData struct {
 	SkinOptions       []*WeightedStringOption `json:"skin_options,omitempty"`
 	HandednessOptions []*WeightedStringOption `json:"handedness_options,omitempty"`
 	NameGenerators    []string                `json:"name_generators,omitempty"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
@@ -93,6 +95,7 @@ func (o *AncestryOptions) Clone() *AncestryOptions {
 	clone.SkinOptions = cloneWeightedStringOptions(o.SkinOptions)
 	clone.HandednessOptions = cloneWeightedStringOptions(o.HandednessOptions)
 	clone.NameGenerators = slices.Clone(o.NameGenerators)
+	clone.Unknown = slices.Clone(o.Unknown)
 	return &clone
 }
 

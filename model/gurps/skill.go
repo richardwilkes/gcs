@@ -127,6 +127,8 @@ type SkillEditData struct {
 	// copiedDefaultsHash is defaultsHash(Defaults) as of CopyFrom, which lets ApplyTo tell whether the defaults have
 	// been edited since. Only meaningful on edit data that CopyFrom produced.
 	copiedDefaultsHash uint64
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
@@ -163,7 +165,7 @@ type SkillContainerOnlySyncData struct {
 
 // NewSkillsFromFile loads a Skill list from a file.
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
-	rows, err := loadRows[*Skill](fileSystem, filePath)
+	rows, err := loadRows[*Skill](fileSystem, filePath, SkillListDataKind)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +182,7 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 
 // SaveSkills writes the Skill list to the file as JSON.
 func SaveSkills(skills []*Skill, filePath string) error {
-	return saveRows(filePath, skills)
+	return saveRows(filePath, SkillListDataKind, skills)
 }
 
 // NewSkillChoiceContainer creates a new template choice container for skills.
@@ -375,6 +377,8 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
@@ -2199,4 +2203,5 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 	s.Weapons = CloneWeapons(other.Weapons, skill, mode)
 	s.Features = other.Features.Clone()
 	s.Study = cloneStudyList(other.Study)
+	s.Unknown = slices.Clone(other.Unknown)
 }

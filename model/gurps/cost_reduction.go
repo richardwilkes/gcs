@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -26,6 +28,8 @@ type CostReduction struct {
 	FeatureSwitch
 	Attribute  string  `json:"attribute,omitzero"`
 	Percentage fxp.Int `json:"percentage,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewCostReduction creates a new CostReduction.
@@ -44,7 +48,11 @@ func (c *CostReduction) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (c *CostReduction) Clone() Feature {
-	return clonePtr(c)
+	clone := clonePtr(c)
+	if clone != nil {
+		clone.Unknown = slices.Clone(c.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.

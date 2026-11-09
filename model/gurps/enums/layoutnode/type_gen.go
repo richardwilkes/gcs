@@ -13,6 +13,8 @@ package layoutnode
 
 import (
 	"strings"
+
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 // Possible values.
@@ -82,9 +84,13 @@ func (enum Type) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
+// UnmarshalText implements encoding.TextUnmarshaler. A key that matches no value is an error.
 func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+	v, known := ExtractKnownType(string(text))
+	if !known {
+		return errs.Newf("unknown layoutnode type %q", string(text))
+	}
+	*enum = v
 	return nil
 }
 

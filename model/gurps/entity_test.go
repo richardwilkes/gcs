@@ -1997,6 +1997,13 @@ func TestWeightCarriedCached(t *testing.T) {
 	c.Equal(fxp.WeightFromInteger(20, fxp.Pound), e.WeightCarried(false))
 }
 
+// TestEntityKeepsUnknownMembers verifies that the top-level members of a character sheet this release does not know
+// survive loading and saving it, so that an older release keeps what a newer one wrote.
+func TestEntityKeepsUnknownMembers(t *testing.T) {
+	data := resavedEntity(t, `{"type":"character","version":6,"zzz_top":{"b":[true]}}`)
+	check.New(t).Equal(`{"b":[true]}`, jsonMember(t, data, "zzz_top"))
+}
+
 // TestSkillMatchingEmptySpecialization verifies that an exact ("is") match against an empty specialization matches only
 // the truly unspecialized skill, not one that has only a required or only an optional specialization, or both, and
 // that an exact match against a required or an optional specialization matches the skill carrying it. The first is

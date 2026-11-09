@@ -58,47 +58,137 @@ func TestLoadNew(t *testing.T) {
 }
 
 type versionedTestData struct {
-	Version int    `json:"version"`
-	Name    string `json:"name"`
+	jio.Header
+	Name string `json:"name"`
 }
 
 func TestLoadVersionedFile(t *testing.T) {
-	c := check.New(t)
-	fileSystem := fstest.MapFS{
-		"current.json": &fstest.MapFile{Data: fmt.Appendf(nil, `{"version":%d,"name":"ok"}`, jio.CurrentDataVersion)},
-		"newer.json":   &fstest.MapFile{Data: fmt.Appendf(nil, `{"version":%d,"name":"too new"}`, jio.CurrentDataVersion+1)},
-		"older.json":   &fstest.MapFile{Data: fmt.Appendf(nil, `{"version":%d,"name":"too old"}`, jio.MinimumDataVersion-1)},
-		"broken.json":  &fstest.MapFile{Data: []byte(`{"version":`)},
+	const kind = "test"
+	current := jio.CurrentDataVersion
+	newer := jio.CurrentDataVersion + 1
+	for _, tc := range []struct {
+		name        string
+		file        string // A missing file when empty.
+		wantHeader  jio.Header
+		wantName    string
+		contains    []string
+		notContains []string
+	}{
+		{
+			name:       "current version with a type",
+			file:       fmt.Sprintf(`{"type":%q,"version":%d,"min_version":%d,"name":"ok"}`, kind, current, current),
+			wantHeader: jio.NewHeader(kind),
+			wantName:   "ok",
+		},
+		{
+			name:       "current version without a type",
+			file:       fmt.Sprintf(`{"version":%d,"name":"ok"}`, current),
+			wantHeader: jio.Header{Version: current},
+			wantName:   "ok",
+		},
+		{
+			name:       "byte order mark",
+			file:       fmt.Sprintf("\ufeff{\"version\":%d,\"name\":\"ok\"}", current),
+			wantHeader: jio.Header{Version: current},
+			wantName:   "ok",
+		},
+		{
+			name:       "header members after the body",
+			file:       fmt.Sprintf(`{"name":"late","min_version":%d,"version":%d,"type":%q}`, current, newer, kind),
+			wantHeader: jio.Header{Type: kind, Version: newer, MinVersion: current},
+			wantName:   "late",
+		},
+		{
+			name:       "newer version still readable by this release",
+			file:       fmt.Sprintf(`{"type":%q,"version":%d,"min_version":%d,"name":"future"}`, kind, newer, current),
+			wantHeader: jio.Header{Type: kind, Version: newer, MinVersion: current},
+			wantName:   "future",
+		},
+		{
+			name:       "type mismatch before types were checked",
+			file:       `{"type":"other","version":4,"name":"old"}`,
+			wantHeader: jio.Header{Type: "other", Version: 4},
+			wantName:   "old",
+		},
+		// The header's own messages must come through rather than being reported as invalid data, and the body must
+		// not be decoded once the header has been refused.
+		{
+			name:        "newer version without a minimum reader version",
+			file:        fmt.Sprintf(`{"version":%d,"name":"too new"}`, newer),
+			contains:    []string{"newer version"},
+			notContains: []string{jio.InvalidFileData()},
+		},
+		{
+			name:        "newer minimum reader version",
+			file:        fmt.Sprintf(`{"type":%q,"version":%d,"min_version":%d,"name":"too new"}`, kind, newer, newer),
+			contains:    []string{"newer version"},
+			notContains: []string{jio.InvalidFileData()},
+		},
+		{
+			name:        "older version",
+			file:        fmt.Sprintf(`{"version":%d,"name":"too old"}`, jio.MinimumDataVersion-1),
+			contains:    []string{"older version"},
+			notContains: []string{jio.InvalidFileData()},
+		},
+		{
+			name:        "type mismatch",
+			file:        fmt.Sprintf(`{"type":"other","version":%d,"name":"wrong"}`, current),
+			contains:    []string{`"other"`, `"test"`},
+			notContains: []string{jio.InvalidFileData()},
+		},
+		// A newer file that fails to decode needs the newer release, so it is not reported as invalid data.
+		{
+			name:        "decode failure in a newer file",
+			file:        fmt.Sprintf(`{"type":%q,"version":%d,"min_version":%d,"name":7}`, kind, newer, current),
+			contains:    []string{"newer version"},
+			notContains: []string{jio.InvalidFileData()},
+		},
+		// Decode failures and missing files are reported as invalid file data, with the cause attached.
+		{
+			name:     "decode failure",
+			file:     fmt.Sprintf(`{"version":%d,"name":7}`, current),
+			contains: []string{jio.InvalidFileData()},
+		},
+		{
+			name:     "truncated header",
+			file:     `{"version":`,
+			contains: []string{jio.InvalidFileData(), "unexpected EOF"},
+		},
+		{
+			name:        "not an object",
+			file:        fmt.Sprintf(`["type",%q,"version",%d,"min_version",%d]`, kind, newer, newer),
+			contains:    []string{jio.InvalidFileData()},
+			notContains: []string{"newer version"},
+		},
+		{
+			name:     "missing file",
+			contains: []string{jio.InvalidFileData(), "missing.json"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			fileSystem := fstest.MapFS{}
+			path := "missing.json"
+			if tc.file != "" {
+				path = "data.json"
+				fileSystem[path] = &fstest.MapFile{Data: []byte(tc.file)}
+			}
+			var data versionedTestData
+			h, err := jio.LoadVersionedFile(fileSystem, path, &data, kind)
+			if len(tc.contains) == 0 {
+				c.NoError(err)
+				c.Equal(tc.wantHeader, h)
+				c.Equal(tc.wantHeader, data.Header)
+			} else {
+				c.HasError(err)
+				for _, one := range tc.contains {
+					c.Contains(err.Error(), one)
+				}
+				for _, one := range tc.notContains {
+					c.NotContains(err.Error(), one)
+				}
+			}
+			c.Equal(tc.wantName, data.Name)
+		})
 	}
-
-	var data versionedTestData
-	c.NoError(jio.LoadVersionedFile(fileSystem, "current.json", &data, &data.Version))
-	c.Equal(jio.CurrentDataVersion, data.Version)
-	c.Equal("ok", data.Name)
-
-	// The version check must see the value that was just read, not a stale one, and its own message must come through
-	// rather than being reported as invalid data.
-	data = versionedTestData{}
-	err := jio.LoadVersionedFile(fileSystem, "newer.json", &data, &data.Version)
-	c.HasError(err)
-	c.NotContains(err.Error(), jio.InvalidFileData())
-	c.Contains(err.Error(), "newer version")
-
-	data = versionedTestData{}
-	err = jio.LoadVersionedFile(fileSystem, "older.json", &data, &data.Version)
-	c.HasError(err)
-	c.NotContains(err.Error(), jio.InvalidFileData())
-	c.Contains(err.Error(), "older version")
-
-	// Decode failures and missing files are both reported as invalid file data, with the cause attached.
-	data = versionedTestData{}
-	err = jio.LoadVersionedFile(fileSystem, "broken.json", &data, &data.Version)
-	c.HasError(err)
-	c.Contains(err.Error(), jio.InvalidFileData())
-	c.Contains(err.Error(), "unexpected EOF")
-
-	err = jio.LoadVersionedFile(fileSystem, "missing.json", &data, &data.Version)
-	c.HasError(err)
-	c.Contains(err.Error(), jio.InvalidFileData())
-	c.Contains(err.Error(), "missing.json")
 }

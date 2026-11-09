@@ -73,13 +73,42 @@ func TestNewTraitsFromFileAttachesContainerModifiers(t *testing.T) {
 		"the child's modifier resolves the child's replacements")
 }
 
-func TestLoadRowsRejectsFutureVersion(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	c.NoError(jio.SaveToFile(filepath.Join(dir, "Test"+NotesExt),
-		&listData[*Note]{Version: jio.CurrentDataVersion + 1}))
-	_, err := NewNotesFromFile(os.DirFS(dir), "Test"+NotesExt)
-	c.HasError(err, "a list from a newer release is rejected")
+// TestLoadRowsFromNewerRelease verifies that a list from a newer release is refused unless that release declared this
+// one able to read it.
+func TestLoadRowsFromNewerRelease(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		header   jio.Header
+		loadable bool
+	}{
+		{
+			name:   "no minimum reader version",
+			header: jio.Header{Type: NoteListDataKind, Version: jio.CurrentDataVersion + 1},
+		},
+		{
+			name: "current minimum reader version",
+			header: jio.Header{
+				Type:       NoteListDataKind,
+				Version:    jio.CurrentDataVersion + 1,
+				MinVersion: jio.CurrentDataVersion,
+			},
+			loadable: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			c.NoError(jio.SaveToFile(filepath.Join(dir, "Test"+NotesExt),
+				&listData[*Note]{Header: tc.header, Rows: []*Note{NewNote(nil, nil, false)}}))
+			rows, err := NewNotesFromFile(os.DirFS(dir), "Test"+NotesExt)
+			if tc.loadable {
+				c.NoError(err)
+				c.Equal(1, len(rows))
+			} else {
+				c.HasError(err)
+			}
+		})
+	}
 }
 
 // TestLegacyNodeUnmarshal verifies the fix-ups applied to nodes written before TIDs and tags existed: the kind is taken
@@ -338,7 +367,8 @@ func TestHeaderDataNamesWhatIsNotReadable(t *testing.T) {
 }
 
 // TestBonusLegacyCategoryMigratesToTags verifies that each bonus type that once stored its tags criteria under
-// "category" adopts a legacy "category" when it has no "tags", and prefers "tags" when both are present.
+// "category" adopts a legacy "category" when it has no "tags", and prefers "tags" when both are present, and that the
+// "category" it read is not kept to be written back.
 func TestBonusLegacyCategoryMigratesToTags(t *testing.T) {
 	c := check.New(t)
 	for _, typ := range []feature.Type{
@@ -356,6 +386,9 @@ func TestBonusLegacyCategoryMigratesToTags(t *testing.T) {
 		c.Equal(typ, f.FeatureType(), "%s: type survives the load", key)
 		c.Equal(textCriteria(criteria.IsText, "Old"), bonusTagsCriteria(c, f),
 			"%s: a legacy category becomes the tags criteria", key)
+		data, err := jio.Marshal(f)
+		c.NoError(err)
+		c.Equal("", jsonMember(t, data, "category"), "%s: a legacy category is not written back", key)
 
 		f = loadSingleFeature(c, `[{"type":"`+key+`","tags":{"compare":"contains","qualifier":"New"},"category":{"compare":"is","qualifier":"Old"}}]`)
 		if f == nil {

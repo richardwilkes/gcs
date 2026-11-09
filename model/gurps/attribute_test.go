@@ -10,12 +10,15 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -377,4 +380,29 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nUnnamed Threshold (FP) [-1]\nFor striking only:\nPower Gauntlets [+1]\nFor lifting only:\nLifting Harness [+3]\nUnnamed Threshold (FP) [×0.5]",
 		st.BonusTooltip(), "a threshold with no state is named nonetheless")
+}
+
+// TestAttributeKeepsUnknownMembers verifies that the members of an attribute this release does not know survive loading
+// and saving the sheet holding it, and cloning the attributes, so that an older release keeps what a newer one wrote.
+func TestAttributeKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	data := resavedEntity(t, `{"type":"character","version":6,"attributes":[{"attr_id":"st","adj":1,"zzz_attr":7}]}`)
+	var saved struct {
+		Attributes []jsontext.Value `json:"attributes"`
+	}
+	c.NoError(json.Unmarshal(data, &saved))
+	var found bool
+	for _, one := range saved.Attributes {
+		if jsonMember(t, one, "attr_id") == `"st"` {
+			found = true
+			c.Equal("7", jsonMember(t, one, "zzz_attr"), "saving the sheet")
+		}
+	}
+	c.True(found, "the sheet keeps its ST")
+
+	e := NewEntity()
+	c.NoError(json.Unmarshal([]byte(`{"attr_id":"st","adj":1,"zzz_attr":7}`), e.Attributes.Set[StrengthID]))
+	data, err := jio.Marshal(e.Attributes.Clone(e).Set[StrengthID])
+	c.NoError(err)
+	c.Equal("7", jsonMember(t, data, "zzz_attr"), "a clone")
 }

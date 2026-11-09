@@ -75,6 +75,8 @@ type TraitModifierEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"` // No longer used; kept only to migrate old data
 	TraitModifierEditDataNonContainerOnly
 	ModifierContainerSyncData
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to TraitModifiers that
@@ -112,12 +114,12 @@ type TraitModifierNonContainerSyncData struct {
 
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
-	return loadRows[*TraitModifier](fileSystem, filePath)
+	return loadRows[*TraitModifier](fileSystem, filePath, TraitModifierListDataKind)
 }
 
 // SaveTraitModifiers writes the TraitModifier list to the file as JSON.
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
-	return saveRows(filePath, modifiers)
+	return saveRows(filePath, TraitModifierListDataKind, modifiers)
 }
 
 // NewTraitModifier creates a TraitModifier.
@@ -228,6 +230,8 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
@@ -748,4 +752,5 @@ func (t *TraitModifierEditData) copyFrom(holder *TraitModifier, other *TraitModi
 	t.Nameables = nameable.CloneDetails(other.Nameables)
 	t.Weapons = cloneWeaponsHeldBy(other.Weapons, holder.WeaponOwner(), holder, mode)
 	t.Features = other.Features.Clone()
+	t.Unknown = slices.Clone(other.Unknown)
 }

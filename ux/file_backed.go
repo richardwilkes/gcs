@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
@@ -33,6 +34,13 @@ type FileBackedDockable interface {
 type fileLoadable interface {
 	unison.Dockable
 	markLoadedFromFile()
+}
+
+// newerFormatMarker is a dockable that openDockableFromFile tells when the file it loaded was written by a newer
+// version of GCS, but one that declared it still readable by this version, so that it can say that what this version
+// does not understand cannot be shown or edited.
+type newerFormatMarker interface {
+	markNewerFormat()
 }
 
 // fileBackedPanel is the root panel of a dockable that shows a file. It holds the path the content came from, or will
@@ -161,14 +169,23 @@ func (p *fileBackedPanel) markUnmodified() {
 }
 
 // openDockableFromFile loads the content of the file at the path with load, creates the dockable for it with create,
-// and marks the dockable as having been loaded from that file, so that saving it need not ask where it goes.
+// and marks the dockable as having been loaded from that file, so that saving it need not ask where it goes, and, when
+// the dockable is a newerFormatMarker and the file was written by a newer version of GCS, as holding a newer format.
 func openDockableFromFile[M any, D fileLoadable](filePath string, load func(fileSystem fs.FS, filePath string) (M, error), create func(filePath string, content M) D) (unison.Dockable, error) {
-	content, err := load(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	fileSystem := os.DirFS(filepath.Dir(filePath))
+	base := filepath.Base(filePath)
+	content, err := load(fileSystem, base)
 	if err != nil {
 		return nil, err
 	}
 	d := create(filePath, content)
 	d.markLoadedFromFile()
+	if marker, ok := any(d).(newerFormatMarker); ok {
+		// The file has just loaded, so its header fails to read only if the file changed in the meantime.
+		if h, _, hdrErr := jio.ReadHeader(fileSystem, base); hdrErr == nil && h.Version > jio.CurrentDataVersion {
+			marker.markNewerFormat()
+		}
+	}
 	return d, nil
 }
 

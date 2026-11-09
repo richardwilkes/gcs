@@ -10,28 +10,41 @@
 package ux
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 // A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, and saving it
-// writes back to the file without needing to be told where.
+// writes back to the file without needing to be told where. A list from a file written by a newer version of GCS that
+// this one can still read starts locked under a banner that says so, which stays above the filter banner and outlasts
+// both the filter and the lock.
 func TestOpenDockableFromFile(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialListLocked, false)
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.Name = "Alertness"
 	p := filepath.Join(t.TempDir(), "library"+gurps.TraitsExt)
 	c.NoError(gurps.SaveTraits([]*gurps.Trait{trait}, p))
+	newer := filepath.Join(t.TempDir(), "newer"+gurps.TraitsExt)
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{trait}, newer))
+	markWrittenByNewerVersion(t, c, newer)
 
 	dockable, err := NewTraitTableDockableFromFile(p)
 	c.NoError(err)
 	d, ok := dockable.(*TableDockable[*gurps.Trait])
 	c.True(ok)
+	c.False(d.locked, "a file in the current format must not start locked while the setting is off")
+	c.Nil(d.newerFormatBanner, "a file in the current format must not have the newer format banner")
 	c.False(d.needsSaveAsPrompt, "a dockable opened from a file must not need a Save As prompt")
 	c.False(d.Modified(), "a freshly opened file must not be reported as modified")
 	c.Equal(p, d.BackingFilePath())
@@ -49,6 +62,37 @@ func TestOpenDockableFromFile(t *testing.T) {
 
 	_, err = NewTraitTableDockableFromFile(filepath.Join(t.TempDir(), "missing"+gurps.TraitsExt))
 	c.HasError(err, "opening a file that does not exist must fail")
+
+	dockable, err = NewTraitTableDockableFromFile(newer)
+	c.NoError(err, "a newer file that declares itself readable by this version must load")
+	d, ok = dockable.(*TableDockable[*gurps.Trait])
+	c.True(ok)
+	c.True(d.locked, "a newer file must start locked while the setting is off")
+	c.True(d.lockButtonGroup.Selected(d.lockButton), "the lock button must show the lock")
+	c.Equal(1, d.IndexOfChild(d.newerFormatBanner), "the newer format banner sits right after the toolbar")
+	d.filterField.SetText("Alert")
+	c.Equal(1, d.IndexOfChild(d.newerFormatBanner), "the newer format banner stays above the filter banner")
+	c.Equal(2, d.IndexOfChild(d.filterBanner), "the filter banner goes below the newer format banner")
+	d.filterField.SetText("")
+	c.Equal(1, d.IndexOfChild(d.newerFormatBanner), "clearing the filter must not take the newer format banner away")
+	d.lockButton.Click()
+	c.False(d.locked, "the user must still be able to unlock a newer file")
+	c.Equal(1, d.IndexOfChild(d.newerFormatBanner), "unlocking must not take the newer format banner away")
+}
+
+// markWrittenByNewerVersion rewrites the header of the data file at path to say that a newer version of GCS wrote it,
+// one that declared it still readable by this version.
+func markWrittenByNewerVersion(t *testing.T, c check.Checker, path string) {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	c.NoError(err)
+	var members map[string]jsontext.Value
+	c.NoError(json.Unmarshal(data, &members))
+	members["version"] = jsontext.Value(strconv.Itoa(jio.CurrentDataVersion + 1))
+	members["min_version"] = jsontext.Value(strconv.Itoa(jio.CurrentDataVersion))
+	data, err = json.Marshal(members)
+	c.NoError(err)
+	c.NoError(os.WriteFile(path, data, 0o600))
 }
 
 // A sheet, loot sheet or template that has never been saved takes its file name from the name of its content, and only

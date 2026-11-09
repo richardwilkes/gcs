@@ -39,8 +39,9 @@ jobs:
           cache: true
 
       # No Linux system packages are needed here. Nothing links against X11/GL at build time, Linux packaging is pure
-      # Go (a gzipped tar), and this workflow runs no tests, so Unison never reaches the display code that would
-      # dlopen libX11/libGL. Windows likewise compiles no cgo at all and needs no mingw toolchain.
+      # Go (a gzipped tar), and the only test this workflow runs, the data schema check, never touches the display,
+      # so Unison never reaches the display code that would dlopen libX11/libGL. Windows likewise compiles no cgo at
+      # all and needs no mingw toolchain.
 
       - name: Install create-dmg
         if: runner.os == 'macOS'
@@ -73,6 +74,13 @@ jobs:
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # A change to what the data files hold must not ship without a data version bump, and the golden that records the
+      # schema must have been regenerated as the last step before tagging, so that the next release has the right base.
+      - name: Check data schema version
+        env:
+          GOEXPERIMENT: simd
+        run: go test ./model/gurps -run TestDataSchemaChangesBumpTheVersion -release
 
       # Import the "Developer ID Application" certificate into a throwaway keychain so codesign can use it
       # non-interactively. The keychain lives only on this ephemeral runner and is discarded when the job ends.

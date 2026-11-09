@@ -146,6 +146,8 @@ type TraitEditData struct {
 	choiceGrouping
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.
@@ -184,12 +186,12 @@ type TraitContainerSyncData struct {
 
 // NewTraitsFromFile loads a Trait list from a file.
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
-	return loadRows[*Trait](fileSystem, filePath)
+	return loadRows[*Trait](fileSystem, filePath, TraitListDataKind)
 }
 
 // SaveTraits writes the Trait list to the file as JSON.
 func SaveTraits(traits []*Trait, filePath string) error {
-	return saveRows(filePath, traits)
+	return saveRows(filePath, TraitListDataKind, traits)
 }
 
 // NewTrait creates a new Trait.
@@ -1700,6 +1702,7 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	t.Weapons = CloneWeapons(other.Weapons, trait, mode)
 	t.Features = other.Features.Clone()
 	t.Study = cloneStudyList(other.Study)
+	t.Unknown = slices.Clone(other.Unknown)
 }
 
 // CanPreconfigureContainer implements Preconfigurable.

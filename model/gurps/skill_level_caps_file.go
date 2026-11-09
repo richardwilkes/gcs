@@ -15,16 +15,19 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 )
 
+// skillLevelCapsData is the on-disk form of a skill level caps file. It carries no fallback for unknown members, since
+// only the caps are handed on by NewSkillLevelCapsFromFile, so any other top-level member would be dropped on save in
+// any case.
 type skillLevelCapsData struct {
-	Version int            `json:"version"`
-	Caps    SkillLevelCaps `json:"skill_level_caps,omitempty"`
+	jio.Header
+	Caps SkillLevelCaps `json:"skill_level_caps,omitempty"`
 }
 
 // NewSkillLevelCapsFromFile loads skill level caps from a file, which may hold none. They are made valid the same way
 // the ones in the sheet settings are.
 func NewSkillLevelCapsFromFile(fileSystem fs.FS, filePath string) (SkillLevelCaps, error) {
 	var data skillLevelCapsData
-	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version); err != nil {
+	if _, err := jio.LoadVersionedFile(fileSystem, filePath, &data, SkillLevelCapsDataKind); err != nil {
 		return nil, err
 	}
 	data.Caps.EnsureValidity()
@@ -34,7 +37,7 @@ func NewSkillLevelCapsFromFile(fileSystem fs.FS, filePath string) (SkillLevelCap
 // SaveSkillLevelCaps writes skill level caps to a file.
 func SaveSkillLevelCaps(caps SkillLevelCaps, filePath string) error {
 	return jio.SaveToFile(filePath, &skillLevelCapsData{
-		Version: jio.CurrentDataVersion,
-		Caps:    caps,
+		Header: jio.NewHeader(SkillLevelCapsDataKind),
+		Caps:   caps,
 	})
 }

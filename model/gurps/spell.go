@@ -112,6 +112,8 @@ type SpellEditData struct {
 	choiceGrouping
 	SpellNonContainerOnlyEditData
 	SpellContainerOnlySyncData
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
@@ -161,12 +163,12 @@ type RitualOverrides struct {
 
 // NewSpellsFromFile loads a Spell list from a file.
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
-	return loadRows[*Spell](fileSystem, filePath)
+	return loadRows[*Spell](fileSystem, filePath, SpellListDataKind)
 }
 
 // SaveSpells writes the Spell list to the file as JSON.
 func SaveSpells(spells []*Spell, filePath string) error {
-	return saveRows(filePath, spells)
+	return saveRows(filePath, SpellListDataKind, spells)
 }
 
 // NewSpellChoiceContainer creates a new template choice container for spells.
@@ -361,6 +363,8 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		ExprNotes  string   `json:"notes"`
 		Categories []string `json:"categories"`
 		IsOpen     bool     `json:"open"`
+		// Written for third parties and ignored on load, but named so that Unknown doesn't keep it.
+		Calc jsontext.Value `json:"calc"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
@@ -1577,4 +1581,5 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	s.Weapons = CloneWeapons(other.Weapons, spell, mode)
 	s.Features = other.Features.Clone()
 	s.Study = cloneStudyList(other.Study)
+	s.Unknown = slices.Clone(other.Unknown)
 }

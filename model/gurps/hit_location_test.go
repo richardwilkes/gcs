@@ -120,3 +120,24 @@ func TestHitLocationReservedIDRefusedOnLoad(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","choice_name":"X","table_name":"X","slots":1}`), &HitLocation{}),
 		"an ID the sanitizer would turn a reserved one into loads")
 }
+
+// TestHitLocationKeepsUnknownMembers verifies that a hit location, and its clone, write back the members this release
+// does not know, but not the "calc" it reads, which is written afresh.
+func TestHitLocationKeepsUnknownMembers(t *testing.T) {
+	c := check.New(t)
+	var loc HitLocation
+	c.NoError(jio.Unmarshal([]byte(`{"id":"eye","choice_name":"Eyes","table_name":"Eyes","calc":{"roll_range":"x"},"zzz_future":{"a":1}}`),
+		&loc))
+	for _, one := range []struct {
+		name string
+		loc  *HitLocation
+	}{
+		{name: "the location", loc: &loc},
+		{name: "its clone", loc: loc.Clone(nil, nil)},
+	} {
+		data, err := jio.Marshal(one.loc)
+		c.NoError(err, one.name)
+		c.Equal(`{"a":1}`, jsonMember(t, data, "zzz_future"), one.name)
+		c.Equal(`{"roll_range":""}`, jsonMember(t, data, "calc"), one.name)
+	}
+}

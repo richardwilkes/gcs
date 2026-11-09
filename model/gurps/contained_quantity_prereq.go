@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -28,6 +30,8 @@ type ContainedQuantityPrereq struct {
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
 	QualifierCriteria criteria.Number `json:"qualifier,omitzero"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
@@ -59,6 +63,7 @@ func (p *ContainedQuantityPrereq) SetParentList(list *PrereqList) {
 func (p *ContainedQuantityPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
 	clone.Parent = parent
+	clone.Unknown = slices.Clone(p.Unknown)
 	return &clone
 }
 

@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -40,6 +41,8 @@ type SkillPointBonusData struct {
 	TagsCriteria                   criteria.Text `json:"tags,omitzero"`
 	LeveledAmount
 	BonusOwner `json:"-"`
+	// Unknown holds the members this release does not know, so that they survive a load/save cycle unchanged.
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // NewSkillPointBonus creates a new SkillPointBonus.
@@ -61,7 +64,11 @@ func (s *SkillPointBonus) FeatureType() feature.Type {
 
 // Clone implements Feature.
 func (s *SkillPointBonus) Clone() Feature {
-	return clonePtr(s)
+	clone := clonePtr(s)
+	if clone != nil {
+		clone.Unknown = slices.Clone(s.Unknown)
+	}
+	return clone
 }
 
 // FillWithNameableKeys implements Feature.
