@@ -17,8 +17,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -45,14 +45,9 @@ type Workspace struct {
 // workspace is the Workspace Main was given.
 var workspace Workspace
 
-// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI. It matches
-// the one in model/gurps/main_test.go, which explains the choice.
-var ciScriptExecTimeLimit = fxp.FromInteger(30)
-
 // Main is what the TestMain of every package using this one runs, with the Workspace the package's tests drive. It
-// raises the per-script execution time limit for the duration of the tests, exactly as model/gurps/main_test.go does
-// and for the same reason: the sheets and templates the tests load resolve scripts as they are recalculated, and the
-// production default is small enough that some CI runners cannot always finish even a trivial script within it.
+// raises the per-script execution time limit for the duration of the tests with gurpstest.RaiseScriptExecTimeLimit,
+// since the sheets and templates the tests load resolve scripts as they are recalculated.
 //
 // It also pins the platform-neutral modifier convention a headless session uses on every host, whose menu command key
 // is Control rather than macOS's Command. ux's registerActions bakes mod.OSMenuCommand() into the key bindings once
@@ -62,11 +57,7 @@ var ciScriptExecTimeLimit = fxp.FromInteger(30)
 // behave the same on every host.
 func Main(m *testing.M, ws Workspace) {
 	workspace = ws
-	limit := gurps.PermittedScriptExecTimeMax
-	if os.Getenv("CI") != "" {
-		limit = ciScriptExecTimeLimit
-	}
-	gurps.SetScriptExecTimeLimitForTesting(limit)
+	gurpstest.RaiseScriptExecTimeLimit()
 	mod.SetPlatformNeutral(true)
 	os.Exit(m.Run())
 }

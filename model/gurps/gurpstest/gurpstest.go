@@ -12,12 +12,33 @@ package gurpstest
 import (
 	"context"
 	"log/slog"
+	"os"
 	"sync/atomic"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 )
+
+// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI. Its runners
+// are slow, shared machines, further loaded by go test running several packages' test binaries at once, and legitimate
+// scripts have exceeded even gurps.PermittedScriptExecTimeMax on them. The tests don't need a tight limit, only one
+// that stops a runaway script from stalling the run for long.
+var ciScriptExecTimeLimit = fxp.FromInteger(30)
+
+// RaiseScriptExecTimeLimit raises the per-script execution time limit from the intentionally small production default
+// (gurps.PermittedScriptExecTimeDef) to the largest limit users may set, or to a far larger one when the CI environment
+// variable is set. The TestMain of every package whose tests resolve scripts, as building, loading or recalculating an
+// entity does, should call it: slow runners cannot always finish even a trivial script within the default, and a
+// script cut short resolves to the wrong value. The override bypasses the settings, so
+// gurps.GeneralSettings.EnsureValidity can't reset it.
+func RaiseScriptExecTimeLimit() {
+	limit := gurps.PermittedScriptExecTimeMax
+	if os.Getenv("CI") != "" {
+		limit = ciScriptExecTimeLimit
+	}
+	gurps.SetScriptExecTimeLimitForTesting(limit)
+}
 
 // AddTraitWithFeatures creates a non-container trait with the given name and features, appends it to the entity's
 // traits, and returns it. The entity is not recalculated here.

@@ -7,30 +7,19 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package gurps_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 )
 
-// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI (detected by
-// the CI environment variable). Its runners are slow, shared machines, further loaded by go test running several
-// packages' test binaries at once, and legitimate scripts have exceeded even PermittedScriptExecTimeMax on them. The
-// tests don't need a tight limit, only one that stops a runaway script from stalling the run for long.
-var ciScriptExecTimeLimit = fxp.FromInteger(30)
-
-// TestMain raises the per-script execution time limit from the intentionally small production default
-// (PermittedScriptExecTimeDef) to the largest limit users may set, or to ciScriptExecTimeLimit under CI, since the
-// tests don't exercise the timeout. The override bypasses the settings, so GeneralSettings.EnsureValidity can't reset
-// it. ux/main_test.go does the same for the ux tests.
+// TestMain raises the per-script execution time limit for the package's internal and external tests alike; see
+// gurpstest.RaiseScriptExecTimeLimit. It lives in the external test package because only that one can import
+// gurpstest.
 func TestMain(m *testing.M) {
-	limit := PermittedScriptExecTimeMax
-	if os.Getenv("CI") != "" {
-		limit = ciScriptExecTimeLimit
-	}
-	SetScriptExecTimeLimitForTesting(limit)
+	gurpstest.RaiseScriptExecTimeLimit()
 	os.Exit(m.Run())
 }
