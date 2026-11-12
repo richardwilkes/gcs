@@ -55,8 +55,7 @@ func checkLibraryReleases(libs []*library.Library) bool {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), libraryCheckTimeout)
 	defer cancel()
-	wnd, _, err := newProgressWindow(i18n.Text("Checking…"), libraryCheckTitle(pending),
-		unison.NewProgressBar(0), cancel)
+	dialog, err := unison.NewProgressDialog(i18n.Text("Checking…"), libraryCheckTitle(pending), 0, cancel)
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to check for library updates"), err)
 		return false
@@ -70,9 +69,9 @@ func checkLibraryReleases(libs []*library.Library) bool {
 		wg.Wait()
 		// The teardown is posted to the UI thread rather than done here, since StopModal mutates the modal state that
 		// the UI thread is spinning on inside RunModal without any locking.
-		unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) })
+		unison.InvokeTask(func() { dialog.StopModal(unison.ModalResponseOK) })
 	}()
-	wnd.RunModal()
+	dialog.RunModal()
 	if errors.Is(ctx.Err(), context.Canceled) {
 		return false // The user asked for this, so there is nothing to report
 	}

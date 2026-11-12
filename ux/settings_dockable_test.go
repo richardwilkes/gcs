@@ -415,13 +415,13 @@ func crampedPanels(root *unison.Panel) []string {
 		for _, child := range p.Children() {
 			frame := child.FrameRect()
 			if frame.Right() > area.Right()+0.5 {
-				problems = append(problems, fmt.Sprintf("%s extends past %s (%.0f > %.0f)", describePanel(child),
-					describePanel(p), frame.Right(), area.Right()))
+				problems = append(problems, fmt.Sprintf("%s extends past %s (%.0f > %.0f)", panelName(child),
+					panelName(p), frame.Right(), area.Right()))
 			}
 			if _, isPath := child.Self.(*PathField); !isPath && len(child.Children()) == 0 {
 				if _, pref, _ := child.Sizes(geom.Size{}); frame.Width < pref.Width-0.5 {
 					problems = append(problems, fmt.Sprintf("%s is narrower than it asks to be (%.0f < %.0f)",
-						describePanel(child), frame.Width, pref.Width))
+						panelName(child), frame.Width, pref.Width))
 				}
 			}
 			walk(child)
@@ -431,8 +431,8 @@ func crampedPanels(root *unison.Panel) []string {
 	return problems
 }
 
-// describePanel names a panel by its type and, when it has one, its text.
-func describePanel(p *unison.Panel) string {
+// panelName names a panel by its type and, when it has one, its text.
+func panelName(p *unison.Panel) string {
 	if s, ok := p.Self.(fmt.Stringer); ok {
 		if text := s.String(); text != "" {
 			return fmt.Sprintf("%T %q", p.Self, text)

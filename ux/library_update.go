@@ -58,7 +58,7 @@ documents from the library are open.`))
 	// The library's own watch is stopped before the download (see performLibraryUpdate) and re-established only by the
 	// reload finishLibraryUpdate schedules, but the deep search content cache can still be rebuilt over the files being
 	// replaced: a build may already be in flight, and since RunModal() keeps servicing tasks, a reload triggered while
-	// the progress window is up (by an update check, a watch event from another library, or a library rooted inside
+	// the progress dialog is up (by an update check, a watch event from another library, or a library rooted inside
 	// this one, whose watch sees the extraction) re-watches every library, after which each batch of extraction events
 	// would start a rebuild that the next batch cancels. Suspending abandons the in-flight build and holds rebuilds off
 	// until the update is over; the one rebuild owed is folded into finishLibraryUpdate's reload.
@@ -67,30 +67,21 @@ documents from the library are open.`))
 
 	ctx, cancel := context.WithTimeout(context.Background(), libraryUpdateTimeout)
 	defer cancel()
-	// canceling is written and read only on the UI thread: the Cancel button's callback, and the task the progress
-	// reporter posts. That is what keeps the label from being rewritten with the phase that was already under way when
-	// the user asked to stop.
-	canceling := false
-	progress := unison.NewProgressBar(progressResolution)
-	wnd, label, err := newProgressWindow(i18n.Text("Updating…"),
-		libraryPhaseTitle(library.UpdateDownloading, libData.Title, rel.Version), progress, func() {
-			canceling = true
-			cancel()
-		})
+	// The bar's maximum is 1, so that a fraction of the current phase is also its position.
+	dialog, err := unison.NewProgressDialog(i18n.Text("Updating…"),
+		libraryPhaseTitle(library.UpdateDownloading, libData.Title, rel.Version), 1, cancel)
 	if err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
-	resultChan := make(chan error, 1)
-	reportProgress := libraryUpdateProgress(label, progress, libData.Title, rel.Version, func() bool { return canceling })
+	reportProgress := libraryUpdateProgress(dialog, libData.Title, rel.Version)
 	// Download writes the commit hash it actually fetched into the release's Version for a UseLatest library, and rel
 	// aliases an element of the library's own releases slice, which the UI thread reads whenever the navigator reloads.
 	// Hand the goroutine a copy so that write can neither race those reads nor rewrite the recorded release.
 	relCopy := *rel
-	runInBackground(resultChan, func() error { return performLibraryUpdate(ctx, lib, &relCopy, reportProgress) },
-		func() { finishLibraryUpdate(wnd, lib) })
-	wnd.RunModal()
-	if err = <-resultChan; err != nil {
+	if err = unison.RunProgressDialog(dialog,
+		func() error { return performLibraryUpdate(ctx, lib, &relCopy, reportProgress) },
+		func() { finishLibraryUpdate(lib) }); err != nil {
 		// The returned error, not ctx.Err(), is what says why the download stopped: the context may have been canceled
 		// after a genuine failure (the Cancel button stays live until finishLibraryUpdate's release check completes),
 		// and that failure would otherwise be discarded as "the user canceled".
@@ -111,21 +102,17 @@ func performLibraryUpdate(ctx context.Context, lib *library.Library, rel *librar
 	return lib.Download(ctx, &http.Client{}, rel, progress)
 }
 
-// libraryUpdateProgress returns a progress reporter that keeps the window's label and bar in step with the update. The
-// fraction it receives is relative to the phase it comes with, so the bar starts over each time the phase changes,
-// which is also when the label is rewritten to say what is now happening -- unless the user has asked to stop, in which
-// case the label already says so and must be left alone. canceling is only ever consulted on the UI thread.
-func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, version string, canceling func() bool) library.UpdateProgress {
-	post := throttledProgress(bar)
+// libraryUpdateProgress returns a progress reporter that keeps the dialog's message and bar in step with the update.
+// The fraction it receives is relative to the phase it comes with, so the bar starts over each time the phase changes,
+// which is also when the message is rewritten to say what is now happening. Once the user has asked to stop, the dialog
+// ignores that rewrite, since its message already says so.
+func libraryUpdateProgress(dialog *unison.ProgressDialog, title, version string) library.UpdateProgress {
+	post := dialog.FractionReporter()
 	phase := library.UpdateDownloading
 	return func(current library.UpdatePhase, fraction float64) {
 		if current != phase {
 			phase = current
-			unison.InvokeTask(func() {
-				if !canceling() {
-					label.SetTitle(libraryPhaseTitle(current, title, version))
-				}
-			})
+			unison.InvokeTask(func() { dialog.SetMessage(libraryPhaseTitle(current, title, version)) })
 		}
 		post(fraction)
 	}
@@ -138,17 +125,12 @@ func libraryPhaseTitle(phase library.UpdatePhase, title, version string) string 
 	return i18n.Text("Downloading %s %s…", title, filterVersion(version))
 }
 
-// finishLibraryUpdate refreshes the library's list of available releases and then posts the teardown of the progress
-// window onto the UI thread. It runs on the background goroutine, so it must not touch the modal state itself:
-// StopModal() mutates the window's modal fields and unison's package-global modal stack without any locking, while the
-// UI thread is spinning on them inside RunModal(). The release check is left here rather than posted along with the
-// teardown because it makes network calls that would otherwise stall the UI thread for up to a minute.
-func finishLibraryUpdate(wnd *unison.Window, lib *library.Library) {
+// finishLibraryUpdate refreshes the library's list of available releases and then posts a reload of the navigator onto
+// the UI thread, ahead of the progress dialog's own teardown. It runs on the background goroutine, while the dialog is
+// still up, because the release check makes network calls that would otherwise stall the UI thread for up to a minute.
+func finishLibraryUpdate(lib *library.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	unison.InvokeTask(func() {
-		Workspace.Navigator.EventuallyReload()
-		wnd.StopModal(unison.ModalResponseOK)
-	})
+	unison.InvokeTask(Workspace.Navigator.EventuallyReload)
 }

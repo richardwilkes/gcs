@@ -14,9 +14,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
-	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/updater"
 )
 
 // periodicCheck repeats work on the UI thread at the interval an update-check setting asks for, and runs it at once

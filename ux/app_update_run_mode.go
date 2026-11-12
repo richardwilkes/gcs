@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package updater
+package ux
 
 import (
 	"flag"
@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/unison/updater"
 )
 
 func init() {
@@ -23,20 +24,21 @@ func init() {
 }
 
 // newFinishRunMode registers the hidden -finish-update flag on flagSet (flag.CommandLine if nil) and returns the
-// runmode.Mode that runs Finish. A copy of GCS is started this way once the copy that staged the update has exited,
-// since no supported system lets a running application replace itself. Being its own mode, exclusive of every other,
-// keeps it from reaching the single-instance handoff ux.StartOptions starts, whose port Finish waits to see released.
+// runmode.Mode that finishes applying a prepared update. The copy of GCS that staged the update starts another this way
+// as it exits, and that helper waits for it to be gone before swapping in the new version, since no supported system
+// lets a running application replace itself. Being its own mode, exclusive of every other, keeps it from reaching the
+// single-instance handoff StartOptions starts, whose port the helper waits to see released.
 func newFinishRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
 		flagSet = flag.CommandLine
 	}
-	statePath := flagSet.String(FinishFlag, "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
+	statePath := flagSet.String(updater.FinishFlag, "", i18n.Text("Internal use only. Finish applying a previously prepared update, using the state in the specified `file`"))
 	return runmode.Mode{
-		Name:            FinishFlag,
-		HiddenFlagNames: []string{FinishFlag},
+		Name:            updater.FinishFlag,
+		HiddenFlagNames: []string{updater.FinishFlag},
 		Requested:       func() bool { return *statePath != "" },
 		Start: func(_ []string) {
-			if err := Finish(*statePath); err != nil {
+			if err := appUpdater().Finish(*statePath); err != nil {
 				errs.Log(err)
 				xos.Exit(1)
 			}

@@ -37,7 +37,8 @@ type rule struct {
 }
 
 // rulesLookupResult is the outcome of the download, handed from the download goroutine to the UI thread as a unit (see
-// runInBackground). Observing a failure as a success would silently write an empty notes file rather than report it.
+// unison.RunProgressDialog). Observing a failure as a success would silently write an empty notes file rather than
+// report it.
 type rulesLookupResult struct {
 	rules map[string][]*rule
 	err   error
@@ -74,19 +75,16 @@ func parseRulesLookupData(data []byte) (map[string][]*rule, error) {
 
 func downloadRulesLookupFile() {
 	unableMsg := i18n.Text("Unable to download the GURPS Rules Lookup data.")
-	wnd, _, err := newProgressWindow(i18n.Text("Downloading…"), i18n.Text("Downloading the GURPS Rules Lookup data…"),
-		unison.NewProgressBar(0), nil)
+	dialog, err := unison.NewProgressDialog(i18n.Text("Downloading…"),
+		i18n.Text("Downloading the GURPS Rules Lookup data…"), 0, nil)
 	if err != nil {
 		Workspace.ErrorHandler(unableMsg, err)
 		return
 	}
-	resultChan := make(chan rulesLookupResult, 1)
-	runInBackground(resultChan, func() rulesLookupResult {
+	result := unison.RunProgressDialog(dialog, func() rulesLookupResult {
 		rules, retrieveErr := retrieveRulesLookupData()
 		return rulesLookupResult{rules: rules, err: retrieveErr}
-	}, func() { unison.InvokeTask(func() { wnd.StopModal(unison.ModalResponseOK) }) })
-	wnd.RunModal()
-	result := <-resultChan
+	}, nil)
 	if result.err != nil {
 		Workspace.ErrorHandler(unableMsg, result.err)
 		return

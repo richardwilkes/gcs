@@ -32,6 +32,10 @@ type GCSStartupConfig struct {
 	// UpdateDesktopInfo indicates whether the desktop info (app icons, registry entries, etc) should be updated. It
 	// should be true for the main UI and false for headless sessions.
 	UpdateDesktopInfo bool
+	// ManageAppUpdates indicates whether to settle up after an application update and to check for a new one at launch.
+	// It should be true for the main UI and false for headless sessions, which are not the instance that owns the
+	// installation and so must not clear away an update another instance may be in the middle of applying.
+	ManageAppUpdates bool
 }
 
 // DefaultGCSStartupConfig returns a GCSStartupConfig suitable for starting the main GURPS Character Sheet UI.
@@ -39,6 +43,7 @@ func DefaultGCSStartupConfig() *GCSStartupConfig {
 	return &GCSStartupConfig{
 		EnableHandoff:     true,
 		UpdateDesktopInfo: true,
+		ManageAppUpdates:  true,
 	}
 }
 
@@ -48,6 +53,7 @@ func DefaultHeadlessGCSStartupConfig() *GCSStartupConfig {
 	return &GCSStartupConfig{
 		EnableHandoff:     false,
 		UpdateDesktopInfo: false,
+		ManageAppUpdates:  false,
 	}
 }
 
@@ -72,12 +78,14 @@ func StartOptions(files []string, config *GCSStartupConfig) []unison.StartupOpti
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
-			// Settle up after an update applied while this application was not running, before anything else looks at
-			// the installation directory. With handoff enabled, only the primary instance gets here, since the handoff
-			// service has already decided that by the time this callback fires.
-			ReportAppUpdateOutcome()
-			if gurps.GlobalSettings().General.AppUpdateCheck.ChecksAtLaunch() {
-				CheckForAppUpdates()
+			if config.ManageAppUpdates {
+				// Settle up after an update applied while this application was not running, before anything else looks
+				// at the installation directory. With handoff enabled, only the primary instance gets here, since the
+				// handoff service has already decided that by the time this callback fires.
+				ReportAppUpdateOutcome()
+				if gurps.GlobalSettings().General.AppUpdateCheck.ChecksAtLaunch() {
+					CheckForAppUpdates(false)
+				}
 			}
 			// The repeating checks are started here, on the UI thread and after unison is up, since that is where their
 			// ticks are delivered and where the state they touch may only be read.
@@ -107,10 +115,6 @@ func StartOptions(files []string, config *GCSStartupConfig) []unison.StartupOpti
 			}
 			return true
 		}),
-		// A prepared update is applied from here rather than from wherever the quit was requested, because
-		// unison.AttemptQuit does not return when the quit succeeds -- it reaches xos.Exit and the process ends. This
-		// callback is reached on every exit that still runs Go code, and does nothing unless an update is waiting.
-		unison.QuittingCallback(applyPendingUpdate),
 	}
 }
 

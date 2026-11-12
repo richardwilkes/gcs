@@ -14,10 +14,11 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/updater"
 )
 
 // pulseTolerance is how far a computed pulse fraction may sit from the expected one, which allows for the float32
@@ -59,17 +60,17 @@ func TestPulseFractionEndpoints(t *testing.T) {
 
 func TestShowAppUpdateButton(t *testing.T) {
 	c := check.New(t)
-	releases := []library.Release{{Version: "5.99.0"}}
+	releases := []updater.Release{{Version: "5.99.0"}}
 	for _, one := range []struct {
 		name     string
-		releases []library.Release
+		releases []updater.Release
 		option   updatecheck.Option
 		expected bool
 	}{
 		{name: "no update known", releases: nil, option: updatecheck.AtLaunch, expected: false},
 		{name: "no update known, never", releases: nil, option: updatecheck.Never, expected: false},
 		// The caller reads the first release, so an empty list must count as no update even though it isn't nil.
-		{name: "empty update list", releases: []library.Release{}, option: updatecheck.AtLaunch, expected: false},
+		{name: "empty update list", releases: []updater.Release{}, option: updatecheck.AtLaunch, expected: false},
 		{name: "update known, at launch", releases: releases, option: updatecheck.AtLaunch, expected: true},
 		{name: "update known, hourly", releases: releases, option: updatecheck.Hourly, expected: true},
 		{name: "update known, daily", releases: releases, option: updatecheck.Daily, expected: true},
@@ -174,25 +175,16 @@ func TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease(t *testing.T) {
 	c.Equal(1, len(recorder.pending), "a pulse that was stopped must start again for the same release")
 }
 
-// seedAppUpdate puts the given releases into the shared update state for the duration of the test, with nil meaning
-// that nothing is known, and restores what was there afterwards.
-func seedAppUpdate(t *testing.T, releases []library.Release) {
+// pendingAppRelease is an available release for the update button to announce.
+var pendingAppRelease = []updater.Release{{Version: "99.0.0"}}
+
+// seedAppUpdate makes AppUpdateResult report the given releases, under a fixed title and with no check under way, for
+// the duration of the test.
+func seedAppUpdate(t *testing.T, releases []updater.Release) {
 	t.Helper()
-	appUpdate.lock.Lock()
-	savedResult, savedReleases, savedUpdating := appUpdate.result, appUpdate.releases, appUpdate.updating
-	appUpdate.lock.Unlock()
-	t.Cleanup(func() {
-		appUpdate.lock.Lock()
-		appUpdate.result, appUpdate.releases, appUpdate.updating = savedResult, savedReleases, savedUpdating
-		appUpdate.lock.Unlock()
+	uxtest.SwapForTest(t, &appUpdateStatusOverride, func() (string, []updater.Release, bool) {
+		return "An update is available", releases, false
 	})
-	if releases != nil {
-		appUpdate.SetReleases(releases)
-		return
-	}
-	appUpdate.lock.Lock()
-	appUpdate.result, appUpdate.releases, appUpdate.updating = "", nil, false
-	appUpdate.lock.Unlock()
 }
 
 // TestSyncAppUpdateButtonAddsAndRemovesIt verifies that the update button is a child of the toolbar only while there

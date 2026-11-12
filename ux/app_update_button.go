@@ -15,11 +15,11 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/updater"
 )
 
 const (
@@ -59,7 +59,7 @@ func newAppUpdateButton(click func()) *unison.Button {
 // showAppUpdateButton returns true if the update button should be visible. With the setting at Never, the button is
 // never shown, even for an update that is already known from an earlier check or from an explicit check made through
 // the Help menu. The caller reads the first release, so an empty list counts as no update, whether or not it is nil.
-func showAppUpdateButton(releases []library.Release, option updatecheck.Option) bool {
+func showAppUpdateButton(releases []updater.Release, option updatecheck.Option) bool {
 	return len(releases) != 0 && option != updatecheck.Never
 }
 

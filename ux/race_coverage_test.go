@@ -28,7 +28,6 @@ func TestRace(t *testing.T) {
 	t.Run("NavigatorSearchOffersMatches", TestNavigatorSearchOffersMatches)
 	t.Run("PrewarmWithNoDeepSearchPathsRefreshesSearch", TestPrewarmWithNoDeepSearchPathsRefreshesSearch)
 	t.Run("ReloadWalksTheLibrariesOffTheUIThread", TestReloadWalksTheLibrariesOffTheUIThread)
-	t.Run("RunInBackgroundDeliversResultBeforeFinishing", TestRunInBackgroundDeliversResultBeforeFinishing)
 	t.Run("SearchReadsMissingContentInTheBackground", TestSearchReadsMissingContentInTheBackground)
 	t.Run("SupersededCacheBuildHandsEntriesToItsSuccessor", TestSupersededCacheBuildHandsEntriesToItsSuccessor)
 }

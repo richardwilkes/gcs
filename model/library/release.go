@@ -11,50 +11,20 @@ package library
 
 import (
 	"context"
-	"encoding/json/v2"
 	"net/http"
-	"slices"
-	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xio"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
+	"github.com/richardwilkes/unison/updater"
 )
-
-// ReleaseAsset holds information about a single file attached to a GitHub release. These are the packaged
-// distributions the release workflow uploads, as opposed to the source archives GitHub generates on its own.
-type ReleaseAsset struct {
-	Name   string
-	URL    string
-	Digest string
-	Size   int64
-}
-
-// SHA256 returns the hex-encoded SHA-256 of the asset, or an empty string if GitHub didn't supply one. The digest
-// field was only added to the API in 2025, so assets from older releases don't have it.
-func (a *ReleaseAsset) SHA256() string {
-	return strings.TrimPrefix(a.Digest, "sha256:")
-}
 
 // Release holds information about a single release of a GitHub repo.
 type Release struct {
 	Version     string
 	Notes       string
 	ZipFileURL  string
-	Assets      []ReleaseAsset
 	CheckFailed bool
-}
-
-// Asset returns the asset with the given name, if present. Matching is case-insensitive, since the names come from
-// the API rather than the local filesystem.
-func (r *Release) Asset(name string) (ReleaseAsset, bool) {
-	for _, one := range r.Assets {
-		if strings.EqualFold(one.Name, name) {
-			return one, true
-		}
-	}
-	return ReleaseAsset{}, false
 }
 
 // HasUpdate returns true if there is an update available.
@@ -89,7 +59,9 @@ func gitHubGet(ctx context.Context, client *http.Client, url, accessToken string
 	return rsp, nil
 }
 
-// LoadReleases loads the list of releases available from a given GitHub repo.
+// LoadReleases loads the list of releases available from a given GitHub repo that are at least currentVersion, newest
+// first, leaving out those filter, if not nil, returns true for. With useLatest, the repo's latest commit stands in for
+// its releases.
 func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, accessToken, repoName, currentVersion string, filter func(version, notes string) bool, useLatest bool) ([]Release, error) {
 	if githubAccountName == "" || repoName == "" {
 		return nil, nil
@@ -107,57 +79,17 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 			},
 		}, nil
 	}
-	var versions []Release
-	uri := "https://api.github.com/repos/" + githubAccountName + "/" + repoName + "/releases"
-	rsp, err := gitHubGet(ctx, client, uri, accessToken)
-	if err != nil {
+	found, err := updater.FetchReleases(ctx, client, githubAccountName, repoName, accessToken, currentVersion, filter)
+	if err != nil || len(found) == 0 {
 		return nil, err
 	}
-	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
-	var releases []struct {
-		TagName    string `json:"tag_name"`
-		Body       string `json:"body"`
-		ZipBallURL string `json:"zipball_url"`
-		Assets     []struct {
-			Name   string `json:"name"`
-			URL    string `json:"browser_download_url"`
-			Digest string `json:"digest"`
-			Size   int64  `json:"size"`
-		} `json:"assets"`
-	}
-	if err = json.UnmarshalRead(rsp.Body, &releases); err != nil {
-		return nil, errs.NewWithCause("unable to decode response from GitHub API "+uri, err)
-	}
-	for _, one := range releases {
-		if strings.HasPrefix(one.TagName, "v") {
-			if version := strings.TrimSpace(one.TagName[1:]); version != "" &&
-				(currentVersion == version || xstrings.NaturalLess(currentVersion, version, true)) {
-				if filter == nil || !filter(version, one.Body) {
-					var assets []ReleaseAsset
-					if len(one.Assets) != 0 {
-						assets = make([]ReleaseAsset, len(one.Assets))
-						for i, asset := range one.Assets {
-							assets[i] = ReleaseAsset{
-								Name:   asset.Name,
-								URL:    asset.URL,
-								Digest: asset.Digest,
-								Size:   asset.Size,
-							}
-						}
-					}
-					versions = append(versions, Release{
-						Version:    version,
-						Notes:      one.Body,
-						ZipFileURL: one.ZipBallURL,
-						Assets:     assets,
-					})
-				}
-			}
+	versions := make([]Release, len(found))
+	for i := range found {
+		versions[i] = Release{
+			Version:    found[i].Version,
+			Notes:      found[i].Notes,
+			ZipFileURL: found[i].ZipBallURL,
 		}
-	}
-	slices.SortFunc(versions, func(a, b Release) int { return xstrings.NaturalCmp(b.Version, a.Version, true) })
-	if len(versions) > 1 && versions[len(versions)-1].Version == currentVersion {
-		versions = versions[:len(versions)-1]
 	}
 	return versions, nil
 }

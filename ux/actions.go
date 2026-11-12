@@ -581,10 +581,7 @@ func registerActions() {
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			return !AppUpdateCheckInProgress()
 		},
-		ExecuteCallback: func(_ *unison.Action, _ any) {
-			gurps.GlobalSettings().LastSeenGCSVersion = ""
-			CheckForAppUpdates()
-		},
+		ExecuteCallback: func(_ *unison.Action, _ any) { CheckForAppUpdates(true) },
 	}
 	licenseAction = &unison.Action{
 		ID:    LicenseItemID,

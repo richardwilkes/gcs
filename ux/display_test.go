@@ -18,9 +18,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestPlaceWindowOver verifies the placement the about box, progress window and undocked dockable windows all share:
-// centered horizontally over the frame, one third of the way down it, aligned to whole pixels, and clamped onto the
-// display when the frame would otherwise push it off.
+// TestPlaceWindowOver verifies the placement the about box and undocked dockable windows share: centered horizontally
+// over the frame, one third of the way down it, aligned to whole pixels, and clamped onto the display when the frame
+// would otherwise push it off.
 func TestPlaceWindowOver(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)

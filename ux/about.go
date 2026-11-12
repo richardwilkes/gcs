@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/updater"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/updater"
 )
 
 var aboutWnd *unison.Window
