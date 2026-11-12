@@ -10,11 +10,13 @@
 package ux
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 )
 
 // TestLibraryCheckWantedAfterApply verifies when applying a library's settings is followed by a background check of its
@@ -73,4 +75,25 @@ func TestLibraryKeyTakenByOther(t *testing.T) {
 	c.True(libraryKeyTakenByOther(libs, masterConfig.GitHubAccountName, masterConfig.RepoName, fresh))
 	c.False(libraryKeyTakenByOther(libs, "someone", "other-stuff", fresh))
 	c.False(libraryKeyTakenByOther(libs, "", "local-only", fresh))
+}
+
+// TestLibrarySettingsFieldsShrinkToFitTheView verifies that the text in the view's fields has no say in how narrow its
+// content can become: an access token far longer than the view is wide neither raises the content's minimum width nor
+// makes the content wider than a view that has room for that minimum.
+func TestLibrarySettingsFieldsShrinkToFitTheView(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	contentWidth := func(token string, viewWidth float32) float32 {
+		d := newLibrarySettingsDockable(library.NewLibrary("Test", "someone", token, "repo", dir))
+		content := newSettingsContent(d.initContent)
+		scroller := d.newContentScroller(content)
+		// Tall enough that no vertical scroll bar takes any of the width.
+		scroller.SetFrameRect(geom.NewRect(0, 0, viewWidth, 2000))
+		scroller.ValidateLayout()
+		return content.FrameRect().Width
+	}
+	token := "github_pat_" + strings.Repeat("M", 82)
+	minimum := contentWidth("", 100)
+	c.Equal(minimum, contentWidth(token, 100), "the token does not raise the content's minimum width")
+	c.Equal(minimum+50, contentWidth(token, minimum+50), "the content is no wider than a view with room for its minimum")
 }

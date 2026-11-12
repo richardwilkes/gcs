@@ -625,14 +625,15 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	content := wnd.Content()
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
 	panel := dockable.AsPanel()
-	panel.SetLayoutData(&unison.FlexLayoutData{
+	data := &unison.FlexLayoutData{
 		HSpan:  1,
 		VSpan:  1,
 		HAlign: align.Fill,
 		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
-	})
+	}
+	panel.SetLayoutData(data)
 	content.AddChild(panel)
 	installStaticTextFocusRing(wnd)
 	wnd.ClientData()[dockableClientDataKey] = dockable
@@ -658,6 +659,10 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	// display's clamp along, leaving the window shorter than its content asked for even though its eventual display
 	// had the room.
 	pack := func() {
+		// The minimum is taken here so that it is for what the Dockable shows when the window is sized.
+		if sizer, ok := dockable.(ownWindowMinimumSizer); ok {
+			data.MinSize = sizer.ownWindowMinimumSize()
+		}
 		wnd.PackWithLocation(frame.Point)
 		widenToFitTooltips(wnd, panel)
 	}
@@ -675,6 +680,12 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 // window around what the Dockable then shows, while showing what the window is to be sized for.
 type ownWindowShower interface {
 	showForOwnWindow(pack func())
+}
+
+// ownWindowMinimumSizer is implemented by a Dockable whose layout lets it shrink further than is usable, such as one
+// that scrolls its content, to keep a window of its own from being made smaller than the size it returns.
+type ownWindowMinimumSizer interface {
+	ownWindowMinimumSize() geom.Size
 }
 
 // widenToFitTooltips widens the window, which must already be packed, so that its content is at least as wide as the

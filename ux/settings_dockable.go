@@ -27,8 +27,9 @@ import (
 )
 
 var (
-	_ unison.Dockable  = &SettingsDockable{}
-	_ unison.TabCloser = &SettingsDockable{}
+	_ unison.Dockable       = &SettingsDockable{}
+	_ unison.TabCloser      = &SettingsDockable{}
+	_ ownWindowMinimumSizer = &SettingsDockable{}
 )
 
 // SettingsDockable holds common settings dockable data.
@@ -57,11 +58,13 @@ type SettingsDockable struct {
 	// ContentWidthBehavior is how the content's width follows the view's. Left Unmodified, it is Fill: the content is
 	// at least as wide as the view. Follow makes it exactly as wide, never wider, so that it doesn't scroll sideways
 	// however narrow the view becomes, and it must then fit its content to whatever width it is given. HintedFill gives
-	// it the view's width to lay itself out within, for content that wraps to fit, but lets it be wider when it cannot.
+	// it the view's width to lay itself out within, for content that wraps or shrinks to fit, but lets it be wider when
+	// it cannot.
 	ContentWidthBehavior behavior.Enum
 	// ContentMinSize is the smallest size the view lets its content be shrunk to, below which the content would be
 	// hidden or too cramped to use. The view scrolls rather than shrinking it further.
 	ContentMinSize geom.Size
+	scroller       *unison.ScrollPanel
 }
 
 // settingsSpec is what distinguishes one of the views that edit a global setting in place (the colors, fonts, menu keys,
@@ -242,6 +245,15 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
 	d.AddChild(toolbar)
 	content := newSettingsContent(initContent)
+	d.scroller = d.newContentScroller(content)
+	d.AddChild(d.scroller)
+	PlaceInDock(d, dgroup.Settings, false)
+	FocusFirstContent(toolbar, content)
+}
+
+// newContentScroller returns the scroll panel that shows the view's content, sized as ContentWidthBehavior and
+// ContentMinSize say.
+func (d *SettingsDockable) newContentScroller(content *unison.Panel) *unison.ScrollPanel {
 	scroller := unison.NewScrollPanel()
 	widthBehavior := d.ContentWidthBehavior
 	if widthBehavior == behavior.Unmodified {
@@ -255,9 +267,29 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 		HGrab:   true,
 		VGrab:   true,
 	})
-	d.AddChild(scroller)
-	PlaceInDock(d, dgroup.Settings, false)
-	FocusFirstContent(toolbar, content)
+	return scroller
+}
+
+// settingsOwnWindowContentMinHeight is how much of its content's height a settings view keeps in view in a window of
+// its own, or all of it when the content is shorter.
+const settingsOwnWindowContentMinHeight = 200
+
+// ownWindowMinimumSize implements ownWindowMinimumSizer. The view scrolls its content, so its layout lets it shrink to
+// little more than its toolbar. A window of its own is instead kept big enough to show, below the toolbar, the content
+// at its narrowest across and settingsOwnWindowContentMinHeight of it down. A view with a ContentMinSize is already
+// held to that by its layout.
+func (d *SettingsDockable) ownWindowMinimumSize() geom.Size {
+	if d.ContentMinSize != (geom.Size{}) {
+		return geom.Size{}
+	}
+	size, _, _ := d.scroller.Content().AsPanel().Sizes(geom.Size{})
+	if size.Height > settingsOwnWindowContentMinHeight {
+		size.Height = settingsOwnWindowContentMinHeight
+		// The content then scrolls vertically, and is not to lose the scroll bar's width from its own.
+		size.Width += d.scroller.Bar(false).MinimumThickness
+	}
+	_, toolbar, _ := d.Children()[0].Sizes(geom.Size{})
+	return geom.NewSize(max(toolbar.Width, size.Width), toolbar.Height+size.Height).Ceil()
 }
 
 // TitleIcon implements unison.Dockable.

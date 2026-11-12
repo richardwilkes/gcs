@@ -404,6 +404,56 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 	}
 }
 
+// TestSettingsViewsKeepAMinimumWindowSize verifies that a window of a settings view's own can't be shrunk past the
+// narrowest its content can be laid out, nor to less than settingsOwnWindowContentMinHeight of that content's height.
+// The views here scroll their content rather than naming a ContentMinSize, so their layout alone would let the window
+// shrink to little more than the toolbar.
+func TestSettingsViewsKeepAMinimumWindowSize(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	for _, view := range []struct {
+		name string
+		show func()
+	}{
+		{name: "colors", show: ShowColorSettings},
+		{name: "fonts", show: ShowFontSettings},
+		{name: "menu keys", show: ShowMenuKeySettings},
+		{name: "library", show: func() { ShowLibrarySettings(gurps.GlobalSettings().Libraries.User()) }},
+		{name: "attributes", show: func() { ShowAttributeSettings(nil) }},
+		{name: "body type", show: func() { ShowBodySettings(globalBodySettings) }},
+		{name: "ancestry", show: newAncestryDocument},
+		{name: "name generator", show: newNameGeneratorDocument},
+	} {
+		d := uxtest.OpenedByAction(t, screen, &unison.Action{
+			Title:           view.name,
+			ExecuteCallback: func(_ *unison.Action, _ any) { view.show() },
+		})
+		screen.Do(func() {
+			wnd, err := MoveDockableToWindow(d)
+			c.NoError(err)
+			c.NotNil(wnd, "%s: the view is given a window of its own", view.name)
+			if wnd == nil {
+				return
+			}
+			r := wnd.ContentRect()
+			r.Size = geom.Size{}
+			wnd.SetContentRect(r)
+			wnd.ValidateLayout()
+			scroller, ok := d.AsPanel().Children()[1].Self.(*unison.ScrollPanel)
+			c.True(ok, "%s: the view's content is in a scroll panel", view.name)
+			if !ok {
+				return
+			}
+			need, _, _ := scroller.Content().AsPanel().Sizes(geom.Size{})
+			need.Height = min(need.Height, settingsOwnWindowContentMinHeight)
+			got := scroller.FrameRect().Size
+			c.True(got.Width >= need.Width && got.Height >= need.Height,
+				"%s: the window shrinks no further than leaves the content %v, not %v", view.name, need, got)
+			d.AttemptClose()
+		})
+	}
+}
+
 // crampedPanels describes each descendant of the panel that its layout has not given the room it needs: one that
 // extends past the panel holding it, or a widget without children of its own that is narrower than it asks to be. A
 // path field asks for the whole path's width and shortens the path to whatever it gets, so it is never cramped.

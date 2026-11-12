@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 )
 
@@ -51,14 +52,7 @@ func ShowLibrarySettings(lib *library.Library) {
 	if ActivateDockableOfType(func(d *librarySettingsDockable) bool { return d.library == lib }) {
 		return
 	}
-	isUser := lib.IsUser()
-	d := &librarySettingsDockable{
-		library: lib,
-		config:  lib.Config(),
-		path:    lib.Data().PathOnDisk,
-		special: isUser || lib.IsMaster(),
-		isUser:  isUser,
-	}
+	d := newLibrarySettingsDockable(lib)
 	d.initSettings(d, &settingsSpec{
 		title:             librarySettingsTitle(d.config.Title),
 		willClose:         d.willClose,
@@ -68,6 +62,22 @@ func ShowLibrarySettings(lib *library.Library) {
 	d.updateToolbar()
 	d.nameField.RequestFocus()
 	d.promptForSave = true
+}
+
+// newLibrarySettingsDockable returns the Library Settings view for a library, yet to be built and shown.
+func newLibrarySettingsDockable(lib *library.Library) *librarySettingsDockable {
+	isUser := lib.IsUser()
+	d := &librarySettingsDockable{
+		library: lib,
+		config:  lib.Config(),
+		path:    lib.Data().PathOnDisk,
+		special: isUser || lib.IsMaster(),
+		isUser:  isUser,
+	}
+	// The fields shrink to fit the view's width, however long their text, which leaves the labels, notes and checkbox
+	// to decide how narrow the content can become before the view scrolls sideways.
+	d.ContentWidthBehavior = behavior.HintedFill
+	return d
 }
 
 // librarySettingsTitle returns the title of the settings view for a library with the given name. A library created via
