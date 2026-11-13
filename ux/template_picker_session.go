@@ -52,6 +52,9 @@ type pickerSession[T gurps.Node[T]] struct {
 	chosen         map[T]bool
 	pickerAnswered map[T]bool
 	modsAnswered   map[T]bool
+	// modsKept holds the rows picked at random whose mandatory modifier choices were all made already (see settle).
+	// Those count as made as they stand, but unlike the rows in modsAnswered, these are still asked about later.
+	modsKept map[T]bool
 	// above holds the containers above a choice container and the organizing groups, whose modifier choices count as
 	// they stand for the rows inside until asked.
 	above map[T]bool
@@ -64,6 +67,11 @@ type pickerSession[T gurps.Node[T]] struct {
 	expected map[pickerMeasureKey[T]]gurps.NumericRange
 	// runPicker puts up the dialog for a choice container, returning how it was closed.
 	runPicker func(row T, depth int) int
+	// random makes the picks the user asks to have made at random. The parts of one transfer share it.
+	random *randomPicks
+	// randomFailed holds why no random picks were found for a choice container (see pickRandomly), until its dialog
+	// closes or something in it changes.
+	randomFailed map[T]string
 }
 
 // newPickerSession returns a session for the rows. prompted says whether the modifier prompt follows (see
@@ -75,9 +83,12 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 		chosen:         make(map[T]bool),
 		pickerAnswered: make(map[T]bool),
 		modsAnswered:   make(map[T]bool),
+		modsKept:       make(map[T]bool),
 		above:          make(map[T]bool),
 		modPrompts:     make(map[T]func(info *modifierPromptInfo) bool),
 		expected:       make(map[pickerMeasureKey[T]]gurps.NumericRange),
+		random:         &randomPicks{},
+		randomFailed:   make(map[T]string),
 	}
 	s.runPicker = s.showPicker
 	gurps.Traverse(func(row T) bool {
@@ -116,7 +127,8 @@ func (s *pickerSession[T]) expect(rows ...T) {
 }
 
 // processRows replaces each choice container among the rows, however deep, with what was chosen from it, putting up
-// the dialog for each one not already answered. Returns true for abort if one was canceled.
+// the dialog for each one not already answered, unless its picks are to be made at random and could be. Returns true
+// for abort if one was canceled or its window closed.
 func (s *pickerSession[T]) processRows(rows []T) (revised []T, abort bool) {
 	revised = make([]T, 0, len(rows))
 	for _, one := range rows {
@@ -142,8 +154,11 @@ func (s *pickerSession[T]) processRow(row T) (revised []T, abort bool) {
 		SetParents(children, row)
 		return []T{row}, false
 	}
-	if !s.pickerAnswered[row] && s.runPicker(row, 0) == unison.ModalResponseCancel {
-		return nil, true
+	if !s.pickerAnswered[row] && (!s.random.remaining() || !s.pickRandomly(row)) {
+		if response := s.runPicker(row, 0); response == unison.ModalResponseCancel ||
+			response == unison.ModalResponseDiscard {
+			return nil, true
+		}
 	}
 	if revised, abort = s.pickedFrom(row); abort {
 		return nil, true
@@ -179,7 +194,7 @@ func (s *pickerSession[T]) pickedFrom(container T) (revised []T, abort bool) {
 // taken reports whether the modifier choices asked about on the row count as made: for the rows inside it when
 // inherited is true, else for the row itself.
 func (s *pickerSession[T]) taken(row T, inherited bool) bool {
-	return s.modsAnswered[row] || (inherited && s.above[row])
+	return s.modsAnswered[row] || s.modsKept[row] || (inherited && s.above[row])
 }
 
 // byRules is taken for a choice costed by its rules alone: the rows inside take the choices of a container above them
@@ -244,6 +259,7 @@ func (s *pickerSession[T]) chooseModifiers(row T) bool {
 			steps:        len(targets),
 			requirePicks: true,
 			early:        early,
+			random:       s.random,
 		}) {
 			restore()
 			return false
@@ -328,7 +344,7 @@ func (s *pickerSession[T]) costText(row T) string {
 // come to, and the levels, points, quantities and enabled modifiers at or below the row.
 func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 	chosen, pickerAnswered, modsAnswered := maps.Clone(s.chosen), maps.Clone(s.pickerAnswered), maps.Clone(s.modsAnswered)
-	expected := maps.Clone(s.expected)
+	modsKept, expected := maps.Clone(s.modsKept), maps.Clone(s.expected)
 	var undo []func()
 	gurps.Traverse(func(one T) bool {
 		switch item := any(one).(type) {
@@ -345,7 +361,8 @@ func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 		return false
 	}, false, false, row)
 	return func() {
-		s.chosen, s.pickerAnswered, s.modsAnswered, s.expected = chosen, pickerAnswered, modsAnswered, expected
+		s.chosen, s.pickerAnswered, s.modsAnswered, s.modsKept = chosen, pickerAnswered, modsAnswered, modsKept
+		s.expected = expected
 		for _, one := range undo {
 			one()
 		}
@@ -586,6 +603,9 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	tp := templatePicker(container)
 	t := pickerText{state: s.state(container)}
 	var parts []string
+	if failed := s.randomFailed[container]; failed != "" && t.state != pickerOK {
+		parts = append(parts, failed)
+	}
 	if s.ownState(container) == pickerError {
 		total, target := s.total(container, tp.Type), tp.Qualifier.Qualifier
 		overBy, short := i18n.Text("Over by %s."), i18n.Text("%s short.")

@@ -264,6 +264,17 @@ func UnresolvedModifierChoices[T Node[T]](modifiers ...T) []T {
 	return list
 }
 
+// PickUnresolvedModifierChoices enables one option of each unresolved mandatory choice among the modifiers and their
+// children, the one at the index pick returns when given how many options there are. Returns true if any was picked.
+func PickUnresolvedModifierChoices[T Node[T]](pick func(n int) int, modifiers ...T) bool {
+	unresolved := UnresolvedModifierChoices(modifiers...)
+	for _, choice := range unresolved {
+		options := ModifierChoiceOptions(choice)
+		SetModifierEnabled(options[pick(len(options))], true)
+	}
+	return len(unresolved) != 0
+}
+
 // unresolvedModifierChoiceText names the unresolved mandatory choices among the modifiers of an item on a sheet, or
 // returns "" when there are none or the item isn't on a sheet.
 func unresolvedModifierChoiceText[T Node[T], M Node[M]](item T, modifiers []M) string {

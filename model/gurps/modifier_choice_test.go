@@ -423,6 +423,33 @@ func TestSettleModifierChoices(t *testing.T) {
 	c.False(SettleModifierChoices(nil, choice), "a settled choice has nothing to settle")
 }
 
+// TestPickUnresolvedModifierChoices verifies that only the mandatory choices still to be made are given a pick, the one
+// asked for, wherever among the modifiers they sit.
+func TestPickUnresolvedModifierChoices(t *testing.T) {
+	c := check.New(t)
+	enabled := func(choice *TraitModifier) []bool {
+		list := make([]bool, len(choice.Children))
+		for i, one := range choice.Children {
+			list[i] = one.Enabled()
+		}
+		return list
+	}
+	unmade := newTraitModifierChoiceWith(true, "+1", "+2", "+3")
+	made := newTraitModifierChoiceWith(true, "+1", "+2")
+	made.Children[0].SetDisabled(false)
+	optional := newTraitModifierChoiceWith(false, "+1", "+2")
+	grouped := newTraitModifierChoiceWith(true, "+1", "+2")
+	group := NewTraitModifier(nil, nil, true)
+	group.Children = append(group.Children, grouped)
+	last := func(n int) int { return n - 1 }
+	c.True(PickUnresolvedModifierChoices(last, unmade, made, optional, group))
+	c.Equal([]bool{false, false, true}, enabled(unmade), "the option asked for is the one picked")
+	c.Equal([]bool{true, false}, enabled(made), "a pick already made is kept")
+	c.Equal([]bool{false, false}, enabled(optional), "an optional choice is left without one")
+	c.Equal([]bool{false, true}, enabled(grouped), "a choice within a group is picked too")
+	c.False(PickUnresolvedModifierChoices(last, unmade, made, optional, group), "nothing is left to pick")
+}
+
 // TestEquipmentRangesWithMandatoryModifierChoice verifies that equipment whose mandatory modifier choice is still to be
 // made reports the range of values and weights its options give it, both for one of it and scaled by its quantity.
 func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {

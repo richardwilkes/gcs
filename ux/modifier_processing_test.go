@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -18,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // modifierPrompt records one invocation of a modifier enable/disable prompt.
@@ -119,7 +121,8 @@ func forbidModifierPrompts(t *testing.T) {
 // processModifiers prompts for the modifiers of the rows as applyTransfer does.
 func processModifiers[T gurps.Node[T]](rows []T, requirePicks bool) bool {
 	targets := modifierTargets(rows, requirePicks, nil)
-	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets), requirePicks, nil)
+	return promptForModifierTargets(promptOperation{}, targets, &modifierPromptCount{total: len(targets)}, requirePicks,
+		nil, nil)
 }
 
 // TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
@@ -600,15 +603,164 @@ func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"A"})}
 	template := newTestTemplateWithTraits()
 	toTemplate := &applyPart[*gurps.Trait]{table: template.Traits.Table, rows: []*gurps.Trait{trait}}
-	_, ok := toTemplate.promptForModifiers(promptOperation{}, 0, 1)
-	c.True(ok)
+	c.True(toTemplate.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
 	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
 
 	loot := newTestLootSheet(t)
 	equipment := gurps.NewEquipment(nil, nil, false)
 	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
 	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
-	_, ok = toLoot.promptForModifiers(promptOperation{}, 0, 1)
-	c.True(ok)
+	c.True(toLoot.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
 	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
+}
+
+// newPickTestModifiers returns a mandatory choice between Low and High with no pick made, and a modifier that is off.
+func newPickTestModifiers() (choice, plain *gurps.TraitModifier) {
+	plain = gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	plain.SetDisabled(true)
+	return newTraitModifierChoiceFor(nil, true, []string{"Low", "High"}), plain
+}
+
+// TestModifierPromptPicksRandomly verifies that the modifier prompt's random buttons keep what was set in it and give a
+// mandatory choice without a pick one, that only a prompt asking for a pick has them, that Auto Pick is available
+// only while a pick is still to be made there, and that one put up from the picker doesn't offer to make the picks
+// still to come.
+func TestModifierPromptPicksRandomly(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	// show puts up the prompt for the modifiers and returns its window, along with what tells whether it has returned.
+	show := func(info *modifierPromptInfo, modifiers ...*gurps.TraitModifier) (dialogWnd *unison.Window, returned func() bool) {
+		done := false
+		c.True(screen.Post(func() {
+			showModifiersDialog(info, modifiers)
+			done = true
+		}))
+		screen.Sync()
+		dialogWnd, _ = modalDialog(t, screen, wnd)
+		return dialogWnd, func() bool { return done }
+	}
+	button := func(dialogWnd *unison.Window, title string) (b *unison.Button) {
+		screen.Do(func() { b = buttonWithTitle(dialogWnd.Content(), title) })
+		return b
+	}
+	enabled := func(dialogWnd *unison.Window, title string) (on bool) {
+		screen.Do(func() {
+			b := buttonWithTitle(dialogWnd.Content(), title)
+			on = b != nil && b.Enabled()
+		})
+		return on
+	}
+
+	choice, plain := newPickTestModifiers()
+	info := &modifierPromptInfo{name: "Blast", requirePicks: true, random: &randomPicks{rnd: firstPick{}}}
+	dialogWnd, returned := show(info, choice, plain)
+	var boxes []*unison.CheckBox
+	screen.Do(func() { boxes = uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content()) })
+	c.Equal(1, len(boxes))
+	screen.Click(screen.PanelCenter(boxes[0]))
+	screen.Click(screen.PanelCenter(button(dialogWnd, "Auto Pick")))
+	c.True(returned())
+	c.True(choice.Children[0].Enabled(), "the choice was given its pick")
+	c.False(choice.Children[1].Enabled())
+	c.True(plain.Enabled(), "what was set in the prompt is kept")
+	c.False(info.random.rest, "only this prompt's pick was asked for")
+
+	choice, plain = newPickTestModifiers()
+	dialogWnd, returned = show(info, choice, plain)
+	screen.Click(screen.PanelCenter(button(dialogWnd, "Auto Pick All")))
+	c.True(returned())
+	c.True(gurps.ModifierChoiceIsResolved(choice))
+	c.False(plain.Enabled(), "a modifier outside a choice is left as it was")
+	c.True(info.random.rest)
+
+	choice, plain = newPickTestModifiers()
+	dialogWnd, returned = show(info, choice, plain)
+	var radios []*unison.RadioButton
+	screen.Do(func() { radios = uxtest.PanelsOfType[*unison.RadioButton](dialogWnd.Content()) })
+	c.Equal(2, len(radios))
+	screen.Click(screen.PanelCenter(radios[1]))
+	c.False(enabled(dialogWnd, "Auto Pick"), "a pick made by hand leaves none to make here")
+	c.True(enabled(dialogWnd, "Auto Pick All"), "but still those of the prompts to come")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(returned())
+
+	optional := newTraitModifierChoiceFor(nil, false, []string{"Loud", "Quiet"})
+	made := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"}, "High")
+	dialogWnd, returned = show(info, optional, made, plain)
+	c.Nil(button(dialogWnd, "Auto Pick"), "a prompt that asks for no pick has none to make")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(returned())
+
+	choice, plain = newPickTestModifiers()
+	info.early = &earlyModifierPrompt{cost: func() string { return "" }}
+	dialogWnd, returned = show(info, choice, plain)
+	c.NotNil(button(dialogWnd, "Auto Pick"))
+	c.Nil(button(dialogWnd, "Auto Pick All"), "a prompt put up from the picker is one of its picks")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(returned())
+
+	made = newTraitModifierChoiceFor(nil, true, []string{"Low", "High"}, "High")
+	dialogWnd, returned = show(info, made)
+	c.False(enabled(dialogWnd, "Auto Pick"), "a prompt put up from the picker with its pick made has none to make")
+	screen.Click(screen.PanelCenter(button(dialogWnd, "Clear Selections")))
+	ok := enabled(dialogWnd, "Auto Pick")
+	c.True(ok, "clearing the selections leaves the pick to make")
+	if !ok {
+		screen.KeyPress(unison.KeyEscape, mod.None)
+		return
+	}
+	screen.Click(screen.PanelCenter(button(dialogWnd, "Auto Pick")))
+	c.True(returned())
+	c.True(made.Children[0].Enabled(), "the cleared choice was given a pick")
+	c.False(made.Children[1].Enabled())
+}
+
+// TestRemainingModifierPromptsAreAnsweredRandomly verifies that once a prompt asks for the picks still to come to be
+// made at random, a modifier prompt that asks for one is answered rather than put up, with only its unmade picks
+// changed, and taken out of the count, while one that asks for none, as with a mandatory choice already made, is still
+// put up, as all are when picks aren't required.
+func TestRemainingModifierPromptsAreAnsweredRandomly(t *testing.T) {
+	c := check.New(t)
+	newRows := func() (rows []*gurps.Trait, lastChoice, lastPlain *gurps.TraitModifier) {
+		for _, name := range []string{"First", "Optional", "Made", "Last"} {
+			trait := gurps.NewTrait(nil, nil, false)
+			trait.Name = name
+			lastChoice, lastPlain = newPickTestModifiers()
+			switch name {
+			case "Optional":
+				trait.Modifiers = []*gurps.TraitModifier{lastPlain}
+			case "Made":
+				lastChoice.Children[1].SetDisabled(false)
+				fallthrough
+			default:
+				trait.Modifiers = []*gurps.TraitModifier{lastChoice, lastPlain}
+			}
+			rows = append(rows, trait)
+		}
+		return rows, lastChoice, lastPlain
+	}
+	var asked []string
+	// Each prompt presses Auto Pick All.
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		asked = append(asked, fmt.Sprintf("%s (%d of %d)", info.name, info.step, info.steps))
+		info.random.rest = true
+		return gurps.PickUnresolvedModifierChoices(info.random.intn, mods...), false
+	})
+	rows, choice, plain := newRows()
+	parts := newApplyParts(applyPart[*gurps.Trait]{table: newTestSheetForTemplate(t).Traits.Table, rows: rows})
+	parts.random.rnd = firstPick{}
+	c.True(parts.promptForModifiers(promptOperation{}))
+	c.Equal([]string{"First (1 of 4)", "Optional (2 of 3)", "Made (3 of 3)"}, asked)
+	c.True(choice.Children[0].Enabled(), "the pick of the prompt not put up was made")
+	c.False(choice.Children[1].Enabled())
+	c.False(plain.Enabled(), "and nothing else about it changed")
+
+	asked = nil
+	rows, _, _ = newRows()
+	parts = newApplyParts(applyPart[*gurps.Trait]{table: newTestTemplateWithTraits().Traits.Table, rows: rows})
+	parts.random.rest = true
+	c.True(parts.promptForModifiers(promptOperation{}))
+	c.Equal([]string{"First (1 of 4)", "Optional (2 of 4)", "Made (3 of 4)", "Last (4 of 4)"}, asked,
+		"where no pick is required there is none to make")
 }

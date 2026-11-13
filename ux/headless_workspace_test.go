@@ -131,6 +131,16 @@ func buttonWithTooltip(root *unison.Panel, text string) *unison.Button {
 	return nil
 }
 
+// buttonWithTitle returns the first button within root with the given title, or nil if there is none.
+func buttonWithTitle(root *unison.Panel, title string) *unison.Button {
+	for _, b := range uxtest.PanelsOfType[*unison.Button](root) {
+		if b.Text != nil && b.Text.String() == title {
+			return b
+		}
+	}
+	return nil
+}
+
 // modalDialog returns the dialog window currently up alongside wnd and the unison.Dialog behind it, failing the test if
 // there is no such window. A dialog runs a nested modal loop, and every injection waits for the application to go quiet
 // inside that loop, which is what makes it safe to look for the dialog right after the click that opened it.

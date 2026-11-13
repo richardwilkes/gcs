@@ -182,6 +182,36 @@ func TestPickerSessionProcessesRows(t *testing.T) {
 	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseCancel }
 	_, abort = s.processRows([]*gurps.Trait{n["root"]})
 	c.True(abort)
+
+	s, n = newKnightSession()
+	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseDiscard }
+	_, abort = s.processRows([]*gurps.Trait{n["root"]})
+	c.True(abort, "closing the dialog's window cancels too")
+
+	// Once the remaining picks are to be made at random, only a choice that can't be met that way is asked.
+	asked = nil
+	s, n = newKnightSession()
+	s.random.rest = true
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row.Name)
+		return unison.ModalResponseCancel
+	}
+	rows, abort = s.processRows([]*gurps.Trait{n["root"]})
+	c.False(abort)
+	c.Equal(0, len(asked))
+	c.NotEqual(0, len(rows))
+
+	s, n = newKnightSession()
+	s.random.rest = true
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row.Name)
+		return unison.ModalResponseCancel
+	}
+	n["root"].TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(1000)
+	_, abort = s.processRows([]*gurps.Trait{n["root"]})
+	c.True(abort)
+	c.Equal([]string{"root"}, asked)
+	c.True(strings.HasPrefix(s.hint(n["root"]).text, "No random picks meet this rule."))
 }
 
 // TestPickerSessionChoosesModifiers verifies that modifiers chosen from the picker count as answered and check the
@@ -236,7 +266,8 @@ func TestPickerSessionChoosesModifiers(t *testing.T) {
 	c.Equal([]*gurps.Trait{res, n["resPart"]}, targets, "an answered row isn't asked about again")
 	asked = nil
 	answer = func([]*gurps.TraitModifier) bool { return false }
-	c.True(promptForModifierTargets(promptOperation{}, targets, 0, len(targets), true, s.modsAnswered))
+	c.True(promptForModifierTargets(promptOperation{}, targets, &modifierPromptCount{total: len(targets)}, true,
+		s.modsAnswered, nil))
 	c.Equal([]string{"res (1 of 2) 1", "resPart (2 of 2) 1"}, asked, "only the choice left open is asked about")
 }
 

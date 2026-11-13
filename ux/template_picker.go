@@ -44,7 +44,7 @@ var promptForPickers = processPickers
 // The operation describes what the dialogs are part of and may be empty (see newOperationLabel). promptChoices says
 // whether the modifier prompt follows, so the rows are costed as it will see them.
 func processPickers(op promptOperation, parts *applyParts, promptChoices bool) bool {
-	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op, promptChoices) })
+	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op, promptChoices, &parts.random) })
 }
 
 // showPicker puts up the dialog for the choice container, returning how it was closed. The boxes checked in it are
@@ -54,7 +54,10 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 	if dialog == nil {
 		return unison.ModalResponseCancel
 	}
-	return dialog.RunModal()
+	response := dialog.RunModal()
+	// A random pick that failed in this dialog, or before it was put up, isn't told of in a later one.
+	delete(s.randomFailed, row)
+	return response
 }
 
 // newPickerDialog returns the dialog showPicker puts up, or nil if it couldn't be made, and what brings it up to date
@@ -103,7 +106,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	progress.Side = side.Right
 	scroll := unison.NewScrollPanel()
 	hint, updateHint := newPickerHint(scroll)
-	refresh = func() {
+	show := func() {
 		for _, update := range list.updates {
 			update()
 		}
@@ -117,9 +120,14 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 			growWindowToFit(dialog.Window())
 		}
 	}
+	// Once anything changes, random picks that weren't found before may be there to find.
+	refresh = func() {
+		delete(s.randomFailed, row)
+		show()
+	}
 	list.refresh = refresh
 	s.addPickerRows(list, row.NodeChildren(), nil, 0)
-	refresh()
+	show()
 
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list.panel, behavior.Fill, behavior.Fill)
@@ -195,12 +203,24 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 			ResponseCode: unison.ModalResponseUserBase + 1,
 		})
 	}
+	// A picker stacked on another is only one of the picks that one is waiting on, so it doesn't offer to make the rest.
+	buttons = withAutoPickButtons(buttons, depth == 0)
 	var err error
 	if dialog, err = newPromptDialog(s.op.at(promptstep.Choice), nil, nil, panel, buttons...); err != nil {
 		errs.Log(err)
 		return nil, nil
 	}
 	holdMinSizeOnDisplay(dialog.Window())
+	setupAutoPickButtons(dialog, func(all bool) {
+		if all {
+			s.random.rest = true
+		}
+		if s.pickRandomly(row) {
+			dialog.StopModal(unison.ModalResponseOK)
+			return
+		}
+		show()
+	})
 	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice, leaving any choices still to be made below them for when the template is applied")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
 	if depth > 0 {
@@ -216,7 +236,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		wnd.SetFrameRect(frame)
 		wnd.EnsureOnDisplay()
 	}
-	refresh()
+	show()
 	// The focus starts on the first option, not a chevron before it, as the options are what the dialog is for.
 	if list.first != nil {
 		list.first.RequestFocus()

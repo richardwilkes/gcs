@@ -214,6 +214,25 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		c.True(sheet.Modified(), "the sheet has been changed")
 	})
 
+	t.Run("the rest picked at random", func(t *testing.T) {
+		c := check.New(t)
+		sheet := newApplyModifierTestSheet(t)
+		entity := sheet.Entity()
+		alpha, beta := entity.Traits[0], entity.Traits[1]
+		var asked []string
+		uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+			asked = append(asked, info.name)
+			info.random.rest = true
+			modifiers[0].Children[1].SetDisabled(false)
+			return true, false
+		})
+		choice := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})
+		c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
+			[]*gurps.Trait{alpha, beta}, []*gurps.TraitModifier{choice}, gurps.LibraryFile{}))
+		c.Equal([]string{"Alpha"}, asked, "once the rest are to be picked at random, Beta isn't asked for its pick")
+		c.True(gurps.ModifierChoiceIsResolved(beta.Modifiers[0]), "which is made for it")
+	})
+
 	t.Run("canceled", func(t *testing.T) {
 		c := check.New(t)
 		sheet := newApplyModifierTestSheet(t)

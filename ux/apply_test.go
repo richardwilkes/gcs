@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // newChoiceTrait returns a trait container carrying template choices, holding a child for each of the given names.
@@ -754,4 +756,71 @@ func TestCopyToTemplateNormalizesEquipmentChoices(t *testing.T) {
 	c.Equal(1, len(arrived.Children), "the options must have been kept")
 	c.Equal(eqcontainer.Container, choices.ContainerType, "the rows copied from must be left alone")
 	c.Equal(1, len(choices.Tags), "the rows copied from must be left alone")
+}
+
+// TestAllRemainingCarriesAcrossPartsAndIntoModifierPrompts verifies that asking for the picks still to come to be made
+// at random, in the first picker of a transfer, also answers the pickers of its other lists and each modifier prompt
+// that asks for a pick, before the prompts left are counted.
+func TestAllRemainingCarriesAcrossPartsAndIntoModifierPrompts(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	needsPick := func(trait *gurps.Trait) *gurps.Trait {
+		trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}
+		return trait
+	}
+	traitChoice := newChoiceTrait("Pick One", "First", "Second")
+	for _, option := range traitChoice.Children {
+		needsPick(option)
+	}
+	alone := gurps.NewTrait(nil, nil, false)
+	alone.Name = "Alone"
+	needsPick(alone)
+	optional := gurps.NewTrait(nil, nil, false)
+	optional.Name = "Optional"
+	optional.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
+	skillChoice := gurps.NewSkillChoiceContainer(nil, nil)
+	skillChoice.Children = []*gurps.Skill{newTestSkill("Brawling", fxp.Two, nil), newTestSkill("Karate", fxp.Two, nil)}
+	SetParents(skillChoice.Children, skillChoice)
+	var asked []string
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		asked = append(asked, fmt.Sprintf("%s (%d of %d)", info.name, info.step, info.steps))
+		return false, false
+	})
+	var sheet *Sheet
+	screen.Do(func() { sheet = newTestSheetForTemplate(t) })
+	parts := &applyParts{
+		traits: applyPart[*gurps.Trait]{
+			table: sheet.Traits.Table,
+			rows:  []*gurps.Trait{traitChoice, alone, optional},
+			index: -1,
+		},
+		skills: applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: []*gurps.Skill{skillChoice}, index: -1},
+	}
+	done, ok := false, false
+	c.True(screen.Post(func() {
+		ok = promptForTransfer(parts, applyOptions{resolvePickers: true, promptForChoices: true}, promptOperation{})
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	var button *unison.Button
+	screen.Do(func() { button = buttonWithTitle(dialogWnd.Content(), "Auto Pick All") })
+	if button == nil {
+		t.Fatal("the picker has no button to make the remaining picks at random")
+	}
+	screen.Click(screen.PanelCenter(button))
+	// A dialog that shouldn't have followed is dismissed, so that it fails the test rather than hanging it.
+	for range 5 {
+		if done {
+			break
+		}
+		screen.KeyPress(unison.KeyEscape, mod.None)
+	}
+	c.True(ok, "no other dialog follows")
+	c.Equal([]string{"Optional (1 of 1)"}, asked, "only the prompt that asks for no pick is left to put up")
+	c.Equal(3, len(parts.traits.rows))
+	for _, row := range parts.traits.rows[:2] {
+		c.True(gurps.ModifierChoiceIsResolved(row.Modifiers[0]), "%s has its pick", row.Name)
+	}
+	c.Equal(1, len(parts.skills.rows), "the skill choice was made too")
 }

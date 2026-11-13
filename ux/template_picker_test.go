@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -105,7 +106,7 @@ func TestPickerGroupsReachTheTable(t *testing.T) {
 	})
 	part := &applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: []*gurps.Skill{choice}, index: -1}
 	resolved := false
-	c.True(screen.Post(func() { resolved = part.resolvePickers(promptOperation{}, false) }))
+	c.True(screen.Post(func() { resolved = part.resolvePickers(promptOperation{}, false, nil) }))
 	screen.Sync()
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
 	var boxes []*unison.CheckBox
@@ -130,9 +131,10 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
-	// Names long enough that the rows, rather than the buttons, set the dialog's width.
-	n["order"].Name = "Knightly Order of the Realm"
+	// Names long enough that the rows, rather than the buttons, set the dialog's width, and a hint too long for it.
+	n["order"].Name = "Knightly Order of the Realm, Keepers of the Roads and Bridges of the North"
 	n["lion"].Name = "Order of the Lion, Sworn to the Crown"
+	s.randomFailed[n["root"]] = "What is already checked can't be settled at random."
 	choose(s, n, "ea", "ep", "fit", "order")
 	screen.Do(func() {
 		dialog, refresh := s.newPickerDialog(n["root"], 0)
@@ -903,4 +905,74 @@ func TestPickerWeightUnitsFollowTheSheet(t *testing.T) {
 	entity := gurps.NewEntity()
 	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
 	c.Equal(fxp.Kilogram, pickerWeightUnits(gurps.NewEquipment(entity, nil, false)))
+}
+
+// TestPickerRandomButtons verifies that the picker's random buttons accept it with picks that meet its rule, that only
+// a picker with none under it offers to make the picks still to come, and that it stays up when its rule can't be met,
+// telling of that only until it closes.
+func TestPickerRandomButtons(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	newSession := func(count int) (*pickerSession[*gurps.Trait], *gurps.Trait) {
+		choice := newRandomChoice(picker.Count, criteria.EqualsNumber, count, newRandomChoiceTrait("a", 1),
+			newRandomChoiceTrait("b", 1))
+		return newRandomSession(choice, false), choice
+	}
+	// press runs the picker and clicks its button with the title, returning its response, or false if it is still up.
+	press := func(s *pickerSession[*gurps.Trait], choice *gurps.Trait, title string) (response int, closed bool) {
+		c.True(screen.Post(func() {
+			response = s.showPicker(choice, 0)
+			closed = true
+		}))
+		screen.Sync()
+		dialogWnd, _ := modalDialog(t, screen, wnd)
+		var button *unison.Button
+		screen.Do(func() { button = buttonWithTitle(dialogWnd.Content(), title) })
+		if button == nil {
+			t.Fatalf("the picker has no %q button", title)
+		}
+		screen.Click(screen.PanelCenter(button))
+		return response, closed
+	}
+
+	s, choice := newSession(1)
+	response, closed := press(s, choice, "Auto Pick")
+	c.True(closed)
+	c.Equal(unison.ModalResponseOK, response)
+	c.Equal("a", pickedNames(s, choice))
+	c.False(s.random.rest, "only this pick was asked for")
+
+	s, choice = newSession(1)
+	response, closed = press(s, choice, "Auto Pick All")
+	c.True(closed)
+	c.Equal(unison.ModalResponseOK, response)
+	c.Equal("a", pickedNames(s, choice))
+	c.True(s.random.rest)
+
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(choice, 1)
+		if dialog == nil {
+			t.Error("the picker couldn't be made")
+			return
+		}
+		defer dialog.Window().Dispose()
+		content := dialog.Window().Content()
+		c.NotNil(buttonWithTitle(content, "Auto Pick"))
+		c.Nil(buttonWithTitle(content, "Auto Pick All"), "a picker stacked on another is one of its picks")
+	})
+
+	s, choice = newSession(3)
+	_, closed = press(s, choice, "Auto Pick")
+	c.False(closed, "two options can't make three picks")
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	screen.Do(func() {
+		hints := uxtest.PanelsOfType[*TextLabel](dialogWnd.Content())
+		c.Equal(1, len(hints))
+		c.HasPrefix(hints[0].Title(), "No random picks meet this rule.")
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() {
+		c.False(strings.HasPrefix(s.hint(choice).text, "No random picks meet this rule."),
+			"a dialog opened later hasn't tried any")
+	})
 }

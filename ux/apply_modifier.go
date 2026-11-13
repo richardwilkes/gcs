@@ -331,6 +331,7 @@ func attachModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](n
 	groups := make([]NameableGroup[M], 0, len(targets))
 	originalModifiers := make([][]M, 0, len(targets))
 	originalReplacements := make([]map[string]string, 0, len(targets))
+	random := &randomPicks{}
 	restore := func() {
 		for i := range originalModifiers {
 			targets[i].SetModifiers(originalModifiers[i])
@@ -353,14 +354,17 @@ func attachModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](n
 			clones = append(clones, clone)
 		}
 		target.AddModifiers(clones...)
-		if askAboutContainers && promptForClonedModifiers(&modifierPromptInfo{
-			op:           op,
-			name:         target.String(),
-			location:     rowLocation(target),
-			step:         i + 1,
-			steps:        len(targets),
-			requirePicks: true,
-		}, clones) {
+		// Once the remaining picks are to be made at random, a prompt that asks for one is answered that way instead.
+		if askAboutContainers && (!random.rest || !pickMandatoryModifierChoices(clones, true, random.intn)) &&
+			promptForClonedModifiers(&modifierPromptInfo{
+				op:           op,
+				name:         target.String(),
+				location:     rowLocation(target),
+				step:         i + 1,
+				steps:        len(targets),
+				requirePicks: true,
+				random:       random,
+			}, clones) {
 			restore()
 			return false
 		}

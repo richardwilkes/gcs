@@ -53,6 +53,9 @@ type modifierPromptInfo struct {
 	requirePicks bool
 	// early is set when the prompt is put up from the template picker, ahead of the others.
 	early *earlyModifierPrompt
+	// random makes the picks the user asks to have made at random, and is shared by the prompts of one run, which may
+	// then be asked to make the rest that way too. It may be nil.
+	random *randomPicks
 }
 
 // earlyModifierPrompt is what the modifier prompt shows when put up from the template picker: what the row costs as
@@ -81,23 +84,73 @@ func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool, asked map[T]b
 	return targets
 }
 
-// promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets). The prompts are
-// counted as following the given number already done, out of total, since one transfer may ask about the rows of
-// several lists. Returns false if the user canceled a prompt, in which case no further prompts are shown.
-func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool, asked map[T]bool) bool {
-	for i, row := range targets {
-		if ask := modifierPromptOf(row, requirePicks, asked[row]); ask != nil && ask(&modifierPromptInfo{
+// modifierPromptCount numbers the modifier prompts of one run, which may ask about the rows of several lists.
+type modifierPromptCount struct {
+	// shown is how many prompts have been put up so far, and total how many the run puts up.
+	shown, total int
+	// answerRest answers at random, in their place, the prompts still to come that ask for a pick (see
+	// answerModifiersRandomly), returning how many it answered. It may be nil.
+	answerRest func() int
+}
+
+// randomRest has the prompts still to come that ask for a pick answered at random, so that they aren't counted.
+func (c *modifierPromptCount) randomRest() {
+	if c.answerRest != nil {
+		c.total -= c.answerRest()
+	}
+}
+
+// promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets) that still has
+// something to ask, numbered as count says, since one transfer may ask about the rows of several lists. Once a prompt
+// asks random (which may be nil) to make the remaining picks, those of the prompts still to come are made at once (see
+// modifierPromptCount.randomRest). Returns false if the user canceled a prompt, in which case no further prompts are
+// shown.
+func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, count *modifierPromptCount, requirePicks bool, asked map[T]bool, random *randomPicks) bool {
+	for _, row := range targets {
+		// A row answered at random since the targets were found has nothing left to ask.
+		ask := modifierPromptOf(row, requirePicks, asked[row])
+		if ask == nil {
+			continue
+		}
+		rest := random.remaining()
+		count.shown++
+		if ask(&modifierPromptInfo{
 			op:           op,
 			name:         row.String(),
 			location:     rowLocation(row),
-			step:         done + i + 1,
-			steps:        total,
+			step:         count.shown,
+			steps:        count.total,
 			requirePicks: requirePicks,
+			random:       random,
 		}) {
 			return false
 		}
+		if !rest && random.remaining() {
+			count.randomRest()
+		}
 	}
 	return true
+}
+
+// answerModifiersRandomly answers the modifier prompt for the row (see modifierPromptOf) in its place when it asks for
+// a pick: each of its mandatory choices still to be made is given the option intn picks, and everything else is left as
+// it is. Returns false, having done nothing, when the prompt asks for no pick.
+func answerModifiersRandomly[T gurps.Node[T]](row T, requirePicks, asked bool, intn func(int) int) bool {
+	switch t := any(row).(type) {
+	case *gurps.Trait:
+		return pickMandatoryModifierChoices(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), requirePicks, intn)
+	case *gurps.Equipment:
+		return pickMandatoryModifierChoices(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), requirePicks, intn)
+	default:
+		return false
+	}
+}
+
+// pickMandatoryModifierChoices gives each mandatory choice among the modifiers still to be made the option intn picks.
+// Returns false, having done nothing, when a prompt for the modifiers would ask for no pick: no mandatory choice among
+// them is still to be made, or requirePicks is false.
+func pickMandatoryModifierChoices[M gurps.Node[M]](modifiers []M, requirePicks bool, intn func(int) int) bool {
+	return requirePicks && gurps.PickUnresolvedModifierChoices(intn, modifiers...)
 }
 
 // modifierPromptOf returns what puts up the prompt for the row's modifiers and reports whether it was canceled, or nil
@@ -220,14 +273,35 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 		cost.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
 		panel.AddChild(cost)
 	}
+	// A prompt has a pick to make at random while a mandatory choice is unmade, as one put up early has again once
+	// Clear Selections takes its picks back. One put up early is only one of the picks its picker is waiting on, so it
+	// doesn't offer to make the rest.
+	autoPick := !selection.complete() || (early != nil && selection.mandatoryCount() != 0)
+	if autoPick {
+		buttons = withAutoPickButtons(buttons, early == nil && info.random != nil)
+	}
 	dialog, err := newPromptDialog(op, nil, nil, panel, buttons...)
 	if err != nil {
 		errs.Log(err)
 		return false, true
 	}
+	var pickHere *unison.Button
+	if autoPick {
+		pickHere = setupAutoPickButtons(dialog, func(all bool) {
+			if all {
+				info.random.rest = true
+			}
+			dialog.StopModal(autoPickResponse)
+		})
+	}
 	holdMinSizeOnDisplay(dialog.Window())
 	selection.onChange = func() {
-		dialog.Button(unison.ModalResponseOK).SetEnabled(selection.complete())
+		complete := selection.complete()
+		dialog.Button(unison.ModalResponseOK).SetEnabled(complete)
+		if pickHere != nil {
+			// Once every pick here is made there is none to make at random, though the prompts to come may have some.
+			pickHere.SetEnabled(!complete)
+		}
 		if cost != nil {
 			cost.SetTitle(selection.preview(early.cost))
 			cost.MarkForLayoutRecursivelyUpward()
@@ -242,10 +316,15 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 		)
 	}
 	response := dialog.RunModal()
-	if response != unison.ModalResponseOK && response != unison.ModalResponseUserBase {
+	if response != unison.ModalResponseOK && response != unison.ModalResponseUserBase &&
+		response != autoPickResponse {
 		return false, true
 	}
 	changed = selection.apply()
+	if response == autoPickResponse {
+		// After the answers are applied, since that turns off every option of a choice with none picked.
+		changed = gurps.PickUnresolvedModifierChoices(info.random.intn, modifiers...) || changed
+	}
 	if early != nil {
 		early.backedOut = response == unison.ModalResponseUserBase && !changed
 	}

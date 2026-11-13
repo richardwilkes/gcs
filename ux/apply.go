@@ -133,7 +133,8 @@ type applyPart[T gurps.Node[T]] struct {
 	index int
 	// placed holds the rows that were placed, which leaves out any that were merged into a row already present.
 	placed []T
-	// asked holds the rows whose modifiers were answered from the template picker, so aren't asked about again.
+	// asked holds the rows whose modifiers were answered from the template picker or at random, so aren't asked about
+	// again.
 	asked map[T]bool
 	// groups holds the organizing groups kept with what was picked from them, inner ones first.
 	groups []T
@@ -142,12 +143,13 @@ type applyPart[T gurps.Node[T]] struct {
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
 type applyPartOps interface {
 	normalizeChoices()
-	resolvePickers(op promptOperation, promptChoices bool) bool
+	resolvePickers(op promptOperation, promptChoices bool, random *randomPicks) bool
 	pickerContainers() []string
 	clearTemplateOnly()
 	clearSheetOnly()
+	answerModifiersRandomly(random *randomPicks) int
 	modifierTargetCount() int
-	promptForModifiers(op promptOperation, done, total int) (asked int, ok bool)
+	promptForModifiers(op promptOperation, count *modifierPromptCount, random *randomPicks) bool
 	promptForNameables(op promptOperation) bool
 	place(merge bool)
 	clearPreconfigured()
@@ -159,6 +161,8 @@ type applyPartOps interface {
 // applyParts holds everything being applied to a document: the rows of each type, and the body type a template may
 // bring along with them.
 type applyParts struct {
+	// random makes the picks the user asks to have made at random, for every part.
+	random    randomPicks
 	bodyType  *gurps.Body
 	traits    applyPart[*gurps.Trait]
 	skills    applyPart[*gurps.Skill]
@@ -204,16 +208,20 @@ func (a *applyParts) each(fn func(part applyPartOps)) {
 }
 
 // promptForModifiers puts up the modifier prompts for the rows of every part, numbering them across all of the parts
-// rather than starting over with each, since the user sees them as one run. Returns false if a prompt was canceled.
+// rather than starting over with each, since the user sees them as one run. Once the remaining picks are to be made at
+// random, whether from the start or from one of these prompts, the prompts still to come that ask for one are answered
+// at once, so that they aren't counted. Returns false if a prompt was canceled.
 func (a *applyParts) promptForModifiers(op promptOperation) bool {
-	total := 0
-	a.each(func(part applyPartOps) { total += part.modifierTargetCount() })
-	done := 0
-	return a.all(func(part applyPartOps) bool {
-		asked, ok := part.promptForModifiers(op, done, total)
-		done += asked
-		return ok
-	})
+	count := &modifierPromptCount{answerRest: func() int {
+		answered := 0
+		a.each(func(part applyPartOps) { answered += part.answerModifiersRandomly(&a.random) })
+		return answered
+	}}
+	a.each(func(part applyPartOps) { count.total += part.modifierTargetCount() })
+	if a.random.rest {
+		count.randomRest()
+	}
+	return a.all(func(part applyPartOps) bool { return part.promptForModifiers(op, count, &a.random) })
 }
 
 // goInto returns true if one of the parts goes into the table with the reference key.
@@ -232,8 +240,11 @@ func (p *applyPart[T]) normalizeChoices() {
 	gurps.NormalizeTemplateChoiceContainers(p.rows...)
 }
 
-func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bool {
+func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool, random *randomPicks) bool {
 	s := newPickerSession(op, p.rows, promptChoices)
+	if random != nil {
+		s.random = random
+	}
 	revised, abort := s.processRows(p.rows)
 	if abort {
 		return false
@@ -264,6 +275,23 @@ func (p *applyPart[T]) clearSheetOnly() {
 	gurps.ClearUserDesc(p.rows...)
 }
 
+// answerModifiersRandomly answers, in its place, each modifier prompt for the rows that asks for a pick (see the
+// function of the same name), which leaves it out of those still to be put up. Returns how many it answered.
+func (p *applyPart[T]) answerModifiersRandomly(random *randomPicks) int {
+	requirePicks := p.requirePicks()
+	answered := 0
+	for _, target := range modifierTargets(p.rows, requirePicks, p.asked) {
+		if answerModifiersRandomly(target, requirePicks, p.asked[target], random.intn) {
+			if p.asked == nil {
+				p.asked = make(map[T]bool)
+			}
+			p.asked[target] = true
+			answered++
+		}
+	}
+	return answered
+}
+
 func (p *applyPart[T]) modifierTargetCount() int {
 	return len(modifierTargets(p.rows, p.requirePicks(), p.asked))
 }
@@ -275,11 +303,15 @@ func (p *applyPart[T]) requirePicks() bool {
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
-// promptForModifiers also returns how many rows it asked about, counted before any answer can change that.
-func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) (asked int, ok bool) {
+// promptForModifiers numbers its prompts as count says.
+func (p *applyPart[T]) promptForModifiers(op promptOperation, count *modifierPromptCount, random *randomPicks) bool {
 	requirePicks := p.requirePicks()
+	if p.asked == nil {
+		// The prompts read it as answerModifiersRandomly fills it in while they are up.
+		p.asked = make(map[T]bool)
+	}
 	targets := modifierTargets(p.rows, requirePicks, p.asked)
-	return len(targets), promptForModifierTargets(op, targets, done, total, requirePicks, p.asked)
+	return promptForModifierTargets(op, targets, count, requirePicks, p.asked, random)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
