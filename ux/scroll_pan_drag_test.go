@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // newScrollPanDragFixture builds a 100x100 scroll panel over 500x400 content, so the scroll bars have a real range, and
@@ -82,10 +83,16 @@ func TestScrollPanDragFollowsThePointer(t *testing.T) {
 }
 
 // TestScrollPanDragInstall checks that install wires the pan state up and that the callbacks it sets on the content
-// drive the drag: a mouse-down begins it, a mouse-drag pans and a mouse-up ends it.
+// drive the drag: a mouse-down begins it, and still reaches the content's own mouse-down, a mouse-drag pans and a
+// mouse-up ends it.
 func TestScrollPanDragInstall(t *testing.T) {
 	c := check.New(t)
 	_, scroll, content := newScrollPanDragFixture()
+	presses := 0
+	content.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
+		presses++
+		return true
+	}
 	var pan scrollPanDrag
 	pan.install(scroll, content, content)
 	c.Equal(scroll, pan.scroll)
@@ -98,6 +105,7 @@ func TestScrollPanDragInstall(t *testing.T) {
 	c.Equal(unison.ArrowCursor(), content.UpdateCursorCallback(geom.Point{}))
 	c.True(content.MouseDownCallback(geom.NewPoint(50, 50), 1, 1, 0))
 	c.True(pan.active)
+	c.Equal(1, presses, "the content's own mouse-down, which places a markdown's reading caret, must still be called")
 	c.Equal(unison.MoveCursor(), content.UpdateCursorCallback(geom.Point{}))
 	c.True(content.MouseDragCallback(geom.NewPoint(30, 20), 1, 0))
 	c.Equal(geom.NewPoint(20, 30), scrollPosition(scroll))

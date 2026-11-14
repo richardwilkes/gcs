@@ -807,10 +807,11 @@ func ignoreSymlinkedFolder(_ *library.Library, _ string) {}
 // TestListFolderListsWhatTheTreeShows verifies the walk the rows are built from: the entries come in the order the tree
 // shows them, folders ahead of files when they are grouped and otherwise mixed in, in natural order of the name without
 // its extension and then of the whole name; entries named with a leading dot, the library's own settings and output
-// template folders, though not folders so named deeper down, and the files of special types are left out; a symlink to
-// a folder that holds something is listed as a folder and reported, so that the library's watch can follow it, while
-// one to an empty folder or to a file is listed as a file of the type its own name says, and one that leads back to a
-// folder it lies within is listed as a folder with nothing beneath it and not reported.
+// template folders, though not folders so named deeper down, the Master Library's copy of the User Guide, though not
+// another library's folder at that path, and the files of special types are left out; a symlink to a folder that holds
+// something is listed as a folder and reported, so that the library's watch can follow it, while one to an empty folder
+// or to a file is listed as a file of the type its own name says, and one that leads back to a folder it lies within is
+// listed as a folder with nothing beneath it and not reported.
 func TestListFolderListsWhatTheTreeShows(t *testing.T) {
 	c := check.New(t)
 	RegisterKnownFileTypes()
@@ -839,6 +840,22 @@ func TestListFolderListsWhatTheTreeShows(t *testing.T) {
 	}
 	c.Equal([]string{"9.gcs", "10.gcs", "a.skl", "alpha.gcs", "b.gcs", "empty", "same.gcs", "same.skl", "sub", "zeta"},
 		top, "mixed in")
+
+	master := library.NewLibraries().Master()
+	c.NoError(master.SetPath(t.TempDir()))
+	other := newTestLibrary(t)
+	for _, one := range []*library.Library{master, other} {
+		for _, dir := range []string{"Markdown/User Guide", "Markdown/Mine"} {
+			c.NoError(os.MkdirAll(filepath.Join(one.Path(false), dir), 0o750))
+			c.NoError(os.WriteFile(filepath.Join(one.Path(false), dir, "Home.md"), []byte("# Home\n"), 0o600))
+		}
+	}
+	c.Equal([]string{"Markdown/", "Markdown/Mine/", "Markdown/Mine/Home.md"},
+		flattenEntries(listFolder(master, ".", true, ignoreSymlinkedFolder)),
+		"the Master Library's copy of the User Guide must be left out")
+	c.Equal([]string{
+		"Markdown/", "Markdown/Mine/", "Markdown/Mine/Home.md", "Markdown/User Guide/", "Markdown/User Guide/Home.md",
+	}, flattenEntries(listFolder(other, ".", true, ignoreSymlinkedFolder)), "while another library's folder of that name is the user's own")
 
 	if err := os.Symlink(filepath.Join(root, "sub"), filepath.Join(root, "link-sub")); err != nil {
 		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
@@ -876,7 +893,8 @@ func TestListFolderListsWhatTheTreeShows(t *testing.T) {
 
 // TestListFavoritesDropsWhatIsGone verifies that listing the favorites drops from each library the favorites that can
 // no longer be found, lists the rest in the order the Favorites row shows them, folders ahead of files when they are
-// grouped, and lists what a favorite folder holds.
+// grouped, and lists what a favorite folder holds, leaving out a favorite that is the Master Library's copy of the User
+// Guide or lies within it, though not another library's folder at that path.
 func TestListFavoritesDropsWhatIsGone(t *testing.T) {
 	c := check.New(t)
 	RegisterKnownFileTypes()
@@ -889,7 +907,7 @@ func TestListFavoritesDropsWhatIsGone(t *testing.T) {
 	for _, p := range []string{"sub", "alpha.gcs", "gone.gcs", "beta.gcs"} {
 		lib.ToggleFavorite(p)
 	}
-	entries := func(grouped bool) []string {
+	entries := func(lib *library.Library, grouped bool) []string {
 		favs := listFavorites([]*library.Library{lib}, grouped, ignoreSymlinkedFolder)
 		paths := make([]string, 0, len(favs))
 		for _, one := range favs {
@@ -898,9 +916,28 @@ func TestListFavoritesDropsWhatIsGone(t *testing.T) {
 		}
 		return paths
 	}
-	c.Equal([]string{"sub/", "sub/inner.gcs", "alpha.gcs", "beta.gcs"}, entries(true), "grouped")
+	c.Equal([]string{"sub/", "sub/inner.gcs", "alpha.gcs", "beta.gcs"}, entries(lib, true), "grouped")
 	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub"}, lib.Favorites(), "the favorite that is gone must be dropped")
-	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub/", "sub/inner.gcs"}, entries(false), "mixed in")
+	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub/", "sub/inner.gcs"}, entries(lib, false), "mixed in")
+
+	master := library.NewLibraries().Master()
+	c.NoError(master.SetPath(t.TempDir()))
+	other := newTestLibrary(t)
+	for _, one := range []*library.Library{master, other} {
+		c.NoError(os.MkdirAll(filepath.Join(one.Path(false), "Markdown", "User Guide"), 0o750))
+		c.NoError(os.WriteFile(filepath.Join(one.Path(false), "Markdown", "User Guide", "Home.md"), []byte("# Home\n"),
+			0o600))
+		for _, p := range []string{"Markdown", "Markdown/User Guide", "Markdown/User Guide/Home.md"} {
+			one.ToggleFavorite(p)
+		}
+	}
+	c.Equal([]string{"Markdown/"}, entries(master, true),
+		"a favorite that is the Master Library's copy of the User Guide, or lies within it, must be left out")
+	c.Equal([]string{
+		"Markdown/", "Markdown/User Guide/", "Markdown/User Guide/Home.md",
+		"Markdown/User Guide/", "Markdown/User Guide/Home.md",
+		"Markdown/User Guide/Home.md",
+	}, entries(other, true), "while another library's folder of that name is the user's own")
 }
 
 // TestRowsForLeavesOutARemovedLibrary verifies that the rows built from a walk leave out a library, and its favorites,

@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/userguide"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -260,6 +261,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.CheckOpened("traits library", func() { newTraitsLibraryAction.Execute(nil) })
 	audit.CheckOpened("equipment library", func() { newEquipmentLibraryAction.Execute(nil) })
 	audit.CheckOpened("markdown file", func() { newMarkdownFileAction.Execute(nil) })
+	audit.CheckOpened("user guide", func() { showUserGuide(userguide.HomePage, "") })
 
 	if d, isOne := audit.Open(func() { newAncestryAction.Execute(nil) }).(*ancestryEditorDockable); isOne {
 		screen.Do(func() {

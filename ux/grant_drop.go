@@ -386,9 +386,8 @@ func addAsGrant(t feature.Type, items []*grantLibraryItem) {
 		}
 		dest = picked[0]
 	}
-	if wnd := dest.dockable.AsPanel().Window(); wnd != nil {
+	if dest.dockable.AsPanel().Window() != nil {
 		ActivateDockable(dest.dockable)
-		wnd.ToFront()
 	}
 	dest.panel.addGrants(t, dest.panel.grantable(items), len(*dest.panel.features))
 }

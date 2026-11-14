@@ -60,10 +60,8 @@ type PDFDockable struct {
 	content                *unison.Panel
 	docScroll              *unison.ScrollPanel
 	docPanel               *unison.Panel
-	tocScroll              *unison.ScrollPanel
+	side                   *sideBar
 	tocPanel               *unison.Table[*tocNode]
-	divider                *unison.Panel
-	tocScrollLayoutData    *unison.FlexLayoutData
 	pageNumberField        *unison.Field
 	scaleField             *PercentageField
 	autoScalingPopup       *unison.PopupMenu[autoscale.Option]
@@ -441,7 +439,7 @@ the page instead.`, mod.Option.String()))
 
 	d.sideBarButton = unison.NewSVGButton(svg.SideBar)
 	d.sideBarButton.Tooltip = newWrappedTooltip(i18n.Text("Toggle the Sidebar"))
-	d.sideBarButton.ClickCallback = d.toggleSideBar
+	d.sideBarButton.ClickCallback = func() { d.side.toggle(d.content, d.docPanel) }
 	d.sideBarButton.SetEnabled(false)
 	second.AddChild(d.sideBarButton)
 
@@ -488,46 +486,7 @@ func (d *PDFDockable) createTOC() {
 	d.tocPanel.PreventUserColumnResize = true
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
-
-	d.tocScroll = unison.NewScrollPanel()
-	d.tocScrollLayoutData = &unison.FlexLayoutData{
-		SizeHint: geom.Size{Width: 200},
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-		VGrab:    true,
-	}
-	d.tocScroll.SetLayoutData(d.tocScrollLayoutData)
-	d.tocScroll.SetContent(d.tocPanel, behavior.Fill, behavior.Fill)
-
-	d.divider = unison.NewPanel()
-	d.divider.SetLayoutData(&unison.FlexLayoutData{
-		SizeHint: geom.Size{Width: unison.DefaultDockTheme.DockDividerSize()},
-		HAlign:   align.Fill,
-		VAlign:   align.Fill,
-		VGrab:    true,
-	})
-	d.divider.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor {
-		return unison.ResizeHorizontalCursor()
-	}
-	d.divider.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		unison.DefaultDockTheme.DrawHorizontalGripper(gc, d.divider.ContentRect(true))
-	}
-	var initialPosition float32
-	var eventPosition float32
-	d.divider.MouseDownCallback = func(where geom.Point, _, _ int, _ mod.Modifiers) bool {
-		initialPosition = d.tocScrollLayoutData.SizeHint.Width
-		eventPosition = d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
-		return true
-	}
-	d.divider.MouseDragCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
-		pos := eventPosition - d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
-		old := d.tocScrollLayoutData.SizeHint.Width
-		d.tocScrollLayoutData.SizeHint.Width = max(initialPosition-pos, 1)
-		if old != d.tocScrollLayoutData.SizeHint.Width {
-			d.divider.Parent().MarkForLayoutAndRedraw()
-		}
-		return true
-	}
+	d.side = newSideBar(d.tocPanel)
 }
 
 func (d *PDFDockable) createContent() {
@@ -596,21 +555,6 @@ func (d *PDFDockable) ClearHistory() {
 // SetSearchText sets the search text and updates the display.
 func (d *PDFDockable) SetSearchText(text string) {
 	d.searchField.SetText(text)
-}
-
-func (d *PDFDockable) toggleSideBar() {
-	if layout, ok := d.content.Layout().(*unison.FlexLayout); ok {
-		if layout.Columns == 1 {
-			layout.Columns = 3
-			d.content.AddChildAtIndex(d.tocScroll, 0)
-			d.content.AddChildAtIndex(d.divider, 1)
-		} else {
-			layout.Columns = 1
-			d.divider.RemoveFromParent()
-			d.tocScroll.RemoveFromParent()
-		}
-		d.content.MarkForLayoutAndRedraw()
-	}
 }
 
 // Back moves back in history one step.
@@ -800,7 +744,7 @@ func (d *PDFDockable) pageRendered() {
 		if toc := d.pdf.TOC(); len(toc) != 0 {
 			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
 			d.tocPanel.SizeColumnsToFit(true)
-			d.tocScrollLayoutData.SizeHint.Width = max(min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
+			d.side.fitTo(d.tocPanel.Columns[0].Current)
 			d.sideBarButton.SetEnabled(true)
 		}
 	}
@@ -1502,8 +1446,8 @@ func (d *PDFDockable) tocDoubleClick() {
 }
 
 func (d *PDFDockable) tocSelectionChanged() {
-	if d.tocPanel.HasSelection() {
-		d.ScrollToPage(d.tocPanel.SelectedRows(true)[0].pageNumber, true)
+	if i := currentRowIndex(d.tocPanel); i >= 0 {
+		d.ScrollToPage(d.tocPanel.RowFromIndex(i).pageNumber, true)
 	}
 }
 

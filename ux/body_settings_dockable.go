@@ -46,7 +46,7 @@ func newBodySettingsDockable(owner BodySettingsOwner) *bodySettingsDockable {
 	d := &bodySettingsDockable{owner: owner}
 	d.Self = d
 	d.init(d, undoableSettingsSpec[*gurps.Body]{
-		helpLink:     "md:User%20Guide/Body%20Type",
+		helpLink:     "md:User%20Guide/Body%20type",
 		clone:        d.cloneBody,
 		buildContent: func() { d.content.AddChild(newBodySettingsPanel(d)) },
 		apply:        d.apply,

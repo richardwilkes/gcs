@@ -116,9 +116,11 @@ func (d *fontSettingsDockable) sync() {
 		fp.FontModifiedCallback = saved
 	}
 	if changed {
-		// The cell panels and the widths memoized for the page reference columns were measured with the old fonts.
+		// The cell panels, the widths memoized for the page reference columns and the markdown views were measured with
+		// the old fonts.
 		invalidateDisplayData()
 		invalidateCellPanels()
+		rebuildMarkdownViews()
 		unison.ThemeChanged()
 	}
 }
@@ -127,10 +129,46 @@ func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
 	f := fonts.CurrentFonts()[index].Font
 	if f.Descriptor() != fd {
 		f.Font = fd.Font()
-		// The cell panels and the widths memoized for the page reference columns were measured with the old fonts.
+		// The cell panels, the widths memoized for the page reference columns and the markdown views were measured with
+		// the old fonts.
 		invalidateDisplayData()
 		invalidateCellPanels()
+		rebuildMarkdownViews()
 		unison.ThemeChanged()
+	}
+}
+
+// rebuildMarkdownViews builds the document of each markdown within an open dockable or the About box afresh, along with
+// that of a markdown file being edited, which is not shown then, since its text was broken into lines and measured with
+// the fonts of the time it was built. The About box, which cannot be resized, is fitted to its content again.
+func rebuildMarkdownViews() {
+	rebuilt := make(map[*unison.Markdown]bool)
+	rebuild := func(markdown *unison.Markdown) {
+		if !rebuilt[markdown] {
+			rebuilt[markdown] = true
+			markdown.Rebuild()
+			markdown.MarkForLayoutRecursivelyUpward()
+		}
+	}
+	var walk func(p *unison.Panel)
+	walk = func(p *unison.Panel) {
+		if markdown, ok := p.Self.(*unison.Markdown); ok {
+			rebuild(markdown)
+			return
+		}
+		for _, child := range p.Children() {
+			walk(child)
+		}
+	}
+	for _, one := range AllDockables() {
+		if d, ok := one.AsPanel().Self.(*MarkdownDockable); ok {
+			rebuild(d.markdown)
+		}
+		walk(one.AsPanel())
+	}
+	if aboutWnd != nil {
+		walk(aboutWnd.Content())
+		aboutWnd.Pack()
 	}
 }
 

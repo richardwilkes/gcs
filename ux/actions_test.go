@@ -355,6 +355,10 @@ func TestBrowserRequestsAreRecordedHeadless(t *testing.T) {
 	c.Equal([]string{"https://example.com/help"}, screen.OpenedURLs(),
 		"the Help menu's web pages are handed to the browser through unison")
 	c.Nil(screen.OpenedURLs(), "and each request is handed back only once")
+
+	c.True(screen.Do(func() { newUserGuideDockable().handleLink(nil, "https://example.com/guide") }))
+	c.Equal([]string{"https://example.com/guide"}, screen.OpenedURLs(),
+		"the User Guide hands a link to a web page to the browser through unison")
 }
 
 // TestCreatingModifierChoices verifies that the "New ... Modifier Choice" commands are offered by a modifier library

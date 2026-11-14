@@ -28,20 +28,34 @@ type tocNode struct {
 	children   []*tocNode
 }
 
+// tocEntryKey is what a PDF TOC entry's ID is looked up by, other than its occurrence; see gurps.IDForPDFTOC.
+type tocEntryKey struct {
+	title      string
+	pageNumber int
+}
+
 func newTOC(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents) []*tocNode {
+	return newTOCNodes(owner, parent, toc, make(map[tocEntryKey]int))
+}
+
+// newTOCNodes is newTOC, with seen counting the entries already given rows, by title and page, so that entries that
+// share both get IDs of their own.
+func newTOCNodes(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents, seen map[tocEntryKey]int) []*tocNode {
 	if len(toc) == 0 {
 		return nil
 	}
 	nodes := make([]*tocNode, len(toc))
 	for i, one := range toc {
+		key := tocEntryKey{title: one.Title, pageNumber: one.PageNumber}
 		node := &tocNode{
-			id:         gurps.IDForPDFTOC(owner.path, one.Title, one.PageNumber),
+			id:         gurps.IDForPDFTOC(owner.path, one.Title, one.PageNumber, seen[key]),
 			owner:      owner,
 			parent:     parent,
 			title:      one.Title,
 			pageNumber: one.PageNumber,
 		}
-		node.children = newTOC(owner, node, one.Children)
+		seen[key]++
+		node.children = newTOCNodes(owner, node, one.Children, seen)
 		nodes[i] = node
 	}
 	return nodes
@@ -84,20 +98,24 @@ func (n *tocNode) CellDataForSort(_ int) string {
 }
 
 func (n *tocNode) ColumnCell(_, _ int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
-	var img *unison.SVG
-	if n.CanHaveChildren() {
-		if n.IsOpen() {
+	return tocCell(n.title, n.CanHaveChildren(), n.IsOpen(), svg.Bookmark, foreground)
+}
+
+// tocCell returns the cell for a row of a table of contents: the title beside a folder icon, open or closed, for a row
+// that holds others, or else beside the leaf icon.
+func tocCell(title string, container, open bool, leaf *unison.SVG, foreground unison.Ink) *unison.Label {
+	img := leaf
+	if container {
+		if open {
 			img = svg.OpenFolder
 		} else {
 			img = svg.ClosedFolder
 		}
-	} else {
-		img = svg.Bookmark
 	}
 	size := unison.LabelFont.Size() + 5
 	label := unison.NewLabel()
 	label.OnBackgroundInk = foreground
-	label.SetTitle(n.title)
+	label.SetTitle(title)
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  img,
 		Size: geom.NewSize(size, size),

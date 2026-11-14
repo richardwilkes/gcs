@@ -1735,9 +1735,9 @@ func OpenFiles(filePaths []string) {
 	}
 }
 
-// DisplayNewDockable adds the Dockable to the dock and gives it the focus. A Dockable that is already on display -- the
-// ancestry and name generator editors place themselves in the dock as they are shown, so opening one of their files
-// hands back an editor already in the dock -- is activated where it is.
+// DisplayNewDockable adds the Dockable to the dock, showing it there as PlaceInDock does, and gives it the focus. A
+// Dockable that is already on display -- the ancestry and name generator editors place themselves in the dock as they
+// are shown, so opening one of their files hands back an editor already in the dock -- is activated where it is.
 func DisplayNewDockable(dockable unison.Dockable) {
 	if p := dockable.AsPanel(); p.Parent() != nil || p.Window() != nil {
 		ActivateDockable(dockable)
@@ -1745,6 +1745,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 	}
 	InstallDockUndockCmd(dockable)
 	defer focusDockableContent(dockable)
+	var dc *unison.DockContainer
 	if fbd, ok := dockable.(FileBackedDockable); ok {
 		var group *dgroup.Group
 		fi := gurps.FileInfoFor(fbd.BackingFilePath())
@@ -1788,15 +1789,16 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			}
 			dockable.AsPanel().ClientData()[dockGroupClientDataKey] = *group
 		}
-		if dc := CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
-			dc.Stack(dockable, -1)
-			return
-		} else if dc = LocateDockContainerForExtension(fi.GroupWith...); dc != nil {
-			dc.Stack(dockable, -1)
-			return
+		if dc = CurrentlyFocusedDockContainer(); dc == nil || !DockContainerHoldsExtension(dc, fi.GroupWith...) {
+			dc = LocateDockContainerForExtension(fi.GroupWith...)
 		}
 	}
-	Workspace.DocumentDock.DockTo(dockable, nil, side.Right)
+	if dc != nil {
+		dc.Stack(dockable, -1)
+	} else {
+		Workspace.DocumentDock.DockTo(dockable, nil, side.Right)
+	}
+	showDocked(dockable)
 }
 
 // OpenFile attempts to open the given file path.

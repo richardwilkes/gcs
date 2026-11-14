@@ -484,8 +484,13 @@ func (s *Settings) foldClosedDuringInit() {
 	clear(closedDuringInit)
 }
 
-// IDForPDFTOC returns the ID for the specified PDF TOC entry.
-func IDForPDFTOC(pdfPath, title string, pageNum int) tid.TID {
+// IDForPDFTOC returns the ID for the specified PDF TOC entry. Entries with the same title and page number are told
+// apart by occurrence, the number of them that come before this one in the table of contents.
+func IDForPDFTOC(pdfPath, title string, pageNum, occurrence int) tid.TID {
+	if occurrence > 0 {
+		// The first occurrence is keyed by the bare title, as every entry was before duplicates were told apart.
+		title = fmt.Sprintf("%s\x00%d", title, occurrence)
+	}
 	settings := GlobalSettings()
 	pi, ok := settings.PDFs[pdfPath]
 	if !ok || pi == nil {

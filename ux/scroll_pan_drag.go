@@ -27,14 +27,20 @@ type scrollPanDrag struct {
 }
 
 // install wires the pan state to scroll and content and sets content's mouse and cursor callbacks so that dragging it
-// pans the scroll panel; a mouse-down also focuses the given panel. Dockables whose content only pans should use this
+// pans the scroll panel; a mouse-down also focuses the given panel and is still handed to content's own mouse-down
+// callback, if any, which is what places a markdown's reading caret. Dockables whose content only pans should use this
 // rather than installing the callbacks themselves, so that the wiring cannot be forgotten.
 func (p *scrollPanDrag) install(scroll *unison.ScrollPanel, content *unison.Panel, focus unison.Paneler) {
 	p.scroll = scroll
 	p.content = content
 	content.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return p.cursor() }
-	content.MouseDownCallback = func(where geom.Point, _, _ int, _ mod.Modifiers) bool {
+	press := content.MouseDownCallback
+	content.MouseDownCallback = func(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+		// The pan begins first, from the position the press found, since the press may scroll its caret into view.
 		p.begin(where)
+		if press != nil {
+			press(where, button, clickCount, mods)
+		}
 		focus.AsPanel().RequestFocus()
 		content.UpdateCursorNow()
 		return true

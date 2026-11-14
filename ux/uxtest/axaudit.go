@@ -104,8 +104,8 @@ func (a *AXNameAudit) Check(view string, root unison.Paneler) {
 		}
 	}
 	seen := make(map[accessibility.NodeID]bool)
-	var walk func(id accessibility.NodeID)
-	walk = func(id accessibility.NodeID) {
+	var walk func(id accessibility.NodeID, inDocument bool)
+	walk = func(id accessibility.NodeID, inDocument bool) {
 		if seen[id] {
 			return
 		}
@@ -114,14 +114,14 @@ func (a *AXNameAudit) Check(view string, root unison.Paneler) {
 		if node == nil {
 			return
 		}
-		if !node.Ignored && node.Name == "" && axNodeNeedsAName(node) {
+		if !node.Ignored && node.Name == "" && axNodeNeedsAName(node, inDocument) {
 			a.failures = append(a.failures, a.describe(view, tree, node, panels))
 		}
 		for _, child := range node.Children {
-			walk(child)
+			walk(child, inDocument || node.Role == role.Document)
 		}
 	}
-	walk(rootNode.ID)
+	walk(rootNode.ID, false)
 }
 
 // Report fails the test with every unnamed control the checks found, if there were any.
@@ -143,11 +143,16 @@ func (a *AXNameAudit) Report() {
 // the reader's cursor can be moved into it, and it is then announced by name on landing there; on macOS it never does.
 // Naming it here keeps the check the same everywhere, so that a markdown view left unnamed fails on the machine the
 // change was made on rather than only in CI.
-func axNodeNeedsAName(node *accessibility.Node) bool {
+//
+// Within a document, which inDocument reports, a list or table is part of the text being read, not a control, and is
+// announced as what it is with no name, as one on a web page is.
+func axNodeNeedsAName(node *accessibility.Node, inDocument bool) bool {
 	switch node.Role {
+	case role.List, role.Table:
+		return !inDocument
 	case role.TextField, role.TextArea, role.SpinButton, role.ComboBox, role.PopupButton, role.Slider,
-		role.ProgressBar, role.ColorWell, role.List, role.Table, role.Tree, role.Button, role.CheckBox,
-		role.RadioButton, role.ToggleButton, role.Link, role.ColumnHeader, role.Document:
+		role.ProgressBar, role.ColorWell, role.Tree, role.Button, role.CheckBox, role.RadioButton, role.ToggleButton,
+		role.Link, role.ColumnHeader, role.Document:
 		return true
 	case role.Row, role.Cell:
 		return false

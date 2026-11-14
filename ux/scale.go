@@ -22,7 +22,8 @@ import (
 const ScaleDelta = 10
 
 // NewScaleField creates a scale field for the given scroll panel, adding option-scroll wheel scaling to it and the view
-// scale commands to the dockable that holds it.
+// scale commands to the dockable that holds it. set is given each new scale before the scroll panel's content is laid
+// out at it, and afterApply, when not nil, is called after that layout, as well as when the scale is first applied.
 func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter, adjustForDisplayPPI bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100
@@ -54,9 +55,13 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 			}
 			var view, content *unison.Panel
 			var viewRect geom.Rect
-			var center geom.Point
+			var center, topLeft geom.Point
 			var dX, dY float32
-			if attemptCenter {
+			if !attemptCenter {
+				// What is at the top left of the view is kept there, in the content's own coordinates.
+				topLeft.X, topLeft.Y = scroller.Position()
+				topLeft = topLeft.DivPt(scroller.Content().AsPanel().Scale())
+			} else {
 				view = scroller.ContentView()
 				viewRect = view.ContentRect(false)
 				content = scroller.Content().AsPanel()
@@ -75,7 +80,10 @@ func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(in
 			scroller.MarkForLayoutRecursively()
 			scroller.ValidateLayout()
 
-			if content != nil {
+			if !attemptCenter {
+				topLeft = topLeft.MulPt(scroller.Content().AsPanel().Scale())
+				scroller.SetPosition(topLeft.X, topLeft.Y)
+			} else {
 				fScale := float32(scale) / 100
 				viewRect.Width /= fScale
 				viewRect.Height /= fScale

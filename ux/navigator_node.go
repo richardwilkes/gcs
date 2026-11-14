@@ -404,17 +404,34 @@ func bareListing(libs []*library.Library) *navigatorListing {
 	return listing
 }
 
+// masterUserGuideDirPath is the library-relative path of the Master Library's copy of the User Guide, which listFolder
+// and listFavorites leave out. The guide is built into GCS; the library keeps this copy only for older releases, and
+// the skip goes away once the library drops the folder.
+const masterUserGuideDirPath = "Markdown/User Guide"
+
+// inMasterUserGuide returns true if p, a path relative to the library, is the Master Library's copy of the User Guide
+// or lies within it.
+func inMasterUserGuide(lib *library.Library, p string) bool {
+	if !lib.IsMaster() {
+		return false
+	}
+	p = filepath.ToSlash(p)
+	prefix := masterUserGuideDirPath + "/"
+	return strings.EqualFold(p, masterUserGuideDirPath) ||
+		(len(p) > len(prefix) && strings.EqualFold(p[:len(prefix)], prefix))
+}
+
 // listFolder lists the folder at dirPath within the library, and the folders beneath it, in the order the tree shows
 // them: folders ahead of files when groupContainers is set, within that in natural order of the name without its
 // extension and then of the whole name. Entries whose names begin with a dot are left out, as are the library's
-// settings and output template folders and the files of the types the file type registry marks as special, which the
-// type that stands in for every unknown one is. A symlink counts as a folder when it leads to one that holds something,
-// and symlinkedFolder is told of it, since the native filesystem monitoring does not follow symlinks on its own (see
-// MonitorToken.AddSubPath); any other symlink is listed as a file. One that leads back to a folder it lies within is
-// listed as a folder with nothing beneath it, since that folder would otherwise be listed within itself over and over
-// until the path grew too long to resolve, and symlinkedFolder is not told of it, since that folder is watched already.
-// A folder that cannot be read lists nothing, which is logged unless the folder is missing, as it is during filesystem
-// updates.
+// settings and output template folders, the Master Library's copy of the User Guide (see masterUserGuideDirPath) and
+// the files of the types the file type registry marks as special, which the type that stands in for every unknown one
+// is. A symlink counts as a folder when it leads to one that holds something, and symlinkedFolder is told of it, since
+// the native filesystem monitoring does not follow symlinks on its own (see MonitorToken.AddSubPath); any other symlink
+// is listed as a file. One that leads back to a folder it lies within is listed as a folder with nothing beneath it,
+// since that folder would otherwise be listed within itself over and over until the path grew too long to resolve, and
+// symlinkedFolder is not told of it, since that folder is watched already. A folder that cannot be read lists nothing,
+// which is logged unless the folder is missing, as it is during filesystem updates.
 func listFolder(lib *library.Library, dirPath string, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) []*navigatorEntry {
 	libPath := lib.Path(false)
 	entries, err := os.ReadDir(filepath.Join(libPath, dirPath))
@@ -460,7 +477,8 @@ func listFolder(lib *library.Library, dirPath string, groupContainers bool, syml
 		}
 		switch {
 		case isDir:
-			if !strings.EqualFold(p, library.SettingsDirName) && !strings.EqualFold(p, library.OutputTemplatesDirName) {
+			if !strings.EqualFold(p, library.SettingsDirName) && !strings.EqualFold(p, library.OutputTemplatesDirName) &&
+				!inMasterUserGuide(lib, p) {
 				var beneath []*navigatorEntry
 				if !leadsBack {
 					beneath = listFolder(lib, p, groupContainers, symlinkedFolder)
@@ -496,12 +514,16 @@ func symlinkLeadsBack(libPath, dirPath, p string) bool {
 // listFavorites lists the favorites of the given libraries, after dropping from each library the favorites that can no
 // longer be found (see Library.CleanupFavorites), in the order the Favorites row shows them: folders ahead of files
 // when groupContainers is set, within that in natural order of the path without its extension and then of the whole
-// path. A folder among them is listed as listFolder lists it.
+// path. A folder among them is listed as listFolder lists it. A favorite that is the Master Library's copy of the User
+// Guide or lies within it is left out, though kept among the library's favorites.
 func listFavorites(libs []*library.Library, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) []*favoriteEntry {
 	var favs []*favoriteEntry
 	for _, lib := range libs {
 		lib.CleanupFavorites()
 		for _, one := range lib.Favorites() {
+			if inMasterUserGuide(lib, one) {
+				continue
+			}
 			favs = append(favs, &favoriteEntry{
 				library: lib,
 				entry:   &navigatorEntry{path: one, isDir: xos.IsDir(filepath.Join(lib.Path(false), one))},

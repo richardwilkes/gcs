@@ -28,33 +28,8 @@ import (
 // i18n.Text("Attributes: %s", profile.Name).
 func TestI18nTextArgsAreLiterals(t *testing.T) {
 	c := check.New(t)
-	root, err := filepath.Abs("..")
-	c.NoError(err, "the module root must be locatable")
-
-	fileSet := token.NewFileSet()
 	checked := 0
-	c.NoError(filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			// Skip anything that isn't our own source.
-			if name := d.Name(); path != root && (strings.HasPrefix(name, ".") || name == "testdata") {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		if !strings.HasSuffix(path, ".go") {
-			return nil
-		}
-		file, parseErr := parser.ParseFile(fileSet, path, nil, 0)
-		if parseErr != nil {
-			return parseErr
-		}
-		rel, relErr := filepath.Rel(root, path)
-		if relErr != nil {
-			rel = path
-		}
+	walkModuleSources(c, func(fileSet *token.FileSet, rel string, file *ast.File) {
 		ast.Inspect(file, func(node ast.Node) bool {
 			call, ok := node.(*ast.CallExpr)
 			if !ok {
@@ -79,7 +54,40 @@ func TestI18nTextArgsAreLiterals(t *testing.T) {
 					"runtime portion into its format arguments", rel, pos.Line)
 			return true
 		})
+	})
+	c.True(checked > 100, "the walk should have found the i18n.Text calls, but only saw %d", checked)
+}
+
+// walkModuleSources parses every Go file of the module, test files included, and hands each to fn with the file set it
+// was parsed into and its path relative to the module root. Directories whose names begin with a dot and testdata
+// directories are skipped.
+func walkModuleSources(c check.Checker, fn func(fileSet *token.FileSet, rel string, file *ast.File)) {
+	root, err := filepath.Abs("..")
+	c.NoError(err, "the module root must be locatable")
+	fileSet := token.NewFileSet()
+	c.NoError(filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			// Skip anything that isn't our own source.
+			if name := d.Name(); path != root && (strings.HasPrefix(name, ".") || name == "testdata") {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") {
+			return nil
+		}
+		file, parseErr := parser.ParseFile(fileSet, path, nil, 0)
+		if parseErr != nil {
+			return parseErr
+		}
+		rel, relErr := filepath.Rel(root, path)
+		if relErr != nil {
+			rel = path
+		}
+		fn(fileSet, rel, file)
 		return nil
 	}), "the source tree must be walkable")
-	c.True(checked > 100, "the walk should have found the i18n.Text calls, but only saw %d", checked)
 }

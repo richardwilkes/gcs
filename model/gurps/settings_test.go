@@ -191,14 +191,14 @@ func TestIDLookupsWithNullMapEntries(t *testing.T) {
 	settings.PDFs[nullPDF] = nil
 	t.Cleanup(func() { delete(settings.PDFs, nullPDF) })
 	var id tid.TID
-	c.NotPanics(func() { id = IDForPDFTOC(nullPDF, "Chapter 1", 3) })
+	c.NotPanics(func() { id = IDForPDFTOC(nullPDF, "Chapter 1", 3, 0) })
 	c.True(tid.IsKind(id, kinds.TableOfContents), "a usable TOC ID was returned")
 
 	// A null in place of a title's page map is the same hazard one level down.
 	const nullTOCPDF = "/does/not/exist/null_toc.pdf"
 	settings.PDFs[nullTOCPDF] = &PDFInfo{TOC: map[string]map[int]tid.TID{"Chapter 1": nil}}
 	t.Cleanup(func() { delete(settings.PDFs, nullTOCPDF) })
-	c.NotPanics(func() { id = IDForPDFTOC(nullTOCPDF, "Chapter 1", 3) })
+	c.NotPanics(func() { id = IDForPDFTOC(nullTOCPDF, "Chapter 1", 3, 0) })
 	c.True(tid.IsKind(id, kinds.TableOfContents), "a usable TOC ID was returned")
 
 	const nullNode = "/does/not/exist/null_node"

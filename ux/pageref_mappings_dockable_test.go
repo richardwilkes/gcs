@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/userguide"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -50,6 +51,45 @@ func TestSplitMarkdownPageRef(t *testing.T) {
 			c.Equal(tc.wantAnchor, anchor, tc.name)
 		})
 	}
+}
+
+// TestMarkdownPageReferencesOpenTheUserGuide verifies that an md: reference into the User Guide, escaped or not and in
+// any case, opens the guide built into GCS at the page and heading it names, in the one viewer, rather than the copy of
+// the page the Master Library still holds.
+func TestMarkdownPageReferencesOpenTheUserGuide(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	stale := filepath.Join(gurps.GlobalSettings().Libraries.Master().Path(false), "Markdown", userguide.RefFolder)
+	c.NoError(os.MkdirAll(stale, 0o750))
+	c.NoError(os.WriteFile(filepath.Join(stale, "Traits.md"), []byte("# Traits\n\nA stale copy.\n"), 0o600))
+	var d *userGuideDockable
+	for _, tc := range []struct {
+		ref        string
+		wantPage   string
+		wantAnchor string
+	}{
+		{ref: "md:User%20Guide/Traits", wantPage: "Traits.md"},
+		{ref: "md:user guide/scripting/dice", wantPage: "Scripting/Dice.md"},
+		{ref: "md:User Guide/Scripting Guide#rules-and-limits", wantPage: "Scripting Guide.md", wantAnchor: "rules-and-limits"},
+	} {
+		screen.Do(func() { OpenPageReference(tc.ref, "", nil) })
+		d = uxtest.SoleEditor[*userGuideDockable](t, screen, func(unison.Dockable) bool { return true })
+		var page, anchor string
+		markdownViews := 0
+		screen.Do(func() {
+			page = d.page
+			anchor = d.history[d.historyPos].anchor
+			for _, one := range AllDockables() {
+				if _, ok := one.AsPanel().Self.(*MarkdownDockable); ok {
+					markdownViews++
+				}
+			}
+		})
+		c.Equal(tc.wantPage, page, "%s: the page shown", tc.ref)
+		c.Equal(tc.wantAnchor, anchor, "%s: the heading scrolled to", tc.ref)
+		c.Equal(0, markdownViews, "%s: no library file may open", tc.ref)
+	}
+	uxtest.CloseEditorWithoutPrompt(t, screen, d)
 }
 
 // TestAsPageRefMappingsDockable verifies that the Page Reference Mappings view is found from any of the Dockable

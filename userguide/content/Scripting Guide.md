@@ -71,7 +71,3 @@ points a pool has left). See [Attribute](Scripting/Attribute).
 - A script whose value depends on itself, directly or through other fields, is stopped after 20 levels and reports a
   possible circular reference.
 - An error thrown by a script becomes the field's text, so mistakes are easy to spot.
-
----
-
-***Last updated for v5.59.0***

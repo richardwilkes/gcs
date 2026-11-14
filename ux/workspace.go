@@ -266,9 +266,9 @@ func Activate(matcher func(d unison.Dockable) bool) bool {
 	return false
 }
 
-// ActivateDockableOfType is Activate for a dockable of a particular type: it activates the first open dockable whose panel's
-// Self is a T and, when match is not nil, that match accepts, such as the sheet a per-sheet settings view belongs to.
-// Self is used since what the dock hands out may be an inner layer rather than the dockable itself (see
+// ActivateDockableOfType is Activate for a dockable of a particular type: it activates the first open dockable whose
+// panel's Self is a T and, when match is not nil, that match accepts, such as the sheet a per-sheet settings view
+// belongs to. Self is used since what the dock hands out may be an inner layer rather than the dockable itself (see
 // resolveDockable), which a direct type assertion would not see.
 func ActivateDockableOfType[T unison.Paneler](match func(T) bool) bool {
 	return Activate(func(d unison.Dockable) bool {
@@ -277,14 +277,35 @@ func ActivateDockableOfType[T unison.Paneler](match func(T) bool) bool {
 	})
 }
 
-// ActivateDockable activates the dockable, giving it focus.
+// ActivateDockable activates the dockable, giving it focus and bringing its window to the front.
 func ActivateDockable(d unison.Dockable) {
 	if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {
+		showDocked(d)
 		dc.SetCurrentDockable(d)
 		dc.AcquireFocus()
 		return
 	}
 	d.AsPanel().Window().ToFront()
+}
+
+// showDocked brings the window holding d, which is in a dock, to the front. Each dock d lies within that has maximized
+// a container other than the one d lies within is restored, since a maximized container hides the others, and a
+// dockable that holds d, as the document dock does, is brought to the front of its container, whose other tabs, such
+// as the navigator, may share it.
+func showDocked(d unison.Dockable) {
+	for dc := unison.Ancestor[*unison.DockContainer](d); dc != nil; dc = unison.Ancestor[*unison.DockContainer](dc) {
+		if dock := dc.Dock; dock != nil && dock.MaximizedContainer != nil && dock.MaximizedContainer != dc {
+			dock.Restore()
+		}
+		if holder := unison.Ancestor[unison.Dockable](dc); holder != nil {
+			if outer := unison.Ancestor[*unison.DockContainer](holder); outer != nil && outer.CurrentDockable() != holder {
+				outer.SetCurrentDockable(holder)
+			}
+		}
+	}
+	if wnd := d.AsPanel().Window(); wnd != nil {
+		wnd.ToFront()
+	}
 }
 
 // ActiveDockable returns the currently active dockable in the active window.
@@ -473,8 +494,9 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 }
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
-// present. If the group is one that is configured to open in its own window instead, and forceIntoDock is false, the
-// Dockable is given a window of its own, the creation of which may be deferred; see placeInWindow.
+// present, and brings the workspace window to the front. If the group is one that is configured to open in its own
+// window instead, and forceIntoDock is false, the Dockable is given a window of its own, the creation of which may be
+// deferred; see placeInWindow.
 func PlaceInDock(dockable unison.Dockable, group dgroup.Group, forceIntoDock bool) {
 	InstallDockUndockCmd(dockable)
 	if !forceIntoDock && slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
@@ -484,6 +506,7 @@ func PlaceInDock(dockable unison.Dockable, group dgroup.Group, forceIntoDock boo
 		return
 	}
 	dockable.AsPanel().ClientData()[dockGroupClientDataKey] = group
+	defer showDocked(dockable)
 	dc := DefaultDockContainer()
 	if dc != nil {
 		if DockContainerHasGroup(dc, group) {

@@ -472,14 +472,13 @@ func (f *modifierTargetCellFactory[T]) CreateCell(owner unison.Paneler, element 
 	return cell
 }
 
-// revealModifierTargets brings the destination to the front and puts the focus on the first of its tables with a
-// selection, in the view of it showing the first selected row, with that row in view. The window is raised too, since
-// ActivateDockable only brings a docked destination to the front of its dock, and the library the command was chosen
-// from may be in a window of its own, which would otherwise keep the focus and with it the next Undo.
+// revealModifierTargets brings the destination and its window to the front and puts the focus on the first of its
+// tables with a selection, in the view of it showing the first selected row, with that row in view. The window must be
+// raised, since the library the command was chosen from may be in a window of its own, which would otherwise keep the
+// focus and with it the next Undo.
 func revealModifierTargets[T gurps.Node[T]](dest unison.Dockable, tables []*unison.Table[*Node[T]]) {
-	if wnd := dest.AsPanel().Window(); wnd != nil {
+	if dest.AsPanel().Window() != nil {
 		ActivateDockable(dest)
-		wnd.ToFront()
 	}
 	for _, table := range tables {
 		live := liveTable(table)

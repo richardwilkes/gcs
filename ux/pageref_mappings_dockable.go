@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/userguide"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -67,10 +68,12 @@ func ExtractPageReferences(s string) []string {
 	return list
 }
 
-// OpenPageReference opens the given page reference. Returns true if the user asked to cancel further processing.
+// OpenPageReference opens the given page reference: an http, https or mailto: URL is handed to the system, an md:
+// reference opens the markdown it names, and anything else is taken for a page of a PDF. Returns true if the user asked
+// to cancel further processing.
 func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	switch {
-	case unison.HasURLPrefix(ref):
+	case unison.HasURLPrefix(ref) || isMailtoLink(ref):
 		if err := unison.OpenBrowser(ref); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to open ")+ref, err)
 		}
@@ -83,8 +86,27 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 	}
 }
 
+// isMailtoLink returns true if ref is a mailto: URL, whose scheme may be in any case.
+func isMailtoLink(ref string) bool {
+	const prefix = "mailto:"
+	return len(ref) >= len(prefix) && strings.EqualFold(ref[:len(prefix)], prefix)
+}
+
+// openMarkdownPageReference opens the markdown an md: reference names. One whose first folder is userguide.RefFolder,
+// in any case, names a page of the User Guide built into GCS, and is reported as an error when the guide has no such
+// page rather than looked for in the libraries, whose own folders of that name it cannot reach. Any other names a file
+// in the Markdown folder of a library or, failing that, in a library itself.
 func openMarkdownPageReference(ref string) {
 	path, anchor := splitMarkdownPageRef(ref[3:])
+	if page, inGuide := userguide.PageForRef(filepath.ToSlash(path)); inGuide {
+		if page == "" {
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to open the User Guide page"),
+				path+"\n"+i18n.Text("is not a page of the User Guide."))
+			return
+		}
+		showUserGuide(page, headingID(anchor))
+		return
+	}
 	if path != "" {
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			filePath := filepath.Join(lib.Path(false), "Markdown", path)
@@ -135,13 +157,7 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 		promptContext = make(map[string]bool)
 	}
 	var pageInfo gurps.PageInfo
-	// A separating colon is mandatory if the key would otherwise end in a number, or if the page portion is a page
-	// label in the PDF rather than a number, such as "iv".
-	key, label, hadColon := strings.Cut(ref, ":")
-	if !hadColon {
-		key = strings.TrimRight(ref, "0123456789")
-		label = ref[len(key):]
-	}
+	key, label, hadColon := splitPDFPageRef(ref)
 	pageInfo.Label = label
 	if key != "" && pageInfo.Label != "" {
 		// Basic Set page references use `B` for pages in the Campaigns book, too.
@@ -192,6 +208,17 @@ Would you like to create one by choosing a PDF to map to this key?`, key), pdfNa
 		}
 	}
 	return false
+}
+
+// splitPDFPageRef splits a page reference into the key of its PDF and the label of its page, either of which is empty
+// when the reference lacks it. A separating colon is mandatory if the key would otherwise end in a number, or if the
+// page portion is a page label in the PDF rather than a number, such as "iv".
+func splitPDFPageRef(ref string) (key, label string, hadColon bool) {
+	if key, label, hadColon = strings.Cut(ref, ":"); !hadColon {
+		key = strings.TrimRight(ref, "0123456789")
+		label = ref[len(key):]
+	}
+	return key, label, hadColon
 }
 
 var variablesRegexp = regexp.MustCompile(`\$(\w+)`)

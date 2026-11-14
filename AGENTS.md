@@ -30,6 +30,20 @@ Any comments you add or edit:
 - Tests that start a headless workspace with `uxtest.StartHeadlessWorkspace` must not call `t.Parallel`: a session
   owns most of unison's mutable globals while it runs.
 
+## User Guide
+
+- The User Guide lives in `userguide/content`, is embedded in the binary by package `userguide`, and is shown by the
+  viewer in `ux/user_guide_dockable.go`. The Master Library's `Markdown/User Guide` copy is frozen for older releases
+  and never read.
+- `_sidebar.md` is the table of contents for both the app and the GitHub wiki. Only the line shapes `userguide/toc.go`
+  accepts may appear in it, and every page must be listed.
+- Links between pages use the exact-case file name with `%20` for spaces and no `.md` (`../` from `Scripting/`);
+  embedded files are case-sensitive. Go code opens a page with `HandleLink(nil, "md:User%20Guide/<Page>")`.
+- Raster images are `<img>` tags with `src`, `alt` and a `width` in logical pixels, half the pixel width of a 2x
+  capture, never `![alt](target)`; `go test ./userguide/` enforces the tag and its width. SVG icons stay in Markdown.
+- `go test ./userguide/` checks every link, image and anchor and the table of contents; run it after any content edit.
+- The wiki is regenerated from the content by `tools/wikisync` in the `gcs.wiki` checkout.
+
 ## Building, testing and linting
 
 Prefer `./build.sh` over calling `go` directly. It exports `GOEXPERIMENT=simd` to match CI and, on macOS, the link

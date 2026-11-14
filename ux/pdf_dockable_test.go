@@ -12,7 +12,11 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // TestPDFTextPosBefore pins the ordering of selection endpoints, which everything the selection does with them rests
@@ -297,4 +301,34 @@ func TestPDFSelectionRangeAgainstRealText(t *testing.T) {
 	if text, want := pdf.TextRange(0, start, end), pdfTextSampleString[wordStart:]; text != want {
 		t.Errorf("the last word of page 0 reads %q, want %q", text, want)
 	}
+}
+
+// TestPDFTOCScrollsToTheRowChosen verifies that extending the table of contents' selection to a bookmark, up or down,
+// scrolls to that bookmark's page rather than to the page of another selected row.
+func TestPDFTOCScrollsToTheRowChosen(t *testing.T) {
+	c := check.New(t)
+	const pdfPath = "/does/not/exist/toc-scroll.pdf"
+	settings := gurps.GlobalSettings()
+	t.Cleanup(func() { delete(settings.PDFs, pdfPath) })
+	d := &PDFDockable{
+		path:              pdfPath,
+		backButton:        unison.NewButton(),
+		forwardButton:     unison.NewButton(),
+		pageRects:         make([]geom.Rect, 3),
+		pendingScrollPage: -1,
+		// Marked as already queued, so that no sync is, since the dockable has no document to sync.
+		viewSyncPending: true,
+	}
+	d.createTOC()
+	d.tocPanel.SetRootRows(newTOC(d, nil, []*PDFTableOfContents{
+		{Title: "First", PageNumber: 0},
+		{Title: "Second", PageNumber: 1},
+		{Title: "Third", PageNumber: 2},
+	}))
+	d.tocPanel.SelectByIndex(1)
+	c.Equal(1, d.pendingScrollPage, "choosing the second bookmark scrolls to its page")
+	d.tocPanel.KeyDownCallback(unison.KeyDown, mod.Shift, false)
+	c.Equal(2, d.pendingScrollPage, "Shift+Down to the third bookmark scrolls to its page")
+	d.tocPanel.KeyDownCallback(unison.KeyHome, mod.Shift, false)
+	c.Equal(0, d.pendingScrollPage, "Shift+Home to the first bookmark scrolls to its page")
 }

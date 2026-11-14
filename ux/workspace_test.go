@@ -207,6 +207,131 @@ func TestClosingTheLastTabFocusesTheNavigator(t *testing.T) {
 	c.True(navigatorTableFocused, "closing the last tab hands the focus to the navigator's table")
 }
 
+// TestBringingADockedDockableForwardShowsIt verifies that placing a dockable in the workspace's dock, by PlaceInDock or
+// DisplayNewDockable, or activating one already there, raises the workspace window over a window of its own that was in
+// front of it, as a sheet's is when its Help button opens the User Guide, rather than leaving the dockable to open or
+// come forward behind that window. While another container is maximized, in the document dock or in the dock that
+// holds it, the dock is restored, rather than the dockable being left hidden behind that container, but a dockable in
+// the maximized container leaves it maximized. The document dock is brought in front of a tab its own is stacked with.
+func TestBringingADockedDockableForwardShowsIt(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The dockables must land in the dock.
+
+	var other *unison.Window
+	screen.Do(func() {
+		var err error
+		if other, err = unison.NewWindow("Other"); err != nil {
+			t.Errorf("unable to create the other window: %v", err)
+		}
+	})
+	if other == nil {
+		t.FailNow()
+	}
+	// otherInFront brings the other window to the front and reports whether it has the keyboard focus.
+	otherInFront := func() (inFront bool) {
+		screen.Do(other.ToFront)
+		screen.Sync()
+		screen.Do(func() { inFront = unison.ActiveWindow() == other })
+		return inFront
+	}
+	// workspaceInFront reports whether the workspace window has the keyboard focus once bringForward has been called.
+	workspaceInFront := func(bringForward func()) (inFront bool) {
+		screen.Do(bringForward)
+		screen.Sync()
+		screen.Do(func() { inFront = unison.ActiveWindow() == wnd })
+		return inFront
+	}
+
+	var d *MarkdownDockable
+	screen.Do(func() { d = newMarkdownDockable(markdownContentOnlyPrefix+"Docked", "# Docked\n", false, false) })
+	c.True(otherInFront(), "the other window must start out in front")
+	c.True(workspaceInFront(func() { PlaceInDock(d, dgroup.Markdown, false) }),
+		"placing a dockable in the dock must raise the workspace window")
+	c.True(otherInFront(), "the other window must be back in front")
+	c.True(workspaceInFront(func() { ActivateDockable(d) }), "activating a docked dockable must raise the workspace window")
+	var displayed *MarkdownDockable
+	screen.Do(func() {
+		displayed = newMarkdownDockable(markdownContentOnlyPrefix+"Displayed", "# Displayed\n", false, false)
+	})
+	c.True(otherInFront(), "the other window must be back in front again")
+	c.True(workspaceInFront(func() { DisplayNewDockable(displayed) }),
+		"displaying a new dockable in the dock must raise the workspace window")
+	screen.Do(other.Dispose)
+	uxtest.CloseEditorWithoutPrompt(t, screen, displayed)
+
+	// shownAfter reports whether target is in front of its container, and neither that container nor any panel
+	// holding it is hidden or left without room, once bringForward has been called.
+	shownAfter := func(target unison.Dockable, bringForward func()) (shown bool) {
+		screen.Do(bringForward)
+		screen.Sync()
+		screen.Do(func() {
+			dc := unison.Ancestor[*unison.DockContainer](target)
+			shown = dc != nil && dc.CurrentDockable() == target && target.AsPanel().FrameRect().Height > 0
+			for p := target.AsPanel(); shown && p != nil; p = p.Parent() {
+				shown = !p.Hidden
+			}
+		})
+		return shown
+	}
+	var big, late *MarkdownDockable
+	screen.Do(func() {
+		big = newMarkdownDockable(markdownContentOnlyPrefix+"Maximized", "# Maximized\n", false, false)
+		PlaceInDock(big, dgroup.Editors, false)
+	})
+	for _, tc := range []struct {
+		name      string
+		container func() *unison.DockContainer
+	}{
+		{
+			name:      "another document container",
+			container: func() *unison.DockContainer { return unison.Ancestor[*unison.DockContainer](big) },
+		},
+		{
+			name:      "the navigator's container",
+			container: func() *unison.DockContainer { return unison.Ancestor[*unison.DockContainer](Workspace.Navigator) },
+		},
+	} {
+		maximize := func() {
+			dc := tc.container()
+			dc.Dock.Maximize(dc)
+		}
+		c.True(shownAfter(d, func() {
+			maximize()
+			ActivateDockable(d)
+		}), "%s maximized: activating a docked dockable must show it", tc.name)
+		screen.Do(func() { late = newMarkdownDockable(markdownContentOnlyPrefix+"Late", "# Late\n", false, false) })
+		c.True(shownAfter(late, func() {
+			maximize()
+			PlaceInDock(late, dgroup.Settings, false)
+		}), "%s maximized: placing a dockable in a container of its own must show it", tc.name)
+		uxtest.CloseEditorWithoutPrompt(t, screen, late)
+		screen.Do(func() { late = newMarkdownDockable(markdownContentOnlyPrefix+"Late", "# Late\n", false, false) })
+		c.True(shownAfter(late, func() {
+			maximize()
+			DisplayNewDockable(late)
+		}), "%s maximized: displaying a new dockable must show it", tc.name)
+		uxtest.CloseEditorWithoutPrompt(t, screen, late)
+	}
+	c.True(shownAfter(d, func() {
+		dc := unison.Ancestor[*unison.DockContainer](Workspace.Navigator)
+		dc.Stack(Workspace.DocumentDock, -1)
+		dc.SetCurrentDockable(Workspace.Navigator)
+		ActivateDockable(d)
+	}), "the navigator's tab in front of the document dock's: activating a docked dockable must show it")
+	var stillMaximized bool
+	screen.Do(func() {
+		dc := unison.Ancestor[*unison.DockContainer](big)
+		dc.Dock.Maximize(dc)
+		ActivateDockable(big)
+		stillMaximized = dc.Dock.MaximizedContainer == dc
+	})
+	c.True(stillMaximized, "activating a dockable in the maximized container must leave it maximized")
+
+	uxtest.CloseEditorWithoutPrompt(t, screen, big)
+	uxtest.CloseEditorWithoutPrompt(t, screen, d)
+}
+
 // dockContainerCount returns the number of containers in the document dock.
 func dockContainerCount() int {
 	count := 0
