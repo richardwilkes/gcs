@@ -9,6 +9,8 @@ This object holds encumbrance-related data for an [Entity](Entity).
 | levelName                | string | The name of the current encumbrance level.                                                  | GCS v5.36+   |
 | level                    | number | The current encumbrance level, a value from 0 to 4.                                         | GCS v5.36+   |
 | levelForSkills           | number | The current encumbrance level with regards to skill usage, a value from 0 to 4.             | GCS v5.36+   |
+| move                     | number | The character's Move at the current encumbrance level.                                      | GCS v5.60+   |
+| dodge                    | number | The character's Dodge at the current encumbrance level.                                     | GCS v5.60+   |
 | moveFactor               | number | A multiplier to use on the character's Move due to load.                                    | GCS v5.36+   |
 | weightCarried            | number | The number of pounds being carried.                                                         | GCS v5.36+   |
 | maximumCarry             | number | The maximum number of pounds that may be carried.                                           | GCS v5.36+   |

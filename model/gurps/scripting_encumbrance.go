@@ -24,6 +24,14 @@ func newScriptEncumbrance(r *goja.Runtime, entity *Entity) *goja.Object {
 	}
 	m["level"] = func() goja.Value { return r.ToValue(int(entity.EncumbranceLevel(false))) }
 	m["levelForSkills"] = func() goja.Value { return r.ToValue(int(entity.EncumbranceLevel(true))) }
+	m["move"] = func() goja.Value {
+		level := entity.EncumbranceLevel(false)
+		return r.ToValue(entity.Move(level))
+	}
+	m["dodge"] = func() goja.Value {
+		level := entity.EncumbranceLevel(false)
+		return r.ToValue(entity.Dodge(level))
+	}
 	m["moveFactor"] = func() goja.Value {
 		level := entity.EncumbranceLevel(false)
 		return r.ToValue((fxp.One - fxp.FromInteger(int(level)).Mul(fxp.Two).Div(fxp.Ten)).AsFloat[float64]())
