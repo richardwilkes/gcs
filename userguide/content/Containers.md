@@ -12,14 +12,14 @@ Containers let you **group and organize items**. For example:
 - Nest a **pouch** inside a **backpack** for equipment.
 - Group spells by college or theme.
 
-A container is identified by the **expand/collapse arrow** ![expand folder](images/icons/icn-folderExpand.svg) next to
+A container is identified by the **expand/collapse arrow** ![expand folder](images/icons/folderExpand.svg) next to
 its name. Depending on the type, you may also see extra details, such as the **container type** (traits) or the
 **choice rule** (templates).
 
 Containers can also hold other containers, so you can build complex structures when needed.
 
-- Expand or collapse a container with the arrow ![expand folder](images/icons/icn-folderExpand.svg).
-- Show or hide **all containers** with the expand/collapse button ![collapse folder](images/icons/icn-expand.svg).
+- Expand or collapse a container with the arrow ![expand folder](images/icons/folderExpand.svg).
+- Show or hide **all containers** with the expand/collapse button ![collapse folder](images/icons/expand.svg).
 - Totals (points, weight, value) include all contents automatically, depending on container type.
 
 ## Creating a container
@@ -30,7 +30,7 @@ To create a container:
    (for example, **Insert > Trait > New Trait Container** or **Insert > Equipment > New Carried Equipment Container**).
    You can also right-click a list and select **New Container**.
 2. The container's editor opens. Fill in its fields (see field tables below) and select **Apply Changes**
-   ![apply changes](images/icons/icn-applyChanges.svg).
+   ![apply changes](images/icons/applyChanges.svg).
 3. The new empty container appears in the appropriate list of your sheet.
 
 You can also turn an existing item into a container, or back, with **Item > Convert > Convert to Container** and
@@ -120,7 +120,7 @@ Containers for [Traits](Traits) include the following fields:
 | Trait Container Field       | Description                                                                                                                                                              |
 |-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Name**                    | The container’s name (e.g., “Advantages,” “Psionic Powers,” “Alternate Form”).                                                                                           |
-| **Notes**                   | Notes that appear under the container. Select the Scripting Guide ![scripting guide](images/icons/icn-scriptingGuide.svg) for instructions on how to include JavaScript. |
+| **Notes**                   | Notes that appear under the container. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on how to include JavaScript. |
 | **VTT Notes**               | Notes for use in your Virtual Tabletop system. See your VTT’s documentation.                                                                                             |
 | **User Description**        | Additional notes for your reference. These appear as a tooltip when you hover, and only exist on character sheets.                                                       |
 | **Tags**                    | Comma-separated [Tags](Tags) for organization.                                                                                                                           |
@@ -188,12 +188,12 @@ The toolbar above a container's editor gives you quick access to common actions:
 
 | Button                                                  | Name                    | Description                                                                                            |
 |:--------------------------------------------------------|-------------------------|--------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens the help page from the User Guide.                                                               |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens the help page from the User Guide.                                                               |
 | 100%                                                    | **Scale**               | Adjusts the display size of the editor.                                                                |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the editor.                                                                           |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes.                                                                          |
-| ![substitutions](images/icons/icn-substitutions.svg)    | **Set Substitutions**   | Lets you enter values for containers with placeholders in their text.                                  |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the container's ID and library source, and offers **Sync with Source** and **Clear Source**.     |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the editor.                                                                           |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes.                                                                          |
+| ![substitutions](images/icons/substitutions.svg)    | **Set Substitutions**   | Lets you enter values for containers with placeholders in their text.                                  |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the container's ID and library source, and offers **Sync with Source** and **Clear Source**.     |
 
 ---
 

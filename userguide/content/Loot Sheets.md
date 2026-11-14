@@ -35,7 +35,7 @@ Loot Sheets can also generate **random treasure hoards** based on weighted proba
 1. Create a Loot Sheet with the items you want as possible treasure.
 2. For each item, set the **Quantity** to weight its likelihood of being chosen (higher quantities = more common). A
    group's contents are picked from individually.
-3. Select **Generate a treasure horde from this loot sheet** ![treasure](images/icons/icn-wand.svg).
+3. Select **Generate a treasure horde from this loot sheet** ![treasure](images/icons/wand.svg).
 4. Enter a **Target (Minimum) Value** and **Maximum Value** for the treasure hoard, then select **OK**.
 5. GCS creates a **new Loot Sheet** with a randomized selection of items that fits within the chosen value range. The
    old loot sheet remains unchanged.
@@ -70,16 +70,16 @@ The **Loot Sheet** includes the following fields:
 
 The toolbar above the Loot Sheet gives you quick access to common actions:
 
-<img src="images/screenshots/scrn-toolbar-lootSheet.png" alt="Loot Sheet Toolbar" width="1156">
+<img src="images/screenshots/toolbar-lootSheet.png" alt="Loot Sheet Toolbar" width="1156">
 
 | Button                                               | Name                                               | Description                                                                                                   |
 |:-----------------------------------------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| ![info](images/icons/icn-info.svg)                   | **Info**                                           | Hover to see a reminder that holding `Alt` (`Option` on macOS) while using the mouse wheel changes the scale. |
+| ![info](images/icons/info.svg)                   | **Info**                                           | Hover to see a reminder that holding `Alt` (`Option` on macOS) while using the mouse wheel changes the scale. |
 | 100%                                                 | **Scale**                                          | Adjust the display size of your loot sheet.                                                                   |
-| ![toggle expansion](images/icons/icn-expand.svg)     | **Opens/closes all hierarchical rows**             | Show or hide all items within containers at once.                                                             |
-| ![toggle notes](images/icons/icn-openCloseNotes.svg) | **Opens/closes all embedded notes**                | Show or hide all embedded notes on your sheet.                                                                |
-| ![sync sources](images/icons/icn-syncSources.svg)    | **Sync with all sources in this sheet**            | Sync all items on the loot sheet with the libraries they came from.                                           |
-| ![treasure](images/icons/icn-wand.svg)               | **Generate a treasure horde from this loot sheet** | Generate a random treasure hoard based on the sheet’s items and settings.                                     |
+| ![toggle expansion](images/icons/expand.svg)     | **Opens/closes all hierarchical rows**             | Show or hide all items within containers at once.                                                             |
+| ![toggle notes](images/icons/openCloseNotes.svg) | **Opens/closes all embedded notes**                | Show or hide all embedded notes on your sheet.                                                                |
+| ![sync sources](images/icons/syncSources.svg)    | **Sync with all sources in this sheet**            | Sync all items on the loot sheet with the libraries they came from.                                           |
+| ![treasure](images/icons/wand.svg)               | **Generate a treasure horde from this loot sheet** | Generate a random treasure hoard based on the sheet’s items and settings.                                     |
 | N/A                                                  | **Search**                                         | Type to list the matching rows on the loot sheet. Choose one to select it and scroll to it.                   |
 
 ---

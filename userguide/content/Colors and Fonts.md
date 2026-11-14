@@ -15,8 +15,8 @@ To open the **Colors** and **Fonts** settings:
 
 You can manage color and font settings the same way as other settings:
 
-- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg).
-- **Import or export settings:** On the Colors or Fonts toolbars, select **Menu** ![menu](images/icons/icn-menu.svg),
+- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/reset.svg).
+- **Import or export settings:** On the Colors or Fonts toolbars, select **Menu** ![menu](images/icons/menu.svg),
   then choose:
   - **Import…:** Load saved settings into GCS.
   - **Export…:** Save your current settings as a file.
@@ -85,7 +85,7 @@ You can set colors in several ways:
 
 The preview panel shows both the **new color** and the **original color**.
 
-Next to every color option is a **reset button** ![reset](images/icons/icn-reset.svg). Select this to return that color
+Next to every color option is a **reset button** ![reset](images/icons/reset.svg). Select this to return that color
 to the GCS default.
 
 ## Fonts
@@ -118,7 +118,7 @@ Each font entry lets you choose:
 - **Slant**: _Upright_, _Italic_, or _Oblique_.
 - **Spacing**: from _Ultra-Condensed_ to _Ultra-Expanded_. _Standard_ is the default.
 
-Next to every font option is a **reset button** ![reset](images/icons/icn-reset.svg). Select this to return that font to
+Next to every font option is a **reset button** ![reset](images/icons/reset.svg). Select this to return that font to
 the GCS default.
 
 > [!IMPORTANT]

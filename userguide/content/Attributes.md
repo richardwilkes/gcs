@@ -53,16 +53,16 @@ these options in its `Settings/Attributes` folder.
 
 To switch your attributes:
 
-1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/icn-attributes.svg), or go to
+1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/attributes.svg), or go to
    **Sheet > Attributes**.
-2. On the Attributes toolbar, select **Menu** ![menu](images/icons/icn-menu.svg).
+2. On the Attributes toolbar, select **Menu** ![menu](images/icons/menu.svg).
 3. Choose an option from the table below. They are listed under the **Master Library** heading.
 4. Choose whether to:
    - **Remove existing attribute definitions, replacing them with all of these**, or
    - **Merge the checked attribute definitions into the existing ones**. Attributes that already exist keep their
      place, and the rest are added after them.
 5. Select **Import**.
-6. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+6. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 | Attribute option                            | Notes                                                                                                                                                                    |
 |---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -84,7 +84,7 @@ You can share custom attribute settings between characters or reuse them in diff
 
 To import or export attributes:
 
-1. On the Attributes toolbar, select **Menu** ![menu](images/icons/icn-menu.svg).
+1. On the Attributes toolbar, select **Menu** ![menu](images/icons/menu.svg).
 2. Select one of the following:
    - **Import…:** Load a saved set of attributes into your sheet, replacing or merging as described above.
    - **Export…:** Save the current attributes as a file.
@@ -102,16 +102,16 @@ You can edit the underlying calculations for attributes or create custom attribu
 
 To edit or add attributes:
 
-1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/icn-attributes.svg).
+1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/attributes.svg).
 2. On the editor, do one of the following:
    - **Edit** an existing attribute. Each attribute is collapsed to a header showing its ID, name, and type; select the
      header to show its fields, and again to hide them.
-   - Select **Add Attribute** ![add](images/icons/icn-add.svg) on the toolbar to add a new attribute, already expanded.
+   - Select **Add Attribute** ![add](images/icons/add.svg) on the toolbar to add a new attribute, already expanded.
 3. Enter values in the form using the fields below.
-4. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+4. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 To expand every attribute at once, select **Expands/collapses all attribute definitions**
-![toggle expansion](images/icons/icn-expand.svg) on the Attributes toolbar. When any attribute is already expanded, it
+![toggle expansion](images/icons/expand.svg) on the Attributes toolbar. When any attribute is already expanded, it
 collapses them all instead.
 
 Every change can be undone with **Edit > Undo** while the view is open. Undoing a change to a collapsed attribute
@@ -138,11 +138,11 @@ See [Point pools](Point%20pools) for details on customizing your pools.
 
 ## Managing attributes
 
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg).
-- **Delete an attribute:** Select **Remove attribute** ![delete](images/icons/icn-delete.svg) beside it. The last
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg).
+- **Delete an attribute:** Select **Remove attribute** ![delete](images/icons/delete.svg) beside it. The last
   attribute can't be deleted.
-- **Reorder attributes:** Drag an attribute using its grip ![grip](images/icons/icn-grip.svg).
-- **Reset attributes to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg) to restore the sheet's
+- **Reorder attributes:** Drag an attribute using its grip ![grip](images/icons/grip.svg).
+- **Reset attributes to defaults:** Select **Reset** ![reset](images/icons/reset.svg) to restore the sheet's
   attributes to the current [Default Attributes](Default%20Settings).
 
 ## Default attributes

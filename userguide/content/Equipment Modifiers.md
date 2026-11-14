@@ -14,19 +14,19 @@ You can also create your own custom equipment modifiers.
 ## Equipment Modifier list
 
 The **Equipment Modifier** table in the Equipment Editor includes the following columns. Select a column heading to
-sort ascending ![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+sort ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column                                                    | Description                                                                                                                                                       |
 |-----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **![enabled](images/icons/icn-applyChanges.svg)**         | If checked, the modifier is **enabled** and its effects apply to the item.                                                                                        |
-| **Equipment Modifier**                                    | The modifier’s name and any notes. Select the chevron ![notes expand](images/icons/icn-notesExpand.svg) to show or hide the notes.                                |
+| **![enabled](images/icons/applyChanges.svg)**         | If checked, the modifier is **enabled** and its effects apply to the item.                                                                                        |
+| **Equipment Modifier**                                    | The modifier’s name and any notes. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes.                                |
 | **TL**                                                    | The Tech Level.                                                                                                                                                   |
 | **Cost Adjustment**                                       | The calculated adjustment to the equipment’s monetary cost.                                                                                                       |
 | **Weight Adjustment**                                     | The calculated adjustment to the equipment's weight.                                                                                                              |
 | **Tags**                                                  | Tags used to help organize modifiers.                                                                                                                             |
-| **![page reference](images/icons/icn-pageReference.svg)** | Page reference for the modifier. See [Page References](Page%20References).                                                                                        |
-| **![source](images/icons/icn-source.svg)**                | Tracks whether the modifier matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).           |
+| **![page reference](images/icons/pageReference.svg)** | Page reference for the modifier. See [Page References](Page%20References).                                                                                        |
+| **![source](images/icons/source.svg)**                | Tracks whether the modifier matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).           |
 
 ## Adding equipment modifiers
 
@@ -155,11 +155,11 @@ The toolbar above the Equipment Modifier Editor gives you quick access to common
 
 | Button                                                  | Name                    | Description                                                                                             |
 |---------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                    |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                    |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Equipment Modifier Editor.                                              |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the Equipment Modifier Editor (`Ctrl+Return` / `Cmd+Return`).                          |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the modifier's ID and library source, and offers **Sync with Source** and **Clear Source**.       |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Equipment Modifier Editor (`Ctrl+Return` / `Cmd+Return`).                          |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the modifier's ID and library source, and offers **Sync with Source** and **Clear Source**.       |
 
 ---
 

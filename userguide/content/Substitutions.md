@@ -14,7 +14,7 @@ GCS opens the substitutions prompt when:
 
 - You add an item that has placeholders to a character sheet or template, whether by dragging it from a library,
   copying it, buying it, or applying a template.
-- You select **Set Substitutions** ![substitutions](images/icons/icn-substitutions.svg) in the toolbar of an item's
+- You select **Set Substitutions** ![substitutions](images/icons/substitutions.svg) in the toolbar of an item's
   editor. This button is only enabled when the item has placeholders. The editors for attacks, trait modifiers, and
   equipment modifiers don't have it; use the editor of the trait or equipment that owns them instead.
 
@@ -60,8 +60,8 @@ To define a placeholder:
    - **+ description:** Help text shown when the player hovers over the name.
 4. Select **Done**.
 
-Select **Add a nameable** ![add](images/icons/icn-add.svg) to define a code before using it, and **More actions**
-![more](images/icons/icn-moreActions.svg) beside a row to delete a definition.
+Select **Add a nameable** ![add](images/icons/add.svg) to define a code before using it, and **More actions**
+![more](images/icons/moreActions.svg) beside a row to delete a definition.
 
 ### Codes shared with modifiers
 

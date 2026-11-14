@@ -101,7 +101,7 @@ Tables are ideal when readers need to compare or scan structured information qui
 
 - Save all screenshots and icons to the `images` folder, and refer to them with relative paths.
 - For toolbar buttons without labels, add the **icon** after the name.
-- Write icons in Markdown: `![add](images/icons/icn-add.svg)`
+- Write icons in Markdown: `![add](images/icons/add.svg)`
 - Give each icon short alt text naming it, such as `add`.
 - Add screenshots only if they clarify toolbars, menus, or layouts.
 - Capture screenshots at 2x, as a high-resolution display such as a Mac's Retina display does.
@@ -110,7 +110,7 @@ Tables are ideal when readers need to compare or scan structured information qui
   written as:
 
   ```
-  <img src="images/screenshots/scrn-gcs-savedFiltersImport.png" alt="Choosing filters to import" width="620">
+  <img src="images/screenshots/savedFiltersImport.png" alt="Choosing filters to import" width="620">
   ```
 
   `go test ./userguide/` checks that every screenshot is written this way.

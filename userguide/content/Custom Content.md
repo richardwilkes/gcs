@@ -25,7 +25,7 @@ To create a new custom item directly on your [character sheet](Character%20Sheet
    - [Containers](Containers)
    - [Melee and Ranged Weapons](Melee%20and%20Ranged%20Weapons)
    - [Notes](Notes)
-4. Select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) on the editor's toolbar. The item
+4. Select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) on the editor's toolbar. The item
    appears in the appropriate list on your sheet.
 
 You can customize new items further by adding [Defaults](Defaults), [Features](Features), [Trait
@@ -48,7 +48,7 @@ reuse your custom content across characters:
    Explorer](Library%20Explorer).
 
 To add more items to a list you saved earlier, open it from the Library Explorer. If it opens locked, select **Lock
-against changes** ![lock](images/icons/icn-lock.svg) on its toolbar to unlock it first.
+against changes** ![lock](images/icons/lock.svg) on its toolbar to unlock it first.
 
 Once saved, your custom items behave exactly like official ones:
 

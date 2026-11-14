@@ -13,21 +13,21 @@ You can also create your own custom skills.
 ## Skills list
 
 The skills list on your character sheet includes the following columns. Select a column heading to sort ascending
-![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column                                                | Description                                                                                                                                                                                                              |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![switched on](images/icons/icn-toggleSwitch.svg)     | Appears only when a skill has switchable [features](Features). Select the cell to turn the skill's switch on or off.                                                                                                     |
-| **Skill / Technique**                                 | The skill or technique name, specializations (in parentheses), and any notes. Select the chevron ![notes expand](images/icons/icn-notesExpand.svg) to show or hide the notes for this skill.                             |
+| ![switched on](images/icons/toggleSwitch.svg)     | Appears only when a skill has switchable [features](Features). Select the cell to turn the skill's switch on or off.                                                                                                     |
+| **Skill / Technique**                                 | The skill or technique name, specializations (in parentheses), and any notes. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes for this skill.                             |
 | **SL**                                                | The calculated skill level, based on its controlling attribute and points spent. Hover over it to see how it was calculated.                                                                                             |
 | **RSL**                                               | The relative skill level compared to its controlling attribute. For example, `DX+2`.                                                                                                                                     |
 | **Pts**                                               | The total points you’ve invested in the skill.                                                                                                                                                                           |
-| ![page reference](images/icons/icn-pageReference.svg) | Page reference for the skill. See [Page References](Page%20References) for more details.                                                                                                                                 |
-| ![source](images/icons/icn-source.svg)                | Tracks whether the skill matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                                                     |
+| ![page reference](images/icons/pageReference.svg) | Page reference for the skill. See [Page References](Page%20References) for more details.                                                                                                                                 |
+| ![source](images/icons/source.svg)                | Tracks whether the skill matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                                                     |
 
 A skill whose [prerequisites](Prerequisites) aren't met is tagged **Unsatisfied prerequisite(s)**, and a skill put on
-the sheet by another item's grant is marked with a chain icon ![chain](images/icons/icn-chainLink.svg).
+the sheet by another item's grant is marked with a chain icon ![chain](images/icons/chainLink.svg).
 
 The sheet's skill level caps can hold a skill below the level its points buy. A capped skill's **SL** tooltip names the
 cap, and the Skill Editor's **Level** shows the capped level. See _Skill Level Caps_ in [Sheet
@@ -157,7 +157,7 @@ The Skill Editor includes the following fields:
 | **Optional Specialization** | An optional specialty ([B169](B169)). Setting one makes the skill one step easier, shown in **Adjusted Difficulty**.                                                                                                                 |
 | **Tech Level**              | The Tech Level associated with the skill, if applicable. This field is greyed out unless **Required** is checked. Leave it blank in a library or template to fill in the character's TL when the skill is added.                     |
 | **Required**                | If checked, the skill has a Tech Level ([B168](B168)).                                                                                                                                                                               |
-| **Notes**                   | Notes about the skill. These appear below the skill in the list. Select the Scripting Guide ![scripting guide](images/icons/icn-scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide). |
+| **Notes**                   | Notes about the skill. These appear below the skill in the list. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide). |
 | **VTT Notes**               | Notes for use in your Virtual Tabletop system. See your VTT’s documentation.                                                                                                                                                         |
 | **Tags**                    | Comma-separated [Tags](Tags) to help organize skills.                                                                                                                                                                                |
 | **Switched On**             | Whether the skill's switchable [features](Features) are on.                                                                                                                                                                          |
@@ -166,7 +166,7 @@ The Skill Editor includes the following fields:
 | **Encumbrance Penalty**     | Multiplies the current encumbrance level. Applies to skills like Stealth, Climbing, and Swimming ([B17](B17)).                                                                                                                       |
 | **Points**                  | Total character points invested in this skill. Only shown on character sheets and templates.                                                                                                                                         |
 | **Level**                   | Read-only. Shows the calculated skill level and relative skill level (`12/DX+2`). Levels are calculated based on the GURPS skill cost table ([B170](B170)).                                                                          |
-| **Page Reference**          | The page number where the skill appears. Select the bookmark ![page reference](images/icons/icn-pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                            |
+| **Page Reference**          | The page number where the skill appears. Select the bookmark ![page reference](images/icons/pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                            |
 | **Page Highlight**          | Text to highlight in the PDF. Leave blank unless the default highlights fail.                                                                                                                                                        |
 | **Nameables**               | Defines the `@code@` placeholders the skill uses, with the choices offered for each. See [Substitutions](Substitutions).                                                                                                             |
 | **Prerequisites**           | Requirements for this skill. See [Prerequisites](Prerequisites).                                                                                                                                                                     |
@@ -192,12 +192,12 @@ The toolbar above the Skill Editor gives you quick access to common actions:
 
 | Button                                                  | Name                    | Description                                                                                                                                                                                   |
 |:--------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                          |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                          |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Skill Editor.                                                                                                                                                 |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the Skill Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                             |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                      |
-| ![substitutions](images/icons/icn-substitutions.svg)    | **Set Substitutions**   | Lets you enter values for skills with placeholders in their specialization or notes.                                                                                                          |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the skill's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Skill Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                             |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                      |
+| ![substitutions](images/icons/substitutions.svg)    | **Set Substitutions**   | Lets you enter values for skills with placeholders in their specialization or notes.                                                                                                          |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the skill's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
 
 ---
 

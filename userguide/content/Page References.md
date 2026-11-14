@@ -44,7 +44,7 @@ Once a PDF is mapped (see below), you can open it directly from a page reference
 - Select the page reference in a list on your sheet or in a library.
 - Or select the row and go to **Item > Open Page Reference** (`Ctrl+G` / `Cmd+G`), which opens the first reference of
   each selected row, or **Open Each Page Reference** (`Ctrl+Shift+G` / `Cmd+Shift+G`), which opens all of them.
-- In an item's editor, select the bookmark ![page reference](images/icons/icn-pageReference.svg) beside the **Page
+- In an item's editor, select the bookmark ![page reference](images/icons/pageReference.svg) beside the **Page
   Reference** label.
 
 GCS opens the PDF to the page and searches it for the item's name, or for the text in the item's **Page Highlight**
@@ -88,9 +88,9 @@ The view lists each mapping as a row with its **Key**, **Page Offset**, and **PD
   beginning, or a negative offset if it starts later.
 - Select the PDF's path to choose a **different PDF** for the key. A mapping whose PDF can no longer be read is flagged
   with a warning, and GCS asks for a new PDF the next time the key is used.
-- Select **Remove** ![delete](images/icons/icn-delete.svg) beside a mapping to delete it.
-- Select **Reset** ![reset](images/icons/icn-reset.svg) to remove all mappings, or use **Menu**
-  ![menu](images/icons/icn-menu.svg) to import or export them as a `.refs` file.
+- Select **Remove** ![delete](images/icons/delete.svg) beside a mapping to delete it.
+- Select **Reset** ![reset](images/icons/reset.svg) to remove all mappings, or use **Menu**
+  ![menu](images/icons/menu.svg) to import or export them as a `.refs` file.
 
 > [!NOTE]
 > By default, PDFs open inside GCS. If you prefer to use your system's PDF viewer instead, you can change this under

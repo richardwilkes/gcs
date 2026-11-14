@@ -31,7 +31,7 @@ To log study time:
 1. Open the editor for the skill, spell, or trait on your character sheet.
 2. In the **Study** section, choose the reduction if you need fewer than 200 hours (for example, due to Talents or
    Magery).
-3. Select **Add a study entry** ![add](images/icons/icn-add.svg). New entries go at the top of the list.
+3. Select **Add a study entry** ![add](images/icons/add.svg). New entries go at the top of the list.
 4. Enter the details for the study entry (see below).
 
 Save your changes when you’re done. See **Saving study entries** below.
@@ -71,7 +71,7 @@ your progress. Your total hours return to 0, but your log still shows the time y
 
 To remove a study entry:
 
-- Select **Remove this study entry** ![delete](images/icons/icn-delete.svg) beside it.
+- Select **Remove this study entry** ![delete](images/icons/delete.svg) beside it.
 
 ## Gaining a point
 
@@ -90,8 +90,8 @@ When you’ve reached the required hours (normally 200), you must:
 
 On the editor toolbar:
 
-- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg) to exit
+- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg) to exit
   without saving.
 
 ---

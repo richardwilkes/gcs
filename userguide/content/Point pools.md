@@ -37,14 +37,14 @@ You can customize or create new pools. This works the same way as editing [Attri
 
 To edit or add a pool:
 
-1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/icn-attributes.svg), or go to
+1. On the character sheet toolbar, select **Attributes** ![attributes](images/icons/attributes.svg), or go to
    **Sheet > Attributes**.
 2. On the editor, do one of the following:
    - **Edit** an existing pool or one of its thresholds. Select the pool's header first to expand it.
-   - Select **Add Attribute** ![add](images/icons/icn-add.svg) on the toolbar, then set the new attribute's **Attribute
+   - Select **Add Attribute** ![add](images/icons/add.svg) on the toolbar, then set the new attribute's **Attribute
      Type** to **Pool**. A new pool starts with one threshold.
 3. Fill in the fields in the form (see table below).
-4. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+4. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 A pool's maximum is editable on the sheet unless its **Attribute Type** is **Pool (Display Only for Maximum)**, in which
 case only the current value can be changed. Pools can be hidden with the **Placement** setting, just like other
@@ -60,7 +60,7 @@ You can add thresholds to show how effects change as your pool decreases.
 
 To add a point threshold:
 
-- With the pool expanded, select **Add pool threshold** ![add](images/icons/icn-add.svg) on its row.
+- With the pool expanded, select **Add pool threshold** ![add](images/icons/add.svg) on its row.
 
 Each threshold includes the following fields:
 
@@ -78,7 +78,7 @@ Each threshold has a **Features** section that works like the one in an item's D
 another. For example, the standard FP thresholds from _Tired_ down halve Move, Dodge, and ST for lifting, and the HP
 thresholds from _Reeling_ down halve Move and Dodge.
 
-<img src="images/screenshots/scrn-gcs-poolThreshold.png" alt="A pool threshold and its features" width="1308">
+<img src="images/screenshots/poolThreshold.png" alt="A pool threshold and its features" width="1308">
 
 A threshold isn't an item, so it offers fewer choices than an item's editor:
 
@@ -114,7 +114,7 @@ multiplies the attribute by it.
 
 A grant on a threshold puts its trait, skill, or spell on the sheet, in effect while the pool is at that threshold.
 Otherwise, its rows stay on the sheet, dimmed and struck through. The chain icon
-![chain](images/icons/icn-chainLink.svg) beside a granted row names the threshold; select it to open the Attributes
+![chain](images/icons/chainLink.svg) beside a granted row names the threshold; select it to open the Attributes
 editor, where the threshold is edited.
 
 To add a grant, drag a trait, skill, or spell onto the threshold's Features section while its pool is expanded, or
@@ -133,11 +133,11 @@ HP, FP, or other values. See the [Scripting Guide](Scripting%20Guide).
 
 ## Managing point pools
 
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg).
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg).
 - **Delete a threshold or pool:** Select **Remove pool threshold** or **Remove attribute**
-  ![delete](images/icons/icn-delete.svg) beside it. A pool always keeps at least one threshold.
-- **Reorder thresholds:** Drag a threshold using its grip ![grip](images/icons/icn-grip.svg).
-- **Reset attributes (including point pools) to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg) to
+  ![delete](images/icons/delete.svg) beside it. A pool always keeps at least one threshold.
+- **Reorder thresholds:** Drag a threshold using its grip ![grip](images/icons/grip.svg).
+- **Reset attributes (including point pools) to defaults:** Select **Reset** ![reset](images/icons/reset.svg) to
   restore the sheet's attributes to the current [Default Attributes](Default%20Settings).
 
 ## Default point pools

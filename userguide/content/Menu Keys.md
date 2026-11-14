@@ -20,8 +20,8 @@ menu bar. Type in the **Filter** field at the top to show only the commands whos
 
 You can manage Menu Keys settings the same way as other settings:
 
-- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg).
-- **Import or export settings:** On the **Menu Keys toolbar**, select **Menu** ![menu](images/icons/icn-menu.svg), then
+- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/reset.svg).
+- **Import or export settings:** On the **Menu Keys toolbar**, select **Menu** ![menu](images/icons/menu.svg), then
   choose:
   - **Import…:** Load saved settings into GCS.
   - **Export…:** Save your current settings as a file.
@@ -43,7 +43,7 @@ If the combination is already used by another action, the pop-up says so. Select
 action and gives it to this one.
 
 You can remove a shortcut by selecting **Clear** in the pop-up. To put a single action back to its default, select
-**Reset** ![reset](images/icons/icn-reset.svg) beside it. This button is only enabled while the shortcut differs from its
+**Reset** ![reset](images/icons/reset.svg) beside it. This button is only enabled while the shortcut differs from its
 default, so it also shows you which shortcuts you've changed.
 
 > [!WARNING]

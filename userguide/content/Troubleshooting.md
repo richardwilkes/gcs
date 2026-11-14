@@ -39,7 +39,7 @@ any other open windows or tabs.
 
 **How to fix:**
 
-1. Select **Restore** ![restore](images/icons/icn-windowRestore.svg) on the **top-right corner** of the maximized
+1. Select **Restore** ![restore](images/icons/windowRestore.svg) on the **top-right corner** of the maximized
    window.
 2. The window will shrink back to its normal size, and any other open windows or tabs will reappear.
 
@@ -82,7 +82,7 @@ happens the first time you run new software that isn’t signed with a Microsoft
 
 | Warning Window - More info                                                       | Warning Window - Run anyway                                                      |
 |----------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| <img src="images/screenshots/scrn-WinProtect01.png" alt="example 1" width="410"> | <img src="images/screenshots/scrn-WinProtect02.png" alt="example 2" width="410"> |
+| <img src="images/screenshots/WinProtect01.png" alt="example 1" width="410"> | <img src="images/screenshots/WinProtect02.png" alt="example 2" width="410"> |
 
 ---
 

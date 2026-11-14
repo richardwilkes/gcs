@@ -8,7 +8,7 @@ from values you type in, saving you from manual table lookups and calculations.
 
 To open the calculators:
 
-- Select **Calculators** ![calculator](images/icons/icn-calculator.svg) from the **Character Sheet toolbar**, which
+- Select **Calculators** ![calculator](images/icons/calculator.svg) from the **Character Sheet toolbar**, which
   starts the calculators on that character, or
 - Go to **View > Calculators**.
 

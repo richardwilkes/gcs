@@ -8,7 +8,7 @@ equivalent JavaScript.
 
 ## Where scripts can be used
 
-Fields that are scriptable have a Scripting Guide ![scripting guide](images/icons/icn-scriptingGuide.svg) button next
+Fields that are scriptable have a Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) button next
 to them to bring up this documentation. They come in two kinds:
 
 - Fields that resolve to a **number**, such as an attribute's base value, a pool threshold, a trait's maximum level,

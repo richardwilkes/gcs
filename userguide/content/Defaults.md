@@ -23,10 +23,10 @@ Select the section's title to collapse it to a one-line summary, or to expand it
 
 - **Editing:** Select a default to open it. Its controls read as a sentence. Select **Done** (or press `Return` or
   `Escape`) to close it.
-- **Reordering:** Drag a default by its grip ![grip](images/icons/icn-grip.svg) to move it. Dragging it into the
+- **Reordering:** Drag a default by its grip ![grip](images/icons/grip.svg) to move it. Dragging it into the
   Defaults section of another open editor, whether a skill's or an attack's, copies it there, expanding the section if
   it's collapsed. In a read-only editor, defaults can be dragged out but not rearranged.
-- **More actions:** Select **More actions** ![more](images/icons/icn-moreActions.svg) beside a default for
+- **More actions:** Select **More actions** ![more](images/icons/moreActions.svg) beside a default for
   **Duplicate**, **Move Up**, **Move Down**, and **Delete**.
 
 Every change can be undone with **Edit > Undo**.
@@ -36,7 +36,7 @@ Every change can be undone with **Edit > Undo**.
 To add a default:
 
 1. Open the skill's or attack's **Detail Editor**.
-2. In the **Defaults** section, select **Add** ![add](images/icons/icn-add.svg). When the section is empty, you can
+2. In the **Defaults** section, select **Add** ![add](images/icons/add.svg). When the section is empty, you can
    also select **No defaults. Click here to add one.**
 3. Choose a **Source** from the first dropdown (**10**, an attribute, **Parry**, **Block**, or **Skill**).
 4. Enter the **Modifier** (e.g., `-5`, `+0`) and any other fields that appear.
@@ -44,7 +44,7 @@ To add a default:
 
 To delete a default:
 
-- Select **More actions** ![more](images/icons/icn-moreActions.svg) beside it, then **Delete**.
+- Select **More actions** ![more](images/icons/moreActions.svg) beside it, then **Delete**.
 
 ## How a default is built
 
@@ -117,8 +117,8 @@ Techniques, skills with no points, and granted skills can't be swapped.
 
 On the **Detail Editor** toolbar:
 
-- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg) to exit
+- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg) to exit
   without saving.
 
 ---

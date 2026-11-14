@@ -60,8 +60,8 @@ You can:
 - Resize windows by dragging the dividers.
 - Scroll horizontally or vertically within a window.
 - Maximize a window to fill the whole workspace:
-  - Select **Maximize** ![maximize](images/icons/icn-windowMaximize.svg) in the top-right corner of the window.
-  - Select **Restore** ![restore](images/icons/icn-windowRestore.svg) to return to the side-by-side view.
+  - Select **Maximize** ![maximize](images/icons/windowMaximize.svg) in the top-right corner of the window.
+  - Select **Restore** ![restore](images/icons/windowRestore.svg) to return to the side-by-side view.
 
 ### Tabs
 

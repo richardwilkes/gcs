@@ -1,6 +1,6 @@
 # Name Generators
 
-When you select **Randomize** ![randomize](images/icons/icn-randomize.svg) beside the **Name** on a character sheet,
+When you select **Randomize** ![randomize](images/icons/randomize.svg) beside the **Name** on a character sheet,
 GCS builds a name with the **name generators** of the character's **ancestry**. An ancestry also decides the random
 gender, age, height, weight, hair, eyes, skin, and handedness, and is chosen by the **Ancestry** [container](Containers)
 among the character's traits.
@@ -22,25 +22,25 @@ folder by default, so a copy there overrides the Master Library's version withou
 ## The ancestry editor
 
 To create an ancestry, go to **File > New > New Ancestry**. To edit one, open it with **File > Open**, or choose it from
-the **Menu** ![menu](images/icons/icn-menu.svg) on the editor's toolbar, which lists the ancestries in your libraries.
+the **Menu** ![menu](images/icons/menu.svg) on the editor's toolbar, which lists the ancestries in your libraries.
 The editor's toolbar also has **Save**, **Save As…**, and **Reset**, and every change can be undone.
 
 | Field               | Description                                                                                                                                                                                                                                                                                                                       |
 |---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Name**            | A descriptive name. Traits select an ancestry by its file name, so this is mostly shown when a template asks about replacing a character's ancestry, and used as the default file name when saving.                                                                                                                               |
 | **Common Options**  | The options used when the chosen gender doesn't provide its own: the **Height Script**, **Weight Script**, and **Age Script** (see the [Scripting Guide](Scripting%20Guide); for example, `entity.randomHeightInInches($st)`), and the weighted lists of **Hair**, **Eyes**, **Skin**, and **Handedness** options to choose from. |
-| **Name Generators** | The name generators used to produce a name. Their output is joined, in order, with a space. Select **Edit this name generator** ![edit](images/icons/icn-edit.svg) beside one to open it.                                                                                                                                         |
+| **Name Generators** | The name generators used to produce a name. Their output is joined, in order, with a space. Select **Edit this name generator** ![edit](images/icons/edit.svg) beside one to open it.                                                                                                                                         |
 | **Genders**         | The genders that may be chosen at random, each with a **Weight** (its relative likelihood) and a **Name**, and any of the common options it overrides. A new ancestry starts with _Male_ and _Female_.                                                                                                                            |
 
 In the option lists, the **Weight** of each entry is its relative likelihood; only the ratio between the weights in a
-list matters. Drag entries by their grip ![grip](images/icons/icn-grip.svg) to reorder them.
+list matters. Drag entries by their grip ![grip](images/icons/grip.svg) to reorder them.
 
 ## The name generator editor
 
 To create a name generator, go to **File > New > New Name Generator**. To edit one, open its `.names` file, choose it
-from the **Menu** ![menu](images/icons/icn-menu.svg) on the editor's toolbar, or select **Edit this name generator**
+from the **Menu** ![menu](images/icons/menu.svg) on the editor's toolbar, or select **Edit this name generator**
 beside it in an ancestry. The **Sample Names** at the top show names made from the current definition, and
-**Generate new sample names** ![randomize](images/icons/icn-randomize.svg) makes a fresh set, so you can check your
+**Generate new sample names** ![randomize](images/icons/randomize.svg) makes a fresh set, so you can check your
 changes as you make them.
 
 | Field                                                  | Description                                                                                                                                                                                                                                                                                     |

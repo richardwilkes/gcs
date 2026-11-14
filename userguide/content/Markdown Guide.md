@@ -11,7 +11,7 @@ libraries. This guide is written in Markdown too.
 
 Double-click a `.md` file in the [Library Explorer](Library%20Explorer) to open it. The toolbar has a **Markdown
 Guide** button that opens this page, a **Scale** field, and, for files on disk, **Toggle Edit Mode**
-![edit](images/icons/icn-edit.svg), which switches between the rendered document and a plain text editor. **File > New
+![edit](images/icons/edit.svg), which switches between the rendered document and a plain text editor. **File > New
 > New Markdown File** creates a new document, starting in edit mode.
 
 In the rendered view, dragging with the mouse scrolls the document. Use the keyboard to read and copy text:

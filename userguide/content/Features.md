@@ -15,19 +15,19 @@ threshold](Point%20pools) has a **Features** section too, whose features apply w
 The **Features** section lists each feature as a line of plain text, such as _+1 to attribute ST per level_. Select the
 section's title to collapse it to a one-paragraph summary, or to expand it again.
 
-<img src="images/screenshots/scrn-gcs-features.png" alt="The Features section" width="1136">
+<img src="images/screenshots/features.png" alt="The Features section" width="1136">
 
 - **Editing:** Select a feature to open it. Its controls read as a sentence: choose the feature type from the first
   dropdown, then fill in the amount and the fields that follow. Select **Done** (or press `Return` or `Escape`) to
   close it.
 - **Chips:** Optional criteria are added as chips. Select a dashed **+ …** button to add one, and the **x** on a chip to
   remove it.
-- **Reordering:** Drag a feature by its grip ![grip](images/icons/icn-grip.svg) to move it. Dragging it into the
+- **Reordering:** Drag a feature by its grip ![grip](images/icons/grip.svg) to move it. Dragging it into the
   Features section of another open editor, even one for a different kind of item, copies it there, expanding the
   section if it's collapsed. A feature the other editor can't hold, such as a grant dropped into the editor of the item
   it grants, is refused. In a read-only editor, such as a granted item's, features can be dragged out but not
   rearranged.
-- **More actions:** Select **More actions** ![more](images/icons/icn-moreActions.svg) beside a feature for
+- **More actions:** Select **More actions** ![more](images/icons/moreActions.svg) beside a feature for
   **Duplicate**, **Move Up**, **Move Down**, and **Delete**.
 
 Every change can be undone with **Edit > Undo**.
@@ -37,7 +37,7 @@ Every change can be undone with **Edit > Undo**.
 To add a feature:
 
 1. Open the **Detail Editor** for the trait, skill, spell, equipment, or modifier.
-2. In the **Features** section, select **Add** ![add](images/icons/icn-add.svg). When the section is empty, you can
+2. In the **Features** section, select **Add** ![add](images/icons/add.svg). When the section is empty, you can
    also select **No features. Click here to add one.**
 3. Choose a feature type from the first dropdown (see **Feature types** below).
 4. Fill in any required details (text or number fields).
@@ -48,7 +48,7 @@ You can apply **multiple features** to the same item.
 
 To delete a feature:
 
-- Select **More actions** ![more](images/icons/icn-moreActions.svg) beside it, then **Delete**.
+- Select **More actions** ![more](images/icons/moreActions.svg) beside it, then **Delete**.
 
 ### Common fields
 
@@ -210,7 +210,7 @@ A grant added to a spell starts out switchable, so the granted item is only in e
 (see **Switchable features** above). Select the **x** on its **only while switched on** chip to keep the grant in
 effect whatever the switch says.
 
-On the sheet, a granted row is marked with a chain icon ![chain](images/icons/icn-chainLink.svg) that names the
+On the sheet, a granted row is marked with a chain icon ![chain](images/icons/chainLink.svg) that names the
 granting item and selects it when clicked. While the grant is not in effect (for example, its equipment is
 unequipped), the row is dimmed and struck through. Copying a granted row elsewhere yields an ordinary item, and applying
 a template skips granted rows.
@@ -222,8 +222,8 @@ with **Sync Granted Item with Source** from the feature's **More actions** menu.
 
 On the Detail Editor toolbar:
 
-- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg) to exit
+- **Apply changes:** Select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg) to exit
   without saving.
 
 ---

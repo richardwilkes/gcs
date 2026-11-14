@@ -48,17 +48,17 @@ Change the default name and description to something you like.
 > **_Example:_** For the **Name**, enter _Aelric the Apprentice_.
 
 > [!TIP]
-> You can randomize description fields by selecting **Randomize** ![randomize](images/icons/icn-randomize.svg) beside
+> You can randomize description fields by selecting **Randomize** ![randomize](images/icons/randomize.svg) beside
 > each field.
 
 ### Changing starting points
 
 To change your unspent starting points ([B10](B10)):
 
-1. On the **Points block**, select **Edit points** ![edit](images/icons/icn-edit.svg) to open the Points Record.
+1. On the **Points block**, select **Edit points** ![edit](images/icons/edit.svg) to open the Points Record.
 2. Enter a new value for the first entry, the initial points.
    > **_Example:_** Enter 125 for Aelric's initial points.
-3. On the tab toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg). The Points
+3. On the tab toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg). The Points
    Record closes.
 
 The Points block updates to show your new unspent starting points. GCS will automatically change this total as you add
@@ -117,7 +117,7 @@ The **Traits list** is where you add **advantages** ([B32](B32)) and **disadvant
 GCS includes hundreds of official traits, skills, spells, and equipment in the **Master Library** that are taken from
 GURPS books and other supplements.
 
-You can expand ![expand folder](images/icons/icn-folderExpand.svg) the Master Library's folders from the **Library
+You can expand ![expand folder](images/icons/folderExpand.svg) the Master Library's folders from the **Library
 Explorer** on the left sidebar.
 
 Many items include notes and explanations, and when added to your sheet they automatically adjust stats and points for
@@ -125,7 +125,7 @@ you.
 
 To open a list from the Master Library:
 
-1. On the Library Explorer, expand ![expand folder](images/icons/icn-folderExpand.svg) the **Master Library**.
+1. On the Library Explorer, expand ![expand folder](images/icons/folderExpand.svg) the **Master Library**.
 2. Browse to a folder containing lists.
 3. Double-click a list to open it.
    > **_Example:_** Expand **Master Library > Basic Set** to see content from _GURPS Basic Set: Characters_.
@@ -281,7 +281,7 @@ You can raise a spell’s level the same way as a skill:
 
 > [!TIP]
 > If your character does not cast spells, you can hide the **Spells list**. Select **Edit Layout**
-> ![edit layout](images/icons/icn-layout.svg) on the character sheet toolbar, select the **×** in the corner of the
+> ![edit layout](images/icons/layout.svg) on the character sheet toolbar, select the **×** in the corner of the
 > Spells block, then select **Edit Layout** again. See _Sheet layout_ in [Character Sheet
 > Overview](Character%20Sheet%20Overview).
 
@@ -302,7 +302,7 @@ The **Equipment lists** are where you add your character's gear ([B264](B264)), 
 ### Tracking encumbrance
 
 Carried items count toward encumbrance ([B17](B17)). The Carried Equipment list calculates the total weight of all
-carried equipment and updates your current encumbrance level ![weight](images/icons/icn-weight.svg) on the
+carried equipment and updates your current encumbrance level ![weight](images/icons/weight.svg) on the
 **Encumbrance, Move & Dodge block**.
 
 ### Adding equipment
@@ -332,7 +332,7 @@ sheet.
 ### Organizing items with containers
 
 Some items can hold other items (like a backpack). [Containers](Containers) show a small arrow ![expand
-folder](images/icons/icn-folderExpand.svg) next to their name, which you can expand to show their contents.
+folder](images/icons/folderExpand.svg) next to their name, which you can expand to show their contents.
 
 > **_Example:_** Drag the torch and tent into Aelric's backpack (drag them to just underneath and slightly to the side).
 > These items are now contained in it.

@@ -29,7 +29,7 @@ If you can’t find what you’re looking for:
 
 - Ask in the [GCS Discord community](https://discord.gg/MKhuDPPagY).
 - Read this **User Guide** in GCS. It’s built into the app, so it always matches the version you’re running. Go to
-  **Help > User Guide**, or select **Help** ![help](images/icons/icn-help.svg) on a toolbar to go right to the relevant
+  **Help > User Guide**, or select **Help** ![help](images/icons/help.svg) on a toolbar to go right to the relevant
   page.
 - Check the [GURPS Character Sheet website](https://gurpscharactersheet.com/) for updates and releases.
 - Visit the [Troubleshooting](Troubleshooting) section.
@@ -38,10 +38,10 @@ If you can’t find what you’re looking for:
 
 In GCS, the User Guide opens in its own tab:
 
-- The sidebar lists every page of the guide. Select **Toggle the Sidebar** ![sidebar](images/icons/icn-sidebar.svg)
+- The sidebar lists every page of the guide. Select **Toggle the Sidebar** ![sidebar](images/icons/sidebar.svg)
   to show or hide it.
-- Select **Back** ![back](images/icons/icn-controlBack.svg) and **Forward**
-  ![forward](images/icons/icn-controlForward.svg) to move through the pages you’ve visited.
+- Select **Back** ![back](images/icons/controlBack.svg) and **Forward**
+  ![forward](images/icons/controlForward.svg) to move through the pages you’ve visited.
 - Type in the search field to find pages and sections across the whole guide.
 - Links to other pages of the guide open in the same view.
 

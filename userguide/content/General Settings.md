@@ -13,8 +13,8 @@ Changes are applied immediately. You don’t need to save.
 
 ## Managing Settings
 
-- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg).
-- **Import or export settings:** On the Settings toolbar, select **Menu** ![menu](images/icons/icn-menu.svg), then
+- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/reset.svg).
+- **Import or export settings:** On the Settings toolbar, select **Menu** ![menu](images/icons/menu.svg), then
   choose:
   - **Import…:** Load saved settings into GCS.
   - **Export…:** Save your current settings as a file.
@@ -42,7 +42,7 @@ The settings are grouped into sections.
 |-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Group containers when sorting**                     | Keeps containers together ahead of other rows when a list is sorted, instead of mixing them in by value.                                                                                                                                                                       |
 | **Show additional page references when space allows** | Lets the page reference column on character sheets, loot sheets, and templates show more than one reference when there is room, instead of always collapsing to the first one.                                                                                                 |
-| **Lock list files when opened**                       | Opens list files locked, so that nothing changes them until you unlock them with **Lock against changes** ![lock](images/icons/icn-lock.svg) on their toolbar. A new list opens unlocked, and lists already open keep their state. See [Library Explorer](Library%20Explorer). |
+| **Lock list files when opened**                       | Opens list files locked, so that nothing changes them until you unlock them with **Lock against changes** ![lock](images/icons/lock.svg) on their toolbar. A new list opens unlocked, and lists already open keep their state. See [Library Explorer](Library%20Explorer). |
 | **Max Auto Column Width**                             | The widest a column can grow when GCS sizes columns to fit their contents.                                                                                                                                                                                                     |
 
 ### Workspace

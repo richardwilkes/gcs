@@ -16,7 +16,7 @@ Equipment is divided into two lists:
 ## Tracking encumbrance
 
 Carried items count toward encumbrance ([B17](B17)). The Carried Equipment list automatically totals the weight of all
-carried gear and highlights your current encumbrance level ![weight](images/icons/icn-weight.svg) in the **Encumbrance,
+carried gear and highlights your current encumbrance level ![weight](images/icons/weight.svg) in the **Encumbrance,
 Move & Dodge block**.
 
 ### Master Library
@@ -29,25 +29,25 @@ You can also create your own custom equipment.
 ## Equipment lists
 
 The equipment lists on your character sheet include the following columns. Select a column heading to sort ascending
-![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 Each list's heading includes the **total weight and value** for all items in that list.
 
 | Column                                                                          | Description                                                                                                                                                                       |
 |---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **![equipped](images/icons/icn-applyChanges.svg)**                              | If checked, the equipment is **equipped** and any bonuses apply to your character. Available only for Carried Equipment.                                                          |
-| **![switched on](images/icons/icn-toggleSwitch.svg)**                           | Appears only when an item has switchable [features](Features). Select the cell to turn the item's switch on or off.                                                               |
+| **![equipped](images/icons/applyChanges.svg)**                              | If checked, the equipment is **equipped** and any bonuses apply to your character. Available only for Carried Equipment.                                                          |
+| **![switched on](images/icons/toggleSwitch.svg)**                           | Appears only when an item has switchable [features](Features). Select the cell to turn the item's switch on or off.                                                               |
 | **#**                                                                           | Quantity of the item. Equipment with a quantity of zero is dimmed and adds nothing to the sheet, including its attacks.                                                           |
-| **Carried Equipment** / **Other Equipment**                                     | The item's name and any notes, including usage information. Select the chevron ![notes expand](images/icons/icn-notesExpand.svg) to show or hide the notes.                       |
+| **Carried Equipment** / **Other Equipment**                                     | The item's name and any notes, including usage information. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes.                       |
 | **TL**                                                                          | Tech level ([B22](B22)). Can be hidden in [Sheet Settings](Sheet%20Settings).                                                                                                     |
 | **LC**                                                                          | Legality class ([B267](B267)). Can be hidden in [Sheet Settings](Sheet%20Settings).                                                                                               |
-| **![value](images/icons/icn-coins.svg)**                                        | Value of one item.                                                                                                                                                                |
-| **![weight](images/icons/icn-weight.svg)**                                      | Weight of one item.                                                                                                                                                               |
-| **![stack](images/icons/icn-stack.svg) ![value](images/icons/icn-coins.svg)**   | Total value, including the quantity and any contained items.                                                                                                                      |
-| **![stack](images/icons/icn-stack.svg) ![weight](images/icons/icn-weight.svg)** | Total weight, including the quantity and any contained items.                                                                                                                     |
-| **![page reference](images/icons/icn-pageReference.svg)**                       | Page reference for the equipment. See [Page References](Page%20References) for more details.                                                                                      |
-| **![source](images/icons/icn-source.svg)**                                      | Tracks whether the equipment matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                          |
+| **![value](images/icons/coins.svg)**                                        | Value of one item.                                                                                                                                                                |
+| **![weight](images/icons/weight.svg)**                                      | Weight of one item.                                                                                                                                                               |
+| **![stack](images/icons/stack.svg) ![value](images/icons/coins.svg)**   | Total value, including the quantity and any contained items.                                                                                                                      |
+| **![stack](images/icons/stack.svg) ![weight](images/icons/weight.svg)** | Total weight, including the quantity and any contained items.                                                                                                                     |
+| **![page reference](images/icons/pageReference.svg)**                       | Page reference for the equipment. See [Page References](Page%20References) for more details.                                                                                      |
+| **![source](images/icons/source.svg)**                                      | Tracks whether the equipment matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                          |
 
 The number of decimal places shown for weights and values can be changed in [Sheet Settings](Sheet%20Settings). Hover
 over a rounded value to see the exact figure.
@@ -120,7 +120,7 @@ matching money already carried** is turned off. The sale is a single undoable ed
 
 Every purchase and sale is logged in the sheet's **Shopping Record**, with its time, transaction name, kind, items and
 quantities, and the money that changed hands. Open it with **Sheet > Shopping Record** or the **Shopping Record**
-![shopping record](images/icons/icn-releaseNotes.svg) button on the character sheet toolbar. Entries can't be edited,
+![shopping record](images/icons/releaseNotes.svg) button on the character sheet toolbar. Entries can't be edited,
 but you can select entries and press `Delete` to remove them.
 
 ## Managing equipment
@@ -181,7 +181,7 @@ help organize gear and automatically total contained weight and value. A **group
 it has no quantity, value, weight, modifiers, attacks, or features of its own, so it is worth and weighs just what its
 contents do.
 
-Containers and groups show an arrow ![expand folder](images/icons/icn-folderExpand.svg) next to their name. Select the
+Containers and groups show an arrow ![expand folder](images/icons/folderExpand.svg) next to their name. Select the
 arrow to expand/collapse the contents.
 
 You can convert an item to a container (or a non-container), and a container to a group (or back):
@@ -218,7 +218,7 @@ The Equipment Editor includes the following fields:
 | Equipment Editor Field       | Description                                                                                                                                                                                                                        |
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Name**                     | The item’s name.                                                                                                                                                                                                                   |
-| **Notes**                    | Notes about the item. These appear below the item in the list. Select the Scripting Guide ![scripting guide](images/icons/icn-scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide). |
+| **Notes**                    | Notes about the item. These appear below the item in the list. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide). |
 | **VTT Notes**                | Notes for use in your Virtual Tabletop system. See your VTT’s documentation.                                                                                                                                                       |
 | **Tech Level**               | The Tech Level ([B22](B22)) associated with the item, if applicable.                                                                                                                                                               |
 | **Legality Class**           | The Legality Class ([B267](B267)).                                                                                                                                                                                                 |
@@ -236,7 +236,7 @@ The Equipment Editor includes the following fields:
 | **Rated ST**                 | Strength rating for using the item. Equipment with a rated ST uses this value instead of the user's ST.                                                                                                                            |
 | **Level**                    | The item’s level, used by features and modifiers that have per-level effects.                                                                                                                                                      |
 | **Tags**                     | Comma-separated [Tags](Tags) to help organize items.                                                                                                                                                                               |
-| **Page Reference**           | The page number where the item appears. Select the bookmark ![page reference](images/icons/icn-pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                           |
+| **Page Reference**           | The page number where the item appears. Select the bookmark ![page reference](images/icons/pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                           |
 | **Page Highlight**           | Text to highlight in the PDF. Leave blank unless the default highlights fail.                                                                                                                                                      |
 | **Nameables**                | Defines the `@code@` placeholders the item uses, with the choices offered for each. See [Substitutions](Substitutions).                                                                                                            |
 | **Prerequisites**            | Requirements for this item. See [Prerequisites](Prerequisites) for details.                                                                                                                                                        |
@@ -254,12 +254,12 @@ The toolbar above the Equipment Editor gives you quick access to common actions:
 
 | Button                                                  | Name                    | Description                                                                                                                                                                                  |
 |:--------------------------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                         |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                         |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Equipment Editor.                                                                                                                                            |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the Equipment Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                        |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                     |
-| ![substitutions](images/icons/icn-substitutions.svg)    | **Set Substitutions**   | Lets you enter values for equipment with placeholders in their text.                                                                                                                         |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the item's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Equipment Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                        |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                     |
+| ![substitutions](images/icons/substitutions.svg)    | **Set Substitutions**   | Lets you enter values for equipment with placeholders in their text.                                                                                                                         |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the item's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
 
 ---
 

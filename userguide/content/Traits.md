@@ -13,28 +13,28 @@ You can also create your own custom traits.
 ## Traits list
 
 The traits list on your character sheet includes the following columns. Select a column heading to sort ascending
-![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column                                                | Description                                                                                                                                                                                                                 |
 |-------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![switched on](images/icons/icn-toggleSwitch.svg)     | Appears only when a trait has switchable [features](Features). Select the cell to turn the trait's switch on or off.                                                                                                        |
-| **Trait**                                             | The trait name and any notes, self-control rolls, or modifiers. Select the chevron ![notes expand](images/icons/icn-notesExpand.svg) to show or hide the notes for this trait.                                              |
+| ![switched on](images/icons/toggleSwitch.svg)     | Appears only when a trait has switchable [features](Features). Select the cell to turn the trait's switch on or off.                                                                                                        |
+| **Trait**                                             | The trait name and any notes, self-control rolls, or modifiers. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes for this trait.                                              |
 | **Pts**                                               | Total [character point](Character%20Points) cost for the trait.                                                                                                                                                             |
-| ![page reference](images/icons/icn-pageReference.svg) | Page reference for the trait. See [Page References](Page%20References) for more details.                                                                                                                                    |
-| ![source](images/icons/icn-source.svg)                | Tracks whether the trait matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                                                        |
+| ![page reference](images/icons/pageReference.svg) | Page reference for the trait. See [Page References](Page%20References) for more details.                                                                                                                                    |
+| ![source](images/icons/source.svg)                | Tracks whether the trait matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                                                        |
 
 A disabled trait is dimmed and struck through. A trait whose [prerequisites](Prerequisites) aren't met is tagged
 **Unsatisfied prerequisite(s)**, and a trait put on the sheet by another item's grant is marked with a chain icon
-![chain](images/icons/icn-chainLink.svg). Container traits show their type after their name, such as _Ancestry_ or
+![chain](images/icons/chainLink.svg). Container traits show their type after their name, such as _Ancestry_ or
 _Alternate_.
 
 > [!TIP]
 > From the character sheet toolbar, you can quickly expand or collapse traits and notes:
 >
-> - **Opens/closes all hierarchical rows** ![toggle expansion](images/icons/icn-expand.svg) shows or hides all traits
+> - **Opens/closes all hierarchical rows** ![toggle expansion](images/icons/expand.svg) shows or hides all traits
 >   within containers.
-> - **Opens/closes all embedded notes** ![toggle notes](images/icons/icn-openCloseNotes.svg) shows or hides all
+> - **Opens/closes all embedded notes** ![toggle notes](images/icons/openCloseNotes.svg) shows or hides all
 >   embedded notes.
 
 ## Adding traits
@@ -59,7 +59,7 @@ When you add a trait:
   - Advantages subtract from unspent points.
   - Disadvantages (negative points) add to unspent points.
 - Some traits include [substitution **placeholders**](Substitutions) (for example, `@Who@`). You can set these when
-  first adding the trait, or later with **Set Substitutions** ![substitutions](images/icons/icn-substitutions.svg) in
+  first adding the trait, or later with **Set Substitutions** ![substitutions](images/icons/substitutions.svg) in
   the editor's toolbar.
 - Some traits have **modifiers**. When you first add a trait that has modifiers, GCS prompts you to select them. You
   can select one, several, or none, and a modifier choice marked **Pick 1** must be made, by you or at random with
@@ -137,7 +137,7 @@ The Trait Editor includes the following fields:
 | Trait Editor Field          | Description                                                                                                                                                                                                                                                      |
 |-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Name**                    | The trait's name.                                                                                                                                                                                                                                                |
-| **Notes**                   | Notes about what the trait does. These appear below the trait in the list. Select the Scripting Guide ![scripting guide](images/icons/icn-scriptingGuide.svg) for instructions on how to include JavaScript. Supports [Markdown](Markdown%20Guide).              |
+| **Notes**                   | Notes about what the trait does. These appear below the trait in the list. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on how to include JavaScript. Supports [Markdown](Markdown%20Guide).              |
 | **VTT Notes**               | Notes for use in your Virtual Tabletop system. See your VTT’s documentation.                                                                                                                                                                                     |
 | **User Description**        | Additional notes for your reference. These appear as a tooltip when you hover, and only exist on character sheets and on the trait a [grant](Features) holds, which passes them to the sheet.                                                                    |
 | **Tags**                    | Comma-separated [Tags](Tags) to help organize traits.                                                                                                                                                                                                            |
@@ -154,7 +154,7 @@ The Trait Editor includes the following fields:
 | **Self-Control**            | The self-control roll to resist ([B120](B120)). The CR rating will show in parentheses on your character sheet.                                                                                                                                                  |
 | **Self-Control Adjustment** | Adjustments tied to self-control rolls, such as reaction or fright check penalties ([B121](B121)).                                                                                                                                                               |
 | **Frequency of Appearance** | Sets how often the trait’s subject (such as an Ally, Contact, or Enemy) appears in play ([B36](B36)).                                                                                                                                                            |
-| **Page Reference**          | Page number for the trait. Select the bookmark ![page reference](images/icons/icn-pageReference.svg) beside the label to open it. See [Page References](Page%20References) for details.                                                                          |
+| **Page Reference**          | Page number for the trait. Select the bookmark ![page reference](images/icons/pageReference.svg) beside the label to open it. See [Page References](Page%20References) for details.                                                                          |
 | **Page Highlight**          | Text to highlight in the PDF. Leave blank unless the default highlights fail.                                                                                                                                                                                    |
 | **Nameables**               | Defines the `@code@` placeholders the trait uses, with the choices offered for each. See [Substitutions](Substitutions).                                                                                                                                         |
 | **Prerequisites**           | Any requirements for this trait. See [Prerequisites](Prerequisites).                                                                                                                                                                                             |
@@ -172,12 +172,12 @@ The toolbar above the Trait Editor gives you quick access to common actions:
 
 | Button                                                  | Name                    | Description                                                                                                                                                                                                       |
 |:--------------------------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                                              |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                                              |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Trait Editor.                                                                                                                                                                     |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the Trait Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                                                 |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                                          |
-| ![substitutions](images/icons/icn-substitutions.svg)    | **Set Substitutions**   | Lets you enter values for traits with placeholders in their text. For example, for _Enemy_ you can replace `@Who@` with the foe's name.                                                                           |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the trait's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes.                     |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Trait Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                                                 |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                                          |
+| ![substitutions](images/icons/substitutions.svg)    | **Set Substitutions**   | Lets you enter values for traits with placeholders in their text. For example, for _Enemy_ you can replace `@Who@` with the foe's name.                                                                           |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the trait's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes.                     |
 
 > [!NOTE]
 > When you first add a trait with substitutions, a prompt appears for you to fill them in. If you skip it, you can set

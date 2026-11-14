@@ -37,7 +37,7 @@ Once tags are added, you can use them to quickly group or search items across yo
 The **Tag Filter** dropdown on a library list's toolbar, labeled **Any Tag** until a tag is chosen, lets you filter
 content by tag.
 
-<img src="images/screenshots/scrn-gcs-tagFilterPopup.png" alt="The Tag Filter dropdown" width="340">
+<img src="images/screenshots/tagFilterPopup.png" alt="The Tag Filter dropdown" width="340">
 
 - Select a tag to show only items that carry it. Shift-click, or `Ctrl`-click (`Cmd`-click on macOS), to choose
   several tags; an item must carry every chosen tag to be shown.

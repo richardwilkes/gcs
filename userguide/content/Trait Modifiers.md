@@ -13,17 +13,17 @@ You can also create your own custom trait modifiers.
 ## Trait Modifier list
 
 The **Trait Modifier** table in the Trait Editor includes the following columns. Select a column heading to sort
-ascending ![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column                                                | Description                                                                                                                                                         |
 |-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![enabled](images/icons/icn-applyChanges.svg)         | If checked, the modifier is **enabled** and its effects apply to the trait.                                                                                         |
-| **Trait Modifier**                                    | The modifier’s name and any notes. Select the chevron ![notes expand](images/icons/icn-notesExpand.svg) to show or hide the notes.                                  |
+| ![enabled](images/icons/applyChanges.svg)         | If checked, the modifier is **enabled** and its effects apply to the trait.                                                                                         |
+| **Trait Modifier**                                    | The modifier’s name and any notes. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes.                                  |
 | **Cost Adjustment**                                   | The calculated adjustment to the trait’s [character point](Character%20Points) cost.                                                                                |
 | **Tags**                                              | Tags used to help organize modifiers.                                                                                                                               |
-| ![page reference](images/icons/icn-pageReference.svg) | Page reference for the modifier. See [Page References](Page%20References).                                                                                          |
-| ![source](images/icons/icn-source.svg)                | Tracks whether the modifier matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).             |
+| ![page reference](images/icons/pageReference.svg) | Page reference for the modifier. See [Page References](Page%20References).                                                                                          |
+| ![source](images/icons/source.svg)                | Tracks whether the modifier matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).             |
 
 ## Adding trait modifiers
 
@@ -87,7 +87,7 @@ You can manage modifiers directly in the Trait Editor:
 
 > [!TIP]
 > Some modifiers include [substitution **placeholders**](Substitutions) (for example, `@Condition@`). You can set these
-> when first adding the modifier, or later with **Set Substitutions** ![substitutions](images/icons/icn-substitutions.svg)
+> when first adding the modifier, or later with **Set Substitutions** ![substitutions](images/icons/substitutions.svg)
 > in the trait's editor. A modifier can share its answer with the trait it belongs to, so the player is only asked once.
 
 ## Editing trait modifiers
@@ -138,11 +138,11 @@ The toolbar above the Trait Modifier Editor gives you quick access to common act
 
 | Button                                                  | Name                    | Description                                                                                             |
 |---------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                    |
+| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                    |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Trait Modifier Editor.                                                  |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**       | Saves and closes the Trait Modifier Editor (`Ctrl+Return` / `Cmd+Return`).                              |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                |
-| ![source](images/icons/icn-source.svg)                  | **ID & Library Source** | Shows the modifier's ID and library source, and offers **Sync with Source** and **Clear Source**.       |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Trait Modifier Editor (`Ctrl+Return` / `Cmd+Return`).                              |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                |
+| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the modifier's ID and library source, and offers **Sync with Source** and **Clear Source**.       |
 
 ---
 

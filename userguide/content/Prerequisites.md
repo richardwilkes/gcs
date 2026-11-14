@@ -8,7 +8,7 @@ Prerequisites appear in the **Detail Editor** of [Traits](Traits), [Skills](Skil
 If you add something to your [character sheet](Character%20Sheet%20Overview) without meeting its requirements, GCS
 tags it with **Unsatisfied prerequisite(s)**.
 
-<img src="images/screenshots/scrn-unmetPrerequisite.png" alt="unmet prereqs" width="767">
+<img src="images/screenshots/unmetPrerequisite.png" alt="unmet prereqs" width="767">
 
 Hover over the tag to see what's missing. Each missing requirement is described in plain language, under headings such
 as _Requires all of:_ or _Requires at least one of:_ where they add something.
@@ -24,7 +24,7 @@ as _Requires all of:_ or _Requires at least one of:_ where they add something.
 In the editor, the **Prerequisites** section lists each requirement as a line of plain text, such as _Has trait Magery
 at level at least 1_. Select the section's title to collapse it to a one-paragraph summary, or to expand it again.
 
-<img src="images/screenshots/scrn-gcs-prerequisites.png" alt="The Prerequisites section" width="1136">
+<img src="images/screenshots/prerequisites.png" alt="The Prerequisites section" width="1136">
 
 - **Groups:** Requirements hang from a colored line beneath a group pill. Select the pill to choose how the group
   combines what it holds:
@@ -36,12 +36,12 @@ at level at least 1_. Select the section's title to collapse it to a one-paragra
   select **Done** (or press `Return` or `Escape`) to close it.
 - **Chips:** Optional criteria, such as a level or a specialization, are added as chips. Select a dashed **+ …** button
   to add one, and the **x** on a chip to remove it.
-- **Reordering:** Drag a requirement by its grip ![grip](images/icons/icn-grip.svg) to move it within or between
+- **Reordering:** Drag a requirement by its grip ![grip](images/icons/grip.svg) to move it within or between
   groups. Dragging it into the Prerequisites section of another open editor, even one for a different kind of item,
   copies it there, expanding the section if it's collapsed. A group brings everything in it along. A requirement the
   other editor doesn't offer, such as a contained weight requirement dropped into a trait's editor, is refused, and so
   is a group holding one. In a read-only editor, requirements can be dragged out but not rearranged.
-- **More actions:** Select **More actions** ![more](images/icons/icn-moreActions.svg) beside a requirement for
+- **More actions:** Select **More actions** ![more](images/icons/moreActions.svg) beside a requirement for
   **Duplicate**, **Move Up**, **Move Down**, **Wrap in Group**, **Ungroup**, and **Delete**.
 
 Every change can be undone with **Edit > Undo**.
@@ -50,10 +50,10 @@ When the item is on a character sheet, each requirement and group shows whether 
 
 | Mark                                                  | Meaning                                                                                                                               |
 |-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| ![met](images/icons/icn-applyChanges.svg)             | **Met.**                                                                                                                              |
-| ![not met](images/icons/icn-discardChanges.svg)       | **Not met.** Hover over it to see what's missing.                                                                                     |
-| ![warning](images/icons/icn-exclamationTriangle.svg)  | The requirement couldn't be checked, such as a script with an error in it.                                                            |
-| ![left out](images/icons/icn-circledMinus.svg)        | Left out of the check: an empty group, or one whose tech level condition doesn't match the character's.                               |
+| ![met](images/icons/applyChanges.svg)             | **Met.**                                                                                                                              |
+| ![not met](images/icons/discardChanges.svg)       | **Not met.** Hover over it to see what's missing.                                                                                     |
+| ![warning](images/icons/exclamationTriangle.svg)  | The requirement couldn't be checked, such as a script with an error in it.                                                            |
+| ![left out](images/icons/circledMinus.svg)        | Left out of the check: an empty group, or one whose tech level condition doesn't match the character's.                               |
 
 The colors of these marks and of the group pills can be changed in [Colors and Fonts](Colors%20and%20Fonts).
 
@@ -62,7 +62,7 @@ The colors of these marks and of the group pills can be changed in [Colors and F
 To add a prerequisite:
 
 1. Open the **Detail Editor** for the trait, skill, spell, or equipment.
-2. In the **Prerequisites** section, select **Add** ![add](images/icons/icn-add.svg) beside the group you want to add
+2. In the **Prerequisites** section, select **Add** ![add](images/icons/add.svg) beside the group you want to add
    to. When the section is empty, you can also select **No prerequisites. Click here to add one.**
 3. Choose the kind of requirement (see **Requirement types** below), or one of the **Structure** items:
    - **All of Group** or **Any of Group** adds a nested group. See **Groups** below.
@@ -71,7 +71,7 @@ To add a prerequisite:
 
 To delete a requirement:
 
-- Select **More actions** ![more](images/icons/icn-moreActions.svg) beside it, then **Delete**.
+- Select **More actions** ![more](images/icons/moreActions.svg) beside it, then **Delete**.
 
 > [!WARNING]
 > When typing names (traits, skills, spells, equipment), you must match the name **exactly** as it appears in the
@@ -208,8 +208,8 @@ A group is a **set of requirements nested inside another**. Use them to build co
 
 On the Detail Editor toolbar:
 
-- **Apply changes**: Select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
-- **Discard changes**: Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg) to exit
+- **Apply changes**: Select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
+- **Discard changes**: Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg) to exit
   without saving.
 
 ---

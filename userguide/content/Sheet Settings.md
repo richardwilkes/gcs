@@ -11,15 +11,15 @@ For other settings options, see [General Settings](General%20Settings).
 To open Sheet Settings:
 
 - Open a character sheet, then go to **Sheet > Sheet Settings**, or select **Sheet Settings** ![sheet
-  settings](images/icons/icn-sheetSettings.svg) on the character sheet toolbar.
+  settings](images/icons/sheetSettings.svg) on the character sheet toolbar.
 
 Changes are applied immediately. You don’t need to save.
 
 ## Managing Settings
 
-- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg). This restores the current
+- **Reset settings to defaults:** Select **Reset** ![reset](images/icons/reset.svg). This restores the current
   [Default Sheet Settings](Default%20Settings), including the default block layout, attributes, and body type.
-- **Import or export settings:** On the Settings toolbar, select **Menu** ![menu](images/icons/icn-menu.svg), then
+- **Import or export settings:** On the Settings toolbar, select **Menu** ![menu](images/icons/menu.svg), then
   choose:
   - **Import…:** Load saved settings into the sheet. The file's block layout, attributes, and body type are applied too.
   - **Export…:** Save the sheet's settings, block layout, attributes, and body type as a file.
@@ -52,8 +52,8 @@ The settings are grouped into sections.
 
 | Setting                                                      | Description                                                                                                                                                                             |
 |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Show library source**                                      | Displays the library source column ![source](images/icons/icn-source.svg). See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview) for more details.   |
-| **Show page reference**                                      | Displays the page reference column ![page reference](images/icons/icn-pageReference.svg). See [Page References](Page%20References) for more details.                                    |
+| **Show library source**                                      | Displays the library source column ![source](images/icons/source.svg). See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview) for more details.   |
+| **Show page reference**                                      | Displays the page reference column ![page reference](images/icons/pageReference.svg). See [Page References](Page%20References) for more details.                                    |
 | **Show tech level (TL)**                                     | Displays the Tech Level ([B22](B22)) column in the equipment lists.                                                                                                                     |
 | **Show legality class (LC)**                                 | Displays the Legality Class ([B267](B267)) column in the equipment lists.                                                                                                               |
 | **Hide unused columns in the melee & ranged attack tables**  | Leaves out any attack table column whose cells are all empty, such as the accuracy and range columns for powers that don't use them.                                                    |
@@ -106,11 +106,11 @@ Skill level caps hold [skills](Skills) and [spells](Spells) to a limit, such as 
 allows or a house rule that no spell may exceed Thaumatology -2. The list shows each cap as a sentence, such as _Spells
 are capped at the lowest of 20 and skill Thaumatology -2_. The order of the caps doesn't matter.
 
-- **Add a cap:** Select **Add a skill level cap…** ![add](images/icons/icn-add.svg) below the list. Build the cap in the
+- **Add a cap:** Select **Add a skill level cap…** ![add](images/icons/add.svg) below the list. Build the cap in the
   **New Skill Level Cap** dialog (see below), then select **OK**.
 - **Edit a cap:** Select its sentence to open it in the **Edit Skill Level Cap** dialog. **Cancel** leaves the cap as it
   was.
-- **Remove a cap:** Select **Remove cap** ![delete](images/icons/icn-delete.svg) beside it, then confirm. Removing a
+- **Remove a cap:** Select **Remove cap** ![delete](images/icons/delete.svg) beside it, then confirm. Removing a
   cap can't be undone.
 
 Caps set in [Default Sheet Settings](Default%20Settings) are copied into each new character sheet, which then keeps its
@@ -118,7 +118,7 @@ own.
 
 #### Building a cap
 
-<img src="images/screenshots/scrn-gcs-skillLevelCapEditor.png" alt="The skill level cap editor" width="732">
+<img src="images/screenshots/skillLevelCapEditor.png" alt="The skill level cap editor" width="732">
 
 The top of the dialog says which skills and spells the cap applies to:
 
@@ -131,7 +131,7 @@ The top of the dialog says which skills and spells the cap applies to:
   **x** on a chip to remove it.
 
 Below **are capped at** are the values the cap holds them to. Select **No cap values. Click here to add one.** or **Add
-to this group** ![add](images/icons/icn-add.svg), then choose one of these under **Cap Value**:
+to this group** ![add](images/icons/add.svg), then choose one of these under **Cap Value**:
 
 | Cap Value           | Caps at                                                                                                                                           |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -153,10 +153,10 @@ When a name matches several enabled skills, spells, or traits, the highest level
 - **Nesting:** Choose **Lowest of Group** or **Highest of Group** under **Structure** to add a group inside another,
   as in _the lowest of 20 and the highest of skill Thaumatology -2 and trait Magery +10_. On a cap with no values yet,
   it sets the type of the top group instead.
-- **More actions:** Select **More actions** ![more](images/icons/icn-moreActions.svg) beside a value or group for
+- **More actions:** Select **More actions** ![more](images/icons/moreActions.svg) beside a value or group for
   **Duplicate**, **Move Up**, **Move Down**, **Wrap in Group**, **Ungroup**, and **Delete**. A group's menu also adds
   values and groups to it.
-- **Reordering:** Drag a value or group by its grip ![grip](images/icons/icn-grip.svg) to move it.
+- **Reordering:** Drag a value or group by its grip ![grip](images/icons/grip.svg) to move it.
 
 **OK** stays unavailable until the cap has at least one value. Every change in the dialog can be undone with the
 **Undo** [menu key](Menu%20Keys), which is `Ctrl+Z` (`Cmd+Z` on macOS) unless you've changed it.
@@ -184,7 +184,7 @@ The capped level is the one the rest of GCS sees:
 
 #### Importing and exporting caps
 
-The **Skill Level Caps Menu** ![menu](images/icons/icn-menu.svg) below the list holds:
+The **Skill Level Caps Menu** ![menu](images/icons/menu.svg) below the list holds:
 
 - **Import…:** Add the caps in a `.caps` file after those already listed, skipping any that match one already there.
 - **Export…:** Save the listed caps as a `.caps` file. Unavailable while the list is empty.
@@ -241,7 +241,7 @@ Choose how damage scales with Strength.
 ## Sheet layout
 
 The arrangement of the blocks on the sheet is no longer a setting. It is edited directly on the sheet with **Edit
-Layout** ![edit layout](images/icons/icn-layout.svg) on the character sheet toolbar. See _Sheet layout_ in
+Layout** ![edit layout](images/icons/layout.svg) on the character sheet toolbar. See _Sheet layout_ in
 [Character Sheet Overview](Character%20Sheet%20Overview).
 
 ## Default Sheet Settings

@@ -37,8 +37,8 @@ You can also create your own custom weapons.
 ## Melee Attacks list
 
 The **Melee Attacks list** on your character sheet includes the following columns. Select a column heading to sort
-ascending ![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column           | Description                                                                                |
 |------------------|--------------------------------------------------------------------------------------------|
@@ -54,8 +54,8 @@ descending](images/icons/icn-sortDescending.svg).
 ## Ranged Attacks list
 
 The **Ranged Attacks list** on your character sheet includes the following columns. Select a column heading to sort
-ascending ![sort ascending](images/icons/icn-sortAscending.svg) or descending ![sort
-descending](images/icons/icn-sortDescending.svg).
+ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
+descending](images/icons/sortDescending.svg).
 
 | Column            | Description                                                            |
 |-------------------|------------------------------------------------------------------------|
@@ -101,7 +101,7 @@ To edit an attack’s details:
    attack, open the modifier's editor from there as well.
 2. In the **Melee Attack Usage** or **Ranged Attack Usage** table, double-click the attack to open the **Melee Attack
    Editor** or **Ranged Attack Editor**.
-3. Make your changes and select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) in the attack
+3. Make your changes and select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) in the attack
    editor, then again in the modifier's editor, if any, and the item's editor.
 
 Double-clicking an attack in the Melee Attacks or Ranged Attacks list on the sheet does steps 1 and 2 for you.
@@ -177,10 +177,10 @@ The toolbar above the attack editor gives you quick access to common actions:
 
 | Button                                                  | Name                | Description                                                        |
 |:--------------------------------------------------------|---------------------|--------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                      | **Help**            | Opens this page from the User Guide.                               |
+| ![help](images/icons/help.svg)                      | **Help**            | Opens this page from the User Guide.                               |
 | 100%                                                    | **Scale**           | Adjusts the display size of the attack editor.                     |
-| ![apply changes](images/icons/icn-applyChanges.svg)     | **Apply Changes**   | Saves and closes the attack editor (`Ctrl+Return` / `Cmd+Return`). |
-| ![discard changes](images/icons/icn-discardChanges.svg) | **Discard Changes** | Exits without saving changes (`Escape`).                           |
+| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**   | Saves and closes the attack editor (`Ctrl+Return` / `Cmd+Return`). |
+| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes** | Exits without saving changes (`Escape`).                           |
 
 ---
 

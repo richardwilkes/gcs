@@ -9,7 +9,7 @@ It includes:
 - **Hit locations** ([B398](B398)) with attack roll penalties.
 - **Damage Resistance (DR)** values ([B378](B378)) based on armor or protections. Hover over a DR value to see where
   it comes from.
-- **Notes** ![first aid](images/icons/icn-firstAid.svg) for any important damage information, such as a crippled limb.
+- **Notes** ![first aid](images/icons/firstAid.svg) for any important damage information, such as a crippled limb.
 
 Hover over a hit location to see tooltips for special damage effects ([B552](B552)).
 
@@ -20,11 +20,11 @@ arachnoid. The Master Library includes these in its `Settings/Body Types` folder
 
 To change your body type:
 
-1. On the character sheet toolbar, select **Body Type** ![body type](images/icons/icn-bodyType.svg), or go to **Sheet
+1. On the character sheet toolbar, select **Body Type** ![body type](images/icons/bodyType.svg), or go to **Sheet
    > Body Type**.
-2. On the Body Type toolbar, select **Menu** ![menu](images/icons/icn-menu.svg).
+2. On the Body Type toolbar, select **Menu** ![menu](images/icons/menu.svg).
 3. Choose an option from the table below. They are listed under the **Master Library** heading.
-4. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+4. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 | Body Type Option        | Description                                                             |
 |-------------------------|-------------------------------------------------------------------------|
@@ -58,7 +58,7 @@ You can share body type settings between characters or reuse them in different s
 
 To import or export a body type:
 
-1. On the Body Type toolbar, select **Menu** ![menu](images/icons/icn-menu.svg).
+1. On the Body Type toolbar, select **Menu** ![menu](images/icons/menu.svg).
 2. Select one of the following:
    - **Import…:** Load a saved body type into your sheet.
    - **Export…:** Save the current body type as a file.
@@ -73,12 +73,12 @@ You can edit your existing hit locations or add new ones.
 
 To edit or add hit locations:
 
-1. On the character sheet toolbar, select **Body Type** ![body type](images/icons/icn-bodyType.svg).
+1. On the character sheet toolbar, select **Body Type** ![body type](images/icons/bodyType.svg).
 2. In the editor, do one of the following:
    - **Edit** an existing location.
-   - Select **Add hit location** ![add](images/icons/icn-add.svg) to add a new hit location.
+   - Select **Add hit location** ![add](images/icons/add.svg) to add a new hit location.
 3. Enter values in the form using the fields below.
-4. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+4. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 Every change can be undone with **Edit > Undo** while the view is open.
 
@@ -104,18 +104,18 @@ collapsed on the Body Type block.
 
 To add a sub hit location:
 
-1. On the parent hit location, select **Add sub-table** ![add](images/icons/icn-add.svg).
+1. On the parent hit location, select **Add sub-table** ![add](images/icons/add.svg).
 2. Enter values in the form using the fields above.
-3. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/icn-applyChanges.svg) to save.
+3. On the Body Type toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
 ## Managing hit locations
 
-- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/icn-discardChanges.svg).
+- **Discard changes:** Select **Discard Changes** ![discard changes](images/icons/discardChanges.svg).
 - **Delete a hit location or sub-table:** Select **Remove hit location** or **Remove sub-table**
-  ![delete](images/icons/icn-delete.svg) beside it. A table always keeps at least one location.
-- **Reorder hit locations:** Drag a hit location using its grip ![grip](images/icons/icn-grip.svg). Note: the order
+  ![delete](images/icons/delete.svg) beside it. A table always keeps at least one location.
+- **Reorder hit locations:** Drag a hit location using its grip ![grip](images/icons/grip.svg). Note: the order
   affects the dice roll table.
-- **Reset body type to defaults:** Select **Reset** ![reset](images/icons/icn-reset.svg) to restore your hit locations
+- **Reset body type to defaults:** Select **Reset** ![reset](images/icons/reset.svg) to restore your hit locations
   to the current [Default Body Type](Default%20Settings).
 
 ## Default body type

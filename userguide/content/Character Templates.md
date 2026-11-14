@@ -38,7 +38,7 @@ To build a new template:
 4. Add or adjust [Trait Modifiers](Trait%20Modifiers) or [Equipment Modifiers](Equipment%20Modifiers), if needed.
 5. Save your template for future use.
 
-<img src="images/screenshots/scrn-gcs-templateBlock.png" alt="The Template block" width="808">
+<img src="images/screenshots/templateBlock.png" alt="The Template block" width="808">
 
 > [!TIP]
 > Test new templates on a blank character sheet before applying them to an active character. **Sheet > New Character
@@ -63,7 +63,7 @@ points column shows what the choice may come to, as a range such as `20~45` whil
 
 When you apply the template, GCS presents a picker for each choice:
 
-<img src="images/screenshots/scrn-gcs-templatePicker.png" alt="The template picker" width="706">
+<img src="images/screenshots/templatePicker.png" alt="The template picker" width="706">
 
 - Check the options you want. The running total at the top shows what the picks come to against the rule, and a note
   under the list says what is left to do.
@@ -144,7 +144,7 @@ See [Substitutions](Substitutions) for details.
 ## Applying a template
 
 - Open the template and select **Apply Template to Character Sheet** ![apply
-  template](images/icons/icn-applyTemplate.svg) on its toolbar (`Ctrl+Shift+A` / `Cmd+Shift+A`), or right-click the
+  template](images/icons/applyTemplate.svg) on its toolbar (`Ctrl+Shift+A` / `Cmd+Shift+A`), or right-click the
   template in the Library Explorer and choose the same command. If more than one character sheet is open, you'll be
   prompted to choose which to apply it to.
 - Or right-click the template in the Library Explorer and choose **New Character Sheet from Template** to start a new
@@ -163,16 +163,16 @@ when you change the template. See _Master Library Syncing_ in [Character Sheet O
 
 The toolbar above a character template gives you quick access to common actions:
 
-<img src="images/screenshots/scrn-toolbar-characterTemplate.png" alt="Character Template Toolbar" width="1156">
+<img src="images/screenshots/toolbar-characterTemplate.png" alt="Character Template Toolbar" width="1156">
 
 | Button                                                | Name                                    | Description                                                                                                                                                                                       |
 |:------------------------------------------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/icn-help.svg)                    | **Help**                                | Opens this page from the User Guide.                                                                                                                                                              |
+| ![help](images/icons/help.svg)                    | **Help**                                | Opens this page from the User Guide.                                                                                                                                                              |
 | 100%                                                  | **Scale**                               | Adjusts the display size of the character template.                                                                                                                                               |
-| ![toggle expansion](images/icons/icn-expand.svg)      | **Opens/closes all hierarchical rows**  | Show or hide all items within containers at once.                                                                                                                                                 |
-| ![toggle notes](images/icons/icn-openCloseNotes.svg)  | **Opens/closes all embedded notes**     | Show or hide all embedded notes on your template.                                                                                                                                                 |
-| ![apply template](images/icons/icn-applyTemplate.svg) | **Apply Template to Character Sheet**   | Copies the contents of the current template to an open [character sheet](Character%20Sheet%20Overview). If more than one character sheet is open, you'll be prompted to choose which to apply to. |
-| ![sync sources](images/icons/icn-syncSources.svg)     | **Sync with all sources in this sheet** | Sync all items in the character template with the libraries they came from.                                                                                                                       |
+| ![toggle expansion](images/icons/expand.svg)      | **Opens/closes all hierarchical rows**  | Show or hide all items within containers at once.                                                                                                                                                 |
+| ![toggle notes](images/icons/openCloseNotes.svg)  | **Opens/closes all embedded notes**     | Show or hide all embedded notes on your template.                                                                                                                                                 |
+| ![apply template](images/icons/applyTemplate.svg) | **Apply Template to Character Sheet**   | Copies the contents of the current template to an open [character sheet](Character%20Sheet%20Overview). If more than one character sheet is open, you'll be prompted to choose which to apply to. |
+| ![sync sources](images/icons/syncSources.svg)     | **Sync with all sources in this sheet** | Sync all items in the character template with the libraries they came from.                                                                                                                       |
 | N/A                                                   | **Search**                              | Type to list the matching rows in the template. Choose one to select it and scroll to it.                                                                                                         |
 
 ---
