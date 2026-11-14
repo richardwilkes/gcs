@@ -16,6 +16,7 @@
 *.ancestry text eol=lf
 *.names text eol=lf
 *.tmpl text eol=lf
+*.svg text eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
