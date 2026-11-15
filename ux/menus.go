@@ -262,7 +262,8 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 }
 
 func (s menuBarScope) createFileNewMenu(f unison.MenuFactory) unison.Menu {
-	return s.newActionMenu(f, FileNewMenuID, i18n.Text("New"),
+	return s.newActionMenu(
+		f, FileNewMenuID, i18n.Text("New"),
 		newCharacterSheetAction,
 		newCharacterTemplateAction,
 		newLootSheetAction,
@@ -294,7 +295,8 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 
 func (s menuBarScope) createInsertMenu(f unison.MenuFactory) unison.Menu {
 	m := f.NewMenu(InsertMenuID, i18n.Text("Insert"), nil)
-	m.InsertMenu(-1, s.newActionMenu(f, InsertTraitMenuID, i18n.Text("Trait"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, InsertTraitMenuID, i18n.Text("Trait"),
 		newTraitAction,
 		newTraitContainerAction,
 		newTraitChoiceContainerAction,
@@ -303,19 +305,22 @@ func (s menuBarScope) createInsertMenu(f unison.MenuFactory) unison.Menu {
 		newTraitContainerModifierAction,
 		newTraitModifierChoiceAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, InsertSkillMenuID, i18n.Text("Skill"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, InsertSkillMenuID, i18n.Text("Skill"),
 		newSkillAction,
 		newSkillContainerAction,
 		newSkillChoiceContainerAction,
 		newTechniqueAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, InsertSpellMenuID, i18n.Text("Spell"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, InsertSpellMenuID, i18n.Text("Spell"),
 		newSpellAction,
 		newSpellContainerAction,
 		newSpellChoiceContainerAction,
 		newRitualMagicSpellAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, InsertEquipmentMenuID, i18n.Text("Equipment"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, InsertEquipmentMenuID, i18n.Text("Equipment"),
 		newCarriedEquipmentAction,
 		newCarriedEquipmentContainerAction,
 		newCarriedEquipmentGroupAction,
@@ -330,11 +335,13 @@ func (s menuBarScope) createInsertMenu(f unison.MenuFactory) unison.Menu {
 		newEquipmentContainerModifierAction,
 		newEquipmentModifierChoiceAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, InsertNoteMenuID, i18n.Text("Note"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, InsertNoteMenuID, i18n.Text("Note"),
 		newNoteAction,
 		newNoteContainerAction,
 	))
-	s.appendActions(m,
+	s.appendActions(
+		m,
 		nil,
 		newMeleeWeaponAction,
 		newRangedWeaponAction,
@@ -343,13 +350,15 @@ func (s menuBarScope) createInsertMenu(f unison.MenuFactory) unison.Menu {
 }
 
 func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
-	m := s.newActionMenu(f, ItemMenuID, i18n.Text("Item"),
+	m := s.newActionMenu(
+		f, ItemMenuID, i18n.Text("Item"),
 		openEditorAction,
 		openOnePageReferenceAction,
 		openEachPageReferenceAction,
 		nil,
 	)
-	m.InsertMenu(-1, s.newActionMenu(f, MoveMenuID, i18n.Text("Move"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, MoveMenuID, i18n.Text("Move"),
 		moveUpAction,
 		moveDownAction,
 		moveOutOfContainerAction,
@@ -358,7 +367,8 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 		moveToCarriedEquipmentAction,
 		moveToOtherEquipmentAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, AdjustMenuID, i18n.Text("Adjust"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, AdjustMenuID, i18n.Text("Adjust"),
 		incrementAction,
 		decrementAction,
 		nil,
@@ -375,13 +385,15 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 		increaseEquipmentLevelAction,
 		decreaseEquipmentLevelAction,
 	))
-	m.InsertMenu(-1, s.newActionMenu(f, ConvertMenuID, i18n.Text("Convert"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, ConvertMenuID, i18n.Text("Convert"),
 		convertToContainerAction,
 		convertToNonContainerAction,
 		convertToChoiceContainerAction,
 		convertToGroupContainerAction,
 	))
-	s.appendActions(m,
+	s.appendActions(
+		m,
 		toggleStateAction,
 		swapDefaultsAction,
 		applyModifierAction,
@@ -397,7 +409,8 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 }
 
 func (s menuBarScope) createSheetMenu(f unison.MenuFactory) unison.Menu {
-	return s.newActionMenu(f, SheetMenuID, i18n.Text("Sheet"),
+	return s.newActionMenu(
+		f, SheetMenuID, i18n.Text("Sheet"),
 		applyTemplateAction,
 		newSheetFromTemplateAction,
 		cloneSheetAction,
@@ -421,7 +434,8 @@ func (s menuBarScope) createSheetMenu(f unison.MenuFactory) unison.Menu {
 }
 
 func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
-	return s.newActionMenu(f, SettingsMenuID, i18n.Text("Settings"),
+	return s.newActionMenu(
+		f, SettingsMenuID, i18n.Text("Settings"),
 		generalSettingsAction,
 		colorSettingsAction,
 		fontSettingsAction,
@@ -438,12 +452,14 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 }
 
 func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
-	m := s.newActionMenu(f, ViewMenuID, i18n.Text("View"),
+	m := s.newActionMenu(
+		f, ViewMenuID, i18n.Text("View"),
 		scaleDefaultAction,
 		scaleUpAction,
 		scaleDownAction,
 	)
-	m.InsertMenu(-1, s.newActionMenu(f, ScaleToMenuID, i18n.Text("Scale To"),
+	m.InsertMenu(-1, s.newActionMenu(
+		f, ScaleToMenuID, i18n.Text("Scale To"),
 		scale25Action,
 		scale50Action,
 		scale75Action,
@@ -467,7 +483,8 @@ func (s menuBarScope) setupWindowMenu(bar unison.Menu) {
 
 func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 	m := bar.Menu(unison.HelpMenuID)
-	s.appendActions(m,
+	s.appendActions(
+		m,
 		userGuideAction,
 		nil,
 		sponsorDevelopmentAction,
@@ -480,7 +497,6 @@ func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 		nil,
 		webSiteAction,
 		discordAction,
-		mailingListAction,
 	)
 }
 

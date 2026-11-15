@@ -168,7 +168,6 @@ var (
 	checkForAppUpdatesAction *unison.Action
 	discordAction            *unison.Action
 	licenseAction            *unison.Action
-	mailingListAction        *unison.Action
 	makeDonationAction       *unison.Action
 	releaseNotesAction       *unison.Action
 	sponsorDevelopmentAction *unison.Action
@@ -603,13 +602,6 @@ func registerActions() {
 		Title: i18n.Text("License"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			ShowReadOnlyMarkdown(i18n.Text("License"), licenseMarkdownContent)
-		},
-	}
-	mailingListAction = &unison.Action{
-		ID:    MailingListItemID,
-		Title: i18n.Text("Mailing Lists"),
-		ExecuteCallback: func(_ *unison.Action, _ any) {
-			showWebPage("https://groups.io/g/gcs")
 		},
 	}
 	makeDonationAction = &unison.Action{
