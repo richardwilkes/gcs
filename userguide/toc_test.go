@@ -31,8 +31,7 @@ func TestEveryPageIsInTheTOC(t *testing.T) {
 	}
 }
 
-// Only the line shapes the parser models are accepted, so that the tree it builds is the one the wiki shows from the
-// same file.
+// Only the line shapes the parser models are accepted; anything else is an error that names its line.
 func TestParseTOCRejectsUnknownLines(t *testing.T) {
 	c := check.New(t)
 	resolve := func(target string) (string, bool) {
@@ -74,7 +73,7 @@ Group
 `,
 		},
 		{
-			name: "titles as the wiki shows them",
+			name: "titles as Markdown renders them",
 			data: "<details>\n<summary>Q &amp;  A</summary>\n\n- [Q\\&A](B)\n- [\\&amp; &#38;amp;](A)\n- **S&#117;b**\n  - [See](Sub/C)\n</details>\n",
 			want: "Q & A\n  Q&A B.md\n  &amp; &amp; A.md\n  Sub\n    See Sub/C.md\n",
 		},

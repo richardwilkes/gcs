@@ -102,8 +102,8 @@
 
 - [Supporting GCS](Supporting%20GCS)
 - [Contributing to the Master Library](Contributing%20to%20the%20Master%20Library)
-- [Master Library Style Guide](Style%20Guide)
-- [User Guide Style Guide](GCS%20Wiki%20Style%20Guide)
+- [Master Library Style Guide](Master%20Library%20Style%20Guide)
+- [User Guide Style Guide](User%20Guide%20Style%20Guide)
 
 </details>
 

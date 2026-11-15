@@ -44,7 +44,7 @@ var (
 			return page, ok && page != "" && anchor == ""
 		})
 	})
-	tocWikiLink = regexp.MustCompile(`^\[\[([^\[\]|]+)\]\]$`)
+	tocPageLink = regexp.MustCompile(`^\[\[([^\[\]|]+)\]\]$`)
 	tocSummary  = regexp.MustCompile(`^<summary>([^<>]+)</summary>$`)
 	tocLink     = regexp.MustCompile(`^( {2})?- \[([^\[\]]+)\]\(([^()\s]+)\)$`)
 	tocSubGroup = regexp.MustCompile(`^- \*\*([^*]+)\*\*$`)
@@ -68,7 +68,7 @@ func tocPages(entries []*TOCEntry) []string {
 	return list
 }
 
-// tocRunOn is what the wiki carries on into the next line of _sidebar.md when no blank line comes between them.
+// tocRunOn is what Markdown carries on into the next line of _sidebar.md when no blank line comes between them.
 type tocRunOn uint8
 
 const (
@@ -91,24 +91,22 @@ type tocParser struct {
 	entryFound   bool
 }
 
-// parseTOC parses the table of contents in _sidebar.md, which also serves the GitHub wiki the guide is published as.
-// Only these line shapes are accepted, so that the tree built from them is the one the wiki shows:
+// parseTOC parses the table of contents in _sidebar.md. Only these line shapes are accepted:
 //
 //   - blank lines, one of which must separate an entry or sub-group from a <details>, <summary> or </details> line
-//     above it, which the wiki would otherwise show it as part of, and a "[[Page]]" from an entry or sub-group above
-//     it, which the wiki would otherwise join it to;
-//   - a single "## Heading" ahead of everything else, for the wiki, which is ignored;
+//     above it, which Markdown would otherwise make it part of, and a "[[Page]]" from an entry or sub-group above it,
+//     which Markdown would otherwise join it to;
+//   - a single "## Heading" ahead of everything else, which is ignored;
 //   - "[[Page]]", an entry titled with the page's name;
 //   - "<details>" or "<details open>", followed by "<summary>Label</summary>", which opens a group, and "</details>",
-//     which closes it. Groups do not nest, and neither they nor sub-groups may be empty. "open" only matters to the
-//     wiki;
+//     which closes it. Groups do not nest, and neither they nor sub-groups may be empty. "open" is ignored;
 //   - "- [Label](Target)", an entry, which also closes any open sub-group;
 //   - "- **Label**", which opens a sub-group of the open group, and "  - [Label](Target)", an entry in it.
 //
-// A label is taken as the wiki shows it: with runs of white space collapsed, character references resolved and, but
+// A label is taken as Markdown renders it: with runs of white space collapsed, character references resolved and, but
 // for the HTML of <summary>, backslash escapes resolved and other inline Markdown reduced to its text. Targets are
-// resolved to pages by resolve. Anything else, including an entry or sub-group the wiki does not show as a link or bold
-// text, is an error that names its line.
+// resolved to pages by resolve. Anything else, including an entry or sub-group that Markdown does not parse as a link
+// or bold text, is an error that names its line.
 func parseTOC(data []byte, resolve func(target string) (page string, ok bool)) ([]*TOCEntry, error) {
 	p := tocParser{resolve: resolve, md: unison.NewMarkdownParser()}
 	lineNum := 0
@@ -173,7 +171,7 @@ func (p *tocParser) parseLine(lineNum int, line string) error {
 		p.runOn = runOnHTML
 		return nil
 	}
-	if m := tocWikiLink.FindStringSubmatch(line); m != nil {
+	if m := tocPageLink.FindStringSubmatch(line); m != nil {
 		if err := p.startMarkdown(lineNum, line, true); err != nil {
 			return err
 		}
@@ -185,7 +183,7 @@ func (p *tocParser) parseLine(lineNum int, line string) error {
 		}
 		title, ok := p.shownLabel(line, true)
 		if !ok {
-			return tocError(lineNum, "the wiki does not show this as a link", line)
+			return tocError(lineNum, "Markdown does not parse this as a link", line)
 		}
 		return p.addEntry(lineNum, line, title, m[3], m[1] != "")
 	}
@@ -198,7 +196,7 @@ func (p *tocParser) parseLine(lineNum int, line string) error {
 		}
 		title, ok := p.shownLabel(line, false)
 		if !ok {
-			return tocError(lineNum, "the wiki does not show this as bold text", line)
+			return tocError(lineNum, "Markdown does not parse this as bold text", line)
 		}
 		if err := p.closeSub(); err != nil {
 			return err
@@ -211,21 +209,21 @@ func (p *tocParser) parseLine(lineNum int, line string) error {
 	return tocError(lineNum, "unrecognized line", line)
 }
 
-// startMarkdown checks that the wiki does not take a Markdown line into what it made of the line above, and records
-// that the wiki carries the line's paragraph on into a "[[Page]]" line directly below it.
+// startMarkdown checks that Markdown does not take a line into the HTML or paragraph of the line above, and records
+// that the line's paragraph carries on into a "[[Page]]" line directly below it.
 func (p *tocParser) startMarkdown(lineNum int, line string, isPage bool) error {
 	switch {
 	case p.runOn == runOnHTML:
-		return tocError(lineNum, "without a blank line above, the wiki shows this as part of the HTML above it", line)
+		return tocError(lineNum, "without a blank line above, this is part of the HTML above it", line)
 	case p.runOn == runOnParagraph && isPage:
-		return tocError(lineNum, "without a blank line above, the wiki joins this to the entry above it", line)
+		return tocError(lineNum, "without a blank line above, this is joined to the entry above it", line)
 	}
 	p.runOn = runOnParagraph
 	return nil
 }
 
-// shownLabel returns the text the wiki shows for the label of an entry's or sub-group's list item, and false when it
-// does not show the item as a link or, when link is false, as bold text.
+// shownLabel returns the text Markdown renders for the label of an entry's or sub-group's list item, and false when
+// it does not parse the item as a link or, when link is false, as bold text.
 func (p *tocParser) shownLabel(line string, link bool) (string, bool) {
 	src := []byte(line)
 	block := p.md.Parse(text.NewReader(src))

@@ -146,7 +146,7 @@ func TestEveryGuideLinkResolves(t *testing.T) {
 }
 
 // Raster images are <img> tags with a width in logical pixels, so that a 2x screenshot is shown at the size it had on
-// screen both in GCS and on the wiki, where a Markdown image is shown pixel for pixel.
+// screen.
 func TestRasterImagesAreImgTagsWithWidth(t *testing.T) {
 	fsys := FS()
 	md := unison.NewMarkdownParser()

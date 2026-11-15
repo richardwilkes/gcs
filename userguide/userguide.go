@@ -168,8 +168,8 @@ func lookup(name string, foldCase bool) (page string, ok bool) {
 	return "", false
 }
 
-// listPages returns the Markdown files in fsys in name order, less those whose names begin with '_', which the wiki the
-// guide is also published as reserves for its sidebar, header and footer.
+// listPages returns the Markdown files in fsys in name order, less those whose names begin with '_', such as the table
+// of contents.
 func listPages(fsys fs.FS) []string {
 	var names []string
 	if err := fs.WalkDir(fsys, ".", func(name string, d fs.DirEntry, walkErr error) error {

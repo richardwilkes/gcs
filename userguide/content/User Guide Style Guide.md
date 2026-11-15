@@ -5,9 +5,8 @@
 This style guide explains how to write and format pages for the **GURPS Character Sheet (GCS) User Guide**. It sets
 standards for language, structure, tone, and formatting so all guide content is clear, consistent, and easy to navigate.
 
-The User Guide is built into GCS and also published as the GCS wiki. Its source is the `userguide/content` folder in the
-[gcs repository](https://github.com/richardwilkes/gcs). Make changes there with a pull request; the wiki is regenerated
-from those files, so don’t edit the wiki directly.
+The User Guide is built into GCS. Its source is the `userguide/content` folder in the
+[gcs repository](https://github.com/richardwilkes/gcs). Make changes there with a pull request.
 
 If you’re adding or updating a page, follow these guidelines to make sure your contribution matches the rest of the
 guide and provides the best possible experience for readers.
@@ -81,7 +80,7 @@ Follow the [Microsoft Writing Style Guide](https://learn.microsoft.com/en-us/sty
 ### Links
 
 - Link to another page by its name, with each space written as `%20` and no `.md` extension, such as
-  `[Sheet Settings](Sheet%20Settings)`, so the link works both in GCS and on the wiki.
+  `[Sheet Settings](Sheet%20Settings)`.
 - Match the case of the file name exactly, such as `Character%20Points`, not `Character%20points`. The guide built into
   GCS is case-sensitive, so a link that differs only in case doesn’t work there.
 - Run `go test ./userguide/` in the gcs repository before opening a pull request. It checks that every link, image, and
@@ -106,8 +105,7 @@ Tables are ideal when readers need to compare or scan structured information qui
 - Add screenshots only if they clarify toolbars, menus, or layouts.
 - Capture screenshots at 2x, as a high-resolution display such as a Mac's Retina display does.
 - Write each screenshot as an HTML `<img>` tag, not in Markdown, with alt text and a `width` of half its width in
-  pixels, so it shows at the size it had on screen both in GCS and on the wiki. A screenshot 1240 pixels wide is
-  written as:
+  pixels, so it shows at the size it had on screen. A screenshot 1240 pixels wide is written as:
 
   ```
   <img src="images/screenshots/savedFiltersImport.png" alt="Choosing filters to import" width="620">
