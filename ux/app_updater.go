@@ -57,6 +57,7 @@ func appUpdaterConfig() *updater.Config {
 		GitHubOwner:     "richardwilkes",
 		GitHubRepo:      appUpdateCmdName,
 		DownloadPageURL: "https://" + WebSiteDomain,
+		SponsorURL:      sponsorURL,
 		HandoffPort:     handoffPort,
 		SkipRelease: func(version, _ string) bool {
 			// Don't bother showing changes from before 5.0.0, since those were the Java version

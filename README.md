@@ -3,6 +3,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/richardwilkes/gcs/v5.svg)](https://pkg.go.dev/github.com/richardwilkes/gcs/v5)
 [![Build](https://github.com/richardwilkes/gcs/actions/workflows/build.yml/badge.svg)](https://github.com/richardwilkes/gcs/actions/workflows/build.yml)
 [![Release](https://github.com/richardwilkes/gcs/actions/workflows/release.yml/badge.svg)](https://github.com/richardwilkes/gcs/actions/workflows/release.yml)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GCS-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/richardwilkes)
 
 GURPS[^1] Character Sheet (GCS) is a stand-alone, interactive, character sheet editor that allows you to build
 characters for the [GURPS Fourth Edition](http://www.sjgames.com/gurps) roleplaying game system.
@@ -11,6 +12,13 @@ GCS relies on another project of mine, [Unison](https://github.com/richardwilkes
 for the UI and OS integration. The [prerequisites](https://github.com/richardwilkes/unison/blob/main/README.md) are
 therefore the same as for that project. Once you have the prerequistes, you can build GCS by running the build script:
 `./build.sh`. Add a `-h` to see available options.
+
+## Supporting GCS
+
+GCS is free and open source, and I build it in my spare time. Sponsors keep it that way. If you find GCS useful, please
+consider [becoming a sponsor](https://github.com/sponsors/richardwilkes), which starts at $1 a month, or making a
+[one-time donation](https://paypal.me/GURPSCharacterSheet). Sponsors get a sponsor role and access to a private channel
+on the [GCS Discord](https://discord.gg/MKhuDPPagY), and more say in what gets built next.
 
 ## Generative AI Use Policy
 

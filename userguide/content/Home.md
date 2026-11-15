@@ -27,7 +27,7 @@ navigation.
 
 If you can’t find what you’re looking for:
 
-- Ask in the [GCS Discord community](https://discord.gg/MKhuDPPagY).
+- Ask in the [GCS Discord community](https://discord.gg/MKhuDPPagY), which **Help > Discord Server** also opens.
 - Read this **User Guide** in GCS. It’s built into the app, so it always matches the version you’re running. Go to
   **Help > User Guide**, or select **Help** ![help](images/icons/help.svg) on a toolbar to go right to the relevant
   page.
@@ -133,6 +133,7 @@ In GCS, the User Guide opens in its own tab:
 
 ### Contributing
 
+- [Supporting GCS](Supporting%20GCS)
 - [Contributing to the Master Library](Contributing%20to%20the%20Master%20Library)
 - [Master Library Style Guide](Style%20Guide)
 - [User Guide Style Guide](GCS%20Wiki%20Style%20Guide)

@@ -23,6 +23,13 @@ import (
 // WebSiteDomain holds the web site domain for GCS.
 const WebSiteDomain = "gurpscharactersheet.com"
 
+const (
+	// sponsorURL is where GCS development can be sponsored.
+	sponsorURL = "https://github.com/sponsors/richardwilkes"
+	// discordURL is the invitation to the GCS Discord server.
+	discordURL = "https://discord.gg/MKhuDPPagY"
+)
+
 //go:embed license.md
 var licenseMarkdownContent string
 
@@ -159,6 +166,7 @@ var (
 // These actions aren't registered for key bindings.
 var (
 	checkForAppUpdatesAction *unison.Action
+	discordAction            *unison.Action
 	licenseAction            *unison.Action
 	mailingListAction        *unison.Action
 	makeDonationAction       *unison.Action
@@ -583,6 +591,13 @@ func registerActions() {
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) { CheckForAppUpdates(true) },
 	}
+	discordAction = &unison.Action{
+		ID:    DiscordItemID,
+		Title: i18n.Text("Discord Server"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			showWebPage(discordURL)
+		},
+	}
 	licenseAction = &unison.Action{
 		ID:    LicenseItemID,
 		Title: i18n.Text("License"),
@@ -615,7 +630,7 @@ func registerActions() {
 		ID:    SponsorGCSDevelopmentItemID,
 		Title: i18n.Text("Sponsor %s Development", xos.AppName),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			showWebPage("https://github.com/sponsors/richardwilkes")
+			showWebPage(sponsorURL)
 		},
 	}
 	updateAppStatusAction = &unison.Action{

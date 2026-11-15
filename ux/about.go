@@ -75,7 +75,17 @@ func ShowAbout(_ unison.MenuItem) {
 
 This product includes copyrighted material from the **GURPS** game, which is used by permission of Steve Jackson Games.`,
 			version, xos.BuildNumber, xos.Copyright()), 400)
-		content.AddChild(md)
+		sponsor := unison.NewButton()
+		sponsor.SetTitle(sponsorDevelopmentAction.Title)
+		sponsor.ClickCallback = func() { showWebPage(sponsorURL) }
+		right := unison.NewPanel()
+		right.SetLayout(&unison.FlexLayout{
+			Columns:  1,
+			VSpacing: 16,
+		})
+		right.AddChild(md)
+		right.AddChild(sponsor)
+		content.AddChild(right)
 
 		aboutWnd.Pack()
 		placeWindowOver(aboutWnd, windowPlacementFrame())

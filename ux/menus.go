@@ -130,6 +130,7 @@ const (
 	ReleaseNotesItemID
 	LicenseItemID
 	WebSiteItemID
+	DiscordItemID
 	MailingListItemID
 	UserGuideItemID
 	ViewMenuID
@@ -478,6 +479,7 @@ func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 		licenseAction,
 		nil,
 		webSiteAction,
+		discordAction,
 		mailingListAction,
 	)
 }

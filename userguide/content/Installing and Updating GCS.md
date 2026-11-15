@@ -80,6 +80,9 @@ from the disk image, or is in a folder it can't write to), the window explains w
 instead. Select it to open the [GURPS Character Sheet website](https://gurpscharactersheet.com/), then follow the
 installation steps above to install the new version by hand.
 
+The window's **Sponsor GCS** button opens the page where you can sponsor GCS development. The window stays open, so you
+can still install the update afterward. See [Supporting GCS](Supporting%20GCS) for what sponsorship involves.
+
 Updating GCS does **not** affect your existing libraries or character sheets. They remain on your computer and will be
 available after the update.
 
