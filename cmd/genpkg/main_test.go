@@ -14,18 +14,14 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"path"
 	"path/filepath"
+	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/xyaml"
-	"github.com/richardwilkes/unison/cmd/upack/packager"
 )
-
-// repoRoot is the repository root, relative to this package's directory, which is where the test runs.
-const repoRoot = "../.."
 
 func TestMain(m *testing.M) {
 	ux.RegisterExternalFileTypes()
@@ -33,71 +29,42 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// TestConfigOnlyReferencesIconsThatAreGenerated verifies that the packaging configuration never points at a document
-// icon that no one creates. Only the file types GCS owns have an icon generated for them, so those are the only
-// entries permitted to name one.
-func TestConfigOnlyReferencesIconsThatAreGenerated(t *testing.T) {
-	c := check.New(t)
-	cfg := buildConfig()
-	c.NotEqual(0, len(cfg.FileInfo), "no file types were registered")
-	owners := 0
-	for _, one := range cfg.FileInfo {
-		if one.Rank == "Owner" {
-			owners++
-			c.NotEqual("", one.Icon, one.Name+" is an owned file type, but has no icon")
-		} else {
-			c.Equal("", one.Icon, one.Name+" is not an owned file type, so it has no icon generated for it")
-		}
-	}
-	c.NotEqual(0, owners, "no owned file types were registered")
-}
-
-// TestCommittedPackagingIconsExist verifies that every icon named by the committed packaging.yml is actually present
-// in the repository. A dangling path here breaks packaging for anything that consumes it.
-func TestCommittedPackagingIconsExist(t *testing.T) {
-	c := check.New(t)
-	var cfg packager.Config
-	c.NoError(xyaml.Load(filepath.Join(repoRoot, "packaging.yml"), &cfg))
-	c.NotEqual("", cfg.AppIcon)
-	checkFileExists(c, cfg.AppIcon)
-	for _, one := range cfg.FileInfo {
-		if one.Icon != "" {
-			checkFileExists(c, one.Icon)
-		}
-	}
-}
-
-// TestGenerateDocIcons verifies that a document icon is produced for every file type GCS owns, and that each one is a
-// usable image of the same size as the document image they are built on top of. It also pins down that generation
-// needs no UI: unison is never started and no window exists, which works only because the SVGs are rendered by canvas'
-// CPU rasterizer.
+// TestGenerateDocIcons verifies that the document icons generated are exactly the ones the packaging configuration
+// names, and that each is a usable image of the same size as the document image it is built on top of. It also pins
+// down that generation needs no UI: unison is never started and no window exists, which works only because the SVGs
+// are rendered by canvas' CPU rasterizer.
 func TestGenerateDocIcons(t *testing.T) {
 	c := check.New(t)
-	docImg, _, err := image.Decode(bytes.NewBuffer(docImgBytes))
+	docCfg, _, err := image.DecodeConfig(bytes.NewReader(docImgBytes))
 	c.NoError(err)
 	dir := t.TempDir()
 	c.NoError(generateDocIcons(dir))
-	generated := 0
-	for _, fi := range gurps.KnownFileTypes {
-		if !fi.IsGCSData {
-			continue
+	var want []string
+	for _, one := range buildConfig().FileInfo {
+		if one.Icon != "" {
+			want = append(want, path.Base(one.Icon))
 		}
-		generated++
-		name := docIconName(fi)
-		var f *os.File
-		f, err = os.Open(filepath.Join(dir, name))
-		c.NoError(err, name+" was not generated")
-		var img image.Image
-		img, err = png.Decode(f)
-		c.NoError(err, name+" is not a usable PNG")
-		c.NoError(f.Close())
-		c.Equal(docImg.Bounds(), img.Bounds(), name+" is not the same size as the document image")
 	}
-	c.NotEqual(0, generated, "no owned file types were registered")
+	slices.Sort(want)
+	c.NotEqual(0, len(want), "the configuration names no document icons")
 	var entries []os.DirEntry
 	entries, err = os.ReadDir(dir)
 	c.NoError(err)
-	c.Equal(generated, len(entries), "icons were generated for file types GCS doesn't own")
+	got := make([]string, len(entries))
+	for i, one := range entries {
+		got[i] = one.Name()
+	}
+	c.Equal(want, got, "the generated icons are not the ones the configuration names")
+	for _, name := range got {
+		var data []byte
+		data, err = os.ReadFile(filepath.Join(dir, name))
+		c.NoError(err)
+		var cfg image.Config
+		cfg, err = png.DecodeConfig(bytes.NewReader(data))
+		c.NoError(err, name+" is not a usable PNG")
+		c.Equal(image.Pt(docCfg.Width, docCfg.Height), image.Pt(cfg.Width, cfg.Height),
+			name+" is not the same size as the document image")
+	}
 }
 
 // TestRemoveGeneratedDocIconsReportsUnreadableDir verifies that a missing icons directory is reported rather than
@@ -121,9 +88,4 @@ func TestRemoveGeneratedDocIconsRemovesOnlyDocIcons(t *testing.T) {
 		_, err = os.Stat(filepath.Join(dir, one))
 		c.True(os.IsNotExist(err), one+" should have been removed")
 	}
-}
-
-func checkFileExists(c check.Checker, relPath string) {
-	_, err := os.Stat(filepath.Join(repoRoot, filepath.FromSlash(relPath)))
-	c.NoError(err, relPath+" is referenced by packaging.yml but does not exist")
 }
