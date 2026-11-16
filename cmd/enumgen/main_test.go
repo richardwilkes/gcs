@@ -10,11 +10,11 @@
 package main
 
 import (
-	"io/fs"
+	"bytes"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -25,18 +25,24 @@ import (
 const repoRoot = "../.."
 
 // TestGeneratedFilesAreUpToDate regenerates each enum and compares it against the committed file. A failure means the
-// template or the enum definitions changed without "go generate ./cmd/enumgen/main.go" being run.
+// template or the enum definitions changed without "go generate ./cmd/enumgen/main.go" being run. Only the path is
+// reported, since regenerating and reading the resulting diff shows what changed.
 func TestGeneratedFilesAreUpToDate(t *testing.T) {
-	c := check.New(t)
 	for _, one := range allEnums {
 		relPath := path.Join(one.Pkg, one.Name+genSuffix)
 		generated, err := generateEnumSource(one)
-		c.NoError(err, relPath)
+		if err != nil {
+			t.Errorf("%s: %v", relPath, err)
+			continue
+		}
 		var committed []byte
-		committed, err = os.ReadFile(filepath.Join(repoRoot, filepath.FromSlash(relPath)))
-		c.NoError(err, relPath)
-		c.Equal(string(committed), string(generated),
-			relPath+" is out of date; run 'go generate ./cmd/enumgen/main.go'")
+		if committed, err = os.ReadFile(filepath.Join(repoRoot, filepath.FromSlash(relPath))); err != nil {
+			t.Errorf("%s: %v", relPath, err)
+			continue
+		}
+		if !bytes.Equal(committed, generated) {
+			t.Errorf("%s is out of date; run 'go generate ./cmd/enumgen/main.go'", relPath)
+		}
 	}
 }
 
@@ -49,95 +55,96 @@ func TestNoOrphanedGeneratedFiles(t *testing.T) {
 	for _, one := range allEnums {
 		expected[path.Join(one.Pkg, one.Name+genSuffix)] = true
 	}
-	root, err := filepath.Abs(repoRoot)
-	c.NoError(err)
-	found := 0
-	c.NoError(fs.WalkDir(os.DirFS(root), ".", func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			// Skip dot-prefixed directories. The walk root arrives as ".", so exclude it.
-			if p != "." && strings.HasPrefix(d.Name(), ".") {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		if strings.HasSuffix(d.Name(), genSuffix) {
-			found++
-			c.True(expected[p], p+" has no matching entry in allEnums")
-		}
+	c.NoError(walkGenFiles(repoRoot, func(relPath string) error {
+		c.True(expected[relPath], relPath+" has no matching entry in allEnums")
 		return nil
 	}))
-	c.Equal(len(expected), found, "the number of generated files on disk doesn't match the number of enums")
 }
 
-// TestEnumInfoAccessors covers the branches of the value-picking accessors that the enums in allEnums don't reach: an
-// enum with no values, and DefaultUnknown without DefaultLast.
+// TestEnumInfoAccessors covers what the enums in allEnums don't reach: an enum with no values, and a value that isn't
+// localized but has an alt.
 func TestEnumInfoAccessors(t *testing.T) {
 	c := check.New(t)
-	a := &enumValue{Key: "a"}
-	b := &enumValue{Key: "b", Alt: "alt", NoLocalize: true, NoLocalizeAlt: true}
-	z := &enumValue{Key: "z", OldKeys: []string{"old"}, NoLocalize: true}
-
 	empty := &enumInfo{}
 	c.Nil(empty.Default())
 	c.Nil(empty.First())
 	c.Nil(empty.Last())
-	c.Nil(empty.RealValues())
 	c.False(empty.HasAlt())
 	c.False(empty.HasOldKeys())
 	c.False(empty.NeedI18N())
 
-	info := &enumInfo{Values: []*enumValue{a, b, z}}
-	c.Equal(a, info.Default())
-	c.Equal(a, info.First())
-	c.Equal(z, info.Last())
-	c.Equal([]*enumValue{a, b, z}, info.RealValues())
-	c.True(info.HasAlt())
-	c.True(info.HasOldKeys())
-	c.True(info.NeedI18N())
-
-	info.DefaultUnknown = true
-	c.Equal(a, info.Default())
-	c.Equal([]*enumValue{b, z}, info.RealValues())
-
-	info.DefaultLast = true
-	c.Equal(z, info.Default())
-	c.Equal([]*enumValue{a, b}, info.RealValues())
-
-	info.DefaultUnknown = false
-	c.Equal(z, info.Default())
-	c.Equal([]*enumValue{a, b, z}, info.RealValues())
-
-	// Neither value needs localizing: b has both flags set and z has no alt.
-	c.False((&enumInfo{Values: []*enumValue{b, z}}).NeedI18N())
+	needI18N := func(v *enumValue) bool { return (&enumInfo{Values: []*enumValue{v}}).NeedI18N() }
+	c.True(needI18N(&enumValue{Key: "k", Alt: "alt", NoLocalize: true}))
+	c.False(needI18N(&enumValue{Key: "k", Alt: "alt", NoLocalize: true, NoLocalizeAlt: true}))
 }
 
-// TestDefaultKey verifies that DefaultKey makes the named value the default, its constant the first (or the last, with
-// DefaultLast), while the slices of values keep declaration order, less the default with DefaultUnknown, and that a
-// DefaultKey which names no value is refused.
+// TestDefaultSelection verifies how DefaultKey, DefaultLast and DefaultUnknown pick the default and order the
+// constants, while Values keeps declaration order and RealValues leaves out the default only with DefaultUnknown. The
+// two combinations the enums in allEnums use, no flags and DefaultLast with DefaultUnknown, are left to
+// TestGeneratedFilesAreUpToDate.
+func TestDefaultSelection(t *testing.T) {
+	low := &enumValue{Key: "low"}
+	normal := &enumValue{Key: "normal"}
+	high := &enumValue{Key: "high"}
+	higher := &enumValue{Key: "higher"}
+	values := []*enumValue{low, normal, high, higher}
+	normalFirst := []*enumValue{normal, low, high, higher}
+	normalLast := []*enumValue{low, high, higher, normal}
+	withoutNormal := []*enumValue{low, high, higher}
+	for _, tc := range []struct {
+		name    string
+		key     string
+		last    bool
+		unknown bool
+		consts  []*enumValue
+		def     *enumValue
+		listed  []*enumValue
+	}{
+		{name: "unknown", unknown: true, consts: values, def: low, listed: []*enumValue{normal, high, higher}},
+		{name: "last", last: true, consts: values, def: higher, listed: values},
+		{name: "key", key: "normal", consts: normalFirst, def: normal, listed: values},
+		{name: "key already first", key: "low", consts: values, def: low, listed: values},
+		{name: "key, last", key: "normal", last: true, consts: normalLast, def: normal, listed: values},
+		{name: "key, unknown", key: "normal", unknown: true, consts: normalFirst, def: normal, listed: withoutNormal},
+		{
+			name: "key, last, unknown", key: "normal", last: true, unknown: true,
+			consts: normalLast, def: normal, listed: withoutNormal,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			info := &enumInfo{
+				Values:         slices.Clone(values),
+				DefaultKey:     tc.key,
+				DefaultLast:    tc.last,
+				DefaultUnknown: tc.unknown,
+			}
+			c.Equal(tc.consts, info.ConstValues())
+			c.Equal(tc.def, info.Default())
+			c.Equal(tc.consts[0], info.First())
+			c.Equal(tc.consts[len(tc.consts)-1], info.Last())
+			c.Equal(tc.listed, info.RealValues())
+			c.Equal(values, info.Values)
+		})
+	}
+}
+
+// TestDefaultKey verifies that the generated source declares the constant of the value DefaultKey names first, while
+// the slice of values and the groups keep declaration order, and that a DefaultKey which names no value is refused.
 func TestDefaultKey(t *testing.T) {
 	c := check.New(t)
-	low := &enumValue{Key: "low", Groups: []string{"g"}}
-	normal := &enumValue{Key: "normal", Groups: []string{"g"}}
-	high := &enumValue{Key: "high"}
-	higher := &enumValue{Key: "higher", Groups: []string{"g"}}
-
 	info := &enumInfo{
 		Pkg:        "test/level",
 		Name:       "level",
 		Desc:       "is a level",
 		DefaultKey: "normal",
-		Values:     []*enumValue{low, normal, high, higher},
+		Values: []*enumValue{
+			{Key: "low", Groups: []string{"g"}},
+			{Key: "normal", Groups: []string{"g"}},
+			{Key: "high"},
+			{Key: "higher", Groups: []string{"g"}},
+		},
 	}
-	c.NoError(info.validate())
-	c.Equal([]*enumValue{normal, low, high, higher}, info.ConstValues())
-	c.Equal([]*enumValue{low, normal, high, higher}, info.Values)
-	c.Equal(normal, info.Default())
-	c.Equal(normal, info.First())
-	c.Equal(higher, info.Last())
-	c.Equal([]*enumValue{low, normal, high, higher}, info.RealValues())
 	c.Equal(map[string][]string{"g": {"Low", "Normal", "Higher"}}, info.Groups())
 
 	src, err := generateEnumSource(info)
@@ -145,26 +152,7 @@ func TestDefaultKey(t *testing.T) {
 	c.Contains(string(src), "Normal Level = iota\n\tLow\n")
 	c.Contains(string(src), "var Levels = []Level{\n\tLow,\n\tNormal,\n\tHigh,\n\tHigher,\n}")
 
-	info.DefaultKey = "low"
-	c.Equal(info.Values, info.ConstValues())
-	c.Equal(low, info.Default())
-
-	info.DefaultKey = "normal"
-	info.DefaultLast = true
-	c.Equal([]*enumValue{low, high, higher, normal}, info.ConstValues())
-	c.Equal(normal, info.Default())
-	c.Equal(low, info.First())
-	c.Equal(normal, info.Last())
-	c.Equal([]*enumValue{low, normal, high, higher}, info.RealValues())
-
-	info.DefaultUnknown = true
-	c.Equal([]*enumValue{low, high, higher}, info.RealValues())
-	info.DefaultLast = false
-	c.Equal(normal, info.First())
-	c.Equal([]*enumValue{low, high, higher}, info.RealValues())
-
 	info.DefaultKey = "missing"
-	c.HasError(info.validate())
 	_, err = generateEnumSource(info)
 	c.HasError(err)
 }

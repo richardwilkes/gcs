@@ -55,6 +55,8 @@ type enumValue struct {
 	EmptyStringOK bool
 }
 
+// enumInfo describes one enum to generate. DefaultKey names the default value by key, for a default declared between
+// other values; no enum sets it yet, as it is groundwork for issue #1222.
 type enumInfo struct {
 	Pkg            string
 	Name           string
@@ -125,11 +127,12 @@ func readModulePath(path string) (string, error) {
 	return "", errs.New("no module directive in " + path)
 }
 
-// removeExistingGenFiles removes every generated file in the source tree at rootDir. Dot-prefixed directories and
-// directories holding a go.mod of their own are skipped: neither is part of this module's source, and a worktree kept
-// inside the tree (such as those under .claude/worktrees) is a separate checkout whose files must be left alone.
-func removeExistingGenFiles(rootDir string) {
-	xos.ExitIfErr(fs.WalkDir(os.DirFS(rootDir), ".", func(path string, d fs.DirEntry, err error) error {
+// walkGenFiles calls fn with the slash-separated path, relative to rootDir, of every generated file in the source tree
+// at rootDir. Dot-prefixed directories and directories holding a go.mod of their own are skipped: neither is part of
+// this module's source, and a worktree kept inside the tree (such as those under .claude/worktrees) is a separate
+// checkout whose files must be left alone.
+func walkGenFiles(rootDir string, fn func(relPath string) error) error {
+	return fs.WalkDir(os.DirFS(rootDir), ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -140,9 +143,16 @@ func removeExistingGenFiles(rootDir string) {
 				return filepath.SkipDir
 			}
 		case strings.HasSuffix(d.Name(), genSuffix):
-			xos.ExitIfErr(os.Remove(filepath.Join(rootDir, path)))
+			return fn(path)
 		}
 		return nil
+	})
+}
+
+// removeExistingGenFiles removes every generated file that walkGenFiles finds in the source tree at rootDir.
+func removeExistingGenFiles(rootDir string) {
+	xos.ExitIfErr(walkGenFiles(rootDir, func(relPath string) error {
+		return os.Remove(filepath.Join(rootDir, relPath))
 	}))
 }
 
@@ -273,7 +283,7 @@ func (e *enumInfo) Last() *enumValue {
 // RealValues returns the values that represent something real, which is all of them unless DefaultUnknown is set, in
 // which case the default value (see Default) is a placeholder for "unrecognized" and is left out.
 func (e *enumInfo) RealValues() []*enumValue {
-	if !e.DefaultUnknown || len(e.Values) == 0 {
+	if !e.DefaultUnknown {
 		return e.Values
 	}
 	def := e.Default()
