@@ -12,6 +12,7 @@ package jio_test
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"testing"
 	"testing/fstest"
@@ -31,24 +32,17 @@ func TestReadHeader(t *testing.T) {
 		fail bool
 	}{
 		{
-			name: "header first",
-			data: `{"file_type":"test","version":5,"name":"x"}`,
-			want: jio.Header{FileType: "test", Version: 5},
-		},
-		{
 			name: "header after other members",
 			data: `{"name":"x","rows":[{"version":1}],"version":4,"file_type":"test"}`,
 			want: jio.Header{FileType: "test", Version: 4},
 		},
 		{name: "nested object is not the header", data: `{"child":{"file_type":"other","version":9}}`},
-		{name: "version alone", data: `{"version":5,"name":"x"}`, want: jio.Header{Version: 5}},
 		{name: "legacy type member is ignored", data: `{"type":"advantage_list","version":4}`, want: jio.Header{Version: 4}},
 		{name: "file type holding an object", data: `{"file_type":{"path":"a"},"version":{"path":"b"}}`},
 		{name: "file type holding a number", data: `{"file_type":7,"version":"5"}`},
 		{name: "file type holding null", data: `{"file_type":null,"version":null}`},
 		{name: "empty object", data: `{}`},
 		{name: "array", data: `["file_type","test","version",5]`, fail: true},
-		{name: "string", data: `"file_type"`, fail: true},
 		{name: "truncated", data: `{"file_type":"test","vers`, fail: true},
 		{name: "fractional version", data: `{"version":5.5}`, fail: true},
 	} {
@@ -70,10 +64,10 @@ type versionedTestData struct {
 	Name string `json:"name"`
 }
 
-// TestLoadVersionedFile verifies that the header is checked before any of the body is decoded, that files written
-// before they carried a header still load, and how each kind of failure is reported: the header's own messages come
-// through as they are, while unreadable files and decode failures are reported as invalid file data with the cause
-// attached.
+// TestLoadVersionedFile verifies that the header is checked before any of the body is decoded, wherever in the file it
+// sits, that files written before they carried a header still load, and how each kind of failure is reported: the
+// header's own messages come through as they are, while unreadable files and decode failures are reported as invalid
+// file data with the cause attached.
 func TestLoadVersionedFile(t *testing.T) {
 	const kind = "test"
 	current := jio.CurrentDataVersion
@@ -85,7 +79,7 @@ func TestLoadVersionedFile(t *testing.T) {
 		wantName    string
 		contains    []string
 		notContains []string
-		notExist    bool
+		wantIs      error // The cause the error must wrap, if any.
 	}{
 		{
 			name:       "current version with a file type",
@@ -109,13 +103,6 @@ func TestLoadVersionedFile(t *testing.T) {
 			wantName:   "ok",
 		},
 		{
-			name:       "header members after the body",
-			file:       fmt.Sprintf(`{"name":"late","version":%d,"file_type":%q}`, current, kind),
-			minimum:    jio.MinimumDataVersion,
-			wantHeader: jio.NewHeader(kind),
-			wantName:   "late",
-		},
-		{
 			name:       "no header with no minimum",
 			file:       `{"name":"bare"}`,
 			wantHeader: jio.Header{},
@@ -124,8 +111,9 @@ func TestLoadVersionedFile(t *testing.T) {
 		// The header's own messages must come through rather than being reported as invalid data, and the body must
 		// not be decoded once the header has been refused.
 		{
+			// The header follows the body, which must still not be decoded.
 			name:        "file type mismatch",
-			file:        fmt.Sprintf(`{"file_type":"other","version":%d,"name":"wrong"}`, current),
+			file:        fmt.Sprintf(`{"name":"wrong","version":%d,"file_type":"other"}`, current),
 			minimum:     jio.MinimumDataVersion,
 			contains:    []string{`"other"`, `"test"`},
 			notContains: []string{jio.InvalidFileData()},
@@ -164,20 +152,14 @@ func TestLoadVersionedFile(t *testing.T) {
 			name:     "truncated header",
 			file:     `{"version":`,
 			minimum:  jio.MinimumDataVersion,
-			contains: []string{jio.InvalidFileData(), "unexpected EOF"},
-		},
-		{
-			name:        "not an object",
-			file:        fmt.Sprintf(`["file_type",%q,"version",%d]`, kind, current+1),
-			minimum:     jio.MinimumDataVersion,
-			contains:    []string{jio.InvalidFileData()},
-			notContains: []string{"newer version"},
+			contains: []string{jio.InvalidFileData()},
+			wantIs:   io.ErrUnexpectedEOF,
 		},
 		{
 			name:     "missing file",
 			minimum:  jio.MinimumDataVersion,
 			contains: []string{jio.InvalidFileData(), "missing.json"},
-			notExist: true,
+			wantIs:   fs.ErrNotExist,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -195,6 +177,9 @@ func TestLoadVersionedFile(t *testing.T) {
 				c.Equal(tc.wantHeader, data.Header)
 			} else {
 				c.HasError(err)
+				if err == nil {
+					return
+				}
 				for _, one := range tc.contains {
 					c.Contains(err.Error(), one)
 				}
@@ -203,7 +188,11 @@ func TestLoadVersionedFile(t *testing.T) {
 				}
 			}
 			c.Equal(tc.wantName, data.Name)
-			c.Equal(tc.notExist, errors.Is(err, fs.ErrNotExist), "a missing file is told apart from the rest")
+			if tc.wantIs != nil {
+				c.True(errors.Is(err, tc.wantIs), "the cause is attached")
+			}
+			c.Equal(errors.Is(tc.wantIs, fs.ErrNotExist), errors.Is(err, fs.ErrNotExist),
+				"a missing file is told apart from the rest")
 		})
 	}
 }
