@@ -101,8 +101,8 @@ type place struct {
 // pages whose titles contain it, then the headings, then the sections. Within each of those, pages are taken in the
 // order of the table of contents, followed by any it does not list in name order, and places on a page in document
 // order. A place is listed once, as its first match; a page whose title matches is not listed again for the text above
-// its first heading. At most limit matches are returned, when limit is greater than zero. The first call builds the
-// index searched, parsing every page.
+// its first heading. Empty text matches nothing. At most limit matches are returned, when limit is greater than zero.
+// The first call builds the index searched, parsing every page.
 func Search(lowerText string, limit int) []Match {
 	return builtIndex().search(lowerText, limit)
 }

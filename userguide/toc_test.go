@@ -32,7 +32,7 @@ func TestEveryPageIsInTheTOC(t *testing.T) {
 }
 
 // Only the line shapes the parser models are accepted; anything else is an error that names its line.
-func TestParseTOCRejectsUnknownLines(t *testing.T) {
+func TestParseTOC(t *testing.T) {
 	c := check.New(t)
 	resolve := func(target string) (string, bool) {
 		switch target {
@@ -99,10 +99,32 @@ Group
 		{name: "indent-2 item outside a sub-group", data: "<details>\n<summary>G</summary>\n\n  - [B](B)\n</details>\n", line: 4},
 		{name: "unresolvable target", data: "<details>\n<summary>G</summary>\n\n- [Z](Zed)\n</details>\n", line: 4},
 		{name: "empty group", data: "[[A]]\n<details>\n<summary>G</summary>\n</details>\n", line: 2},
-		{name: "empty sub-group", data: "<details>\n<summary>G</summary>\n\n- **S**\n- [B](B)\n</details>\n", line: 4},
+		{
+			name: "empty sub-group ahead of an entry",
+			data: "<details>\n<summary>G</summary>\n\n- **S**\n- [B](B)\n</details>\n",
+			line: 4,
+		},
+		{
+			name: "empty sub-group ahead of another",
+			data: "<details>\n<summary>G</summary>\n\n- **S**\n- **T**\n  - [B](B)\n</details>\n",
+			line: 4,
+		},
+		{
+			name: "empty sub-group at the end of a group",
+			data: "<details>\n<summary>G</summary>\n\n- [B](B)\n- **S**\n</details>\n",
+			line: 5,
+		},
+		{name: "sub-group outside a group", data: "- **S**\n  - [B](B)\n", line: 1},
 		{name: "unclosed group", data: "<details>\n<summary>G</summary>\n\n- [B](B)\n", line: 1},
+		{name: "closing a group that was never opened", data: "[[A]]\n\n</details>\n", line: 3},
 		{name: "heading after an entry", data: "[[A]]\n## Browse\n", line: 2},
+		{name: "second heading", data: "## Browse\n## More\n\n[[A]]\n", line: 2},
 		{name: "entry run into the HTML above", data: "<details>\n<summary>G</summary>\n- [B](B)\n\n</details>\n", line: 3},
+		{
+			name: "sub-group run into the HTML above",
+			data: "<details>\n<summary>G</summary>\n- **S**\n  - [B](B)\n</details>\n",
+			line: 3,
+		},
 		{name: "page run into the entry above", data: "- [B](B)\n[[A]]\n", line: 2},
 	} {
 		entries, err := parseTOC([]byte(tc.data), resolve)
@@ -122,9 +144,11 @@ Group
 func renderTOC(entries []*TOCEntry, indent string) string {
 	var buf strings.Builder
 	for _, entry := range entries {
-		buf.WriteString(indent + entry.Title)
+		buf.WriteString(indent)
+		buf.WriteString(entry.Title)
 		if entry.Page != "" {
-			buf.WriteString(" " + entry.Page)
+			buf.WriteByte(' ')
+			buf.WriteString(entry.Page)
 		}
 		buf.WriteByte('\n')
 		buf.WriteString(renderTOC(entry.Children, indent+"  "))

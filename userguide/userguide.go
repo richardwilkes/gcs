@@ -119,9 +119,6 @@ func ResolveLink(from, target string) (page, anchor string, ok bool) {
 		return "", "", false
 	}
 	p = path.Join(path.Dir(from), p)
-	if !fs.ValidPath(p) {
-		return "", "", false
-	}
 	if !strings.HasSuffix(p, mdExt) {
 		p += mdExt
 	}

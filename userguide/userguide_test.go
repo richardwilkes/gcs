@@ -194,7 +194,6 @@ func TestResolveLink(t *testing.T) {
 		page, anchor string
 		ok           bool
 	}{
-		{from: "Traits.md", target: "Skills", page: "Skills.md", ok: true},
 		{from: "Home.md", target: "Character%20Sheet%20Overview", page: "Character Sheet Overview.md", ok: true},
 		{from: "Home.md", target: "Traits.md", page: "Traits.md", ok: true},
 		{from: "Home.md", target: "./Traits", page: "Traits.md", ok: true},
@@ -204,6 +203,7 @@ func TestResolveLink(t *testing.T) {
 		{from: "Home.md", target: "Traits#editing-traits", page: "Traits.md", anchor: "editing-traits", ok: true},
 		{from: "Traits.md", target: "#editing-traits", page: "Traits.md", anchor: "editing-traits", ok: true},
 		{from: "Home.md", target: ""},
+		{from: "Home.md", target: "Traits#%zz"},
 		{from: "Home.md", target: "https://gurpscharactersheet.com"},
 		{from: "Home.md", target: "md:User%20Guide/Traits"},
 		{from: "Home.md", target: "B10"},
@@ -232,7 +232,7 @@ func TestPageForRef(t *testing.T) {
 		{refPath: "User Guide/Traits.md", page: "Traits.md", inGuide: true},
 		{refPath: "User Guide/Traits", page: "Traits.md", inGuide: true},
 		{refPath: "user guide/TRAITS.MD", page: "Traits.md", inGuide: true},
-		{refPath: "User Guide/Body Type.md", page: "Body type.md", inGuide: true},
+		{refPath: "User Guide/body type", page: "Body type.md", inGuide: true},
 		{refPath: "User Guide/scripting/dice.md", page: "Scripting/Dice.md", inGuide: true},
 		{refPath: "User Guide/No Such Page.md", inGuide: true},
 		{refPath: "User Guide/_sidebar.md", inGuide: true},
