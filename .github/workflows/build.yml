@@ -23,8 +23,9 @@ jobs:
         #
         # Both macOS targets run on macOS 15 images. The macOS 26 x86_64 hosts stall at random points and GitHub reaps
         # the job ~45 minutes later as "lost communication with the server", with no log (actions/runner-images#13882);
-        # macOS 15 is the last x86_64 image line and stays available until late 2027. The macos-26 arm64 jobs were
-        # often cancelled after queuing for 15 minutes without ever being assigned a runner.
+        # macOS 15 is the last x86_64 image line and stays available until late 2027. The arm64 job uses the same
+        # release only to match it. When GitHub is short of arm64 macOS runners it cancels a job that has queued for 15
+        # minutes without being assigned one, whichever image the job asks for, and rerunning the job is the only cure.
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-intel, macos-15, windows-2022, windows-11-arm]
     defaults:
       run:
