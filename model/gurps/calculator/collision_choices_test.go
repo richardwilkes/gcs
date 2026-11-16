@@ -42,22 +42,22 @@ func TestCollisionChoices(t *testing.T) {
 
 	surfaces := CollisionSurfaces()
 	checkNamed(c, "surface", surfaces, func(s CollisionSurface) string { return s.Name })
-	c.Equal(4, len(surfaces), "there are four kinds of surface")
-	c.True(surfaces[0].Hard, "the first surface is the hard one a sudden stop uses")
-	c.True(surfaces[2].Elastic, "the third is elastic")
-	c.True(surfaces[3].Water, "the fourth is water")
-	for i, s := range surfaces {
-		c.True(!s.Hard || !s.Elastic && !s.Water, "surface %d must be one kind", i)
-	}
+	c.Equal([]CollisionSurface{
+		{Name: surfaces[0].Name, Hard: true},
+		{Name: surfaces[1].Name},
+		{Name: surfaces[2].Name, Elastic: true},
+		{Name: surfaces[3].Name, Water: true},
+	}, surfaces, "the hard surface a sudden stop uses comes first, then the soft, the elastic and water")
 
 	terminals := TerminalVelocityChoices()
 	checkNamed(c, "terminal velocity", terminals, func(t TerminalVelocityChoice) string { return t.Name })
-	c.Equal([]fxp.Int{fxp.Sixty, fxp.Hundred, fxp.FromInteger(200), 0, 0},
-		[]fxp.Int{terminals[0].BaseVelocity, terminals[1].BaseVelocity, terminals[2].BaseVelocity, terminals[3].BaseVelocity, terminals[4].BaseVelocity},
-		"the terminal velocities are 60, 100 and 200, then none")
-	for i, one := range terminals {
-		c.Equal(i == len(terminals)-1, one.Custom, "only the last terminal velocity is custom")
-	}
+	c.Equal([]TerminalVelocityChoice{
+		{Name: terminals[0].Name, BaseVelocity: fxp.Sixty},
+		{Name: terminals[1].Name, BaseVelocity: fxp.Hundred},
+		{Name: terminals[2].Name, BaseVelocity: fxp.FromInteger(200)},
+		{Name: terminals[3].Name},
+		{Name: terminals[4].Name, Custom: true},
+	}, terminals, "the terminal velocities are 60, 100 and 200, then none, then the custom one")
 
 	angles := CollisionAngleChoices()
 	checkNamed(c, "angle", angles, func(a CollisionAngleChoice) string { return a.Name })

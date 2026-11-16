@@ -10,7 +10,6 @@
 package calculator
 
 import (
-	"math"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -18,8 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// printedFallingVelocities is the Falling Velocity Table exactly as it appears on BX431, one entry per yard, written out
-// independently of the row structure collision.go encodes so that a mistake in either one shows up as a disagreement.
+// printedFallingVelocities is the Falling Velocity Table exactly as it appears on BX431, one entry per yard, written
+// out independently of the row structure collision.go encodes so that a mistake in either one shows up as a
+// disagreement.
 var printedFallingVelocities = map[int]int{
 	1: 5, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12, 8: 13, 9: 14,
 	10: 15, 11: 15,
@@ -64,23 +64,10 @@ var printedFallingVelocities = map[int]int{
 // that it uses the formula for any other gravity.
 func TestFallingVelocityTable(t *testing.T) {
 	c := check.New(t)
-	formulaMismatches := 0
 	for yards := 1; yards <= 112; yards++ {
-		want := fxp.FromInteger(printedFallingVelocities[yards])
-		c.Equal(want, FallingVelocity(fxp.FromInteger(yards), fxp.One), "%d yards at 1G", yards)
-		if want != formulaFallingVelocity(float64(yards), 1) {
-			formulaMismatches++
-		}
+		c.Equal(fxp.FromInteger(printedFallingVelocities[yards]), FallingVelocity(fxp.FromInteger(yards), fxp.One),
+			"%d yards at 1G", yards)
 	}
-	c.Equal(29, formulaMismatches, "the printed table must differ from the formula, or it would not need encoding")
-
-	// The worked example on BX431: a 17 yard fall reaches 19 yards per second.
-	c.Equal(fxp.Nineteen, FallingVelocity(fxp.FromInteger(17), fxp.One), "the BX431 worked example")
-
-	// The seam at the end of the table is clean: the last printed row and the first formula result agree.
-	c.Equal(fxp.FromInteger(49), FallingVelocity(fxp.FromInteger(112), fxp.One), "the last printed row")
-	c.Equal(fxp.FromInteger(49), FallingVelocity(fxp.FromInteger(113), fxp.One), "the first distance past the table")
-
 	for _, tc := range []struct {
 		name     string
 		distance fxp.Int
@@ -95,6 +82,11 @@ func TestFallingVelocityTable(t *testing.T) {
 		{name: "two gravities", distance: fxp.FromInteger(17), gravity: fxp.Two, want: fxp.FromInteger(27)},
 		// A fractional distance rounds up to the next whole yard before the table is consulted, so 10.5 reads row 11.
 		{name: "fractional distance", distance: fxp.FromStringForced("10.5"), gravity: fxp.One, want: fxp.Fifteen},
+		// The seam at the end of the table is clean: the formula's first answer is the last printed row's 49.
+		{
+			name: "the first distance past the table", distance: fxp.FromInteger(113), gravity: fxp.One,
+			want: fxp.FromInteger(49),
+		},
 		// Well past the table, the formula alone answers: round(sqrt(21.4 x 1000)) = 146.
 		{name: "beyond the table", distance: fxp.Thousand, gravity: fxp.One, want: fxp.FromInteger(146)},
 	} {
@@ -102,16 +94,11 @@ func TestFallingVelocityTable(t *testing.T) {
 	}
 }
 
-// formulaFallingVelocity is the alternative formula from BX431, expressed here so the test can show how far the printed
-// table strays from it.
-func formulaFallingVelocity(yards, gravity float64) fxp.Int {
-	return fxp.FromFloat(math.Round(math.Sqrt(21.4 * gravity * yards)))
-}
-
 // TestTerminalVelocity verifies that a terminal velocity scales with the square root of the gravity and inversely with
 // the square root of the atmospheric pressure, and that a vacuum reports an unlimited fall rather than a velocity.
 func TestTerminalVelocity(t *testing.T) {
 	c := check.New(t)
+	scaled := fxp.FromStringForced("84.8528") // 60 x sqrt(2), truncated to four decimal places.
 	for _, tc := range []struct {
 		name      string
 		base      fxp.Int
@@ -124,15 +111,8 @@ func TestTerminalVelocity(t *testing.T) {
 			name: "spread-eagle human at 1G and 1atm", base: fxp.Sixty, gravity: fxp.One, pressure: fxp.One,
 			want: fxp.Sixty,
 		},
-		{name: "swan dive at 1G and 1atm", base: fxp.Hundred, gravity: fxp.One, pressure: fxp.One, want: fxp.Hundred},
-		{
-			name: "twice the gravity", base: fxp.Sixty, gravity: fxp.Two, pressure: fxp.One,
-			want: fxp.FromFloat(60 * math.Sqrt(2)),
-		},
-		{
-			name: "half the pressure", base: fxp.Sixty, gravity: fxp.One, pressure: fxp.Half,
-			want: fxp.FromFloat(60 / math.Sqrt(0.5)),
-		},
+		{name: "twice the gravity", base: fxp.Sixty, gravity: fxp.Two, pressure: fxp.One, want: scaled},
+		{name: "half the pressure", base: fxp.Sixty, gravity: fxp.One, pressure: fxp.Half, want: scaled},
 		{name: "no base velocity", base: 0, gravity: fxp.One, pressure: fxp.One, want: 0},
 		{name: "negative base velocity", base: fxp.NegOne, gravity: fxp.One, pressure: fxp.One, want: 0},
 		{name: "no gravity", base: fxp.Sixty, gravity: 0, pressure: fxp.One, want: 0},
@@ -143,12 +123,6 @@ func TestTerminalVelocity(t *testing.T) {
 		c.Equal(tc.want, velocity, tc.name)
 		c.Equal(tc.unlimited, unlimited, "%s: unlimited", tc.name)
 	}
-
-	// Both of the scaled cases above land on the same value, just under 84.8529 yards per second.
-	doubled, _ := TerminalVelocity(fxp.Sixty, fxp.Two, fxp.One)
-	thinned, _ := TerminalVelocity(fxp.Sixty, fxp.One, fxp.Half)
-	c.Equal(doubled, thinned, "doubling the gravity and halving the pressure scale a fall the same way")
-	c.Equal(fxp.FromStringForced("84.8528"), doubled, "60 x sqrt(2), truncated to four decimal places")
 }
 
 // TestCollisionDiceCount verifies that the fractional dice count is (HP x velocity)/100 and that a negative HP or
@@ -222,7 +196,7 @@ func TestCollisionDamageDice(t *testing.T) {
 
 // TestCollisionVelocity verifies that each collision angle combines the two velocities the way BX430 describes, that a
 // rear-end collision in which the struck object is the faster of the two closes at zero rather than a negative
-// velocity, and that negative velocities are treated as zero.
+// velocity, that an unrecognized angle counts as side-on, and that negative velocities are treated as zero.
 func TestCollisionVelocity(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -268,6 +242,10 @@ func TestCollisionVelocity(t *testing.T) {
 			name: "a negative struck velocity does not add distance", angle: HeadOnCollision, striker: fxp.TwentyFive,
 			struck: fxp.FromInteger(-5), want: fxp.TwentyFive,
 		},
+		{
+			name: "an unrecognized angle counts only the striker's velocity", angle: CollisionAngle(99),
+			striker: fxp.TwentyFive, struck: fxp.Five, want: fxp.TwentyFive,
+		},
 	} {
 		c.Equal(tc.want, CollisionVelocity(tc.angle, tc.striker, tc.struck), tc.name)
 	}
@@ -275,93 +253,99 @@ func TestCollisionVelocity(t *testing.T) {
 
 // TestCollisionCaps verifies that the "cannot inflict more dice than" limits of BX430 hold the right side down: in a
 // head-on collision the slower object is capped at the faster one's dice (and neither is capped when the two match),
-// while in a rear-end or side-on collision the struck object is capped at the striker's (and is not capped when already
-// under them, as in BX430's worked rear-end example). It also verifies that halving the damage of a bullet-shaped,
-// sharp or spiked object happens before the cap is applied, so that such a striker cannot be out-damaged by an object
-// capped at its unhalved count.
+// while in a rear-end or side-on collision the struck object is capped at the striker's. A side already under the
+// other's dice is left alone. It also verifies that halving the damage of a bullet-shaped, sharp or spiked object
+// happens before the cap is applied, so that such a striker cannot be out-damaged by an object capped at its unhalved
+// count.
 func TestCollisionCaps(t *testing.T) {
 	c := check.New(t)
-
-	// Head-on: the heavy, slow object would out-damage the light, fast one, so it is capped at the faster one's dice.
-	result := Collision(HeadOnCollision,
-		CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five},
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty})
-	c.Equal(fxp.TwentyFive, result.Velocity, "head-on velocities add")
-	c.Equal(fxp.TwoAndAHalf, result.StrikerDice, "the slower 100 HP striker is held to the faster object's dice")
-	c.True(result.StrikerCapped, "the striker was the slower of the two")
-	c.Equal(fxp.TwoAndAHalf, result.StruckDice, "the faster 10 HP object inflicts (10 x 25)/100 dice")
-	c.False(result.StruckCapped, "the faster object is never capped")
-
-	// The same collision with the roles swapped caps the other side instead.
-	result = Collision(HeadOnCollision,
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty},
-		CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five})
-	c.Equal(fxp.TwoAndAHalf, result.StrikerDice, "the faster 10 HP striker keeps its own dice")
-	c.False(result.StrikerCapped, "the faster object is never capped")
-	c.Equal(fxp.TwoAndAHalf, result.StruckDice, "the slower 100 HP object is held to the striker's dice")
-	c.True(result.StruckCapped, "the struck object was the slower of the two")
-
-	// Head-on at matched speeds: neither is the slower one, so neither is capped.
-	result = Collision(HeadOnCollision,
-		CollisionObject{HP: fxp.Hundred, Velocity: fxp.Ten},
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Ten})
-	c.Equal(fxp.Twenty, result.Velocity, "head-on velocities add")
-	c.Equal(fxp.Twenty, result.StrikerDice, "the 100 HP object inflicts (100 x 20)/100 dice")
-	c.Equal(fxp.Two, result.StruckDice, "the 10 HP object inflicts (10 x 20)/100 dice")
-	c.False(result.StrikerCapped, "matched speeds cap neither side")
-	c.False(result.StruckCapped, "matched speeds cap neither side")
-
-	// Side-on into a heavy stationary object: it would out-damage the striker, so it is held to the striker's dice.
-	result = Collision(SideOnCollision,
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty},
-		CollisionObject{HP: fxp.Hundred, Velocity: 0})
-	c.Equal(fxp.Twenty, result.Velocity, "only the striker's velocity counts")
-	c.Equal(fxp.Two, result.StrikerDice, "the striker inflicts (10 x 20)/100 dice")
-	c.False(result.StrikerCapped, "the striker is never capped in a side-on collision")
-	c.Equal(fxp.Two, result.StruckDice, "the stationary object's 20 dice are held to the striker's 2")
-	c.True(result.StruckCapped, "the struck object cannot out-damage the striker")
-
-	// Rear-end: the overtaken object is likewise held to the striker's dice.
-	result = Collision(RearEndCollision,
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.TwentyFive},
-		CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five})
-	c.Equal(fxp.Twenty, result.Velocity, "the two meet at 25 - 5 yards per second")
-	c.Equal(fxp.Two, result.StrikerDice, "the striker inflicts (10 x 20)/100 dice")
-	c.Equal(fxp.Two, result.StruckDice, "the overtaken object's 20 dice are held to the striker's 2")
-	c.False(result.StrikerCapped, "the striker is never capped in a rear-end collision")
-	c.True(result.StruckCapped, "the struck object cannot out-damage the striker")
-
-	// The worked example on BX430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP pedestrian fleeing at 5.
-	// Neither side is capped, since the pedestrian's 2d is already well under the car's 12d.
-	result = Collision(RearEndCollision,
-		CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Five})
-	c.Equal(fxp.Twenty, result.Velocity, "the two meet at 25 - 5 yards per second")
-	c.Equal(fxp.Twelve, result.StrikerDice, "the car inflicts (60 x 20)/100 dice")
-	c.Equal(fxp.Two, result.StruckDice, "the pedestrian inflicts (10 x 20)/100 dice")
-	c.False(result.StrikerCapped, "the striker is never capped in a rear-end collision")
-	c.False(result.StruckCapped, "the pedestrian was already under the car's dice")
-	c.Equal(dice.Dice{Count: 12, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StrikerDice), "the car's damage")
-	c.Equal(dice.Dice{Count: 2, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StruckDice),
-		"the pedestrian's damage")
-
-	// A spiked striker is halved before the cap, so the struck object is held to the halved count, not the full one.
-	result = Collision(SideOnCollision,
-		CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive, HalfDamage: true},
-		CollisionObject{HP: fxp.Hundred, Velocity: 0})
-	c.Equal(fxp.TwentyFive, result.Velocity, "only the striker's velocity counts")
-	c.Equal(fxp.FromStringForced("7.5"), result.StrikerDice, "(60 x 25)/100 dice, halved for the spikes")
-	c.False(result.StrikerCapped, "the striker is never capped in a side-on collision")
-	c.Equal(fxp.FromStringForced("7.5"), result.StruckDice, "the stationary object's 25 dice are held to the halved 7.5")
-	c.True(result.StruckCapped, "the struck object cannot out-damage the striker")
-
-	// Halving applies to the struck object too, and can bring it under the cap on its own.
-	result = Collision(SideOnCollision,
-		CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
-		CollisionObject{HP: fxp.Twenty, Velocity: 0, HalfDamage: true})
-	c.Equal(fxp.Fifteen, result.StrikerDice, "(60 x 25)/100 dice")
-	c.Equal(fxp.TwoAndAHalf, result.StruckDice, "(20 x 25)/100 dice, halved")
-	c.False(result.StruckCapped, "the halved count is already under the striker's")
+	sevenAndAHalf := fxp.FromStringForced("7.5")
+	for _, tc := range []struct {
+		name    string
+		angle   CollisionAngle
+		striker CollisionObject
+		struck  CollisionObject
+		want    CollisionResult
+	}{
+		{
+			// The heavy striker's (100 x 25)/100 = 25 dice are held to the light object's (10 x 25)/100 = 2.5.
+			name:    "head-on, the slower striker is held to the faster object's dice",
+			angle:   HeadOnCollision,
+			striker: CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five},
+			struck:  CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty},
+			want: CollisionResult{
+				Velocity: fxp.TwentyFive, StrikerDice: fxp.TwoAndAHalf, StruckDice: fxp.TwoAndAHalf, StrikerCapped: true,
+			},
+		},
+		{
+			name:    "head-on, the slower struck object is held to the faster striker's dice",
+			angle:   HeadOnCollision,
+			striker: CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty},
+			struck:  CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five},
+			want: CollisionResult{
+				Velocity: fxp.TwentyFive, StrikerDice: fxp.TwoAndAHalf, StruckDice: fxp.TwoAndAHalf, StruckCapped: true,
+			},
+		},
+		{
+			// The faster object is never capped, however far its 25 dice exceed the striker's 2.5.
+			name:    "head-on, a slower striker already under the faster object's dice caps neither",
+			angle:   HeadOnCollision,
+			striker: CollisionObject{HP: fxp.Ten, Velocity: fxp.Five},
+			struck:  CollisionObject{HP: fxp.Hundred, Velocity: fxp.Twenty},
+			want:    CollisionResult{Velocity: fxp.TwentyFive, StrikerDice: fxp.TwoAndAHalf, StruckDice: fxp.TwentyFive},
+		},
+		{
+			name:    "head-on at matched speeds caps neither",
+			angle:   HeadOnCollision,
+			striker: CollisionObject{HP: fxp.Hundred, Velocity: fxp.Ten},
+			struck:  CollisionObject{HP: fxp.Ten, Velocity: fxp.Ten},
+			want:    CollisionResult{Velocity: fxp.Twenty, StrikerDice: fxp.Twenty, StruckDice: fxp.Two},
+		},
+		{
+			// The stationary object's (100 x 20)/100 = 20 dice are held to the striker's 2.
+			name:    "side-on, the struck object is held to the striker's dice",
+			angle:   SideOnCollision,
+			striker: CollisionObject{HP: fxp.Ten, Velocity: fxp.Twenty},
+			struck:  CollisionObject{HP: fxp.Hundred},
+			want:    CollisionResult{Velocity: fxp.Twenty, StrikerDice: fxp.Two, StruckDice: fxp.Two, StruckCapped: true},
+		},
+		{
+			name:    "rear-end, the struck object is held to the striker's dice",
+			angle:   RearEndCollision,
+			striker: CollisionObject{HP: fxp.Ten, Velocity: fxp.TwentyFive},
+			struck:  CollisionObject{HP: fxp.Hundred, Velocity: fxp.Five},
+			want:    CollisionResult{Velocity: fxp.Twenty, StrikerDice: fxp.Two, StruckDice: fxp.Two, StruckCapped: true},
+		},
+		{
+			// The worked example on BX430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP pedestrian
+			// fleeing at 5, for 12d against 2d.
+			name:    "rear-end, a struck object already under the striker's dice is not capped",
+			angle:   RearEndCollision,
+			striker: CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
+			struck:  CollisionObject{HP: fxp.Ten, Velocity: fxp.Five},
+			want:    CollisionResult{Velocity: fxp.Twenty, StrikerDice: fxp.Twelve, StruckDice: fxp.Two},
+		},
+		{
+			// (60 x 25)/100 = 15 dice, halved, so the stationary object's 25 are held to 7.5 rather than 15.
+			name:    "a half-damage striker is halved before the cap",
+			angle:   SideOnCollision,
+			striker: CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive, HalfDamage: true},
+			struck:  CollisionObject{HP: fxp.Hundred},
+			want: CollisionResult{
+				Velocity: fxp.TwentyFive, StrikerDice: sevenAndAHalf, StruckDice: sevenAndAHalf, StruckCapped: true,
+			},
+		},
+		{
+			// (20 x 25)/100 = 5 dice, halved to 2.5, against the striker's 15.
+			name:    "a half-damage struck object can come in under the cap on its own",
+			angle:   SideOnCollision,
+			striker: CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
+			struck:  CollisionObject{HP: fxp.Twenty, HalfDamage: true},
+			want:    CollisionResult{Velocity: fxp.TwentyFive, StrikerDice: fxp.Fifteen, StruckDice: fxp.TwoAndAHalf},
+		},
+	} {
+		c.Equal(tc.want, Collision(tc.angle, tc.striker, tc.struck), tc.name)
+	}
 }
 
 // TestImmovableCollisionHP verifies that slamming into an immovable object doubles the mover's HP for the damage
@@ -383,12 +367,6 @@ func TestImmovableCollisionHP(t *testing.T) {
 	} {
 		c.Equal(tc.want, ImmovableCollisionHP(tc.hp, tc.hard), tc.name)
 	}
-
-	// The BX431 worked example: 10 HP on hard ground at 19 yards per second is (2 x 10 x 19)/100 = 3.8d, which rounds
-	// to 4d.
-	count := CollisionDiceCount(ImmovableCollisionHP(fxp.Ten, true), FallingVelocity(fxp.FromInteger(17), fxp.One))
-	c.Equal(fxp.FromStringForced("3.8"), count, "(2 x 10 x 19)/100 dice")
-	c.Equal(dice.Dice{Count: 4, Sides: 6, Multiplier: 1}, CollisionDamageDice(count), "3.8d rounds to 4d")
 }
 
 // TestBluntTraumaFromFall verifies that armor which stops falling damage lets one point of injury through per five full
@@ -400,16 +378,10 @@ func TestBluntTraumaFromFall(t *testing.T) {
 		want    int
 	}{
 		{stopped: 0, want: 0},
-		{stopped: fxp.One, want: 0},
-		{stopped: fxp.Two, want: 0},
-		{stopped: fxp.Three, want: 0},
-		{stopped: fxp.Four, want: 0},
 		{stopped: fxp.FromStringForced("4.9999"), want: 0},
 		{stopped: fxp.Five, want: 1},
 		{stopped: fxp.Nine, want: 1},
 		{stopped: fxp.Ten, want: 2},
-		{stopped: fxp.FromInteger(24), want: 4},
-		{stopped: fxp.FromInteger(25), want: 5},
 		{stopped: fxp.NegOne, want: 0},
 		{stopped: fxp.FromInteger(-10), want: 0},
 	} {

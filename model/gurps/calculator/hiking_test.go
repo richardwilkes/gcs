@@ -48,6 +48,30 @@ func testHike(c check.Checker) Hike {
 	}
 }
 
+// skatingHike returns testHike with Move 6 on skates on a road cleared of snow, after a successful Skating roll: 4.5
+// miles an hour.
+func skatingHike(c check.Checker) Hike {
+	c.Helper()
+	hike := testHike(c)
+	hike.Hiker.Move = 6
+	hike.Weather = terrainNamed(c, WeatherChoices(), "Snow")
+	hike.UsingSkates = true
+	hike.RoadsAreCleared = true
+	hike.SuccessfulRoll = true
+	return hike
+}
+
+// strainedHike returns skatingHike under light encumbrance on a hot day with extra effort at -2: 3 FP and 4.875 miles
+// an hour.
+func strainedHike(c check.Checker) Hike {
+	c.Helper()
+	hike := skatingHike(c)
+	hike.Hiker.Encumbrance = encumbrance.Light
+	hike.Heat = HikingHeatChoices()[1]
+	hike.ExtraEffortPenalty = -2
+	return hike
+}
+
 // hourFacts is the part of a HikingHour a test pins.
 type hourFacts struct {
 	kind      HikingHourKind
@@ -72,120 +96,149 @@ func facts(hour HikingHour) hourFacts {
 
 // TestHikingDay verifies a day's travel worked out hour by hour (BX351, BX426), through the scenarios the ux tests
 // drive: a normal day, a forced march in snow, a day on skates after a successful roll, one that ends in collapse,
-// and the rest and fitness that stave the collapse off (BX427, BX55).
+// and the rest and fitness that stave the collapse off (BX427, BX55). It also verifies a collapse that only the stop's
+// extra effort brings on.
 func TestHikingDay(t *testing.T) {
-	c := check.New(t)
+	t.Run("a normal day", func(t *testing.T) {
+		c := check.New(t)
+		// 3.125 miles an hour for 7 hours, then half Move once fewer than a third of the FP are left.
+		hike := testHike(c)
+		day := hike.Day()
+		c.Equal(fxp.FromStringForced("23.4375"), day.Distance, "the default day covers 23.4375 miles")
+		c.Equal(fxp.Eight, day.FPCost, "and costs 8 FP")
+		c.Equal(fxp.Seven, day.TiredAfter, "the hiker tires after the 7th hour")
+		c.Equal(fxp.Int(0), day.OutAfter, "but does not run out")
+		c.Equal(fxp.Int(0), day.UnconsciousAfter, "nor collapse")
+		c.Equal(8, len(day.Hours), "one row per hour")
+		c.Equal(hourFacts{kind: MarchHour, distance: "3.125", total: "3.125", fpChange: "-1", fpLeft: "9"}, facts(day.Hours[0]),
+			"the first hour is walked at full Move")
+		c.Equal(fxp.One, day.Hours[0].Elapsed, "an hour in")
+		c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "3.125", total: "21.875", fpChange: "-1", fpLeft: "3"},
+			facts(day.Hours[6]), "the 7th hour leaves fewer than a third of the FP")
+		c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "1.5625", total: "23.4375", fpChange: "-1", fpLeft: "2"},
+			facts(day.Hours[7]), "so the 8th is walked at half Move")
+	})
 
-	// A normal day: 3.125 miles an hour for 7 hours, then half Move once fewer than a third of the FP are left.
-	hike := testHike(c)
-	day := hike.Day()
-	c.Equal(fxp.FromStringForced("23.4375"), day.Distance, "the default day covers 23.4375 miles")
-	c.Equal(fxp.Eight, day.FPCost, "and costs 8 FP")
-	c.Equal(fxp.Seven, day.TiredAfter, "the hiker tires after the 7th hour")
-	c.Equal(fxp.Int(0), day.OutAfter, "but does not run out")
-	c.Equal(fxp.Int(0), day.UnconsciousAfter, "nor collapse")
-	c.Equal(8, len(day.Hours), "one row per hour")
-	c.Equal(hourFacts{kind: MarchHour, distance: "3.125", total: "3.125", fpChange: "-1", fpLeft: "9"}, facts(day.Hours[0]),
-		"the first hour is walked at full Move")
-	c.Equal(fxp.One, day.Hours[0].Elapsed, "an hour in")
-	c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "3.125", total: "21.875", fpChange: "-1", fpLeft: "3"},
-		facts(day.Hours[6]), "the 7th hour leaves fewer than a third of the FP")
-	c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "1.5625", total: "23.4375", fpChange: "-1", fpLeft: "2"},
-		facts(day.Hours[7]), "so the 8th is walked at half Move")
+	t.Run("a metric day", func(t *testing.T) {
+		c := check.New(t)
+		hike := testHike(c)
+		hike.Metric = true
+		c.Equal(fxp.FromStringForced("37.125"), hike.Day().Distance, "a metric day is reported in GURPS kilometers")
+	})
 
-	metric := hike
-	metric.Metric = true
-	c.Equal(fxp.FromStringForced("37.125"), metric.Day().Distance, "a metric day is reported in GURPS kilometers")
+	t.Run("a forced march in snow", func(t *testing.T) {
+		c := check.New(t)
+		// An uncleared road in snow: 16 hours at 1.5625 miles, the last 9 at half Move.
+		hike := testHike(c)
+		hike.Hours = fxp.Sixteen
+		hike.Weather = terrainNamed(c, WeatherChoices(), "Snow")
+		day := hike.Day()
+		c.Equal(fxp.FromStringForced("17.9683"), day.Distance,
+			"7 x 1.5625 + 9 x 0.7812, the half pace truncated to four decimal places")
+		c.Equal(fxp.Sixteen, day.FPCost, "16 hours cost 16 FP")
+		c.Equal(fxp.Ten, day.OutAfter, "the FP run out after the 10th hour")
+		c.Equal(fxp.Int(0), day.UnconsciousAfter, "but the day ends at -6 FP, before the collapse")
+		c.Equal(16, len(day.Hours), "every hour is walked")
+		c.Equal(ExhaustedHiker, day.Hours[9].Condition, "the 10th hour leaves the hiker exhausted")
+		c.Equal(fxp.FromStringForced("13.2811"), day.Hours[9].Total, "and 13.3 miles along")
+	})
 
-	// A forced march on an uncleared road in snow: 16 hours at 1.5625 miles, the last 9 at half Move.
-	forced := hike
-	forced.Hours = fxp.Sixteen
-	forced.Weather = terrainNamed(c, WeatherChoices(), "Snow")
-	day = forced.Day()
-	c.Equal(fxp.FromInteger(18), day.Distance.Round(), "7 x 1.5625 + 9 x 0.78125 is 18 miles, give or take the fixed-point truncation")
-	c.Equal(fxp.Sixteen, day.FPCost, "16 hours cost 16 FP")
-	c.Equal(fxp.Ten, day.OutAfter, "the FP run out after the 10th hour")
-	c.Equal(fxp.Int(0), day.UnconsciousAfter, "but the day ends at -6 FP, before the collapse")
-	c.Equal(16, len(day.Hours), "every hour is walked")
-	c.Equal(ExhaustedHiker, day.Hours[9].Condition, "the 10th hour leaves the hiker exhausted")
-	c.Equal(fxp.FromStringForced("13.2811"), day.Hours[9].Total, "and 13.3 miles along")
+	t.Run("on skates after a successful roll", func(t *testing.T) {
+		c := check.New(t)
+		hike := skatingHike(c)
+		c.Equal(fxp.FromStringForced("33.75"), hike.Day().Distance, "7 x 4.5 + 2.25")
+		c.False(hike.ExtraEffort(), "a successful roll alone is not extra effort")
+	})
 
-	// Skates on a road cleared of snow, after a successful Skating roll, with Move 6: 4.5 miles an hour.
-	skating := hike
-	skating.Hiker.Move = 6
-	skating.Weather = forced.Weather
-	skating.UsingSkates = true
-	skating.RoadsAreCleared = true
-	skating.SuccessfulRoll = true
-	day = skating.Day()
-	c.Equal(fxp.FromStringForced("33.75"), day.Distance, "7 x 4.5 + 2.25")
-	c.False(skating.ExtraEffort(), "a successful roll alone is not extra effort")
+	t.Run("extra effort to the point of collapse", func(t *testing.T) {
+		c := check.New(t)
+		hike := strainedHike(c)
+		c.True(hike.ExtraEffort(), "a penalty on a successful roll is extra effort")
+		c.Equal(fxp.Three, hike.FPPerHour(), "1, plus 1 for the encumbrance, plus 1 for the heat")
+		day := hike.Day()
+		c.Equal(fxp.FromStringForced("24.375"), day.Distance, "3 x 4.875 + 4 x 2.4375 before the collapse")
+		c.Equal(fxp.FromInteger(23), day.FPCost, "7 x 3, plus 2 when the hiker stops")
+		c.Equal(fxp.Three, day.TiredAfter, "the 3rd hour leaves fewer than a third of the FP")
+		c.Equal(fxp.Four, day.OutAfter, "the 4th uses them up")
+		c.Equal(fxp.Seven, day.UnconsciousAfter, "the 7th reaches -FP")
+		c.Equal(8, len(day.Hours), "7 hours and the stop")
+		c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "4.875", total: "14.625", fpChange: "-3", fpLeft: "1"},
+			facts(day.Hours[2]), "the 3rd hour")
+		c.Equal(hourFacts{kind: MarchHour, condition: ExhaustedHiker, distance: "2.4375", total: "17.0625", fpChange: "-3", fpLeft: "-2"},
+			facts(day.Hours[3]), "the 4th hour, at half Move")
+		c.Equal(hourFacts{kind: MarchHour, condition: UnconsciousHiker, distance: "2.4375", total: "24.375", fpChange: "-3", fpLeft: "-10"},
+			facts(day.Hours[6]), "the 7th hour, which ends the day")
+		c.Equal(hourFacts{kind: StopHour, condition: UnconsciousHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "-10"},
+			facts(day.Hours[7]), "the stop, whose extra effort can take no more")
+		c.Equal(fxp.Seven, day.Hours[7].Elapsed, "the stop comes after the 7th hour")
+	})
 
-	// Light encumbrance on a hot day with extra effort at -2: 3 FP an hour and 4.875 miles, until the collapse.
-	collapse := skating
-	collapse.Hiker.Encumbrance = encumbrance.Light
-	collapse.Heat = HikingHeatChoices()[1]
-	collapse.ExtraEffortPenalty = -2
-	c.True(collapse.ExtraEffort(), "a penalty on a successful roll is extra effort")
-	c.Equal(fxp.Three, collapse.FPPerHour(), "1, plus 1 for the encumbrance, plus 1 for the heat")
-	day = collapse.Day()
-	c.Equal(fxp.FromStringForced("24.375"), day.Distance, "3 x 4.875 + 4 x 2.4375 before the collapse")
-	c.Equal(fxp.FromInteger(23), day.FPCost, "7 x 3, plus 2 when the hiker stops")
-	c.Equal(fxp.Three, day.TiredAfter, "the 3rd hour leaves fewer than a third of the FP")
-	c.Equal(fxp.Four, day.OutAfter, "the 4th uses them up")
-	c.Equal(fxp.Seven, day.UnconsciousAfter, "the 7th reaches -FP")
-	c.Equal(8, len(day.Hours), "7 hours and the stop")
-	c.Equal(hourFacts{kind: MarchHour, condition: VeryTiredHiker, distance: "4.875", total: "14.625", fpChange: "-3", fpLeft: "1"},
-		facts(day.Hours[2]), "the 3rd hour")
-	c.Equal(hourFacts{kind: MarchHour, condition: ExhaustedHiker, distance: "2.4375", total: "17.0625", fpChange: "-3", fpLeft: "-2"},
-		facts(day.Hours[3]), "the 4th hour, at half Move")
-	c.Equal(hourFacts{kind: MarchHour, condition: UnconsciousHiker, distance: "2.4375", total: "24.375", fpChange: "-3", fpLeft: "-10"},
-		facts(day.Hours[6]), "the 7th hour, which ends the day")
-	c.Equal(hourFacts{kind: StopHour, condition: UnconsciousHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "-10"},
-		facts(day.Hours[7]), "the stop, whose extra effort can take no more")
-	c.Equal(fxp.Seven, day.Hours[7].Elapsed, "the stop comes after the 7th hour")
+	t.Run("the stop's extra effort brings on the collapse", func(t *testing.T) {
+		c := check.New(t)
+		// 6 hours at 3 FP leave the hiker at -8 FP, and the 2 FP of extra effort at the stop take that to -FP.
+		hike := strainedHike(c)
+		hike.Hours = fxp.Six
+		day := hike.Day()
+		c.Equal(fxp.FromStringForced("21.9375"), day.Distance, "3 x 4.875 + 3 x 2.4375: every hour is walked")
+		c.Equal(fxp.Twenty, day.FPCost, "6 x 3, plus 2 when the hiker stops")
+		c.Equal(fxp.Six, day.UnconsciousAfter, "the collapse comes at the stop, after the 6th hour")
+		c.Equal(7, len(day.Hours), "6 hours and the stop")
+		c.Equal(hourFacts{kind: MarchHour, condition: ExhaustedHiker, distance: "2.4375", total: "21.9375", fpChange: "-3", fpLeft: "-8"},
+			facts(day.Hours[5]), "the 6th hour ends short of -FP")
+		c.Equal(hourFacts{kind: StopHour, condition: UnconsciousHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "-10"},
+			facts(day.Hours[6]), "which the stop reaches")
+	})
 
-	// An hour's rest after the 4th hour with a decent meal gives a Fit hiker 12 + 1 FP, capped at the 12 lost.
-	rested := collapse
-	rested.RestMinutes = 60
-	rested.RestMeal = true
-	rested.Hiker.Fitness = HikingFitnessChoices()[1]
-	c.Equal(fxp.Four, rested.RestAfter(), "the rest comes halfway through the 8 hours")
-	day = rested.Day()
-	c.Equal(fxp.FromStringForced("34.125"), day.Distance, "the second half of the day goes like the first")
-	c.Equal(fxp.FromInteger(26), day.FPCost, "8 x 3, plus 2 when the hiker stops")
-	c.Equal(fxp.Twelve, day.RestRecovered, "the rest recovers what was lost, and no more")
-	c.Equal(fxp.Int(0), day.UnconsciousAfter, "there is no collapse")
-	c.Equal(10, len(day.Hours), "8 hours, the rest and the stop")
-	c.Equal(hourFacts{kind: RestHour, distance: "0", total: "0", fpChange: "12", fpLeft: "10"}, facts(day.Hours[4]), "the rest")
-	c.Equal(hourFacts{kind: MarchHour, distance: "4.875", total: "21.9375", fpChange: "-3", fpLeft: "7"}, facts(day.Hours[5]),
-		"the 5th hour is walked at full Move again")
-	c.Equal(hourFacts{kind: StopHour, condition: ExhaustedHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "-4"},
-		facts(day.Hours[9]), "the day ends at the stop")
+	t.Run("a rest staves off the collapse", func(t *testing.T) {
+		c := check.New(t)
+		// An hour's rest after the 4th hour with a decent meal gives a Fit hiker 12 + 1 FP, capped at the 12 lost.
+		hike := strainedHike(c)
+		hike.RestMinutes = 60
+		hike.RestMeal = true
+		hike.Hiker.Fitness = HikingFitnessChoices()[1]
+		day := hike.Day()
+		c.Equal(fxp.FromStringForced("34.125"), day.Distance, "the second half of the day goes like the first")
+		c.Equal(fxp.FromInteger(26), day.FPCost, "8 x 3, plus 2 when the hiker stops")
+		c.Equal(fxp.Twelve, day.RestRecovered, "the rest recovers what was lost, and no more")
+		c.Equal(fxp.Int(0), day.UnconsciousAfter, "there is no collapse")
+		c.Equal(10, len(day.Hours), "8 hours, the rest and the stop")
+		c.Equal(hourFacts{kind: RestHour, distance: "0", total: "0", fpChange: "12", fpLeft: "10"}, facts(day.Hours[4]), "the rest")
+		c.Equal(hourFacts{kind: MarchHour, distance: "4.875", total: "21.9375", fpChange: "-3", fpLeft: "7"}, facts(day.Hours[5]),
+			"the 5th hour is walked at full Move again")
+		c.Equal(hourFacts{kind: StopHour, condition: ExhaustedHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "-4"},
+			facts(day.Hours[9]), "the day ends at the stop")
+	})
 
-	// A Very Fit hiker loses 1.5 FP an hour, and 3 FP from Lend Energy add to the rest, which still cannot exceed the 6
-	// FP lost by then.
-	veryFit := rested
-	veryFit.Hiker.Fitness = HikingFitnessChoices()[2]
-	veryFit.RestExtraFP = 3
-	c.Equal(fxp.OneAndAHalf, veryFit.FPPerHour(), "Very Fit halves the cost")
-	day = veryFit.Day()
-	c.Equal(fxp.FromInteger(39), day.Distance, "full Move all day: 8 x 4.875")
-	c.Equal(fxp.FromInteger(14), day.FPCost, "8 x 1.5, plus 2 when the hiker stops")
-	c.Equal(fxp.Six, day.RestRecovered, "the rest recovers the 6 FP lost, and no more")
-	c.Equal(hourFacts{kind: StopHour, condition: VeryTiredHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "2"},
-		facts(day.Hours[9]), "only the stop leaves the hiker very tired")
+	t.Run("a Very Fit hiker keeps full pace", func(t *testing.T) {
+		c := check.New(t)
+		// A Very Fit hiker loses 1.5 FP an hour, and 3 FP from Lend Energy add to the hour's rest and its meal, which
+		// still cannot exceed the 6 FP lost by then.
+		hike := strainedHike(c)
+		hike.RestMinutes = 60
+		hike.RestMeal = true
+		hike.RestExtraFP = 3
+		hike.Hiker.Fitness = HikingFitnessChoices()[2]
+		c.Equal(fxp.OneAndAHalf, hike.FPPerHour(), "Very Fit halves the cost")
+		day := hike.Day()
+		c.Equal(fxp.FromInteger(39), day.Distance, "full Move all day: 8 x 4.875")
+		c.Equal(fxp.FromInteger(14), day.FPCost, "8 x 1.5, plus 2 when the hiker stops")
+		c.Equal(fxp.Six, day.RestRecovered, "the rest recovers the 6 FP lost, and no more")
+		c.Equal(hourFacts{kind: StopHour, condition: VeryTiredHiker, distance: "0", total: "0", fpChange: "-2", fpLeft: "2"},
+			facts(day.Hours[9]), "only the stop leaves the hiker very tired")
+	})
 
-	// Without FP to go on, the hiker keeps full pace all day.
-	unknown := hike
-	unknown.Hiker.FP = 0
-	day = unknown.Day()
-	c.Equal(fxp.FromInteger(25), day.Distance, "8 x 3.125")
-	c.Equal(fxp.Int(0), day.TiredAfter, "nothing is known about tiring")
-	for i, hour := range day.Hours {
-		c.Equal(FreshHiker, hour.Condition, "hour %d has no condition", i)
-		c.Equal(fxp.Int(0), hour.FPLeft, "hour %d has no FP left to report", i)
-	}
+	t.Run("without FP to go on", func(t *testing.T) {
+		c := check.New(t)
+		hike := testHike(c)
+		hike.Hiker.FP = 0
+		day := hike.Day()
+		c.Equal(fxp.FromInteger(25), day.Distance, "full pace all day: 8 x 3.125")
+		c.Equal(fxp.Int(0), day.TiredAfter, "nothing is known about tiring")
+		for i, hour := range day.Hours {
+			c.Equal(FreshHiker, hour.Condition, "hour %d has no condition", i)
+			c.Equal(fxp.Int(0), hour.FPLeft, "hour %d has no FP left to report", i)
+		}
+	})
 }
 
 // TestHikingDistanceModifiers verifies what the ground, the weather and the gear do to an hour's travel (BX351),
@@ -252,9 +305,17 @@ func TestHikingRest(t *testing.T) {
 	c.Equal(5, hiker.RestMinutesPerFP(), "being Fit makes it 5 as well, and the two do not stack")
 	hiker.RecoverEnergy = HikingRecoverEnergyChoices()[2]
 	c.Equal(2, hiker.RestMinutesPerFP(), "Recover Energy at 20+ makes it 2")
-	c.True(hike.RoadsCanBeCleared() == false, "a road in fair weather has nothing to clear")
+}
+
+// TestHikingRoadsCanBeCleared verifies that only a road under snow or ice has anything to clear.
+func TestHikingRoadsCanBeCleared(t *testing.T) {
+	c := check.New(t)
+	hike := testHike(c)
+	c.False(hike.RoadsCanBeCleared(), "a road in fair weather has nothing to clear")
+	hike.Weather = terrainNamed(c, WeatherChoices(), "Snow")
+	c.True(hike.RoadsCanBeCleared(), "a road under snow can be cleared")
 	hike.Weather = terrainNamed(c, WeatherChoices(), "Sleet")
-	c.True(hike.RoadsCanBeCleared(), "a road under ice can be cleared")
+	c.True(hike.RoadsCanBeCleared(), "as can one under ice")
 	hike.Terrain = terrainNamed(c, TerrainChoices(), "Swamp")
 	c.False(hike.RoadsCanBeCleared(), "a swamp cannot")
 }
@@ -308,8 +369,8 @@ func TestHikingChoices(t *testing.T) {
 		"Recover Energy gives 1 FP per 5 minutes at 15+ and per 2 at 20+")
 }
 
-// TestHikingTimeInDays verifies the hiking travel-time calculation, including the 0 Move case that previously divided by
-// zero and crashed the Calculator the moment a non-zero "Distance to Cover" was entered.
+// TestHikingTimeInDays verifies the days a distance takes at a day's pace, rounded to a tenth of a day, and that a pace
+// of zero has no answer rather than being divided by.
 func TestHikingTimeInDays(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -319,14 +380,11 @@ func TestHikingTimeInDays(t *testing.T) {
 		wantDays        fxp.Int
 		wantOK          bool
 	}{
-		// Regression: distancePerDay of 0 (Move resolved to 0) must not divide by zero, even with distance to cover.
 		{name: "0 move with distance to cover", distanceToCover: fxp.FromInteger(100), distancePerDay: 0, wantDays: 0, wantOK: false},
 		{name: "0 move with no distance to cover", distanceToCover: 0, distancePerDay: 0, wantDays: 0, wantOK: false},
-		// Nothing to cover is already "there": 0 days, and no division hazard.
 		{name: "no distance to cover", distanceToCover: 0, distancePerDay: fxp.FromInteger(20), wantDays: 0, wantOK: true},
-		// 100 miles to cover at 20 miles/day -> 5 days exactly.
 		{name: "even multiple", distanceToCover: fxp.FromInteger(100), distancePerDay: fxp.FromInteger(20), wantDays: fxp.FromInteger(5), wantOK: true},
-		// Rounds to a tenth of a day: 10 / 3 = 3.333... -> 3.3 days.
+		// 10 / 3 = 3.333..., which rounds to 3.3 days.
 		{name: "rounds to tenths", distanceToCover: fxp.FromInteger(10), distancePerDay: fxp.FromInteger(3), wantDays: fxp.FromStringForced("3.3"), wantOK: true},
 	} {
 		days, ok := HikingTimeInDays(one.distanceToCover, one.distancePerDay)
@@ -340,20 +398,24 @@ func TestHikingTimeInDays(t *testing.T) {
 func TestHikerStatsFromEntity(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
+	e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Three
 	s := HikerStatsFromEntity(e)
 	c.Equal(encumbrance.No, s.Encumbrance, "an empty sheet carries nothing")
-	c.Equal(e.Move(encumbrance.No), s.Move, "the Move is the sheet's at that encumbrance")
+	c.Equal(5, s.Move, "the Move is the sheet's at that encumbrance")
 	c.Equal(fxp.Int(0), s.EnhancedMove, "no Enhanced Move is 0")
 	c.True(s.HasFP, "the default sheet defines FP")
-	c.Equal(e.Attributes.Maximum(gurps.FatiguePointsID), s.FP, "the FP is the maximum")
+	c.Equal(fxp.Ten, s.FP, "the FP is the maximum of 10, not the 7 left after the fatigue")
 	c.Equal(0, s.FitnessIndex, "an average hiker")
 	c.Equal(0, s.RecoverEnergyIndex, "with no Recover Energy")
 
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Pack").BaseWeight = "30 lb"
 	addLeveledTrait(e, "Enhanced Move (Ground)", fxp.One)
 	gurpstest.AddTraitWithFeatures(e, "Fit")
 	spell := addSpell(e, "Recover Energy", fxp.FromInteger(28))
 	e.Recalculate()
 	s = HikerStatsFromEntity(e)
+	c.Equal(encumbrance.Light, s.Encumbrance, "a 30 lb pack is a light load")
+	c.Equal(4, s.Move, "which takes the Move down to 4")
 	c.Equal(fxp.One, s.EnhancedMove, "the trait's levels are read")
 	c.Equal(1, s.FitnessIndex, "Fit is the second choice")
 	level := spell.CalculateLevel().Level.AsInteger[int]()

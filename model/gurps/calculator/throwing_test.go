@@ -20,7 +20,8 @@ import (
 )
 
 // TestThrow verifies the throwing rules of BX355 and the extra effort of BX357 for a character typed in: the worked
-// example of ST 10 throwing a 1 lb object, the skill bonuses, and the objects that cannot be thrown at all.
+// example of ST 10 throwing a 1 lb object, the skill bonuses, the objects that cannot be thrown at all, a thrower with
+// no ST, and the damage an object does by its weight.
 func TestThrow(t *testing.T) {
 	c := check.New(t)
 	thrower := Thrower{ST: fxp.Ten, StrikingST: fxp.Ten, Throwing: ThrowingTiers()[0], ThrowingArt: ThrowingArtTiers()[0]}
@@ -51,6 +52,77 @@ func TestThrow(t *testing.T) {
 	r = thrower.Throw(fxp.Weight(fxp.FromInteger(300)), 0)
 	c.True(r.TooHeavy, "15 times the Basic Lift is off the table and cannot be thrown")
 	c.Equal(fxp.Int(0), r.Distance, "so it goes nowhere")
+
+	weak := thrower
+	weak.ST = 0
+	weak.StrikingST = 0
+	c.Equal(ThrowResult{TooHeavy: true}, weak.Throw(pound, 0), "without ST there is no Basic Lift, and nothing can be thrown")
+	weak.Throwing = ThrowingTiers()[2]
+	r = weak.Throw(pound, 0)
+	c.Equal(fxp.FromInteger(28), r.Distance, "Throwing at DX+2 alone gives an ST of 2 to throw with: 2 x 0.4 = 0.8 yards")
+	c.Equal("1d-8", gurps.FormatDice(r.Damage, false),
+		"with no Basic Lift of the thrower's own to weigh it against, the object counts as the lightest: 1d-6 becomes 1d-8")
+
+	// ST 20 has a Basic Lift of 80 lbs and a thrust of 2d-1, which is enough dice to tell the bands apart.
+	strong := Thrower{ST: fxp.Twenty, StrikingST: fxp.Twenty, Throwing: ThrowingTiers()[0], ThrowingArt: ThrowingArtTiers()[0]}
+	for _, tc := range []struct {
+		name     string
+		lightest int // The lightest whole number of pounds in the band.
+		heaviest int // The heaviest.
+		want     string
+	}{
+		{name: "up to BL/8 is thrust-2 per die", lightest: 1, heaviest: 10, want: "2d-5"},
+		{name: "up to BL/4 is thrust-1 per die", lightest: 11, heaviest: 20, want: "2d-3"},
+		{name: "up to BL/2 is thrust", lightest: 21, heaviest: 40, want: "2d-1"},
+		{name: "up to BL is thrust+1 per die", lightest: 41, heaviest: 80, want: "2d+1"},
+		{name: "up to 2xBL is thrust", lightest: 81, heaviest: 160, want: "2d-1"},
+		{name: "up to 4xBL is thrust-1 per 2 dice", lightest: 161, heaviest: 320, want: "2d-2"},
+		{name: "anything heavier is thrust-1 per die", lightest: 321, heaviest: 960, want: "2d-3"},
+	} {
+		for _, pounds := range []int{tc.lightest, tc.heaviest} {
+			r = strong.Throw(fxp.Weight(fxp.FromInteger(pounds)), 0)
+			c.Equal(tc.want, gurps.FormatDice(r.Damage, false), "%s: %d lbs", tc.name, pounds)
+		}
+	}
+}
+
+// TestThrowingDistanceModifier pins the Throwing Distance Table (BX355): a weight ratio reads the first row that
+// reaches it, and anything past the last row cannot be thrown.
+func TestThrowingDistanceModifier(t *testing.T) {
+	c := check.New(t)
+	table := []struct{ maxRatio, modifier string }{
+		{"0.05", "3.5"},
+		{"0.1", "2.5"},
+		{"0.15", "2"},
+		{"0.2", "1.5"},
+		{"0.25", "1.2"},
+		{"0.3", "1.1"},
+		{"0.4", "1"},
+		{"0.5", "0.8"},
+		{"0.75", "0.7"},
+		{"1", "0.6"},
+		{"1.5", "0.4"},
+		{"2", "0.3"},
+		{"2.5", "0.25"},
+		{"3", "0.2"},
+		{"4", "0.15"},
+		{"5", "0.12"},
+		{"6", "0.1"},
+		{"7", "0.09"},
+		{"8", "0.08"},
+		{"9", "0.07"},
+		{"10", "0.06"},
+		{"12", "0.05"},
+	}
+	for i, row := range table {
+		ratio := fxp.FromStringForced(row.maxRatio)
+		c.Equal(fxp.FromStringForced(row.modifier), throwingDistanceModifier(ratio), "a ratio of %s", row.maxRatio)
+		var next fxp.Int // Past the last row, nothing can be thrown.
+		if i+1 < len(table) {
+			next = fxp.FromStringForced(table[i+1].modifier)
+		}
+		c.Equal(next, throwingDistanceModifier(ratio+1), "a ratio just over %s", row.maxRatio)
+	}
 }
 
 // TestThrowingTiers verifies the tier tables, whose order the sheet reader's indexes depend on.

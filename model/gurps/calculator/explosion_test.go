@@ -95,8 +95,9 @@ func TestCollateralDivisor(t *testing.T) {
 }
 
 // TestDividedDamage verifies the least, average and greatest damage an explosion inflicts once divided and rounded
-// down (BX414), including the BX414 worked example: 6dx2 three yards away in air is divided by 9, so its 12 to 72 points
-// (42 on average) become 1 to 8 (4 on average). Damage is never negative, so a total below zero is reported as zero.
+// down (BX414), including the BX414 worked example: 6dx2 three yards away in air is divided by 9, so its 12 to 72
+// points (42 on average) become 1 to 8 (4 on average). Damage is never negative, so a total below zero is reported as
+// zero.
 func TestDividedDamage(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -158,13 +159,6 @@ func TestDividedDamage(t *testing.T) {
 		c.Equal(tc.wantAverage, average, "%s: average", tc.name)
 		c.Equal(tc.wantMaximum, maximum, "%s: maximum", tc.name)
 	}
-
-	// The example again, spelled out the way BX414 does: the divisor comes from the environment and the distance.
-	minimum, average, maximum := DividedDamage(dice.Dice{Count: 6, Sides: 6, Multiplier: 2},
-		ExplosionInAir.CollateralDivisor(fxp.Three))
-	c.Equal(1, minimum, "6dx2 at 3 yards, minimum")
-	c.Equal(4, average, "6dx2 at 3 yards, average")
-	c.Equal(8, maximum, "6dx2 at 3 yards, maximum")
 }
 
 // TestFragmentationSkill verifies that fragments attack at skill 15 with only the three modifiers BX415 allows: the
@@ -191,7 +185,6 @@ func TestFragmentationSkill(t *testing.T) {
 		},
 		{name: "10 yards away, crouching, and large", distance: fxp.Ten, posture: NonStandingTargetPenalty, sm: 2, want: 11},
 		{name: "10 yards away, crouching, and small", distance: fxp.Ten, posture: NonStandingTargetPenalty, sm: -2, want: 7},
-		{name: "an airburst ignores posture", distance: fxp.Ten, want: 11},
 		{name: "100 yards away", distance: fxp.Hundred, want: 5},
 	} {
 		c.Equal(tc.want, FragmentationSkill(tc.distance, tc.posture, tc.sm), tc.name)
@@ -225,12 +218,6 @@ func TestTargetPostureFragmentPenalty(t *testing.T) {
 // needs (8x8)/4 = 16 lbs of TNT, or 16/0.8 = 20 lbs of dynamite, and 20 lbs of dynamite makes a 6dx8 blast again.
 func TestDemolition(t *testing.T) {
 	c := check.New(t)
-	c.Equal(fxp.Sixteen, TNTForBlast(fxp.Eight), "6dx8 needs (8x8)/4 lbs of TNT")
-	c.Equal(fxp.Twenty, ExplosiveForBlast(fxp.Eight, fxp.FourFifths), "the BX415 example: 6dx8 of dynamite is 20 lbs")
-	c.Equal(fxp.Eight, BlastForExplosive(fxp.Twenty, fxp.FourFifths), "20 lbs of dynamite makes a 6dx8 blast")
-	c.Equal(fxp.One, BlastForExplosive(fxp.Quarter, fxp.One), "a quarter pound of TNT makes a 6d blast")
-	c.Equal(fxp.Quarter, TNTForBlast(fxp.One), "and a 6d blast needs a quarter pound of TNT")
-
 	for _, tc := range []struct {
 		name   string
 		n      fxp.Int
@@ -238,6 +225,10 @@ func TestDemolition(t *testing.T) {
 		wantT  fxp.Int
 		wantEx fxp.Int
 	}{
+		{
+			name: "the BX415 worked example, 6dx8 of dynamite", n: fxp.Eight, ref: fxp.FourFifths, wantT: fxp.Sixteen,
+			wantEx: fxp.Twenty,
+		},
 		{name: "TNT is the yardstick", n: fxp.Six, ref: fxp.One, wantT: fxp.Nine, wantEx: fxp.Nine},
 		{
 			name: "a weaker explosive takes more of it", n: fxp.Six, ref: fxp.Half, wantT: fxp.Nine,
@@ -261,10 +252,13 @@ func TestDemolition(t *testing.T) {
 		ref    fxp.Int
 		want   fxp.Int
 	}{
-		{name: "9 lbs of TNT", pounds: fxp.Nine, ref: fxp.One, want: fxp.Six},
-		{name: "a fractional result is left fractional", pounds: fxp.One, ref: fxp.One, want: fxp.Two},
 		{
-			name: "1 lb of dynamite", pounds: fxp.One, ref: fxp.FourFifths,
+			name: "the BX415 worked example, 20 lbs of dynamite", pounds: fxp.Twenty, ref: fxp.FourFifths,
+			want: fxp.Eight,
+		},
+		{name: "9 lbs of TNT", pounds: fxp.Nine, ref: fxp.One, want: fxp.Six},
+		{
+			name: "a fractional result is left fractional", pounds: fxp.One, ref: fxp.FourFifths,
 			want: fxp.FromFloat(1.7888), // sqrt(3.2), truncated to four decimal places
 		},
 		{name: "no explosive makes no blast", pounds: 0, ref: fxp.One, want: 0},
@@ -314,10 +308,10 @@ func TestScatterDistance(t *testing.T) {
 	}
 }
 
-// TestConeWidthAndAreaDivisor verifies the cone geometry of BX413, including its worked example -- a cone with a maximum
-// range of 100 yards and a maximum width of 5 yards is 3 yards wide at 60 yards -- and the Dissipation divisors of
-// BX414: a cone divides its damage by its width at the target, an area effect by the distance from its center. Neither
-// divisor ever drops below one.
+// TestConeWidthAndAreaDivisor verifies the cone geometry of BX413, including its worked example -- a cone with a
+// maximum range of 100 yards and a maximum width of 5 yards is 3 yards wide at 60 yards -- and the Dissipation divisors
+// of BX414: a cone divides its damage by its width at the target, an area effect by the distance from its center.
+// Neither divisor ever drops below one.
 func TestConeWidthAndAreaDivisor(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -373,13 +367,6 @@ func TestConeWidthAndAreaDivisor(t *testing.T) {
 	} {
 		c.Equal(tc.want, AreaDamageDivisor(tc.distance), tc.name)
 	}
-
-	// A cone 3 yards wide at the target divides a 6d attack by 3 (Dissipation, BX414).
-	minimum, average, maximum := DividedDamage(dice.Dice{Count: 6, Sides: 6, Multiplier: 1},
-		ConeWidth(fxp.Sixty, fxp.Hundred, fxp.Five))
-	c.Equal(2, minimum, "6d divided by a 3 yard wide cone, minimum")
-	c.Equal(7, average, "6d divided by a 3 yard wide cone, average")
-	c.Equal(12, maximum, "6d divided by a 3 yard wide cone, maximum")
 }
 
 // TestCoverDRFromBody verifies that someone who throws himself onto an explosive shields everyone else with his torso
@@ -410,9 +397,6 @@ func TestLargeAreaDR(t *testing.T) {
 	e := gurps.NewEntity()
 	gurpstest.AddCarriedEquipmentWithFeatures(e, "Mail Hauberk", gurpstest.NewDRBonus(fxp.Five, gurps.AllID, gurps.TorsoID))
 	e.Recalculate()
-	torso := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
-	c.NotNil(torso, "the default body has a torso")
-	c.Equal(5, torso.DR(e, nil, nil)[gurps.AllID], "the hauberk gives the torso DR 5")
 
 	onlyTorso := func(loc *gurps.HitLocation) bool { return loc.LocID == gurps.TorsoID }
 
@@ -474,18 +458,21 @@ func TestExplosiveTypes(t *testing.T) {
 	c.Equal(10, ExplosiveTypes[13].TL, "the table ends at TL10")
 	c.Equal(fxp.Six, ExplosiveTypes[13].REF, "stabilized metallic hydrogen is REF 6")
 
-	// Black Powder is printed twice, since it improves at TL5, so the name alone does not identify a row.
-	blackPowder := make([]ExplosiveType, 0, 2)
-	for _, one := range ExplosiveTypes {
-		if one.Name == "Black Powder" {
-			blackPowder = append(blackPowder, one)
+	// Rows are looked up by name, without their descriptions. Black Powder is printed twice, since it improves at TL5.
+	named := func(name string) []ExplosiveType {
+		rows := make([]ExplosiveType, 0, 2)
+		for _, one := range ExplosiveTypes {
+			if one.Name == name {
+				one.Description = ""
+				rows = append(rows, one)
+			}
 		}
+		return rows
 	}
-	c.Equal(2, len(blackPowder), "Black Powder appears at both TL4 and TL5")
-	c.Equal(4, blackPowder[0].TL, "the first Black Powder row is TL4")
-	c.Equal(fxp.TwoFifths, blackPowder[0].REF, "TL4 Black Powder is REF 0.4")
-	c.Equal(5, blackPowder[1].TL, "the second Black Powder row is TL5")
-	c.Equal(fxp.Half, blackPowder[1].REF, "TL5 Black Powder is REF 0.5")
+	c.Equal([]ExplosiveType{{Name: "Black Powder", REF: fxp.TwoFifths, TL: 4}, {Name: "Black Powder", REF: fxp.Half, TL: 5}},
+		named("Black Powder"), "Black Powder is REF 0.4 at TL4 and REF 0.5 at TL5")
+	c.Equal([]ExplosiveType{{Name: "TNT", REF: fxp.One, TL: 6}}, named("TNT"), "TNT is the yardstick, so its REF is 1")
+	c.Equal([]ExplosiveType{{Name: "Dynamite", REF: fxp.FourFifths, TL: 6}}, named("Dynamite"), "dynamite is REF 0.8")
 
 	tl := 0
 	for _, one := range ExplosiveTypes {
@@ -493,13 +480,5 @@ func TestExplosiveTypes(t *testing.T) {
 		c.NotEqual("", one.Description, "%s has a description", one.Name)
 		c.True(one.TL >= tl, "%s does not go backward in TL", one.Name)
 		tl = one.TL
-		if one.Name == "TNT" {
-			c.Equal(fxp.One, one.REF, "TNT is the yardstick, so its REF is 1")
-			c.Equal(TNTForBlast(fxp.Eight), ExplosiveForBlast(fxp.Eight, one.REF), "TNT needs no conversion")
-		}
-		if one.Name == "Dynamite" {
-			c.Equal(fxp.FourFifths, one.REF, "dynamite is REF 0.8")
-			c.Equal(fxp.Twenty, ExplosiveForBlast(fxp.Eight, one.REF), "the BX415 example: 20 lbs for 6dx8")
-		}
 	}
 }

@@ -15,7 +15,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -51,23 +53,53 @@ func addSpell(e *gurps.Entity, name string, points fxp.Int) *gurps.Spell {
 }
 
 // TestSkillLevelOrDefault verifies that a skill on the sheet supplies its level, and that one that is not falls back
-// to its default from the attribute.
+// to its default from the attribute, or to 0 when the sheet lacks that attribute.
 func TestSkillLevelOrDefault(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
 	c.Equal(4, SkillLevelOrDefault(e, "Acrobatics", gurps.DexterityID, -6), "without the skill, the default of DX-6 applies")
+	c.Equal(0, SkillLevelOrDefault(e, "Acrobatics", "nope", -6), "a default from an attribute the sheet lacks is 0")
 	addDXSkill(e, "Acrobatics", difficulty.Hard, fxp.Four)
 	e.Recalculate()
 	c.Equal(10, SkillLevelOrDefault(e, "Acrobatics", gurps.DexterityID, -6), "with the skill, its level applies")
 }
 
-// TestBasicLiftAndThrustFor verifies that a nil entity is answered from the global default sheet settings.
+// TestBasicLiftAndThrustFor verifies that an entity is answered under its own damage progression and a nil one under
+// the global default sheet settings.
 func TestBasicLiftAndThrustFor(t *testing.T) {
 	c := check.New(t)
-	c.Equal(fxp.Weight(fxp.Twenty), BasicLiftFor(nil, fxp.Ten), "ST 10 has a Basic Lift of 20 under the default progression")
-	c.Equal("1d-2", gurps.FormatDice(ThrustFor(nil, fxp.Ten), false), "ST 10 has a thrust of 1d-2 under the default progression")
+	c.Equal(fxp.Weight(fxp.Eighty), BasicLiftFor(nil, fxp.Twenty), "ST 20 has a Basic Lift of 80 under the default progression")
+	c.Equal("2d-1", gurps.FormatDice(ThrustFor(nil, fxp.Twenty), false), "and a thrust of 2d-1")
 	e := gurps.NewEntity()
-	c.Equal(e.BasicLiftForST(fxp.Ten), BasicLiftFor(e, fxp.Ten), "an entity answers for itself")
+	e.SheetSettings.DamageProgression = progression.KnowingYourOwnStrength
+	c.Equal(fxp.Weight(fxp.FromInteger(200)), BasicLiftFor(e, fxp.Twenty),
+		"under Knowing Your Own Strength, the entity's ST 20 has a Basic Lift of 200")
+	c.Equal("3d", gurps.FormatDice(ThrustFor(e, fxp.Twenty), false), "and a thrust of 3d")
+}
+
+// TestTorsoDR verifies that a body without a torso, or a sheet without a body, has no torso DR. The split between armor
+// and the rest is pinned through CollisionParticipantFromEntity.
+func TestTorsoDR(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	arm := gurps.NewHitLocation(e, "")
+	arm.LocID = "arm"
+	arm.ChoiceName = "Arm"
+	arm.TableName = "Arm"
+	arm.Slots = 1
+	arm.DRBonus = 4
+	body := &gurps.Body{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*gurps.HitLocation{arm}}
+	body.Update(e)
+	e.SheetSettings.BodyType = body
+	e.Recalculate()
+	total, armor := TorsoDR(e)
+	c.Equal(0, total, "an armored arm does not stand in for a missing torso")
+	c.Equal(0, armor, "nor does its armor")
+
+	e.SheetSettings.BodyType = nil
+	total, armor = TorsoDR(e)
+	c.Equal(0, total, "without a body there is no torso DR")
+	c.Equal(0, armor, "nor any armor")
 }
 
 // TestSpellLevel verifies that the highest level of the named spell is found, or 0 when it is not known.

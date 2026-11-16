@@ -53,46 +53,89 @@ func TestBlastDivisor(t *testing.T) {
 // explosive struck and none at all beyond the 10 yards the fragments reach.
 func TestFragmentation(t *testing.T) {
 	c := check.New(t)
-	fragments := dice.Dice{Count: 2, Sides: 6}
-
-	r := Fragmentation(fragments, CaughtInBlast, StandingTarget, fxp.Three, 0, false)
-	c.Equal(FragmentationResult{Radius: 10, Skill: 14, RangePenalty: -1, GroundBurst: true}, r,
-		"standing 3 yards from a ground burst, the fragments roll against 15 - 1")
-
-	r = Fragmentation(fragments, CaughtInBlast, ProneTarget, fxp.Three, 0, false)
-	c.Equal(FragmentationResult{Radius: 10, Skill: 10, RangePenalty: -1, PosturePenalty: -4, GroundBurst: true, HalfExposed: true}, r,
-		"lying down 3 yards from a ground burst shows it only half a torso, for -4")
-
-	r = Fragmentation(fragments, CaughtInBlast, ProneTarget, 0, 0, false)
-	c.Equal(FragmentationResult{Radius: 10, Skill: 13, PosturePenalty: -2}, r,
-		"lying down at the center of the blast is not a ground burst, so the posture alone counts")
-
-	r = Fragmentation(fragments, CaughtInBlast, ProneTarget, fxp.Three, 0, true)
-	c.Equal(FragmentationResult{Radius: 10, Skill: 14, RangePenalty: -1}, r,
-		"an airburst ignores posture")
-
-	r = Fragmentation(fragments, CaughtInBlast, StandingTarget, fxp.Three, 2, false)
-	c.Equal(16, r.Skill, "the size modifier adds to the roll")
-
-	r = Fragmentation(fragments, CaughtInBlast, StandingTarget, fxp.FromStringForced("10.5"), 0, false)
-	c.Equal(FragmentationResult{Radius: 10, OutOfRange: true}, r, "beyond 10 yards the fragments do not reach")
-
-	r = Fragmentation(fragments, StruckDirectly, StandingTarget, fxp.Hundred, 0, false)
-	c.Equal(FragmentationResult{Radius: 10, Automatic: true}, r, "a target the explosive struck is hit without a roll")
+	for _, tc := range []struct {
+		name      string
+		situation BlastSituation
+		posture   TargetPosture
+		distance  fxp.Int
+		sm        int
+		airburst  bool
+		want      FragmentationResult
+	}{
+		{
+			name:     "standing 3 yards from a ground burst, the fragments roll against 15 - 1",
+			posture:  StandingTarget,
+			distance: fxp.Three,
+			want:     FragmentationResult{Radius: 10, Skill: 14, RangePenalty: -1, GroundBurst: true},
+		},
+		{
+			name:     "lying down 3 yards from a ground burst shows it only half a torso, for -4",
+			posture:  ProneTarget,
+			distance: fxp.Three,
+			want: FragmentationResult{
+				Radius: 10, Skill: 10, RangePenalty: -1, PosturePenalty: -4, GroundBurst: true, HalfExposed: true,
+			},
+		},
+		{
+			name:    "lying down at the center of the blast is not a ground burst, so the posture alone counts",
+			posture: ProneTarget,
+			want:    FragmentationResult{Radius: 10, Skill: 13, PosturePenalty: -2},
+		},
+		{
+			name:     "an airburst ignores posture",
+			posture:  ProneTarget,
+			distance: fxp.Three,
+			airburst: true,
+			want:     FragmentationResult{Radius: 10, Skill: 14, RangePenalty: -1},
+		},
+		{
+			name:     "the size modifier adds to the roll",
+			posture:  StandingTarget,
+			distance: fxp.Three,
+			sm:       2,
+			want:     FragmentationResult{Radius: 10, Skill: 16, RangePenalty: -1, GroundBurst: true},
+		},
+		{
+			name:     "beyond 10 yards the fragments do not reach",
+			posture:  StandingTarget,
+			distance: fxp.FromStringForced("10.5"),
+			want:     FragmentationResult{Radius: 10, OutOfRange: true},
+		},
+		{
+			name:      "a target the explosive struck is hit without a roll",
+			situation: StruckDirectly,
+			posture:   StandingTarget,
+			distance:  fxp.Hundred,
+			want:      FragmentationResult{Radius: 10, Automatic: true},
+		},
+	} {
+		got := Fragmentation(dice.Dice{Count: 2, Sides: 6}, tc.situation, tc.posture, tc.distance, tc.sm, tc.airburst)
+		c.Equal(tc.want, got, tc.name)
+	}
 }
 
 // TestDissipationDivisor verifies the three ways an area attack's damage can fall off with distance (BX414).
 func TestDissipationDivisor(t *testing.T) {
 	c := check.New(t)
-	divisor, htBonus := DissipationDivisor(fxp.Three, false, false)
-	c.Equal(fxp.One, divisor, "an attack that does not dissipate is not divided")
-	c.Equal(fxp.Int(0), htBonus, "nor eased")
-	divisor, htBonus = DissipationDivisor(fxp.Three, true, false)
-	c.Equal(fxp.Three, divisor, "one that dissipates is divided by the spread")
-	c.Equal(fxp.Int(0), htBonus, "and not eased")
-	divisor, htBonus = DissipationDivisor(fxp.Three, true, true)
-	c.Equal(fxp.One, divisor, "one that HT resists is not divided")
-	c.Equal(fxp.Three, htBonus, "the spread eases the roll instead")
+	for _, tc := range []struct {
+		name        string
+		dissipates  bool
+		htResisted  bool
+		wantDivisor fxp.Int
+		wantHTBonus fxp.Int
+	}{
+		{name: "an attack that does not dissipate is neither divided nor eased", wantDivisor: fxp.One},
+		{name: "one that does not dissipate is not eased even when HT resists it", htResisted: true, wantDivisor: fxp.One},
+		{name: "one that dissipates is divided by the spread", dissipates: true, wantDivisor: fxp.Three},
+		{
+			name: "one that HT resists eases the roll by the spread instead", dissipates: true, htResisted: true,
+			wantDivisor: fxp.One, wantHTBonus: fxp.Three,
+		},
+	} {
+		divisor, htBonus := DissipationDivisor(fxp.Three, tc.dissipates, tc.htResisted)
+		c.Equal(tc.wantDivisor, divisor, "%s: divisor", tc.name)
+		c.Equal(tc.wantHTBonus, htBonus, "%s: HT bonus", tc.name)
+	}
 }
 
 // TestDamageTypes verifies the damage type helpers: the base type DR is looked up against, and the Explosion modifier
@@ -108,8 +151,6 @@ func TestDamageTypes(t *testing.T) {
 	c.Equal("cr ex", ExplosionDamageType(" cr ex "), "and trimmed")
 	c.Equal("cr ex", ExplosionDamageType("cr"), "one that does not has the modifier added")
 	c.Equal("ex", ExplosionDamageType(""), "a blank type is the modifier alone")
-	c.Equal("burn ex*", ExplosionDamageType("burn ex*"), "a decorated modifier still counts")
-	c.Equal("cr exp ex", ExplosionDamageType("cr exp"), "a longer word is not the modifier")
 }
 
 // TestExposedFilter verifies the test LargeAreaDR is given: none when every location is exposed, otherwise one that

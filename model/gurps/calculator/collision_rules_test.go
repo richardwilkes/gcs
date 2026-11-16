@@ -17,43 +17,81 @@ import (
 )
 
 // TestFall verifies the fall rules of BX431 as the calculator combines them: the velocity from the Falling Velocity
-// Table, the 5 yards a controlled fall takes off, the terminal velocity that holds a long fall down, the vacuum that
-// has no terminal velocity, and the absence of a fall without gravity.
+// Table, the 5 yards a controlled fall takes off, the terminal velocity that holds a long fall down but not a short
+// one, the vacuum that has no terminal velocity, and the absence of a fall without gravity.
 func TestFall(t *testing.T) {
 	c := check.New(t)
 	seventeen := fxp.FromInteger(17)
-
-	r := Fall(seventeen, fxp.One, 0, fxp.One, false)
-	c.Equal(fxp.FromInteger(19), r.Velocity, "17 yards reaches 19 yards/second")
-	c.Equal(seventeen, r.Distance, "the whole fall counts")
-	c.False(r.Controlled || r.NoGravity || r.Vacuum || r.TerminalLimited, "nothing limited the fall")
-
-	r = Fall(seventeen, fxp.One, 0, fxp.One, true)
-	c.Equal(fxp.Twelve, r.Distance, "a controlled fall counts as 5 yards shorter")
-	c.Equal(fxp.Sixteen, r.Velocity, "12 yards reaches 16 yards/second")
-	c.True(r.Controlled, "the controlled fall is reported")
-
-	r = Fall(fxp.Three, fxp.One, 0, fxp.One, true)
-	c.Equal(fxp.Int(0), r.Distance, "a controlled fall never counts as less than nothing")
-	c.Equal(fxp.Int(0), r.Velocity, "and reaches no velocity")
-
-	r = Fall(fxp.Thousand, fxp.One, fxp.Sixty, fxp.One, false)
-	c.Equal(fxp.Sixty, r.Velocity, "a long fall is held to the terminal velocity")
-	c.Equal(fxp.Sixty, r.Terminal, "which is reported")
-	c.True(r.TerminalLimited, "along with the fact that it applied")
-
-	r = Fall(fxp.Thousand, fxp.One, fxp.Sixty, 0, false)
-	c.True(r.Vacuum, "in a vacuum there is no terminal velocity")
-	c.False(r.TerminalLimited, "so nothing holds the fall down")
-	c.Equal(FallingVelocity(fxp.Thousand, fxp.One), r.Velocity, "and the formula's velocity stands")
-
-	r = Fall(fxp.Thousand, fxp.One, 0, 0, false)
-	c.False(r.Vacuum, "without a terminal velocity to apply, the vacuum is not mentioned")
-
-	r = Fall(seventeen, 0, fxp.Sixty, 0, false)
-	c.True(r.NoGravity, "without gravity there is no fall")
-	c.Equal(fxp.Int(0), r.Velocity, "and no velocity")
-	c.False(r.Vacuum, "and the terminal velocity is not considered")
+	for _, tc := range []struct {
+		name         string
+		distance     fxp.Int
+		gravity      fxp.Int
+		terminalBase fxp.Int
+		pressure     fxp.Int
+		controlled   bool
+		want         FallResult
+	}{
+		{
+			name:     "17 yards reaches 19 yards/second",
+			distance: seventeen,
+			gravity:  fxp.One,
+			pressure: fxp.One,
+			want:     FallResult{Velocity: fxp.Nineteen, Distance: seventeen},
+		},
+		{
+			name:       "a controlled fall counts as 5 yards shorter, and 12 yards reaches 16 yards/second",
+			distance:   seventeen,
+			gravity:    fxp.One,
+			pressure:   fxp.One,
+			controlled: true,
+			want:       FallResult{Velocity: fxp.Sixteen, Distance: fxp.Twelve, Controlled: true},
+		},
+		{
+			name:       "a controlled fall never counts as less than nothing",
+			distance:   fxp.Three,
+			gravity:    fxp.One,
+			pressure:   fxp.One,
+			controlled: true,
+			want:       FallResult{Controlled: true},
+		},
+		{
+			name:         "a long fall is held to the terminal velocity",
+			distance:     fxp.Thousand,
+			gravity:      fxp.One,
+			terminalBase: fxp.Sixty,
+			pressure:     fxp.One,
+			want:         FallResult{Velocity: fxp.Sixty, Distance: fxp.Thousand, Terminal: fxp.Sixty, TerminalLimited: true},
+		},
+		{
+			name:         "a short fall stays under its terminal velocity",
+			distance:     seventeen,
+			gravity:      fxp.One,
+			terminalBase: fxp.Sixty,
+			pressure:     fxp.One,
+			want:         FallResult{Velocity: fxp.Nineteen, Distance: seventeen},
+		},
+		{
+			name:         "in a vacuum there is no terminal velocity, so the formula's velocity stands",
+			distance:     fxp.Thousand,
+			gravity:      fxp.One,
+			terminalBase: fxp.Sixty,
+			want:         FallResult{Velocity: fxp.FromInteger(146), Distance: fxp.Thousand, Vacuum: true},
+		},
+		{
+			name:     "without a terminal velocity to apply, the vacuum is not mentioned",
+			distance: fxp.Thousand,
+			gravity:  fxp.One,
+			want:     FallResult{Velocity: fxp.FromInteger(146), Distance: fxp.Thousand},
+		},
+		{
+			name:         "without gravity there is no fall, and the terminal velocity is not considered",
+			distance:     seventeen,
+			terminalBase: fxp.Sixty,
+			want:         FallResult{Distance: seventeen, NoGravity: true},
+		},
+	} {
+		c.Equal(tc.want, Fall(tc.distance, tc.gravity, tc.terminalBase, tc.pressure, tc.controlled), tc.name)
+	}
 }
 
 // TestImmovableCollisionDice verifies that hitting something immovable uses the mover's HP, doubled for a hard

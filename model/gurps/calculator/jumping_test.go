@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -72,8 +73,10 @@ func TestJumperFromEntity(t *testing.T) {
 	addDXSkill(e, "Jumping", difficulty.Easy, fxp.One)
 	addLeveledTrait(e, "Enhanced Move (Ground)", fxp.One)
 	addLeveledTrait(e, "Super Jump", fxp.Two)
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Pack").BaseWeight = "30 lb"
 	e.Recalculate()
 	j = JumperFromEntity(e)
+	c.Equal(encumbrance.Light, j.Encumbrance, "a 30 lb pack is a light load")
 	c.Equal(10, j.JumpingSkill, "one point in the DX/Easy skill is DX")
 	c.Equal(fxp.One, j.EnhancedMove, "the trait's levels are read")
 	c.Equal(fxp.Two, j.SuperJump, "for both traits")
