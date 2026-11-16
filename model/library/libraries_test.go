@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -36,6 +37,46 @@ func TestLibrariesNilReadsBehaveLikeAnEmptySet(t *testing.T) {
 	var buf bytes.Buffer
 	c.NoError(libs.MarshalJSONTo(jsontext.NewEncoder(&buf)))
 	c.Equal("null", strings.TrimSpace(buf.String()))
+}
+
+// TestLibrariesUnmarshal verifies what loading a saved set makes of entries that cannot be taken as they are. A null in
+// place of a library -- which a hand-edited or damaged settings file may hold, and which decodes without error as a nil
+// *Library -- is skipped rather than dereferenced, since a panic here would bypass the recovery loadSettingsOrDefaults
+// provides and take GCS down at startup. A key written by GCS v5.4 or earlier for a library with no repository loses
+// the "*" that stood in for its GitHub account.
+func TestLibrariesUnmarshal(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		data string
+		want []string // the keys of the libraries loaded
+	}{
+		{name: "null entry", data: `{"a/b":null}`},
+		{
+			name: "null beside a usable entry",
+			data: `{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`,
+			want: []string{"someone/repo"},
+		},
+		{
+			name: "legacy local key",
+			data: `{"*/local":{"title":"Local","path":"/libs/local"}}`,
+			want: []string{"/local"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			var libs Libraries
+			c.NotPanics(func() { c.NoError(jio.Unmarshal([]byte(tc.data), &libs)) })
+			c.Equal(len(tc.want), libs.Len())
+			for _, key := range tc.want {
+				c.NotNil(libs.Lookup(key), "key %s", key)
+			}
+		})
+	}
+
+	// The guard belongs to Valid() itself, so anything else holding a library that came from a file is covered too.
+	c := check.New(t)
+	var missing *Library
+	c.NotPanics(func() { c.False(missing.Valid()) })
 }
 
 // TestLibrariesAccessIsSafeForConcurrentMutation verifies that the navigator's background content loaders can read the

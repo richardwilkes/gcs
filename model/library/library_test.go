@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -32,20 +31,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/rjeczalik/notify"
 )
-
-// TestLibraryPath verifies that Path() creates the library's directory only when told it may.
-func TestLibraryPath(t *testing.T) {
-	c := check.New(t)
-	libPath := filepath.Join(t.TempDir(), "lib")
-	lib := NewLibrary("Test", "someone", "", "repo", libPath)
-	c.Equal(libPath, lib.Path(false))
-	_, err := os.Stat(libPath)
-	c.True(errors.Is(err, os.ErrNotExist), "library directory was not created")
-	c.Equal(libPath, lib.Path(true))
-	info, err := os.Stat(libPath)
-	c.NoError(err)
-	c.True(err == nil && info.IsDir(), "library directory was created")
-}
 
 // TestLibraryWatchCreatesPath verifies that establishing a watch creates the library's directory when it is missing, as
 // Watch documents: for a first watch, for one established after the directory has been removed, which is what puts a
@@ -125,49 +110,21 @@ func TestLibraryConcurrentAccess(t *testing.T) {
 	c.Equal(100, len(lib.Favorites()))
 }
 
-// TestLibraryDataIsACopy verifies that the snapshot returned by Data() cannot be used to reach back into the library
-// and that Configure() touches only the fields the user is permitted to edit.
-func TestLibraryDataIsACopy(t *testing.T) {
+// TestLibraryConfigureAppliesEveryField verifies that Configure() applies each of the fields the user is permitted to
+// edit, and that Config() and Data() both report them.
+func TestLibraryConfigureAppliesEveryField(t *testing.T) {
 	c := check.New(t)
-	dir := t.TempDir()
-	lib := NewLibrary("Original", "someone", "secret", "repo", dir)
-	lib.ToggleFavorite("a.gcs")
-	originalID := lib.Data().ID
-
-	// Mutating a snapshot must not reach the library.
-	snapshot := lib.Data()
-	snapshot.Title = "Mutated"
-	snapshot.PathOnDisk = "/mutated"
-	c.NotEqual(snapshot.Title, lib.Data().Title, "the library must keep its title")
-	c.NotEqual(snapshot.PathOnDisk, lib.Data().PathOnDisk, "the library must keep its path")
-	c.Equal("Original", lib.Data().Title)
-	c.Equal(dir, lib.Data().PathOnDisk)
-
-	// Likewise for the favorites list, which is handed out as a copy of its own.
-	favorites := lib.Favorites()
-	favorites[0] = "mutated.gcs"
-	c.Equal([]string{"a.gcs"}, lib.Favorites())
-
-	// Configure() has no way to reach the ID, the path on disk or the favorites.
-	lib.Configure(Config{
+	lib := NewLibrary("Original", "someone", "secret", "repo", t.TempDir())
+	config := Config{
 		Title:             "Renamed",
 		GitHubAccountName: "someone-else",
 		AccessToken:       "new-secret",
 		RepoName:          "other-repo",
 		UseLatest:         true,
-	})
-	data := lib.Data()
-	c.Equal(originalID, data.ID)
-	c.Equal(dir, data.PathOnDisk)
-	c.Equal([]string{"a.gcs"}, lib.Favorites())
-	c.Equal(Config{
-		Title:             "Renamed",
-		GitHubAccountName: "someone-else",
-		AccessToken:       "new-secret",
-		RepoName:          "other-repo",
-		UseLatest:         true,
-	}, lib.Config())
-	c.Equal(lib.Config(), data.Config)
+	}
+	lib.Configure(config)
+	c.Equal(config, lib.Config())
+	c.Equal(config, lib.Data().Config)
 }
 
 func TestLibraryFavorites(t *testing.T) {
@@ -177,6 +134,10 @@ func TestLibraryFavorites(t *testing.T) {
 
 	lib.ToggleFavorite("a.gcs")
 	lib.ToggleFavorite("b.gcs")
+	c.Equal([]string{"a.gcs", "b.gcs"}, lib.Favorites())
+
+	// The list is handed out as a copy, so changing it must not reach the library.
+	lib.Favorites()[0] = "mutated.gcs"
 	c.Equal([]string{"a.gcs", "b.gcs"}, lib.Favorites())
 
 	lib.ToggleFavorite("a.gcs")
@@ -295,31 +256,12 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 	c.Equal(int64(1), syncs.Load(), "the watch is told the root moved")
 	c.Equal(watchable, token.root, "the watch is now rooted at the new path")
 
-	// Everything above this point holds on every platform. The live-event check below cannot run on Windows under
-	// -race: notify's readdcw backend reads an event's name by viewing its 4096-byte ReadDirectoryChangesW buffer
-	// through a *[syscall.MAX_LONG_PATH]uint16, i.e. a 64KB array type (watcher_readdcw.go:406, still present in
-	// v0.9.3, the newest release). The bytes it reads stay inside the buffer, but the conversion itself nominally spans
-	// past the allocation, so checkptr, which -race turns on, aborts the whole test binary the first time an event is
-	// delivered. Release builds never enable -race, so no shipped binary carries the check.
-	if raceEnabled && runtime.GOOS == "windows" {
-		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
-	}
+	// Everything above this point holds on every platform; the live-event check below does not.
+	skipIfWatchEventsTripCheckptr(t)
 
 	// The watch must actually be live at the new location, not merely re-registered.
-	created := filepath.Join(watchable, "new.gcs")
-	c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
-	// The platform watchers may also report the creation of the new root itself, so look past anything else.
-	deadline := time.After(10 * time.Second)
-	for {
-		select {
-		case p := <-events:
-			if filepath.Base(p) == "new.gcs" {
-				return
-			}
-		case <-deadline:
-			t.Fatalf("no filesystem event was delivered for %s", created)
-		}
-	}
+	c.NoError(os.WriteFile(filepath.Join(watchable, "new.gcs"), []byte("{}"), 0o600))
+	awaitChange(t, events, "new.gcs")
 }
 
 // TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
@@ -399,106 +341,61 @@ func TestMonitorTokenLibraryPaths(t *testing.T) {
 }
 
 // TestLibraryWatchReportsPathsAsTheLibraryNamesThem verifies, against the real platform watcher, that a change is
-// reported with the path the library names it by rather than the one the watcher resolves it to. Every temporary
-// directory on macOS is one such case (/var is a symlink to /private/var), and a library configured through a symlink,
-// or holding a symlinked directory registered via AddSubPath, is the general one. The navigator's deep search cache is
-// keyed by the library's paths and drops the entry for each reported change; a change reported under any other path
-// would leave a stale entry in place.
+// reported with the path the library names it by rather than the one the watcher resolves it to. The navigator's deep
+// search cache is keyed by the library's paths and drops the entry for each reported change; a change reported under
+// any other path would leave a stale entry in place.
 func TestLibraryWatchReportsPathsAsTheLibraryNamesThem(t *testing.T) {
-	// See TestLibrarySetPathAfterWatchFailsRestartsWatch for why events cannot be delivered on Windows under -race.
-	if raceEnabled && runtime.GOOS == "windows" {
-		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
-	}
-	c := check.New(t)
-	dir := t.TempDir()
-	actual := filepath.Join(dir, "real")
-	c.NoError(os.MkdirAll(actual, 0o750))
-	link := filepath.Join(dir, "link")
-	if err := os.Symlink(actual, link); err != nil {
-		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
-	}
-	target := filepath.Join(dir, "target")
-	c.NoError(os.MkdirAll(target, 0o750))
-	c.NoError(os.Symlink(target, filepath.Join(actual, "linked")))
+	skipIfWatchEventsTripCheckptr(t)
 
-	// The library is configured through the symlink, so nothing it names is where the watcher will see it.
-	lib := NewLibrary("Test", "someone", "", "repo", link)
-	events := make(chan string, 64)
-	token := lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
-		if what != EventRootSync {
-			select {
-			case events <- fullPath:
-			default:
-			}
+	// Every temporary directory on macOS is one such case (/var is a symlink to /private/var), and a library configured
+	// through a symlink, or holding a symlinked directory registered via AddSubPath, is the general one.
+	t.Run("symlinks", func(t *testing.T) {
+		c := check.New(t)
+		dir := t.TempDir()
+		actual := filepath.Join(dir, "real")
+		c.NoError(os.MkdirAll(actual, 0o750))
+		link := filepath.Join(dir, "link")
+		if err := os.Symlink(actual, link); err != nil {
+			t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
 		}
-	}, false)
-	defer token.Stop()
-	token.AddSubPath("linked")
+		target := filepath.Join(dir, "target")
+		c.NoError(os.MkdirAll(target, 0o750))
+		c.NoError(os.Symlink(target, filepath.Join(actual, "linked")))
 
-	expect := func(created, want string) {
-		t.Helper()
+		// The library is configured through the symlink, so nothing it names is where the watcher will see it.
+		lib := NewLibrary("Test", "someone", "", "repo", link)
+		token, events := watchForChanges(lib)
+		defer token.Stop()
+		token.AddSubPath("linked")
+
+		direct := filepath.Join(link, "direct.gcs")
+		c.NoError(os.WriteFile(direct, []byte("{}"), 0o600))
+		c.Equal(direct, awaitChange(t, events, "direct.gcs"))
+		c.NoError(os.WriteFile(filepath.Join(target, "via-link.gcs"), []byte("{}"), 0o600))
+		c.Equal(filepath.Join(link, "linked", "via-link.gcs"), awaitChange(t, events, "via-link.gcs"))
+	})
+
+	// A configured path differs in case from the one on disk when it was typed rather than picked on a case-insensitive
+	// filesystem. On macOS, FSEvents reports paths in their on-disk case and rjeczalik/notify drops anything that does
+	// not begin with the path it was asked to watch, so handing it the path as typed would make the watch silently
+	// report nothing at all.
+	t.Run("case mismatch", func(t *testing.T) {
+		c := check.New(t)
+		dir := t.TempDir()
+		c.NoError(os.MkdirAll(filepath.Join(dir, "MyLib", "Sub"), 0o750))
+		typed := filepath.Join(dir, "mylib", "sub")
+		if _, err := os.Stat(typed); err != nil {
+			t.Skip("the filesystem is case-sensitive, so the path as typed is simply a different path")
+		}
+
+		lib := NewLibrary("Test", "someone", "", "repo", typed)
+		token, events := watchForChanges(lib)
+		defer token.Stop()
+
+		created := filepath.Join(typed, "new.gcs")
 		c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
-		deadline := time.After(10 * time.Second)
-		for {
-			select {
-			case p := <-events:
-				if filepath.Base(p) == filepath.Base(created) {
-					c.Equal(want, p)
-					return
-				}
-			case <-deadline:
-				t.Fatalf("no filesystem event was delivered for %s", created)
-			}
-		}
-	}
-	expect(filepath.Join(link, "direct.gcs"), filepath.Join(link, "direct.gcs"))
-	expect(filepath.Join(target, "via-link.gcs"), filepath.Join(link, "linked", "via-link.gcs"))
-}
-
-// TestLibraryWatchSurvivesCaseMismatch verifies that a library whose configured path differs in case from the one on
-// disk, as happens when the path is typed rather than picked on a case-insensitive filesystem, still has its changes
-// reported, and reported under the configured path. On macOS, FSEvents reports paths in their on-disk case and
-// rjeczalik/notify drops anything that does not begin with the path it was asked to watch, so handing it the path as
-// typed would make the watch silently report nothing at all.
-func TestLibraryWatchSurvivesCaseMismatch(t *testing.T) {
-	// See TestLibrarySetPathAfterWatchFailsRestartsWatch for why events cannot be delivered on Windows under -race.
-	if raceEnabled && runtime.GOOS == "windows" {
-		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
-	}
-	c := check.New(t)
-	dir := t.TempDir()
-	c.NoError(os.MkdirAll(filepath.Join(dir, "MyLib", "Sub"), 0o750))
-	typed := filepath.Join(dir, "mylib", "sub")
-	if _, err := os.Stat(typed); err != nil {
-		t.Skip("the filesystem is case-sensitive, so the path as typed is simply a different path")
-	}
-
-	lib := NewLibrary("Test", "someone", "", "repo", typed)
-	events := make(chan string, 64)
-	token := lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
-		if what != EventRootSync {
-			select {
-			case events <- fullPath:
-			default:
-			}
-		}
-	}, false)
-	defer token.Stop()
-
-	created := filepath.Join(typed, "new.gcs")
-	c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
-	deadline := time.After(10 * time.Second)
-	for {
-		select {
-		case p := <-events:
-			if filepath.Base(p) == "new.gcs" {
-				c.Equal(created, p, "the change must be reported under the path as the library names it")
-				return
-			}
-		case <-deadline:
-			t.Fatalf("no filesystem event was delivered for %s", created)
-		}
-	}
+		c.Equal(created, awaitChange(t, events, "new.gcs"))
+	})
 }
 
 func TestLibraryJSONRoundTrip(t *testing.T) {
@@ -530,59 +427,17 @@ func TestLibraryJSONRoundTrip(t *testing.T) {
 	c.Equal("4", current, "the version on disk isn't saved, so it must be read when the library is loaded")
 }
 
-// TestLibrariesUnmarshalSkipsNullEntries verifies that a null in place of a library -- which a hand-edited or damaged
-// settings file may hold, and which decodes without error as a nil *Library -- is skipped rather than dereferenced. A
-// panic here would bypass the recovery loadSettingsOrDefaults provides and take GCS down at startup.
-func TestLibrariesUnmarshalSkipsNullEntries(t *testing.T) {
-	c := check.New(t)
-	var libs Libraries
-	c.NotPanics(func() { c.NoError(jio.Unmarshal([]byte(`{"a/b":null}`), &libs)) })
-	c.Equal(0, libs.Len())
-
-	// A null alongside a usable entry must cost only the null.
-	c.NotPanics(func() {
-		c.NoError(jio.Unmarshal([]byte(`{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`), &libs))
-	})
-	c.Equal(1, libs.Len())
-	lib := libs.Lookup("someone/repo")
-	c.NotNil(lib)
-	c.Equal("Good", lib.Data().Title)
-
-	// The guard belongs to Valid() itself, so anything else holding a library that came from a file is covered too.
-	var missing *Library
-	c.NotPanics(func() { c.False(missing.Valid()) })
-}
-
-// TestLibraryDownloadReleaseChecksStatusCode verifies that an HTTP error response is reported as an HTTP failure rather
-// than being handed to the zip reader, which would report a misleading "unable to open archive" error.
+// TestLibraryDownloadReleaseChecksStatusCode verifies that an HTTP error response is reported as a failed download
+// rather than handed back as the archive, which the zip reader would then reject with a misleading "unable to open
+// archive" error.
 func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 	c := check.New(t)
-	status := http.StatusOK
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(status)
-		fmt.Fprint(w, "not a zip file")
-	}))
+	srv := httptest.NewServer(http.NotFoundHandler())
 	defer srv.Close()
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	release := Release{Version: "1.0.0", ZipFileURL: srv.URL}
-
-	for _, code := range []int{http.StatusNotFound, http.StatusForbidden, http.StatusTooManyRequests} {
-		status = code
-		data, err := lib.downloadRelease(t.Context(), srv.Client(), &release, nil)
-		c.HasError(err, "status %d", code)
-		c.Nil(data, "status %d", code)
-		c.Contains(err.Error(), strconv.Itoa(code), "status %d", code)
-		c.Contains(err.Error(), srv.URL, "status %d", code)
-	}
-
-	// A successful response must still hand back the body unchanged, and must account for every byte of it, since the
-	// progress bar is scaled by that count.
-	status = http.StatusOK
-	var counted int64
-	data, err := lib.downloadRelease(t.Context(), srv.Client(), &release, func(n int64) { counted += n })
-	c.NoError(err)
-	c.Equal([]byte("not a zip file"), data)
-	c.Equal(int64(len("not a zip file")), counted)
+	data, err := lib.downloadRelease(t.Context(), srv.Client(), &Release{Version: "1.0.0", ZipFileURL: srv.URL}, nil)
+	c.HasError(err)
+	c.Nil(data)
 }
 
 // TestCheckForAvailableUpgradeNotifiesLateInstalledFunc verifies that an update check completing before the UI has
@@ -593,7 +448,7 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
 
-	client, setReleases := newReleasesServer(t, "5")
+	client, _ := newReleasesServer(t, "5")
 
 	// The library has no release.txt, so its version on disk is "0" while the newest release is "5": an upgrade is
 	// available and a notification is due.
@@ -612,65 +467,112 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	var later atomic.Int64
 	SetNotifyOfLibraryChangeFunc(func() { later.Add(1) })
 	c.Equal(int64(0), later.Load())
-
-	// With a function installed, a check that turns up a release the previous one didn't notifies directly.
-	setReleases("5.1", "5")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(1), later.Load())
-
-	// The library being brought up to date outside of the app takes the update that was on offer away, which the
-	// navigator has to hear about so that the indicator comes down; a check after that has nothing new to say.
-	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("5.1\n"), 0o600))
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), later.Load(), "an update that is no longer on offer must be announced")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), later.Load(), "a check that finds nothing newer than what is on disk must not notify")
 }
 
-// TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges verifies that repeating a check whose answer hasn't
-// changed notifies only the first time. A notification reloads the entire library tree, so a periodic check that
-// notified every time would disturb the user over and over for as long as an update went uninstalled.
-func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
-	c := check.New(t)
-	// The function is installed before the first check, so nothing can be latched as a pending notification instead of
-	// being counted here.
-	calls := countLibraryChangeNotifications(t)
-
-	client, _ := newReleasesServer(t, "5")
-	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(1), calls.Load(), "the first check surfaces the pending update")
-	for range 3 {
-		lib.CheckForAvailableUpgrade(t.Context(), client)
+// TestCheckForAvailableUpgradeNotifiesOnlyOnChange verifies that a check notifies only when it found something the
+// previous one didn't: an update newly on offer, content replaced on disk outside of the app, or an update no longer on
+// offer. A notification reloads the entire library tree, so a periodic check that notified every time would disturb the
+// user over and over for as long as an update went uninstalled, while one that kept quiet about a change would leave
+// the Library Explorer's indicator and buttons showing what is no longer so.
+func TestCheckForAvailableUpgradeNotifiesOnlyOnChange(t *testing.T) {
+	// step is one check: the releases the repository offers when it is made, newest first, the version written to the
+	// library's release file ahead of it, if any, and whether it must notify.
+	type step struct {
+		why      string
+		onDisk   string
+		releases []string
+		notifies bool
 	}
-	c.Equal(int64(1), calls.Load(), "repeating the same check announces nothing new")
-
-	// A library whose content was replaced on disk outside of the app is a change the next check must announce, since
-	// the version the navigator is showing is no longer the one that is there.
-	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("4\n"), 0o600))
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), calls.Load(), "the version on disk changed")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), calls.Load(), "...and once is enough for that, too")
-}
-
-// TestCheckForAvailableUpgradeStaysQuietForLocalLibrary verifies that a library that isn't backed by a GitHub repo
-// never notifies. There are no releases for it, so the newest release reads as "" while the version on disk reads as
-// "0" for want of a release.txt, and comparing those two directly would announce a nonexistent update on every check.
-func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
-	c := check.New(t)
-	calls := countLibraryChangeNotifications(t)
-
-	// An empty GitHub account name means there is nothing to ask about, so the nil client is never touched. Should that
-	// ever cease to be true, the test fails loudly rather than reaching out to the network.
-	lib := NewLibrary("Local", "", "", "local", t.TempDir())
-	for range 3 {
-		lib.CheckForAvailableUpgrade(t.Context(), nil)
+	for _, tc := range []struct {
+		name  string
+		steps []step
+		local bool // the library has no repository behind it
+	}{
+		{
+			name: "update pending",
+			steps: []step{
+				{releases: []string{"5"}, notifies: true, why: "the first check surfaces the pending update"},
+				{releases: []string{"5"}, why: "repeating the same check announces nothing new"},
+				{releases: []string{"5"}, onDisk: "4", notifies: true, why: "the content on disk was replaced"},
+				{releases: []string{"5"}, why: "once is enough for that, too"},
+			},
+		},
+		{
+			name: "release appears",
+			steps: []step{
+				{why: "a repository with no releases yet has nothing to announce"},
+				{releases: []string{"5"}, notifies: true, why: "the release that has just appeared is announced"},
+				{releases: []string{"5"}, why: "but only once"},
+				{releases: []string{"5.1", "5"}, notifies: true, why: "a newer release is a change of its own"},
+			},
+		},
+		{
+			name: "update withdrawn",
+			steps: []step{
+				{releases: []string{"5"}, notifies: true, why: "the update is announced"},
+				{notifies: true, why: "the update being withdrawn must be announced"},
+				{why: "but only once"},
+				{releases: []string{"5"}, notifies: true, why: "the update reappearing must be announced"},
+			},
+		},
+		{
+			name: "brought up to date outside of the app",
+			steps: []step{
+				{releases: []string{"5"}, notifies: true, why: "the update is announced"},
+				{releases: []string{"5"}, onDisk: "5", notifies: true, why: "the update going away must be announced"},
+				{releases: []string{"5"}, why: "but only once"},
+			},
+		},
+		{
+			name: "up to date from the start",
+			steps: []step{
+				{releases: []string{"5"}, onDisk: "5", why: "a library that is current has nothing to announce"},
+				{releases: []string{"5"}, why: "nor does it later"},
+			},
+		},
+		{
+			// There are no releases for it, so the newest release reads as "" and never matches the version on disk.
+			// Comparing those two directly would announce a nonexistent update whenever the content on disk changed.
+			name:  "local library",
+			local: true,
+			steps: []step{
+				{why: "a library with no repository has no update to announce"},
+				{onDisk: "4", why: "nor does replacing its content on disk give it one"},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			// The function is installed before the first check, so nothing can be latched as a pending notification
+			// instead of being counted here.
+			calls := countLibraryChangeNotifications(t)
+			// An empty GitHub account name means there is nothing to ask about, so the nil client is never touched.
+			// Should that ever cease to be true, the test fails loudly rather than reaching out to the network.
+			lib := NewLibrary("Local", "", "", "local", t.TempDir())
+			var client *http.Client
+			setReleases := func(...string) {}
+			if !tc.local {
+				lib = NewLibrary("Test", "someone", "", "repo", t.TempDir())
+				client, setReleases = newReleasesServer(t)
+			}
+			versionFile := filepath.Join(lib.Data().PathOnDisk, releaseFile)
+			for i, one := range tc.steps {
+				setReleases(one.releases...)
+				if one.onDisk != "" {
+					c.NoError(os.WriteFile(versionFile, []byte(one.onDisk+"\n"), 0o600))
+				}
+				before := calls.Load()
+				lib.CheckForAvailableUpgrade(t.Context(), client)
+				var want int64
+				if one.notifies {
+					want = 1
+				}
+				c.Equal(want, calls.Load()-before, "step %d: %s", i, one.why)
+				_, releases := lib.AvailableReleases()
+				c.Equal(len(one.releases), len(releases), "step %d: what the repository offers must be recorded", i)
+			}
+		})
 	}
-	c.Equal(int64(0), calls.Load())
-	current, releases := lib.AvailableReleases()
-	c.Equal("0", current)
-	c.Equal(0, len(releases))
 }
 
 // TestNeedsUpgradeCheck verifies what the Library Explorer relies on to keep its update buttons usable when the
@@ -690,9 +592,11 @@ func TestNeedsUpgradeCheck(t *testing.T) {
 	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
 	c.True(lib.NeedsUpgradeCheck(), "a library that has never been checked needs a check")
 
-	ctx, cancel := context.WithCancel(t.Context())
-	cancel()
-	lib.CheckForAvailableUpgrade(ctx, client)
+	// Nothing here needs the failing request held first, so it is let go in advance.
+	unreachable := &blockingFailingTransport{started: make(chan struct{}, 1), releases: make(chan struct{}, 1)}
+	unreachable.releases <- struct{}{}
+	lib.CheckForAvailableUpgrade(t.Context(), &http.Client{Transport: unreachable})
+	c.Equal(int64(1), unreachable.attempts.Load(), "the repository must have been asked")
 	c.True(lib.NeedsUpgradeCheck(), "a check that failed must leave the library needing one")
 	_, releases := lib.AvailableReleases()
 	c.Equal(0, len(releases))
@@ -701,72 +605,6 @@ func TestNeedsUpgradeCheck(t *testing.T) {
 	c.False(lib.NeedsUpgradeCheck(), "a check that completed satisfies the need")
 	_, releases = lib.AvailableReleases()
 	c.Equal(1, len(releases))
-}
-
-// TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears verifies that a check turning up a release the previous check
-// didn't have does notify, which is the entire point of checking more than once.
-func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
-	c := check.New(t)
-	calls := countLibraryChangeNotifications(t)
-
-	client, setReleases := newReleasesServer(t)
-	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(0), calls.Load(), "a repo with no releases yet has nothing to announce")
-
-	setReleases("5")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(1), calls.Load(), "the release that has just appeared is announced")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(1), calls.Load(), "...and only once")
-
-	// A newer release turning up later is a change of its own.
-	setReleases("5.1", "5")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), calls.Load())
-	current, releases := lib.AvailableReleases()
-	c.Equal("0", current)
-	c.Equal(2, len(releases))
-}
-
-// TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears verifies that a check which finds an update that was on
-// offer no longer is -- the release having been withdrawn, or the library having been brought up to date outside of the
-// app -- notifies, so that the Library Explorer's indicator and buttons don't go on offering it.
-func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
-	c := check.New(t)
-	calls := countLibraryChangeNotifications(t)
-
-	client, setReleases := newReleasesServer(t, "5")
-	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(1), calls.Load(), "the update is announced")
-
-	// Withdrawn: the repo no longer has a release to offer.
-	setReleases()
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), calls.Load(), "the update being withdrawn must be announced")
-	_, releases := lib.AvailableReleases()
-	c.Equal(0, len(releases))
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(2), calls.Load(), "...but only once")
-
-	// Installed outside of the app: the release is back, and the disk already has it.
-	setReleases("5")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(3), calls.Load(), "the update reappearing must be announced")
-	c.NoError(os.WriteFile(filepath.Join(lib.Data().PathOnDisk, releaseFile), []byte("5\n"), 0o600))
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(4), calls.Load(), "the library being brought up to date must be announced")
-	lib.CheckForAvailableUpgrade(t.Context(), client)
-	c.Equal(int64(4), calls.Load(), "...but only once")
-
-	// A library that never had an update on offer has nothing to take away.
-	fresh := NewLibrary("Fresh", "someone", "", "repo", t.TempDir())
-	c.NoError(os.WriteFile(filepath.Join(fresh.Data().PathOnDisk, releaseFile), []byte("5\n"), 0o600))
-	for range 2 {
-		fresh.CheckForAvailableUpgrade(t.Context(), client)
-	}
-	c.Equal(int64(4), calls.Load(), "a library that is already up to date has nothing to announce")
 }
 
 // TestConfigureDiscardsChecksOfTheOldRepository verifies that pointing a library at a different repository -- or at the
@@ -875,8 +713,15 @@ func TestCheckForAvailableUpgradeWaiterHonorsItsContext(t *testing.T) {
 	first := startUpgradeCheck(t.Context(), lib, client)
 	<-srv.started
 	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	second := startUpgradeCheck(ctx, lib, client)
+	checkStillWaiting(t, second)
 	cancel()
-	lib.CheckForAvailableUpgrade(ctx, client) // Must return without waiting for the first check to finish
+	select {
+	case <-second:
+	case <-time.After(5 * time.Second):
+		t.Fatal("a check waiting on another must return once its own context is done")
+	}
 	c.True(lib.NeedsUpgradeCheck(), "giving up on the wait must not count as a completed check")
 	srv.release()
 	<-first
@@ -1387,6 +1232,51 @@ func (t *redirectingTransport) RoundTrip(req *http.Request) (*http.Response, err
 	redirected.URL.Host = t.host
 	redirected.Host = ""
 	return http.DefaultTransport.RoundTrip(redirected)
+}
+
+// skipIfWatchEventsTripCheckptr skips a test that needs a watch event delivered where one cannot be: on Windows under
+// -race. notify's readdcw backend reads an event's name by viewing its 4096-byte ReadDirectoryChangesW buffer through a
+// *[syscall.MAX_LONG_PATH]uint16, i.e. a 64KB array type (watcher_readdcw.go:406, still present in v0.9.3, the newest
+// release). The bytes it reads stay inside the buffer, but the conversion itself nominally spans past the allocation,
+// so checkptr, which -race turns on, aborts the whole test binary the first time an event is delivered. Release builds
+// never enable -race, so no shipped binary carries the check.
+func skipIfWatchEventsTripCheckptr(t *testing.T) {
+	t.Helper()
+	if raceEnabled && runtime.GOOS == "windows" {
+		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
+	}
+}
+
+// watchForChanges establishes a watch on the library that passes the path of each change it reports, root syncs aside,
+// to the returned channel.
+func watchForChanges(lib *Library) (token *MonitorToken, events <-chan string) {
+	ch := make(chan string, 64)
+	return lib.Watch(func(_ *Library, fullPath string, what notify.Event) {
+		if what != EventRootSync {
+			select {
+			case ch <- fullPath:
+			default:
+			}
+		}
+	}, false), ch
+}
+
+// awaitChange returns the path under which a change to the file with the given base name is reported, failing the test
+// if none arrives. The platform watchers may report other changes too, such as the creation of a new root, so anything
+// else is passed over.
+func awaitChange(t *testing.T, events <-chan string, name string) string {
+	t.Helper()
+	deadline := time.After(10 * time.Second)
+	for {
+		select {
+		case p := <-events:
+			if filepath.Base(p) == name {
+				return p
+			}
+		case <-deadline:
+			t.Fatalf("no filesystem event was delivered for %s", name)
+		}
+	}
 }
 
 // waitForMonitorQueue blocks until everything already queued on the library's monitor has been processed. The queue

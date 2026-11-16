@@ -18,21 +18,22 @@ import (
 )
 
 // TestResolvePathRestoresCase verifies that resolvePath returns a path in the case it has on disk, with its symlinks
-// resolved, no matter how it was typed. A temporary directory on macOS sits beneath /var, a symlink to /private/var, so
-// the symlink half is exercised without any setup of its own.
+// resolved, no matter how it was typed.
 func TestResolvePathRestoresCase(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	actual := filepath.Join(dir, "MyLib", "Sub")
 	c.NoError(os.MkdirAll(actual, 0o750))
-	typed := filepath.Join(dir, "mylib", "sub")
+	c.NoError(os.Symlink(filepath.Join(dir, "MyLib"), filepath.Join(dir, "link")))
+	typed := filepath.Join(dir, "link", "sub")
 	if _, err := os.Stat(typed); err != nil {
 		t.Skip("the filesystem is case-sensitive, so there is no case to restore")
 	}
 
+	// The temporary directory may itself sit beneath a symlink, as it does by default on macOS, where /var leads to
+	// /private/var, so the path as created is not necessarily the resolved one.
 	want, err := filepath.EvalSymlinks(actual)
 	c.NoError(err)
-	c.NotEqual(actual, want, "a temporary directory is expected to sit beneath a symlink")
 
 	got, err := resolvePath(typed)
 	c.NoError(err)
@@ -40,7 +41,7 @@ func TestResolvePathRestoresCase(t *testing.T) {
 
 	got, err = resolvePath(actual)
 	c.NoError(err)
-	c.Equal(want, got, "a path already in the right case must come back the same")
+	c.Equal(want, got, "a path already in the right case must resolve to the same place")
 
 	_, err = resolvePath(filepath.Join(dir, "missing"))
 	c.HasError(err, "a path that does not exist cannot be resolved")

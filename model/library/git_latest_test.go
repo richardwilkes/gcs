@@ -13,7 +13,6 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -57,24 +56,42 @@ func TestDownloadLatestCommitReservedName(t *testing.T) {
 // for the progress shown while a "use latest commit" library is being fetched.
 func TestCountingTransportMeasuresResponses(t *testing.T) {
 	c := check.New(t)
-	body := strings.Repeat("pack data", 1000)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		io.WriteString(w, body) //nolint:errcheck // Nothing useful can be done with a failure to write to the test client
-	}))
-	defer srv.Close()
-
+	base := &closeCountingTransport{body: strings.Repeat("pack data", 1000)}
 	var total int64
-	client := *srv.Client()
-	client.Transport = &countingTransport{base: client.Transport, received: func(n int64) { total += n }}
+	transport := &countingTransport{base: base, received: func(n int64) { total += n }}
 	for i := range 2 { // Two requests, since a clone makes more than one and the count has to span them all
-		rsp, err := client.Get(srv.URL)
+		req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.invalid", http.NoBody)
+		c.NoError(err, "request %d", i)
+		rsp, err := transport.RoundTrip(req)
 		c.NoError(err, "request %d", i)
 		data, err := io.ReadAll(rsp.Body)
 		c.NoError(err, "request %d", i)
 		c.NoError(rsp.Body.Close(), "request %d", i)
-		c.Equal(len(body), len(data), "request %d", i)
+		c.Equal(base.body, string(data), "request %d", i)
 	}
-	c.Equal(int64(2*len(body)), total)
+	c.Equal(int64(2*len(base.body)), total)
+	c.Equal(2, base.closed, "closing a counted body must close the one it wraps")
+}
+
+// closeCountingTransport answers every request with its body and counts how many of the bodies handed out were closed.
+type closeCountingTransport struct {
+	body   string
+	closed int
+}
+
+func (t *closeCountingTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	body := &closeCountingBody{Reader: strings.NewReader(t.body), from: t}
+	return &http.Response{StatusCode: http.StatusOK, Body: body}, nil
+}
+
+type closeCountingBody struct {
+	io.Reader
+	from *closeCountingTransport
+}
+
+func (b *closeCountingBody) Close() error {
+	b.from.closed++
+	return nil
 }
 
 // buildBareLibraryRepo creates a bare git repository at dir containing a single commit with one file at filePath holding

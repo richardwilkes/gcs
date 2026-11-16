@@ -27,7 +27,6 @@ func TestRace(t *testing.T) {
 	t.Run("LibrarySetPathAfterWatchFailsRestartsWatch", TestLibrarySetPathAfterWatchFailsRestartsWatch)
 	t.Run("LibraryWatchDeliversNothingUntilSomethingHappens", TestLibraryWatchDeliversNothingUntilSomethingHappens)
 	t.Run("LibraryWatchReportsPathsAsTheLibraryNamesThem", TestLibraryWatchReportsPathsAsTheLibraryNamesThem)
-	t.Run("LibraryWatchSurvivesCaseMismatch", TestLibraryWatchSurvivesCaseMismatch)
 	t.Run("CheckForAvailableUpgradeJoinsACheckInFlight", TestCheckForAvailableUpgradeJoinsACheckInFlight)
 	t.Run("CheckForAvailableUpgradeWaiterHonorsItsContext", TestCheckForAvailableUpgradeWaiterHonorsItsContext)
 	t.Run("ConfigureForKeyDiscardsChecksOfTheOldRepository", TestConfigureForKeyDiscardsChecksOfTheOldRepository)

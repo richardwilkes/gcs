@@ -546,7 +546,6 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	if len(l.releases) != 0 {
 		prevLastRelease = l.releases[0].Version
 	}
-	firstCheck := !l.checked
 	l.checked = true
 	l.releases = releases
 	l.current = current
@@ -554,14 +553,14 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	// A notification reloads the entire library tree, restarting the filesystem watches, dropping caches and disturbing
 	// anything in progress, so one is sent only when this check found something the previous one didn't: an update
 	// newly available, content changed on disk outside of the app, or an update no longer on offer -- withdrawn, or
-	// applied outside of the app -- whose indicator must come down. The first check of a library also announces an
-	// update that was already pending, which raises the indicator at startup. A library with no releases to compare
-	// against -- a local one, or a repo whose releases were all rejected as incompatible -- has nothing to announce,
-	// even though the "0" that stands in for an unknown version on disk differs from the empty version of a missing
-	// release.
+	// applied outside of the app -- whose indicator must come down. An update already pending when a library is first
+	// checked counts as newly available, since no releases are recorded until a check completes, which raises the
+	// indicator at startup. A library with no releases to compare against -- a local one, or a repo whose releases were
+	// all rejected as incompatible -- has nothing to announce, even though the "0" that stands in for an unknown
+	// version on disk differs from the empty version of a missing release.
 	prevUpdateAvailable := prevLastRelease != "" && prevCurrent != prevLastRelease
 	updateAvailable := lastRelease != "" && current != lastRelease
-	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) ||
+	if updateAvailable && (prevCurrent != current || prevLastRelease != lastRelease) ||
 		prevUpdateAvailable && !updateAvailable {
 		NotifyOfLibraryChange()
 	}

@@ -256,63 +256,66 @@ func checkLibraryUntouched(c check.Checker, lib *Library, dir string) {
 	c.Equal("0.9.0", lib.VersionOnDisk(), "the library must still report the version it actually holds")
 }
 
-// TestLibraryDownloadCanceledWhileInstalling verifies that stopping an update part way through unpacking, as the update
-// window's Cancel button does, leaves the library holding what it held before rather than a half-written one.
-func TestLibraryDownloadCanceledWhileInstalling(t *testing.T) {
-	c := check.New(t)
+// TestLibraryDownloadCanceled verifies that stopping an update part way through, as the update window's Cancel button
+// does, leaves the library holding what it held before rather than a half-written one, and reports the failure as the
+// cancellation it was.
+func TestLibraryDownloadCanceled(t *testing.T) {
 	archive := buildLibraryArchive(t, map[string]string{
-		"Library/one.gct":   strings.Repeat("a", 4096),
+		"Library/one.gct":   strings.Repeat("a", 64*1024),
 		"Library/two.gct":   strings.Repeat("b", 4096),
 		"Library/three.gct": strings.Repeat("c", 4096),
 	})
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Write(archive) //nolint:errcheck // Nothing useful can be done with a failure to write to the test client
-	}))
-	defer srv.Close()
-	dir := filepath.Join(t.TempDir(), "lib")
-	lib := seedLibrary(t, dir)
-	release := Release{Version: "1.0.0", ZipFileURL: srv.URL}
+	for _, tc := range []struct {
+		name   string
+		serve  http.HandlerFunc
+		cancel func(phase UpdatePhase, fraction float64) bool // reports whether the update is to be canceled now
+	}{
+		{
+			// The transfer is where most of the waiting -- and therefore most of the canceling -- happens. Canceling on
+			// the first report would be too soon, since that one is made before the request is.
+			name: "while downloading",
+			serve: func(w http.ResponseWriter, r *http.Request) {
+				w.Write(archive[:len(archive)/2]) //nolint:errcheck // Nothing useful can be done with a failure here
+				// Without a flush, nothing reaches the client until the handler returns, which it never does.
+				if flusher, ok := w.(http.Flusher); ok {
+					flusher.Flush()
+				}
+				<-r.Context().Done() // The rest never arrives, so the client is left waiting until it gives up
+			},
+			cancel: func(phase UpdatePhase, fraction float64) bool {
+				return phase == UpdateDownloading && fraction > 0
+			},
+		},
+		{
+			name: "while installing",
+			serve: func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(archive) //nolint:errcheck // Nothing useful can be done with a failure here
+			},
+			cancel: func(phase UpdatePhase, _ float64) bool { return phase == UpdateInstalling },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			srv := httptest.NewServer(tc.serve)
+			defer srv.Close()
+			dir := filepath.Join(t.TempDir(), "lib")
+			lib := seedLibrary(t, dir)
+			release := Release{Version: "1.0.0", ZipFileURL: srv.URL}
 
-	ctx, cancel := context.WithCancel(t.Context())
-	defer cancel()
-	err := lib.Download(ctx, srv.Client(), &release, func(phase UpdatePhase, _ float64) {
-		if phase == UpdateInstalling {
-			cancel()
-		}
-	})
-	c.HasError(err, "a canceled update must be reported as a failure")
-	c.True(errors.Is(err, context.Canceled), "the failure must be recognizable as the cancellation: %v", err)
-	checkLibraryUntouched(c, lib, dir)
-	_, err = os.Stat(filepath.Join(dir, "one.gct"))
-	c.True(os.IsNotExist(err), "nothing from the canceled update may be left behind")
-}
-
-// TestLibraryDownloadCanceledWhileDownloading verifies the same for a cancellation during the transfer, which is where
-// most of the waiting -- and therefore most of the canceling -- happens.
-func TestLibraryDownloadCanceledWhileDownloading(t *testing.T) {
-	c := check.New(t)
-	archive := buildLibraryArchive(t, map[string]string{"Library/one.gct": strings.Repeat("a", 64*1024)})
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(archive[:len(archive)/2]) //nolint:errcheck // Nothing useful can be done with a failure to write here
-		if flusher, ok := w.(http.Flusher); ok {
-			flusher.Flush() // Without this, nothing reaches the client until the handler returns, which it never does
-		}
-		<-r.Context().Done() // The rest never arrives, so the client is left waiting until it gives up
-	}))
-	defer srv.Close()
-	dir := filepath.Join(t.TempDir(), "lib")
-	lib := seedLibrary(t, dir)
-	release := Release{Version: "1.0.0", ZipFileURL: srv.URL}
-
-	ctx, cancel := context.WithCancel(t.Context())
-	defer cancel()
-	err := lib.Download(ctx, srv.Client(), &release, func(phase UpdatePhase, _ float64) {
-		if phase == UpdateDownloading {
-			cancel()
-		}
-	})
-	c.HasError(err, "a canceled download must be reported as a failure")
-	checkLibraryUntouched(c, lib, dir)
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			err := lib.Download(ctx, srv.Client(), &release, func(phase UpdatePhase, fraction float64) {
+				if tc.cancel(phase, fraction) {
+					cancel()
+				}
+			})
+			c.HasError(err, "a canceled update must be reported as a failure")
+			c.True(errors.Is(err, context.Canceled), "the failure must be recognizable as the cancellation: %v", err)
+			checkLibraryUntouched(c, lib, dir)
+			_, err = os.Stat(filepath.Join(dir, "one.gct"))
+			c.True(os.IsNotExist(err), "nothing from the canceled update may be left behind")
+		})
+	}
 }
 
 // TestRecordedDownloadSizeToleratesJunk verifies that a release file without a usable size is reported as "not known"
