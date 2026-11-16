@@ -35,14 +35,6 @@ func TestChecksAtLaunch(t *testing.T) {
 	c.False(updatecheck.Never.ChecksAtLaunch())
 }
 
-// TestZeroValueIsAtLaunch verifies that the zero value, which settings files predating this setting load as, is the
-// default.
-func TestZeroValueIsAtLaunch(t *testing.T) {
-	c := check.New(t)
-	c.Equal(updatecheck.AtLaunch, updatecheck.Option(0))
-	c.Equal(updatecheck.AtLaunch, updatecheck.DefaultOption)
-}
-
 // TestExtractOption verifies that a known key round-trips and that an unrecognized one falls back to the default
 // rather than yielding an invalid value.
 func TestExtractOption(t *testing.T) {

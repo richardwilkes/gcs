@@ -22,30 +22,28 @@ import (
 func TestExtractKnownTypeAcceptsRetiredKeys(t *testing.T) {
 	c := check.New(t)
 
-	value, known := prereq.ExtractKnownType("advantage_prereq")
-	c.True(known, "the retired key for a trait prereq must be recognized")
-	c.Equal(prereq.Trait, value, "the retired key must resolve to the trait prereq type")
-
 	// Whatever ExtractType accepts, ExtractKnownType must accept too, or a file that loads under one path breaks
 	// under the other.
 	for _, one := range prereq.Types {
-		if one == prereq.Unknown {
-			continue
-		}
-		value, known = prereq.ExtractKnownType(one.Key())
+		value, known := prereq.ExtractKnownType(one.Key())
 		c.True(known, "%s should be recognized", one.Key())
 		c.Equal(one, value, "%s should resolve to itself", one.Key())
 		c.Equal(prereq.ExtractType(one.Key()), value, "%s should agree with ExtractType", one.Key())
 	}
 
-	// Case is ignored by ExtractType, so it must be ignored here as well.
-	value, known = prereq.ExtractKnownType("Advantage_Prereq")
-	c.True(known, "key matching should be case-insensitive")
-	c.Equal(prereq.Trait, value, "key matching should be case-insensitive")
-
-	// Neither an unknown key nor the Unknown type's own key may report as known.
-	_, known = prereq.ExtractKnownType("future_prereq_from_a_newer_gcs")
-	c.False(known, "an unrecognized key must not report as known")
-	_, known = prereq.ExtractKnownType(prereq.Unknown.Key())
-	c.False(known, "the Unknown type's key must not report as known")
+	for _, one := range []struct {
+		key   string
+		want  prereq.Type
+		known bool
+	}{
+		// Case is ignored by ExtractType, so it must be ignored here as well.
+		{key: "Advantage_Prereq", want: prereq.Trait, known: true},
+		// Neither an unknown key nor the Unknown type's own key may report as known.
+		{key: "future_prereq_from_a_newer_gcs", want: prereq.Unknown},
+		{key: prereq.Unknown.Key(), want: prereq.Unknown},
+	} {
+		value, known := prereq.ExtractKnownType(one.key)
+		c.Equal(one.known, known, "known for %q", one.key)
+		c.Equal(one.want, value, "value for %q", one.key)
+	}
 }

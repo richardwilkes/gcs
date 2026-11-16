@@ -16,9 +16,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestValueExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString accepts --
-// including "X2" and "×2" -- is also understood by ExtractValue, rather than falling through to the
-// non-positive-multiplier coercion that turns them into "x1" (or, for "×2", into an addition of 0).
+// TestValueExtractionMatchesClassification verifies that every spelling of a multiplier that ValueFromString accepts is
+// also understood by ExtractValue, rather than falling through to the non-positive-multiplier coercion that turns it
+// into "x1". TestTypeFromStringRestrictsToPermitted carries the "X2" and "×2" spellings.
 func TestValueExtractionMatchesClassification(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []struct {
@@ -27,8 +27,6 @@ func TestValueExtractionMatchesClassification(t *testing.T) {
 		formatted string
 	}{
 		{"x2", emcost.Multiplier, "x2"},
-		{"X2", emcost.Multiplier, "x2"},
-		{"×2", emcost.Multiplier, "x2"},
 		{"  X2.5  ", emcost.Multiplier, "x2.5"},
 		{"2x", emcost.Multiplier, "x2"},
 		{"2X", emcost.Multiplier, "x2"},

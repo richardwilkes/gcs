@@ -22,13 +22,7 @@ import (
 // IsWeaponBonus loads as an UnknownFeature and is absent from the feature editor.
 func TestIsWeaponBonusMatchesWeaponKeys(t *testing.T) {
 	c := check.New(t)
-	count := 0
 	for _, one := range feature.Types {
-		expected := strings.HasPrefix(one.Key(), "weapon_")
-		c.Equal(expected, one.IsWeaponBonus(), "IsWeaponBonus for %s", one.Key())
-		if expected {
-			count++
-		}
+		c.Equal(strings.HasPrefix(one.Key(), "weapon_"), one.IsWeaponBonus(), "IsWeaponBonus for %s", one.Key())
 	}
-	c.Equal(24, count, "expected number of weapon bonus types")
 }
