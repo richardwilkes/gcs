@@ -31,8 +31,7 @@ type compiledText struct {
 	keys  []string // The keys of the markers that parsed, in order, duplicates included.
 }
 
-// compileText parses the string. It must produce exactly what ApplyToList and Extract produced when they parsed on
-// every call; see compiled_test.go, which checks it against copies of them.
+// compileText parses the string.
 func compileText(str string) *compiledText {
 	var ct compiledText
 	var literal strings.Builder
