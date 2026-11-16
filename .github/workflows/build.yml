@@ -21,10 +21,11 @@ jobs:
         # cleanly. Each is still built on its own runner so the tests execute on the platform they ship for and the
         # uploaded artifact is a natively produced binary.
         #
-        # Intel macOS runs on macos-15-intel rather than macos-26-intel: the macOS 26 x86_64 hosts stall at random
-        # points and GitHub reaps the job ~45 minutes later as "lost communication with the server", with no log
-        # (actions/runner-images#13882). macOS 15 is the last x86_64 image line and stays available until late 2027.
-        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-intel, macos-26, windows-2022, windows-11-arm]
+        # Both macOS targets run on macOS 15 images. The macOS 26 x86_64 hosts stall at random points and GitHub reaps
+        # the job ~45 minutes later as "lost communication with the server", with no log (actions/runner-images#13882);
+        # macOS 15 is the last x86_64 image line and stays available until late 2027. The macos-26 arm64 jobs were
+        # often cancelled after queuing for 15 minutes without ever being assigned a runner.
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-intel, macos-15, windows-2022, windows-11-arm]
     defaults:
       run:
         shell: bash
@@ -51,7 +52,7 @@ jobs:
           # The race detector supports only windows/amd64 on Windows, so build & test without it on windows/arm64.
           # macOS/intel skips the race pass too. Its runner is the slowest in the matrix, the pass was the largest part
           # of a job that took nearly twice as long as any other, and darwin/amd64 is the only combination the pass
-          # covered there: amd64 is still race-checked on ubuntu-22.04 and windows-2022, and darwin on macos-26.
+          # covered there: amd64 is still race-checked on ubuntu-22.04 and windows-2022, and darwin on macos-15.
           if { [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; } ||
             { [ "$RUNNER_OS" = "macOS" ] && [ "$RUNNER_ARCH" = "X64" ]; }; then
             ./build.sh --go --test

@@ -22,9 +22,10 @@ jobs:
       matrix:
         # Same target set as the regular build. GCS is pure Go, so these could be cross-compiled from a single runner,
         # but each target is still built natively: macOS has to sign and notarize on a macOS runner, and Windows
-        # embeds its icon/version resources during its own build. Intel macOS uses macos-15-intel for the reason given
-        # in build.yml.
-        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-intel, macos-26, windows-2022, windows-11-arm]
+        # embeds its icon/version resources during its own build. Both macOS targets use the macOS 15 images for the
+        # reasons given in build.yml; build.sh stamps the SDK version itself, so the older image's SDK does not end up
+        # in the application.
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-intel, macos-15, windows-2022, windows-11-arm]
     defaults:
       run:
         shell: bash

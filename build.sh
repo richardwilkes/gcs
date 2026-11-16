@@ -253,20 +253,28 @@ fi
 # Go 1.27+ hard-stamps its own macOS support floor (13.0 as of 1.27) into the intermediate go.o it hands to Apple's
 # linker, which makes ld warn "object file (go.o) was built for newer 'macOS' version" on every link that targets 11. Go
 # still runs fine on macOS 11 -- the floor only tracks which builders the Go team keeps around -- so stamp go.o with our
-# real target instead. GOFLAGS covers the go test and go run links made for this machine; the application's build below
-# passes explicit -ldflags, which override those in GOFLAGS, so EXTRA_LD_FLAGS needs it as well when the target is macOS.
+# real target instead. GOFLAGS covers the go test and go run links made for this machine; the application's build
+# below passes explicit -ldflags, which override those in GOFLAGS, so EXTRA_LD_FLAGS needs it as well when the target
+# is macOS.
+MACOS_MIN_VERSION=11.0
 if [ "$HOST_OS" == "darwin" ]; then
-	export MACOSX_DEPLOYMENT_TARGET=11
-	export GOFLAGS="$GOFLAGS -ldflags=-macos=11.0"
+	export MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN_VERSION"
+	export GOFLAGS="$GOFLAGS -ldflags=-macos=$MACOS_MIN_VERSION"
 fi
 case "$TARGET_OS" in
 darwin)
-	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -macos=11.0"
+	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -macos=$MACOS_MIN_VERSION"
 	;;
 windows)
 	EXTRA_LD_FLAGS="$EXTRA_LD_FLAGS -H windowsgui"
 	;;
 esac
+
+# The SDK version a macOS distribution is stamped with. The linker records the version of whichever SDK the build
+# machine has, and AppKit picks its behavior from that: the 15.5 the macOS 15 runners stamp gets the title bar that
+# predates macOS 26. Raise this only to an SDK the application has been run against, since a newer value opts into
+# whatever that macOS release reserves for applications built for it.
+MACOS_SDK_VERSION=27.2
 
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/v2/xos.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
@@ -303,6 +311,14 @@ if [ "$BUILD_GO"x == "1x" ]; then
 	fi
 	echo -e "\033[33mBuilding the Go code...\033[0m"
 	GOOS="$TARGET_OS" GOARCH="$TARGET_ARCH" go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
+	if [ "$DIST"x != "x" ] && [ "$TARGET_OS" == "darwin" ]; then
+		echo -e "\033[33mStamping the executable with the macOS $MACOS_SDK_VERSION SDK...\033[0m"
+		vtool -set-build-version macos "$MACOS_MIN_VERSION" "$MACOS_SDK_VERSION" -replace -output gcs.stamped gcs
+		mv gcs.stamped gcs
+		# The rewrite invalidates the linker's ad hoc signature, without which an arm64 executable won't run. The
+		# packager replaces this one with the real identity.
+		codesign -s - -f gcs
+	fi
 fi
 
 # Both the formatting check and the linters come out of golangci-lint, so whichever of them runs first installs it.
