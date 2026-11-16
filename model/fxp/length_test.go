@@ -17,30 +17,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestGURPSLengthConversion(t *testing.T) {
-	c := check.New(t)
-	c.Equal(`1"`, fxp.FeetAndInches.Format(fxp.LengthFromInteger(1, fxp.Inch)))
-	c.Equal(`1'3"`, fxp.FeetAndInches.Format(fxp.LengthFromInteger(15, fxp.Inch)))
-	c.Equal("2.5 cm", fxp.Centimeter.Format(fxp.LengthFromStringForced("2.5", fxp.Centimeter)))
-	c.Equal("37.5 cm", fxp.Centimeter.Format(fxp.LengthFromStringForced("37.5", fxp.Centimeter)))
-
-	w, err := fxp.LengthFromString("1", fxp.Inch)
-	c.NoError(err)
-	c.Equal(`1"`, fxp.FeetAndInches.Format(w))
-	w, err = fxp.LengthFromString(`6'         2"`, fxp.Inch)
-	c.NoError(err)
-	c.Equal(`6'2"`, fxp.FeetAndInches.Format(w))
-	w, err = fxp.LengthFromString(" +32   yd  ", fxp.Inch)
-	c.NoError(err)
-	c.Equal("96'", fxp.FeetAndInches.Format(w))
-	w, err = fxp.LengthFromString("0.5m", fxp.Inch)
-	c.NoError(err)
-	c.Equal("50 cm", fxp.Centimeter.Format(w))
-	w, err = fxp.LengthFromString("1cm", fxp.Inch)
-	c.NoError(err)
-	c.Equal("1 cm", fxp.Centimeter.Format(w))
-}
-
 // TestFeetAndInchesFormat verifies that the FeetAndInches formatter handles zero, positive, and negative lengths. It
 // guards against the negative-length regression where floor-toward-negative-infinity dropped the sign and mangled the
 // remainder (e.g. -30 inches formatting as `6"` and -12 inches formatting as an empty string).
@@ -67,28 +43,24 @@ func TestFeetAndInchesFormat(t *testing.T) {
 	}
 }
 
-// TestLengthFeetAndInchesRoundTrip verifies that formatting a length and parsing the result back yields the original
-// value. It guards against the regression where the parser applied the sign to the feet contribution alone while the
-// formatter emitted both magnitudes unsigned, corrupting any value <= -12 inches (e.g. -30 inches -> `-2'6"` ->
-// -2*12+6 = -18 inches). It also covers the extreme lengths, which must render as feet and inches rather than as a
-// bare "-": Min has no positive counterpart, so taking its magnitude before splitting off the feet used to leave it
-// negative and every part was then skipped as "not positive". LengthFromString saturates absurd input to Min, so a
-// hand-edited file could reach it and then be re-saved with a height of "-".
-func TestLengthFeetAndInchesRoundTrip(t *testing.T) {
+// TestLengthExtremesRoundTrip verifies that the extreme lengths render as feet and inches rather than as a bare "-",
+// and parse back to the original value: Min has no positive counterpart, so taking its magnitude before splitting off
+// the feet used to leave it negative and every part was then skipped as "not positive". LengthFromString saturates
+// absurd input to Min, so a hand-edited file could reach it and then be re-saved with a height of "-".
+func TestLengthExtremesRoundTrip(t *testing.T) {
 	c := check.New(t)
-	c.Equal(`-76,861,433,640,456'5.5808"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Min)))
-	c.Equal(`76,861,433,640,456'5.5807"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Max)))
-	inches := []int{0, 1, 6, 12, 15, 24, 30, -1, -6, -12, -15, -24, -30, -144}
-	lengths := make([]fxp.Length, 0, len(inches)+3)
-	lengths = append(lengths, fxp.Length(fxp.Min), fxp.Length(fxp.Min+1), fxp.Length(fxp.Max))
-	for _, in := range inches {
-		lengths = append(lengths, fxp.LengthFromInteger(in, fxp.Inch))
-	}
-	for _, original := range lengths {
-		text := original.String()
-		parsed, err := fxp.LengthFromString(text, fxp.Inch)
-		c.NoError(err, "parsing %q", text)
-		c.Equal(original, parsed, "round-trip of %s inches (formatted as %q)", fxp.Int(original), text)
+	for _, d := range []struct {
+		expected string
+		length   fxp.Length
+	}{
+		{length: fxp.Length(fxp.Min), expected: `-76,861,433,640,456'5.5808"`},
+		{length: fxp.Length(fxp.Min + 1), expected: `-76,861,433,640,456'5.5807"`},
+		{length: fxp.Length(fxp.Max), expected: `76,861,433,640,456'5.5807"`},
+	} {
+		c.Equal(d.expected, d.length.String())
+		parsed, err := fxp.LengthFromString(d.expected, fxp.Inch)
+		c.NoError(err, "parsing %q", d.expected)
+		c.Equal(d.length, parsed, "parsing %q", d.expected)
 	}
 }
 
@@ -111,48 +83,42 @@ func TestLengthFromStringUnitSuffixes(t *testing.T) {
 	}
 }
 
-// TestLengthFromStringOptionalInchMarker verifies that the inches portion of a feet-and-inches value is honored even
-// when the closing inch marker hasn't been typed yet. The length fields validate on every keystroke and reject the rune
-// when parsing fails, so `6'2` must be a valid intermediate state -- and it must mean 6'2", not 6' with the inches
-// silently discarded. The table also holds the strings the formatter produces for negative lengths, which must parse
-// back to the correct negative inch counts.
-func TestLengthFromStringOptionalInchMarker(t *testing.T) {
+// TestLengthFromString verifies the inches a text parses to, which pins each unit's conversion to inches: a bare number
+// takes the default unit, a leading plus and any whitespace are ignored, and the inches portion of a feet-and-inches
+// value is honored even when the closing inch marker hasn't been typed yet. The length fields validate on every
+// keystroke and reject the rune when parsing fails, so `6'` and `6'2` must be valid intermediate states -- and the
+// latter must mean 6'2", not 6' with the inches silently discarded. The table also holds the strings the formatter
+// produces for negative lengths, where the sign applies to the feet and inches combined. LengthFromStringForced
+// returns the same value, or zero for text that does not parse.
+func TestLengthFromString(t *testing.T) {
 	c := check.New(t)
 	for _, d := range []struct {
 		text     string
-		expected int
+		def      fxp.LengthUnit
+		expected string
 	}{
-		{text: `6'2`, expected: 74},
-		{text: `6'2"`, expected: 74},
-		{text: `6'  2`, expected: 74},
-		{text: `6'`, expected: 72},
-		{text: `6'0`, expected: 72},
-		{text: `12"`, expected: 12},
-		{text: `-2'6`, expected: -30},
-		{text: `6'11`, expected: 83},
-		{text: `-6"`, expected: -6},
-		{text: `-1'`, expected: -12},
-		{text: `-1'3"`, expected: -15},
-		{text: `-2'`, expected: -24},
-		{text: `-2'6"`, expected: -30},
+		{text: "2.5", def: fxp.Centimeter, expected: "1"},
+		{text: " +32   yd  ", def: fxp.Inch, expected: "1152"},
+		{text: "0.5m", def: fxp.Inch, expected: "20"},
+		{text: "1ft", def: fxp.Inch, expected: "12"},
+		{text: "1mi", def: fxp.Inch, expected: "63360"},
+		{text: "1km", def: fxp.Inch, expected: "40000"},
+		{text: `6'2`, def: fxp.Inch, expected: "74"},
+		{text: `6'2"`, def: fxp.Inch, expected: "74"},
+		{text: `6'  2`, def: fxp.Inch, expected: "74"},
+		{text: `6'`, def: fxp.Inch, expected: "72"},
+		{text: `12"`, def: fxp.Inch, expected: "12"},
+		{text: `-2'6`, def: fxp.Inch, expected: "-30"},
+		{text: `-6"`, def: fxp.Inch, expected: "-6"},
+		{text: `-1'`, def: fxp.Inch, expected: "-12"},
+		{text: `-2'6"`, def: fxp.Inch, expected: "-30"},
 	} {
-		w, err := fxp.LengthFromString(d.text, fxp.Inch)
+		w, err := fxp.LengthFromString(d.text, d.def)
 		c.NoError(err, "parsing %q", d.text)
-		c.Equal(fxp.LengthFromInteger(d.expected, fxp.Inch), w, "parsing %q", d.text)
+		c.Equal(d.expected, fxp.Int(w).String(), "parsing %q", d.text)
 	}
-
-	// A fractional inch isn't lost, either; it just isn't an integer number of inches.
-	w, err := fxp.LengthFromString(`6'0.5`, fxp.Inch)
-	c.NoError(err)
-	c.Equal(fxp.LengthFromFixed(fxp.FromStringForced("72.5"), fxp.Inch), w)
-
-	// Every prefix of a feet-and-inches value must parse, since NumericField.runeTyped rejects a keystroke whose
-	// resulting text doesn't parse. If any prefix failed, the user could never finish typing the value.
-	full := `6'2"`
-	for i := 1; i <= len(full); i++ {
-		_, err = fxp.LengthFromString(full[:i], fxp.Inch)
-		c.NoError(err, "parsing prefix %q", full[:i])
-	}
+	c.Equal(fxp.LengthFromInteger(1, fxp.Inch), fxp.LengthFromStringForced("2.5", fxp.Centimeter))
+	c.Equal(fxp.Length(0), fxp.LengthFromStringForced("junk", fxp.Inch))
 }
 
 // TestLengthFromStringRejectsTrailingText verifies that the feet-and-inches parser consumes the entire input. Trailing

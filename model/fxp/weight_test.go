@@ -17,31 +17,25 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestWeightConversion(t *testing.T) {
+// TestWeightFromString verifies the pounds a text parses to, which pins the conversion of kg, lb, oz, tn and g to
+// pounds: a bare number takes the default unit, and a leading plus and any whitespace are ignored.
+func TestWeightFromString(t *testing.T) {
 	c := check.New(t)
-	c.Equal("1 lb", fxp.Pound.Format(fxp.WeightFromInteger(1, fxp.Pound)))
-	c.Equal("15 lb", fxp.Pound.Format(fxp.WeightFromInteger(15, fxp.Pound)))
-	c.Equal("0.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(1, fxp.Pound)))
-	c.Equal("7.5 kg", fxp.Kilogram.Format(fxp.WeightFromInteger(15, fxp.Pound)))
-
-	w, err := fxp.WeightFromString("1", fxp.Pound)
-	c.NoError(err)
-	c.Equal("1 lb", w.String())
-	w, err = fxp.WeightFromString("1", fxp.Kilogram)
-	c.NoError(err)
-	c.Equal("2 lb", w.String())
-	w, err = fxp.WeightFromString("22.34 lb", fxp.Pound)
-	c.NoError(err)
-	c.Equal("22.34 lb", w.String())
-	w, err = fxp.WeightFromString(" +22.34   lb  ", fxp.Pound)
-	c.NoError(err)
-	c.Equal("22.34 lb", w.String())
-	w, err = fxp.WeightFromString("0.5kg", fxp.Pound)
-	c.NoError(err)
-	c.Equal("0.5 kg", fxp.Kilogram.Format(w))
-	w, err = fxp.WeightFromString(" 15.25 kg ", fxp.Pound)
-	c.NoError(err)
-	c.Equal("15.25 kg", fxp.Kilogram.Format(w))
+	for _, d := range []struct {
+		text     string
+		def      fxp.WeightUnit
+		expected string
+	}{
+		{text: "1", def: fxp.Kilogram, expected: "2 lb"},
+		{text: " +22.34   lb  ", def: fxp.Pound, expected: "22.34 lb"},
+		{text: "1 oz", def: fxp.Pound, expected: "0.0625 lb"},
+		{text: "1 tn", def: fxp.Pound, expected: "2,000 lb"},
+		{text: "500 g", def: fxp.Pound, expected: "1 lb"},
+	} {
+		w, err := fxp.WeightFromString(d.text, d.def)
+		c.NoError(err, "parsing %q", d.text)
+		c.Equal(d.expected, w.String(), "parsing %q", d.text)
+	}
 }
 
 // TestWeightFromStringUnitSuffixes verifies that every unit's key, when appended to a number in lower, upper or mixed

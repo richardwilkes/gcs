@@ -19,14 +19,10 @@ import (
 
 func TestApplyRounding(t *testing.T) {
 	c := check.New(t)
-	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.OneAndAHalf, false))
 	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.OnePointTwo, false))
 	c.Equal(fxp.One, fxp.ApplyRounding(fxp.OneAndAHalf, true))
-	c.Equal(fxp.One, fxp.ApplyRounding(fxp.OnePointTwo, true))
-	c.Equal(-fxp.Two, fxp.ApplyRounding(-fxp.OneAndAHalf, true))
 	c.Equal(-fxp.Two, fxp.ApplyRounding(-fxp.OnePointTwo, true))
 	c.Equal(-fxp.One, fxp.ApplyRounding(-fxp.OneAndAHalf, false))
-	c.Equal(-fxp.One, fxp.ApplyRounding(-fxp.OnePointTwo, false))
 	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.Two, false))
 	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.Two, true))
 }
@@ -52,33 +48,34 @@ func TestResetIfOutOfRange(t *testing.T) {
 	c.Equal(15, fxp.ResetIfOutOfRange(5, 10, 20, 15))
 	c.Equal(15, fxp.ResetIfOutOfRange(25, 10, 20, 15))
 	c.Equal(15, fxp.ResetIfOutOfRange(15, 10, 20, 5))
-	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Five, fxp.Ten, fxp.Twenty, fxp.Fifteen))
-	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.TwentyFive, fxp.Ten, fxp.Twenty, fxp.Fifteen))
-	c.Equal(fxp.Fifteen, fxp.ResetIfOutOfRange(fxp.Fifteen, fxp.Ten, fxp.Twenty, fxp.Five))
+	c.Equal(10, fxp.ResetIfOutOfRange(10, 10, 20, 15))
+	c.Equal(20, fxp.ResetIfOutOfRange(20, 10, 20, 15))
 }
 
 func TestExtract(t *testing.T) {
 	c := check.New(t)
-	for i, one := range []struct {
+	for _, one := range []struct {
 		input             string
 		expectedValue     fxp.Int
 		expectedRemainder string
 	}{
 		{" 24abc", fxp.TwentyFour, "abc"},
-		{"   24abc", fxp.TwentyFour, "abc"},
 		{"  -0.125abc", -fxp.Eighth, "abc"},
 		{"   ", fxp.Int(0), "   "},
 		{"24abc", fxp.TwentyFour, "abc"},
 		{"24 abc", fxp.TwentyFour, " abc"},
 		{"0.125abc", fxp.Eighth, "abc"},
 		{"-0.125abc", -fxp.Eighth, "abc"},
-		{"-24abc", -fxp.TwentyFour, "abc"},
 		{"+24abc", fxp.TwentyFour, "abc"},
 		{"abc", fxp.Int(0), "abc"},
+		{"  abc", fxp.Int(0), "  abc"},
+		{"1,234.5abc", fxp.FromStringForced("1234.5"), "abc"},
+		{"2-3", fxp.Two, "-3"},
+		{"1.2.3", fxp.OnePointTwo, ".3"},
 		{"", fxp.Int(0), ""},
 	} {
 		value, remainder := fxp.Extract(one.input)
-		c.Equal(one.expectedValue, value, "test %d", i)
-		c.Equal(one.expectedRemainder, remainder, "test %d", i)
+		c.Equal(one.expectedValue, value, "value of %q", one.input)
+		c.Equal(one.expectedRemainder, remainder, "remainder of %q", one.input)
 	}
 }

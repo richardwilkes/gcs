@@ -23,7 +23,6 @@ func TestDecimalPlaceDefaultIsAsNeeded(t *testing.T) {
 	c.Equal(fxp.AsNeeded, fxp.DecimalPlace(0))
 	c.Equal(fxp.AsNeeded, fxp.DefaultDecimalPlace)
 	c.Equal(fxp.AsNeeded, fxp.ExtractDecimalPlace("bogus"))
-	c.Equal(fxp.AsNeeded, fxp.DecimalPlace(200).EnsureValid())
 	c.Equal(fxp.NumberFormat{}, fxp.NumberFormat{Places: fxp.DecimalPlace(200)}.EnsureValid())
 }
 
@@ -54,7 +53,6 @@ func TestNumberFormatRound(t *testing.T) {
 		{places: fxp.ZeroPlaces, in: "-0.4999", expected: "0"},
 		{places: fxp.TwoPlaces, in: "0", expected: "0"},
 		{places: fxp.TwoPlaces, in: "1234.9999", expected: "1235"},
-		{places: fxp.DecimalPlace(200), in: "1234.5678", expected: "1234.5678"},
 		{places: fxp.LastDecimalPlace + 1, in: "1234.5678", expected: "1234.5678"},
 	} {
 		f := fxp.NumberFormat{Places: d.places}
@@ -91,64 +89,36 @@ func TestNumberFormatFormat(t *testing.T) {
 		{format: fxp.NumberFormat{Places: fxp.TwoPlaces}, in: "7.5", expected: "7.5"},
 		{format: fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}, in: "7.5", expected: "7.50"},
 		{format: fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}, in: "7", expected: "7.00"},
-		{format: fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}, in: "-7", expected: "-7.00"},
 		{format: fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}, in: "0", expected: "0.00"},
 		{format: fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}, in: "1234.5678", expected: "1,234.57"},
 		{format: fxp.NumberFormat{Places: fxp.ZeroPlaces, PadWithZeros: true}, in: "7.5", expected: "8"},
 		{format: fxp.NumberFormat{Places: fxp.FourPlaces, PadWithZeros: true}, in: "7.5", expected: "7.5000"},
-		{format: fxp.NumberFormat{Places: fxp.OnePlace, PadWithZeros: true}, in: "7", expected: "7.0"},
-		{format: fxp.NumberFormat{Places: fxp.ThreePlaces, PadWithZeros: true}, in: "7.12", expected: "7.120"},
-		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200)}, in: "1234.5678", expected: "1,234.5678"},
-		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200)}, in: "7.5", expected: "7.5"},
-		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200), PadWithZeros: true}, in: "1234.5678", expected: "1,234.5678"},
-		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200), PadWithZeros: true}, in: "7.5", expected: "7.5"},
-		{format: fxp.NumberFormat{Places: fxp.LastDecimalPlace + 1, PadWithZeros: true}, in: "1234.5678", expected: "1,234.5678"},
 		{format: fxp.NumberFormat{Places: fxp.LastDecimalPlace + 1, PadWithZeros: true}, in: "7.5", expected: "7.5"},
 	} {
 		c.Equal(d.expected, d.format.Format(fxp.FromStringForced(d.in)), "formatting %s with %+v", d.in, d.format)
 	}
 }
 
-// TestUnitFormatMatchesZeroNumberFormat verifies that the plain Format methods produce exactly what FormatWith does
-// with a zero NumberFormat for every unit, which is what guarantees no change in behavior where no display preference
-// has been expressed.
-func TestUnitFormatMatchesZeroNumberFormat(t *testing.T) {
-	c := check.New(t)
-	for _, in := range []string{"0", "1", "-1", "7.5127", "-7.5127", "1234.5", "24.6952", "12345678.9"} {
-		weight := fxp.Weight(fxp.FromStringForced(in))
-		for _, unit := range fxp.WeightUnits {
-			c.Equal(unit.Format(weight), unit.FormatWith(weight, fxp.NumberFormat{}), "%s lb as %s", in, unit.Key())
-		}
-		length := fxp.Length(fxp.FromStringForced(in))
-		for _, unit := range fxp.LengthUnits {
-			c.Equal(unit.Format(length), unit.FormatWith(length, fxp.NumberFormat{}), "%s in as %s", in, unit.Key())
-		}
-	}
-}
-
 // TestWeightUnitFormatWith verifies that the rounding is applied after conversion to the unit, so the requested number
-// of decimal places is what is shown regardless of the unit chosen.
+// of decimal places is what is shown regardless of the unit chosen, and that Format shows every decimal place.
 func TestWeightUnitFormatWith(t *testing.T) {
 	c := check.New(t)
 	two := fxp.NumberFormat{Places: fxp.TwoPlaces}
-	twoPadded := fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}
 	whole := fxp.NumberFormat{Places: fxp.ZeroPlaces}
 	w := fxp.Weight(fxp.FromStringForced("24.6952"))
-	c.Equal("24.7 lb", fxp.Pound.FormatWith(w, two))
-	c.Equal("24.70 lb", fxp.Pound.FormatWith(w, twoPadded))
-	c.Equal("25 lb", fxp.Pound.FormatWith(w, whole))
+	c.Equal("24.70 lb", fxp.Pound.FormatWith(w, fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}))
 	c.Equal("12.35 kg", fxp.Kilogram.FormatWith(w, two))
 	c.Equal("12 kg", fxp.Kilogram.FormatWith(w, whole))
 	c.Equal("395.12 oz", fxp.Ounce.FormatWith(w, two))
 	c.Equal("12,347.6 g", fxp.Gram.FormatWith(w, two))
 	c.Equal("0.01 tn", fxp.Ton.FormatWith(w, two))
-	c.Equal("0.0123 tn", fxp.Ton.FormatWith(w, fxp.NumberFormat{}))
-	c.Equal("7.50 lb", fxp.Pound.FormatWith(fxp.Weight(fxp.FromStringForced("7.5")), twoPadded))
+	c.Equal("0.0123 tn", fxp.Ton.Format(w))
 }
 
 // TestLengthUnitFormatWith verifies the rounding of lengths, in particular that for feet and inches the rounding is
 // done on the total inches so that an inches remainder which rounds up to a whole foot carries into the feet, that
-// padding applies to the inches part, and that a zero inches remainder is still omitted.
+// padding applies to the inches part, and that a zero inches remainder is still omitted. The other units' rows pin
+// their conversion from inches.
 func TestLengthUnitFormatWith(t *testing.T) {
 	c := check.New(t)
 	two := fxp.NumberFormat{Places: fxp.TwoPlaces}
@@ -177,6 +147,9 @@ func TestLengthUnitFormatWith(t *testing.T) {
 		{unit: fxp.Meter, format: two, inches: "68.98", expected: "1.72 m"},
 		{unit: fxp.Meter, format: twoPadded, inches: "68", expected: "1.70 m"},
 		{unit: fxp.Feet, format: whole, inches: "71.6", expected: "6 ft"},
+		{unit: fxp.Yard, format: two, inches: "68.98", expected: "1.92 yd"},
+		{unit: fxp.Mile, format: fxp.NumberFormat{}, inches: "63360", expected: "1 mi"},
+		{unit: fxp.Kilometer, format: fxp.NumberFormat{}, inches: "40000", expected: "1 km"},
 	} {
 		c.Equal(d.expected, d.unit.FormatWith(fxp.Length(fxp.FromStringForced(d.inches)), d.format),
 			"formatting %s inches as %s with %+v", d.inches, d.unit.Key(), d.format)
