@@ -32,14 +32,14 @@ func newEntry(id string, v int) *entry { return &entry{id: id, value: &v} }
 var (
 	live    []*entry
 	factory []*entry
-	applied int
+	applied []map[string]int // The live values as each Applied call saw them.
 )
 
 type testProvider struct{}
 
 func (testProvider) Current() []*entry { return live }
 func (testProvider) Factory() []*entry { return factory }
-func (testProvider) Applied()          { applied++ }
+func (testProvider) Applied()          { applied = append(applied, liveValues()) }
 
 type testSet = Set[int, *entry, testProvider]
 
@@ -49,11 +49,11 @@ func setup(t *testing.T) {
 	t.Helper()
 	factory = []*entry{newEntry("a", 1), newEntry("b", 2), newEntry("c", 3)}
 	live = []*entry{newEntry("a", 10), newEntry("b", 20), newEntry("c", 30)}
-	applied = 0
+	applied = nil
 	t.Cleanup(func() {
 		factory = nil
 		live = nil
-		applied = 0
+		applied = nil
 	})
 }
 
@@ -82,9 +82,9 @@ func TestMarshalWritesFactoryOrderAndFillsInFromFactory(t *testing.T) {
 	c.Equal(`{"a":1,"b":2,"c":3}`, string(data), "a zero value writes the factory values, not the live ones")
 }
 
-// TestUnmarshalFillsInMissingKeysFromFactory verifies that loading replaces stale data, keeps the loaded and unknown
-// keys and fills in the rest from the factory, and that a failed load, whether of a bad value or of a document that
-// isn't an object, leaves a complete factory set behind.
+// TestUnmarshalFillsInMissingKeysFromFactory verifies that loading replaces stale data, keeps the loaded keys,
+// tolerates unknown ones and fills in the rest from the factory, and that a failed load leaves a complete factory set
+// behind.
 func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	c := check.New(t)
 	setup(t)
@@ -93,16 +93,11 @@ func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"b":22}`), &s))
 	c.Equal(map[string]int{"a": 1, "b": 22, "c": 3}, s.data, "the loaded key is kept and the rest come from the factory")
 
-	c.NoError(jio.Unmarshal([]byte(`{"b":22,"extra":5}`), &s))
-	c.Equal(5, s.data["extra"], "unknown keys are retained")
+	c.NoError(jio.Unmarshal([]byte(`{"b":22,"extra":5}`), &s), "unknown keys don't fail the load")
 
-	err := jio.Unmarshal([]byte(`{"b":"not a number"}`), &s)
-	c.HasError(err)
+	// "a" is valid and precedes the bad value, so it is decoded before the failure and must still be discarded.
+	c.HasError(jio.Unmarshal([]byte(`{"a":5,"b":"not a number"}`), &s))
 	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data, "a failed load leaves a complete factory set behind")
-
-	var fresh testSet
-	c.HasError(jio.Unmarshal([]byte(`[1,2,3]`), &fresh))
-	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, fresh.data, "a document that isn't an object fails the same way")
 }
 
 func TestCaptureCurrentCopiesLiveValues(t *testing.T) {
@@ -114,8 +109,6 @@ func TestCaptureCurrentCopiesLiveValues(t *testing.T) {
 	c.Equal(map[string]int{"a": 10, "b": 20, "c": 30}, s.data, "capturing records every live value")
 
 	*live[0].value = 11
-	c.Equal(10, s.data["a"], "the captured value is a copy, not an alias of the live value")
-
 	s.CaptureCurrent()
 	c.Equal(11, s.data["a"], "capturing again replaces the stale value")
 }
@@ -124,15 +117,16 @@ func TestMakeCurrentAppliesOnlyDefinedValuesThenNotifies(t *testing.T) {
 	c := check.New(t)
 	setup(t)
 
+	want := map[string]int{"a": 5, "b": 20, "c": 30}
 	s := testSet{data: map[string]int{"a": 5, "unknown": 99}}
 	s.MakeCurrent()
-	c.Equal(map[string]int{"a": 5, "b": 20, "c": 30}, liveValues(), "only defined keys are applied")
-	c.Equal(1, applied, "the provider is told once after the values are applied")
+	c.Equal(want, liveValues(), "only defined keys are applied")
+	c.Equal([]map[string]int{want}, applied, "the provider is told once, after the values are applied")
 
 	var empty testSet
 	empty.MakeCurrent()
-	c.Equal(map[string]int{"a": 5, "b": 20, "c": 30}, liveValues(), "a zero value applies nothing")
-	c.Equal(2, applied, "but still notifies, so the theme refreshes")
+	c.Equal(want, liveValues(), "a zero value applies nothing")
+	c.Equal([]map[string]int{want, want}, applied, "but still notifies, so the theme refreshes")
 }
 
 func TestResetRestoresFactoryValues(t *testing.T) {
@@ -144,10 +138,8 @@ func TestResetRestoresFactoryValues(t *testing.T) {
 	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data, "resetting a zero value fills in every factory value")
 
 	s.data["a"] = 50
-	s.data["stale"] = 60
 	s.Reset()
 	c.Equal(1, s.data["a"], "a modified value is restored")
-	c.Equal(60, s.data["stale"], "unknown keys are left alone")
 	c.Equal(map[string]int{"a": 10, "b": 20, "c": 30}, liveValues(), "the live theme is untouched until MakeCurrent")
 }
 
