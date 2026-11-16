@@ -26,16 +26,6 @@ type Length struct {
 	Units  Unit
 }
 
-// LengthFromString creates a new Length from the text, using a length of 0 if it cannot be parsed. The text may have
-// any of the known unit suffixes or no notation at all, in which case inch is used.
-func LengthFromString(text string) Length {
-	length, err := ParseLengthFromString(text)
-	if err != nil {
-		length.Length = 0
-	}
-	return length
-}
-
 // ParseLengthFromString parses a Length from the text. May have any of the known unit suffixes or no notation at all,
 // in which case inch is used.
 func ParseLengthFromString(text string) (length Length, err error) {
@@ -48,6 +38,7 @@ func ParseLengthFromString(text string) (length Length, err error) {
 		}
 	}
 	if length.Length, err = strconv.ParseFloat(text, 64); err != nil {
+		length.Length = 0 // strconv.ParseFloat returns ±Inf alongside a range error.
 		return length, errs.NewWithCause("invalid value", err)
 	}
 	// strconv.ParseFloat accepts "inf", "infinity" and "nan", none of which are < 0, so they must be rejected here.

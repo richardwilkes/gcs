@@ -17,102 +17,82 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestRealLengthConversion(t *testing.T) {
+// TestLengthStringAndPixels pins the text form, which is also the form saved to files, and each unit's conversion to
+// 72-per-inch pixels.
+func TestLengthStringAndPixels(t *testing.T) {
 	c := check.New(t)
-	c.Equal(`0.25 in`, paper.Length{Length: 0.25, Units: paper.Inch}.String())
-	c.Equal(float32(18), paper.Length{Length: 0.25, Units: paper.Inch}.Pixels())
-	c.Equal(`1 in`, paper.Length{Length: 1, Units: paper.Inch}.String())
-	c.Equal(float32(72), paper.Length{Length: 1, Units: paper.Inch}.Pixels())
-	c.Equal(`15 in`, paper.Length{Length: 15, Units: paper.Inch}.String())
-	c.Equal(float32(1080), paper.Length{Length: 15, Units: paper.Inch}.Pixels())
-	c.Equal("1 cm", paper.Length{Length: 1, Units: paper.Centimeter}.String())
-	c.Equal(float32(28.3464566929), paper.Length{Length: 1, Units: paper.Centimeter}.Pixels())
-	c.Equal("1 mm", paper.Length{Length: 1, Units: paper.Millimeter}.String())
-	c.Equal(float32(2.8346456693), paper.Length{Length: 1, Units: paper.Millimeter}.Pixels())
-}
-
-// TestParseLengthUnitCaseInsensitivity verifies that the unit suffix is matched without regard to case, matching
-// fxp.LengthFromString and fxp.WeightFromString.
-func TestParseLengthUnitCaseInsensitivity(t *testing.T) {
-	c := check.New(t)
-
-	for _, text := range []string{"8.5 in", "8.5 IN", "8.5 In", "8.5in", " 8.5 IN ", "+8.5 IN"} {
-		length, err := paper.ParseLengthFromString(text)
-		c.NoError(err, "%q should parse", text)
-		c.Equal(8.5, length.Length, "%q should yield 8.5", text)
-		c.Equal(paper.Inch, length.Units, "%q should be inches", text)
-	}
-	for _, text := range []string{"21 cm", "21 CM", "21 Cm"} {
-		length, err := paper.ParseLengthFromString(text)
-		c.NoError(err, "%q should parse", text)
-		c.Equal(21.0, length.Length, "%q should yield 21", text)
-		c.Equal(paper.Centimeter, length.Units, "%q should be centimeters", text)
-	}
-	for _, text := range []string{"5 mm", "5 MM", "5 Mm"} {
-		length, err := paper.ParseLengthFromString(text)
-		c.NoError(err, "%q should parse", text)
-		c.Equal(5.0, length.Length, "%q should yield 5", text)
-		c.Equal(paper.Millimeter, length.Units, "%q should be millimeters", text)
-	}
-
-	// No suffix at all still means inches.
-	length, err := paper.ParseLengthFromString("2")
-	c.NoError(err, "a bare number should parse")
-	c.Equal(2.0, length.Length, "a bare number should yield its value")
-	c.Equal(paper.Inch, length.Units, "a bare number should be inches")
-}
-
-// TestParseLengthRejectsNonFinite verifies that the values strconv.ParseFloat accepts but that aren't real measurements
-// are refused. Neither +Inf nor NaN is < 0, so the "value must be zero or greater" check alone would let them through.
-func TestParseLengthRejectsNonFinite(t *testing.T) {
-	c := check.New(t)
-
-	for _, text := range []string{
-		"inf", "Inf", "INF", "+inf", "-inf", "infinity", "Infinity", "+Infinity",
-		"nan", "NaN", "NAN", "+nan", "-nan",
-		"inf in", "+Inf in", "NaN in", "inf cm", "nan mm",
+	for _, d := range []struct {
+		expected string
+		length   paper.Length
+		pixels   float32
+	}{
+		{length: paper.Length{Length: 0.25, Units: paper.Inch}, expected: "0.25 in", pixels: 18},
+		{length: paper.Length{Length: 1, Units: paper.Inch}, expected: "1 in", pixels: 72},
+		{length: paper.Length{Length: 1, Units: paper.Centimeter}, expected: "1 cm", pixels: 28.3464566929},
+		{length: paper.Length{Length: 1, Units: paper.Millimeter}, expected: "1 mm", pixels: 2.8346456693},
 	} {
-		length, err := paper.ParseLengthFromString(text)
-		c.HasError(err, "%q must be rejected", text)
-		c.False(math.IsInf(length.Length, 0) || math.IsNaN(length.Length),
-			"%q must not yield a non-finite length", text)
-
-		// The forgiving form must not leak a non-finite value either.
-		length = paper.LengthFromString(text)
-		c.False(math.IsInf(length.Length, 0) || math.IsNaN(length.Length),
-			"LengthFromString(%q) must not yield a non-finite length", text)
-		c.False(math.IsInf(float64(length.Pixels()), 0) || math.IsNaN(float64(length.Pixels())),
-			"LengthFromString(%q).Pixels() must be finite", text)
+		c.Equal(d.expected, d.length.String())
+		c.Equal(d.pixels, d.length.Pixels(), "pixels of %s", d.expected)
 	}
-
-	// Negative values are still rejected, and ordinary values still parse.
-	_, err := paper.ParseLengthFromString("-1 in")
-	c.HasError(err, "a negative value must be rejected")
-	length, err := paper.ParseLengthFromString("0.25 in")
-	c.NoError(err, "a normal value must still parse")
-	c.Equal(0.25, length.Length, "a normal value must keep its value")
 }
 
-// TestLengthEnsureValidity verifies that a non-finite length that reached a settings object by some other route is
-// corrected rather than passed along, since neither +Inf nor NaN is < 0.
+// TestParseLengthFromString pins the accepted spellings and the rejected values. strconv.ParseFloat accepts "inf",
+// "infinity" and "nan", none of which is < 0, so the "zero or greater" check alone would let them through, and it
+// returns ±Inf alongside its error on overflow.
+func TestParseLengthFromString(t *testing.T) {
+	c := check.New(t)
+	for _, d := range []struct {
+		text     string
+		expected paper.Length
+		rejected bool
+	}{
+		{text: "8.5 in", expected: paper.Length{Length: 8.5, Units: paper.Inch}},
+		{text: "8.5in", expected: paper.Length{Length: 8.5, Units: paper.Inch}},
+		{text: " 8.5 IN ", expected: paper.Length{Length: 8.5, Units: paper.Inch}},
+		{text: "+8.5 in", expected: paper.Length{Length: 8.5, Units: paper.Inch}},
+		{text: "21 Cm", expected: paper.Length{Length: 21, Units: paper.Centimeter}},
+		{text: "5 MM", expected: paper.Length{Length: 5, Units: paper.Millimeter}},
+		{text: "2", expected: paper.Length{Length: 2, Units: paper.Inch}},
+		{text: "0", expected: paper.Length{Units: paper.Inch}},
+		{text: "abc", rejected: true},
+		{text: "-1 in", rejected: true},
+		{text: "inf", rejected: true},
+		{text: "-inf", rejected: true},
+		{text: "infinity", rejected: true},
+		{text: "nan", rejected: true},
+		{text: "inf cm", rejected: true},
+		{text: "1e999", rejected: true},
+	} {
+		length, err := paper.ParseLengthFromString(d.text)
+		if d.rejected {
+			c.HasError(err, "%q must be rejected", d.text)
+			c.False(math.IsInf(length.Length, 0) || math.IsNaN(length.Length),
+				"%q must not yield a non-finite length", d.text)
+			continue
+		}
+		c.NoError(err, "%q should parse", d.text)
+		c.Equal(d.expected, length, "parsing %q", d.text)
+	}
+}
+
+// TestLengthEnsureValidity verifies that a negative or non-finite length is reset to 0 and an unknown unit to inches,
+// each without disturbing the other field. Neither +Inf nor NaN is < 0.
 func TestLengthEnsureValidity(t *testing.T) {
 	c := check.New(t)
-
-	for _, value := range []float64{math.Inf(1), math.Inf(-1), math.NaN(), -1} {
-		length := paper.Length{Length: value, Units: paper.Inch}
+	for _, d := range []struct {
+		value    float64
+		units    paper.Unit
+		expected paper.Length
+	}{
+		{value: math.Inf(1), units: paper.Centimeter, expected: paper.Length{Units: paper.Centimeter}},
+		{value: math.Inf(-1), units: paper.Centimeter, expected: paper.Length{Units: paper.Centimeter}},
+		{value: math.NaN(), units: paper.Centimeter, expected: paper.Length{Units: paper.Centimeter}},
+		{value: -1, units: paper.Centimeter, expected: paper.Length{Units: paper.Centimeter}},
+		{value: 0.25, units: paper.Centimeter, expected: paper.Length{Length: 0.25, Units: paper.Centimeter}},
+		{value: 1, units: paper.Unit(200), expected: paper.Length{Length: 1, Units: paper.Inch}},
+	} {
+		length := paper.Length{Length: d.value, Units: d.units}
 		length.EnsureValidity()
-		c.Equal(0.0, length.Length, "%v should be corrected to 0", value)
-		c.Equal(paper.Inch, length.Units, "%v should keep its units", value)
+		c.Equal(d.expected, length, "validating %v with unit %d", d.value, d.units)
 	}
-
-	// A valid length is left alone.
-	length := paper.Length{Length: 0.25, Units: paper.Centimeter}
-	length.EnsureValidity()
-	c.Equal(0.25, length.Length, "a valid length is unchanged")
-	c.Equal(paper.Centimeter, length.Units, "a valid length keeps its units")
-
-	// An unknown unit is still corrected.
-	length = paper.Length{Length: 1, Units: paper.Unit(200)}
-	length.EnsureValidity()
-	c.Equal(paper.Inch, length.Units, "an unknown unit falls back to inches")
 }
