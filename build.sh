@@ -36,6 +36,15 @@ while [ $# -gt 0 ]; do
 		PACKAGER=1
 		SOMETHING=1
 		;;
+	--most | -m)
+		BUILD_GO=1
+		BUILD_GEN=1
+		FMT=1
+		LINT=1
+		TEST=1
+		PACKAGER=1
+		SOMETHING=1
+		;;
 	--go | -g)
 		BUILD_GO=1
 		PACKAGER=1
@@ -114,6 +123,7 @@ while [ $# -gt 0 ]; do
 	--help | -h)
 		echo "$0 [options]"
 		echo "  -a, --all            Equivalent to --gen --go --fmt --lint --race"
+		echo "  -m, --most           Equivalent to --gen --go --fmt --lint"
 		echo "  -d, --dist           Create distribution"
 		echo "  -f, --fmt            Verify the source formatting (gofumpt)"
 		echo "  -g, --go             Build the Go code"
