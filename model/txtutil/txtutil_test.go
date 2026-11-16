@@ -17,38 +17,41 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestAppendStringOntoNewLine(t *testing.T) {
-	c := check.New(t)
-	var buffer strings.Builder
-	txtutil.AppendStringOntoNewLine(&buffer, "")
-	c.Equal("", buffer.String())
-	txtutil.AppendStringOntoNewLine(&buffer, "first")
-	c.Equal("first", buffer.String())
-	txtutil.AppendStringOntoNewLine(&buffer, "")
-	c.Equal("first", buffer.String())
-	txtutil.AppendStringOntoNewLine(&buffer, "second")
-	c.Equal("first\nsecond", buffer.String())
-	var nilBuffer *strings.Builder
-	txtutil.AppendStringOntoNewLine(nilBuffer, "ignored")
-	c.Nil(nilBuffer)
+func TestAppendOntoNewLine(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		to   string
+		from string
+		want string
+	}{
+		{name: "empty onto empty"},
+		{name: "text onto empty", from: "first", want: "first"},
+		{name: "empty onto text", to: "first", want: "first"},
+		{name: "text onto text", to: "first", from: "second", want: "first\nsecond"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			var to, from strings.Builder
+			to.WriteString(tc.to)
+			txtutil.AppendStringOntoNewLine(&to, tc.from)
+			c.Equal(tc.want, to.String(), "AppendStringOntoNewLine")
+			to.Reset()
+			to.WriteString(tc.to)
+			from.WriteString(tc.from)
+			txtutil.AppendBufferOntoNewLine(&to, &from)
+			c.Equal(tc.want, to.String(), "AppendBufferOntoNewLine")
+		})
+	}
 }
 
-func TestAppendBufferOntoNewLine(t *testing.T) {
+func TestAppendOntoNewLineIgnoresNilBuffers(t *testing.T) {
 	c := check.New(t)
-	var to, from strings.Builder
-	txtutil.AppendBufferOntoNewLine(&to, &from)
-	c.Equal("", to.String())
-	from.WriteString("first")
-	txtutil.AppendBufferOntoNewLine(&to, &from)
-	c.Equal("first", to.String())
-	from.Reset()
-	txtutil.AppendBufferOntoNewLine(&to, &from)
-	c.Equal("first", to.String())
-	from.WriteString("second")
-	txtutil.AppendBufferOntoNewLine(&to, &from)
-	c.Equal("first\nsecond", to.String())
 	var nilBuffer *strings.Builder
-	txtutil.AppendBufferOntoNewLine(nilBuffer, &from)
-	txtutil.AppendBufferOntoNewLine(&to, nilBuffer)
-	c.Equal("first\nsecond", to.String())
+	var to, from strings.Builder
+	to.WriteString("first")
+	from.WriteString("second")
+	c.NotPanics(func() { txtutil.AppendStringOntoNewLine(nilBuffer, "second") }, "string onto a nil buffer")
+	c.NotPanics(func() { txtutil.AppendBufferOntoNewLine(nilBuffer, &from) }, "buffer onto a nil buffer")
+	c.NotPanics(func() { txtutil.AppendBufferOntoNewLine(&to, nilBuffer) }, "nil buffer onto a buffer")
+	c.Equal("first", to.String())
 }
