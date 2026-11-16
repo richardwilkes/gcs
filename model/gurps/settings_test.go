@@ -23,11 +23,14 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/unison"
 )
 
 // TestLoadSettingsOrDefaultsWithMissingFile verifies that the normal first-run case -- no settings file at all --
@@ -179,6 +182,39 @@ func TestSettingsSaveWithNullMapEntries(t *testing.T) {
 	c.Equal(1, len(reloaded.LibraryExplorer.Nodes), "the saved file has just the usable node entry")
 	c.Equal(1, len(reloaded.ColumnSizing), "the saved file has just the usable column sizing entry")
 	c.Equal(1, len(reloaded.PDFs), "the saved file has just the usable PDF entry")
+}
+
+// TestSettingsSaveCapturesLiveThemeEdits verifies that Save writes the live theme colors and fonts. The settings UI
+// edits those in place and never touches the Settings, so edits Save didn't pull in would be lost.
+func TestSettingsSaveCapturesLiveThemeEdits(t *testing.T) {
+	c := check.New(t)
+	liveColor := colors.Current()[0]
+	liveFont := fonts.CurrentFonts()[0]
+	prevColor := *liveColor.Color
+	prevFont := liveFont.Font.Font
+	prevPath := SettingsPath
+	SettingsPath = filepath.Join(t.TempDir(), "settings.json")
+	t.Cleanup(func() {
+		*liveColor.Color = prevColor
+		liveFont.Font.Font = prevFont
+		SettingsPath = prevPath
+	})
+
+	settings := FactorySettings()
+	blue := unison.RGB(0, 0, 255)
+	liveColor.Color.Light = blue // As the color well's InkChangedCallback does.
+	larger := liveFont.Font.Descriptor()
+	larger.Size += 3
+	liveFont.Font.Font = larger.Font() // As the font panel's FontModifiedCallback does.
+	c.NoError(settings.Save())
+
+	var saved struct {
+		Colors map[string]unison.ThemeColor     `json:"theme_colors"`
+		Fonts  map[string]unison.FontDescriptor `json:"fonts"`
+	}
+	c.NoError(jio.LoadFromFile(nil, SettingsPath, &saved))
+	c.Equal(blue, saved.Colors[liveColor.ID].Light, "the live color edit is saved")
+	c.Equal(larger, saved.Fonts[liveFont.ID], "the live font edit is saved")
 }
 
 // TestIDLookupsWithNullMapEntries verifies that the ID lookups treat a null settings entry as if it were absent rather

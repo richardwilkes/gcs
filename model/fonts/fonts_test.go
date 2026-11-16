@@ -10,6 +10,7 @@
 package fonts
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -67,10 +68,13 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 	larger := ff[0].Font.Descriptor()
 	larger.Size += 5
 
-	// A font file whose first font is 5 points larger than the factory default.
+	// A font file whose first font is 5 points larger than the factory default, written out literally to pin the form
+	// existing files have.
+	text, err := jio.Marshal(larger)
+	c.NoError(err)
 	dir := t.TempDir()
 	p := filepath.Join(dir, "test.fonts")
-	c.NoError(fontsOf(t, map[string]unison.FontDescriptor{id: larger}).Save(p))
+	c.NoError(os.WriteFile(p, fmt.Appendf(nil, `{"version":5,"fonts":{%q:%s}}`, id, text), 0o600))
 
 	// The running app's fonts are something else entirely.
 	for _, one := range CurrentFonts() {
@@ -88,35 +92,7 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 
 	reloaded, err := NewFromFS(os.DirFS(dir), "test.fonts")
 	c.NoError(err)
-	m := stored(t, reloaded)
-	c.Equal(larger, m[id], "converting preserves the file's font")
-
-	// Fonts the file never mentioned fall back to the factory values, not the live ones.
-	c.Equal(ff[1].Font.Descriptor(), m[ff[1].ID], "an unspecified font is written as its factory value")
-}
-
-// TestCaptureCurrentRecordsLiveEdits verifies the other half of the contract: the settings UI edits the live
-// IndirectFonts in place, so the global settings must be able to pull those edits in before saving or they'd be lost.
-func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
-	c := check.New(t)
-	preserveLiveFonts(t)
-
-	id := CurrentFonts()[0].ID
-	edited := CurrentFonts()[0].Font.Descriptor()
-	edited.Size += 3
-	CurrentFonts()[0].Font.Font = edited.Font() // As the font panel's FontModifiedCallback does.
-
-	var saved Fonts // A zero value, as first-run settings hold.
-	saved.CaptureCurrent()
-	c.Equal(edited, stored(t, &saved)[id], "capturing records the live edit")
-
-	// And a capture survives the round trip to disk.
-	dir := t.TempDir()
-	p := filepath.Join(dir, "captured.fonts")
-	c.NoError(saved.Save(p))
-	reloaded, err := NewFromFS(os.DirFS(dir), "captured.fonts")
-	c.NoError(err)
-	c.Equal(edited, stored(t, reloaded)[id], "the captured edit round-trips through a save")
+	c.Equal(larger, stored(t, reloaded)[id], "converting preserves the file's font")
 }
 
 // TestMakeCurrentAppliesToLiveFonts verifies that loaded fonts reach the live IndirectFonts the UI draws with.
@@ -125,11 +101,16 @@ func TestMakeCurrentAppliesToLiveFonts(t *testing.T) {
 	preserveLiveFonts(t)
 
 	first := CurrentFonts()[0]
+	second := CurrentFonts()[1]
 	larger := first.Font.Descriptor()
 	larger.Size += 7
+	// Taken before the live edit, so a factory that aliases the live fonts is caught.
+	want := FactoryFonts()[1].Font.Descriptor()
+	edited := second.Font.Descriptor()
+	edited.Size += 2
+	second.Font.Font = edited.Font() // A live edit that the file, which doesn't mention this font, will replace.
 	loaded := fontsOf(t, map[string]unison.FontDescriptor{first.ID: larger})
 	loaded.MakeCurrent()
 	c.Equal(larger, first.Font.Descriptor(), "the loaded font is applied")
-	c.Equal(FactoryFonts()[1].Font.Descriptor(), CurrentFonts()[1].Font.Descriptor(),
-		"fonts the file didn't mention are set to their factory values")
+	c.Equal(want, second.Font.Descriptor(), "fonts the file didn't mention are set to their factory values")
 }

@@ -65,10 +65,10 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 	red := unison.RGB(255, 0, 0)
 	green := unison.RGB(0, 255, 0)
 
-	// A theme file whose surface color is red.
+	// A theme file whose surface color is red, written out literally to pin the form existing files have.
 	dir := t.TempDir()
 	p := filepath.Join(dir, "test.colors")
-	c.NoError(colorsOf(t, map[string]unison.ThemeColor{"surface": {Light: red, Dark: red}}).Save(p))
+	c.NoError(os.WriteFile(p, []byte(`{"version":5,"colors":{"surface":{"light":"#FF0000","dark":"#FF0000"}}}`), 0o600))
 
 	// The running app's theme is something else entirely.
 	for _, one := range Current() {
@@ -88,36 +88,6 @@ func TestSaveWritesReceiverRatherThanLiveTheme(t *testing.T) {
 	m := stored(t, reloaded)
 	c.Equal(red, m["surface"].Light, "converting preserves the file's light color")
 	c.Equal(red, m["surface"].Dark, "converting preserves the file's dark color")
-
-	// Colors the file never mentioned fall back to the factory values, not the live theme.
-	c.Equal(Factory()[1].Color.Light, m[Factory()[1].ID].Light, "an unspecified color is written as its factory value")
-}
-
-// TestCaptureCurrentRecordsLiveEdits verifies the other half of the contract: the settings UI edits the live
-// ThemeColors in place, so the global settings must be able to pull those edits in before saving or they'd be lost.
-func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
-	c := check.New(t)
-	preserveLiveTheme(t)
-
-	blue := unison.RGB(0, 0, 255)
-	id := Current()[0].ID
-	Current()[0].Color.Light = blue // As the color well's InkChangedCallback does.
-
-	var saved Colors // A zero value, as first-run settings hold.
-	saved.CaptureCurrent()
-	c.Equal(blue, stored(t, &saved)[id].Light, "capturing records the live edit")
-
-	// The captured value is a copy, so later live edits don't retroactively change what will be written.
-	Current()[0].Color.Light = unison.RGB(1, 2, 3)
-	c.Equal(blue, stored(t, &saved)[id].Light, "the captured color is a copy, not an alias of the live color")
-
-	// And a capture survives the round trip to disk.
-	dir := t.TempDir()
-	p := filepath.Join(dir, "captured.colors")
-	c.NoError(saved.Save(p))
-	reloaded, err := NewFromFS(os.DirFS(dir), "captured.colors")
-	c.NoError(err)
-	c.Equal(blue, stored(t, reloaded)[id].Light, "the captured edit round-trips through a save")
 }
 
 // TestMakeCurrentAppliesToLiveTheme verifies that loaded colors reach the live ThemeColors the UI draws with.
@@ -129,12 +99,13 @@ func TestMakeCurrentAppliesToLiveTheme(t *testing.T) {
 	orange := unison.RGB(255, 128, 0)
 	first := Current()[0]
 	second := Current()[1]
+	want := *Factory()[1].Color // Taken before the live edit, so a factory that aliases the live colors is caught.
 	second.Color.Light = orange // A live edit that the file, which doesn't mention this color, will replace.
 	loaded := colorsOf(t, map[string]unison.ThemeColor{first.ID: {Light: purple, Dark: purple}})
 	loaded.MakeCurrent()
 	c.Equal(purple, first.Color.Light, "the loaded light color is applied")
 	c.Equal(purple, first.Color.Dark, "the loaded dark color is applied")
-	c.Equal(*Factory()[1].Color, *second.Color, "colors the file didn't mention are set to their factory values")
+	c.Equal(want, *second.Color, "colors the file didn't mention are set to their factory values")
 }
 
 // TestNewFromFSRefusesOldFormats verifies that theme color files from before the theme rework are refused rather than
