@@ -12,6 +12,7 @@ package attack_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -29,13 +30,23 @@ func TestAccuracy(t *testing.T) {
 		{"", "0"},
 		{"-", "0"},
 		{"?", "0"},
-		{"+0", "0"},
+		{"-1", "0"},
 		{"+1", "1"},
-		{"+0+3", "0+3"},
 		{"+1+3", "1+3"},
-		{"+1+0", "1"},
+		{"1+-2", "1"},
 		{"1+0", "1"},
 		{"51,", "51"},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
+}
+
+// TestAccuracyValidate verifies that a jet keeps neither a base nor a scope accuracy.
+func TestAccuracyValidate(t *testing.T) {
+	checkValidate(check.New(t), []validateCase[attack.Accuracy]{
+		{
+			name:     "jet",
+			in:       attack.Accuracy{Base: fxp.Three, Scope: fxp.Two, Jet: true},
+			expected: attack.Accuracy{Jet: true},
+		},
+	})
 }

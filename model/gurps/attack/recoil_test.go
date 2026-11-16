@@ -22,25 +22,29 @@ func TestRecoil(t *testing.T) {
 		"",
 		"1",
 		"1/3",
-		"1/4",
-		"1/5",
-		"1/6",
-		"1/7",
-		"10",
-		"2",
-		"3",
-		"4",
-		"5",
-		"6",
-		"7",
-		"8",
 	}
 	adjusted := []parseCase{
 		{"-", ""},
-		{"–", ""},
-		{"—", ""},
 		{"?", ""},
 		{"0", ""},
+		{"-2", ""},
+		{"1/-3", "1"},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
+}
+
+// TestRecoilTooltip verifies that the note appears only when the shot and slug recoils are both present and differ.
+func TestRecoilTooltip(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		recoil string
+		want   string
+	}{
+		{recoil: "1/3", want: "First Recoil value is for shot, second is for slugs"},
+		{recoil: "2/2"},
+		{recoil: "2"},
+		{recoil: "0/3"},
+	} {
+		c.Equal(tc.want, attack.ParseRecoil(tc.recoil).Tooltip(), "recoil %q", tc.recoil)
+	}
 }

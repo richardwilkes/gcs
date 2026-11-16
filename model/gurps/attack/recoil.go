@@ -37,6 +37,7 @@ func ParseRecoil(s string) Recoil {
 	if len(parts) > 1 {
 		wr.Slug, _ = fxp.Extract(parts[1])
 	}
+	wr.Validate()
 	return wr
 }
 

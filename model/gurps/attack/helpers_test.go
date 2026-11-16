@@ -28,3 +28,22 @@ func checkFieldParsing(c check.Checker, parse func(string) string, same []string
 		c.Equal(one.expected, parse(one.input), "adjusted[%d] %q", i, one.input)
 	}
 }
+
+// validateCase pairs a weapon field with the value Validate is expected to turn it into.
+type validateCase[T any] struct {
+	name     string
+	in       T
+	expected T
+}
+
+// checkValidate verifies that Validate turns each case's value into its expected value.
+func checkValidate[T any, P interface {
+	*T
+	Validate()
+}](c check.Checker, cases []validateCase[T]) {
+	c.Helper()
+	for _, one := range cases {
+		P(&one.in).Validate()
+		c.Equal(one.expected, one.in, one.name)
+	}
+}

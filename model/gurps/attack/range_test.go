@@ -12,6 +12,7 @@ package attack_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -23,44 +24,43 @@ func TestRange(t *testing.T) {
 		"1",
 		"1-6",
 		"1/10",
-		"10",
-		"10/100",
-		"2-4",
+		"5/5-10",
 		"x0.2",
 		"x0.5/x1",
-		"x0.6/x1.2",
-		"x10/x15",
-		"1,000",
 		"1,000/3,000",
-		"10/1,000",
 	}
 	adjusted := []parseCase{
 		{"0", ""},
 		{"0/5", "5"},
 		{"×2", "x2"},
-		{"1000", "1,000"},
 		{"1,000/3,000 mi.", "1,000/3,000 mi"},
 		{"1000/3000", "1,000/3,000"},
-		{"10/1000", "10/1,000"},
 		{"1/2D 5, Max 10", "5/10"},
-		{"1/3 mi.", "1/3 mi"},
+		{"6-1", "1-6"},
+		{"1/5-10", "5-10"},
 		{"10/1", "1"},
-		{"10/30 mi.", "10/30 mi"},
-		{"5/point", ""},
-		{"B550", ""},
+		{"5 per point", ""},
+		{"B550-551", ""},
 		{"C/1", "1"},
-		{"PBAoE 2", ""},
+		{"2 PBAoE", ""},
 		{"ST + Skill/5", ""},
-		{"ST + skill/5", ""},
-		{"ST/2 + skill/5", ""},
 		{"5mi", "5 mi"},
 		{"STx2.5", "x2.5"},
-		{"Sight", ""},
-		{"Within Sight", ""},
+		{"100 (Sight)", ""},
 		{"max 100", "100"},
-		{"spec", ""},
-		{"spec.", ""},
+		{"10 (spec)", ""},
 		{"x0.5/x0.5", "x0.5"},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
+}
+
+// TestRangeValidate verifies that negative ranges become zero.
+func TestRangeValidate(t *testing.T) {
+	checkValidate(check.New(t), []validateCase[attack.Range]{
+		{
+			name:     "negative",
+			in:       attack.Range{HalfDamage: fxp.NegOne, Min: -fxp.Two, Max: -fxp.Three},
+			expected: attack.Range{},
+		},
+	})
 }

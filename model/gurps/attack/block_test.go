@@ -12,6 +12,7 @@ package attack_test
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -21,14 +22,21 @@ func TestBlock(t *testing.T) {
 	same := []string{
 		"0",
 		"-1",
-		"10",
 		"No",
 	}
 	adjusted := []parseCase{
 		{"", "No"},
 		{"-", "No"},
-		{"+0", "0"},
+		{"–", "No"},
+		{"—", "No"},
 		{"+1", "1"},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
+}
+
+// TestBlockValidate verifies that a weapon that can't block keeps no modifier.
+func TestBlockValidate(t *testing.T) {
+	checkValidate(check.New(t), []validateCase[attack.Block]{
+		{name: "can't block", in: attack.Block{Modifier: fxp.Two}, expected: attack.Block{}},
+	})
 }

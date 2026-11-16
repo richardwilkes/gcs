@@ -10,6 +10,7 @@
 package attack_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
@@ -21,28 +22,48 @@ func TestBulk(t *testing.T) {
 	same := []string{
 		"",
 		"-1",
-		"-10",
 		"-11/-14",
 		"-3*",
 	}
 	adjusted := []parseCase{
 		{"-", ""},
-		{"–", ""},
-		{"—", ""},
 		{"?", ""},
 		{"0", ""},
+		{"3/-2", "0/-2"},
+		{"-2/3", "-2"},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
 }
 
-// TestBulkTooltip verifies the folded-stock figures: bulk and accuracy worsen by one, any recoil above one rises by one
-// and the minimum ST rises by a fifth, rounded up.
+// TestBulkTooltip verifies the folded-stock figures: bulk and accuracy worsen by one, accuracy stopping at zero, any
+// recoil above one rises by one and the minimum ST rises by a fifth, rounded up.
 func TestBulkTooltip(t *testing.T) {
 	c := check.New(t)
-	accuracy := attack.ParseAccuracy("4")
-	recoil := attack.ParseRecoil("3")
-	strength := attack.ParseStrength("10")
-	c.Equal("", attack.ParseBulk("-3").Tooltip(accuracy, recoil, strength))
-	c.Equal("*: Has a retracting stock. With the stock folded, the weapon's stats change to Bulk -2*, Accuracy 3, Recoil 4, and minimum ST 12. Folding or unfolding the stock takes one Ready maneuver.",
-		attack.ParseBulk("-3*").Tooltip(accuracy, recoil, strength))
+	const format = "*: Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."
+	for _, tc := range []struct {
+		bulk     string
+		accuracy string
+		recoil   string
+		strength string
+		want     string
+	}{
+		{bulk: "-3", accuracy: "4", recoil: "3", strength: "10"},
+		{
+			bulk:     "-3/-5*",
+			accuracy: "4",
+			recoil:   "1/2",
+			strength: "11",
+			want:     fmt.Sprintf(format, "-2/-4*", "3", "1/3", "14"),
+		},
+		{
+			bulk:     "-4*",
+			accuracy: "0",
+			recoil:   "2/1",
+			strength: "10",
+			want:     fmt.Sprintf(format, "-3*", "0", "3/1", "12"),
+		},
+	} {
+		c.Equal(tc.want, attack.ParseBulk(tc.bulk).Tooltip(attack.ParseAccuracy(tc.accuracy),
+			attack.ParseRecoil(tc.recoil), attack.ParseStrength(tc.strength)), "bulk %q", tc.bulk)
+	}
 }

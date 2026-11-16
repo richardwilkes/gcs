@@ -122,8 +122,6 @@ func (wr *Reach) Validate() {
 	wr.Max = wr.Max.Max(0)
 	if wr.Min == 0 && wr.Max != 0 {
 		wr.Min = fxp.One
-	} else if wr.Min != 0 && wr.Max == 0 {
-		wr.Max = wr.Min
 	}
 	wr.Max = max(wr.Max, wr.Min)
 }
