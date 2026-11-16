@@ -10,6 +10,7 @@
 package criteria_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -61,18 +62,17 @@ func TestNumericComparisonJSONRoundTrip(t *testing.T) {
 
 func TestNumericComparisonPluralClause(t *testing.T) {
 	c := check.New(t)
-	for _, one := range []struct {
-		compare criteria.NumericComparison
-		want    string
-	}{
-		{criteria.AnyNumber, "that are anything"},
-		{criteria.EqualsNumber, "that are"},
-		{criteria.NotEqualsNumber, "that are not"},
-		{criteria.AtLeastNumber, "that are at least"},
-		{criteria.AtMostNumber, "that are at most"},
-		{criteria.NumericComparison(200), "that are anything"},
-	} {
-		c.Equal(one.want, one.compare.PluralClause(), "plural clause of %d", one.compare)
+	invalid := criteria.NumericComparison(200)
+	want := map[criteria.NumericComparison]string{
+		criteria.AnyNumber:       "that are anything",
+		criteria.EqualsNumber:    "that are",
+		criteria.NotEqualsNumber: "that are not",
+		criteria.AtLeastNumber:   "that are at least",
+		criteria.AtMostNumber:    "that are at most",
+		invalid:                  "that are anything",
 	}
-	c.Equal(5, len(criteria.NumericComparisons), "every comparison is covered above")
+	// A comparison missing from the table has an empty clause to match, so it fails here.
+	for _, compare := range slices.Concat(criteria.NumericComparisons, []criteria.NumericComparison{invalid}) {
+		c.Equal(want[compare], compare.PluralClause(), "plural clause of %d", compare)
+	}
 }

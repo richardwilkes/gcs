@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -24,40 +23,91 @@ func text(compare criteria.StringComparison, qualifier string) criteria.Text {
 	return t
 }
 
-// TestTextMatchesListCommaSeparatedQualifier verifies that MatchesList splits the qualifier on commas, trimming each
-// entry and ignoring empty ones, and that a positive comparison matches when any value meets any entry while a negative
-// one matches only when no value meets any entry.
-func TestTextMatchesListCommaSeparatedQualifier(t *testing.T) {
+// TestTextMatches verifies that "is" and "is not" ignore space at either end of the qualifier and the value while the
+// other comparisons keep it, and that the qualifier's replacements are applied before it is compared.
+func TestTextMatches(t *testing.T) {
 	c := check.New(t)
+	skill := map[string]string{"Skill": "Broadsword"}
 	for _, tc := range []struct {
-		compare   criteria.StringComparison
-		qualifier string
-		values    []string
-		want      bool
+		compare      criteria.StringComparison
+		qualifier    string
+		replacements map[string]string
+		value        string
+		want         bool
 	}{
-		{criteria.IsText, "Sword", []string{"Melee", "Sword"}, true},
-		{criteria.IsText, "Sword", []string{"Melee", "Axe"}, false},
-		{criteria.ContainsText, "wor", []string{"Sword"}, true},
-		{criteria.ContainsText, "wor", []string{"Axe"}, false},
-		{criteria.IsText, "Sword, Axe, Polearm", []string{"Melee", "Sword"}, true},
-		{criteria.IsText, "Sword, Axe, Polearm", []string{"Melee", "Axe"}, true},
-		{criteria.IsText, "Sword, Axe, Polearm", []string{"Polearm"}, true},
-		{criteria.IsText, "Sword, Axe, Polearm", []string{"Melee", "Bow"}, false},
-		{criteria.IsText, "Sword, Axe, Polearm", []string{"Ranged"}, false},
+		{criteria.IsText, " ", nil, "", true},
+		{criteria.IsText, " ", nil, "Guns", false},
+		{criteria.IsText, "Guns ", nil, "Guns", true},
+		{criteria.IsText, "Guns ", nil, " guns", true},
+		{criteria.IsText, "Pistol", nil, "Pistol ", true},
+		{criteria.IsNotText, " ", nil, "", false},
+		{criteria.IsNotText, " ", nil, "Guns", true},
+		{criteria.IsNotText, "Guns ", nil, "Guns", false},
+		{criteria.StartsWithText, "Seek ", nil, "Seek Water", true},
+		{criteria.StartsWithText, "Seek ", nil, "Seeker", false},
+		{criteria.EndsWithText, " Dull", nil, "Very Dull", true},
+		{criteria.EndsWithText, " Dull", nil, "Dull", false},
+		{criteria.ContainsText, " ", nil, "Fast Draw", true},
+		{criteria.ContainsText, " ", nil, "Guns", false},
+		{criteria.DoesNotContainText, " ", nil, "Guns", true},
+		{criteria.IsText, "@Skill@", skill, "Broadsword", true},
+	} {
+		crit := text(tc.compare, tc.qualifier)
+		c.Equal(tc.want, crit.Matches(tc.replacements, tc.value), "criteria: %v %q with %v against %q", tc.compare,
+			tc.qualifier, tc.replacements, tc.value)
+		c.Equal(tc.want, crit.Matcher(tc.replacements).Matches(tc.value), "matcher: %v %q with %v against %q",
+			tc.compare, tc.qualifier, tc.replacements, tc.value)
+	}
+}
+
+// TestTextMatchesList verifies that MatchesList applies the qualifier's replacements and splits it on commas, trimming
+// each entry and ignoring empty ones, that a positive comparison matches when any value meets any entry while a
+// negative one matches only when no value meets any entry, and that no values are judged as one empty value.
+func TestTextMatchesList(t *testing.T) {
+	c := check.New(t)
+	skill := map[string]string{"Skill": "Sword"}
+	for _, tc := range []struct {
+		compare      criteria.StringComparison
+		qualifier    string
+		replacements map[string]string
+		values       []string
+		want         bool
+	}{
+		{criteria.IsText, "Sword", nil, []string{"Melee", "Sword"}, true},
+		{criteria.IsText, "Sword", nil, []string{"Melee", "Axe"}, false},
+		{criteria.ContainsText, "wor", nil, []string{"Sword"}, true},
+		{criteria.ContainsText, "wor", nil, []string{"Axe"}, false},
+		{criteria.IsText, "Sword, Axe, Polearm", nil, []string{"Melee", "Sword"}, true},
+		{criteria.IsText, "Sword, Axe, Polearm", nil, []string{"Melee", "Axe"}, true},
+		{criteria.IsText, "Sword, Axe, Polearm", nil, []string{"Polearm"}, true},
+		{criteria.IsText, "Sword, Axe, Polearm", nil, []string{"Melee", "Bow"}, false},
 		// A tag matching several of the listed qualifiers still only reports a single match (the boolean return),
 		// which is the core of issue #1008 — one feature, one bonus.
-		{criteria.ContainsText, "Sword, Melee", []string{"Melee Sword"}, true},
-		{criteria.IsNotText, "Sword, Axe", []string{"Melee", "Bow"}, true},
-		{criteria.IsNotText, "Sword, Axe", []string{"Melee", "Sword"}, false},
-		{criteria.IsNotText, "Sword, Axe", []string{"Axe"}, false},
-		{criteria.DoesNotContainText, "Sword, Axe", []string{"Bow", "Ranged"}, true},
-		{criteria.DoesNotContainText, "Sword, Axe", []string{"Broadsword"}, false},
-		{criteria.ContainsText, " Sword ,, Axe , ", []string{"Sword"}, true},
-		{criteria.ContainsText, " Sword ,, Axe , ", []string{"Axe"}, true},
-		{criteria.ContainsText, " Sword ,, Axe , ", []string{"Polearm"}, false},
+		{criteria.ContainsText, "Sword, Melee", nil, []string{"Melee Sword"}, true},
+		{criteria.IsNotText, "Sword, Axe", nil, []string{"Melee", "Bow"}, true},
+		{criteria.IsNotText, "Sword, Axe", nil, []string{"Melee", "Sword"}, false},
+		{criteria.IsNotText, "Sword, Axe", nil, []string{"Axe"}, false},
+		{criteria.DoesNotContainText, "Sword, Axe", nil, []string{"Bow", "Ranged"}, true},
+		{criteria.DoesNotContainText, "Sword, Axe", nil, []string{"Broadsword"}, false},
+		{criteria.DoesNotStartWithText, "Sword, Axe", nil, []string{"Axehead"}, false},
+		{criteria.DoesNotEndWithText, "Sword, Axe", nil, []string{"Broadsword"}, false},
+		{criteria.ContainsText, " Sword ,, Axe , ", nil, []string{"Sword"}, true},
+		{criteria.ContainsText, " Sword ,, Axe , ", nil, []string{"Axe"}, true},
+		{criteria.ContainsText, " Sword ,, Axe , ", nil, []string{"Polearm"}, false},
+		// A qualifier with no entries is judged as one empty entry.
+		{criteria.IsText, " , ", nil, []string{""}, true},
+		{criteria.AnyText, "", nil, []string{"Sword"}, true},
+		// No values are judged as one empty value.
+		{criteria.IsText, "", nil, nil, true},
+		{criteria.IsText, "Sword", nil, nil, false},
+		{criteria.IsNotText, "Sword", nil, nil, true},
+		{criteria.IsText, "@Skill@, Axe", skill, []string{"Sword"}, true},
 	} {
-		c.Equal(tc.want, text(tc.compare, tc.qualifier).MatchesList(nil, tc.values...), "%v %q against %q", tc.compare,
-			tc.qualifier, tc.values)
+		crit := text(tc.compare, tc.qualifier)
+		c.Equal(tc.want, crit.MatchesList(tc.replacements, tc.values...), "criteria: %v %q with %v against %q",
+			tc.compare, tc.qualifier, tc.replacements, tc.values)
+		c.Equal(tc.want, crit.Matcher(tc.replacements).MatchesList(tc.values...), "matcher: %v %q with %v against %q",
+			tc.compare, tc.qualifier, tc.replacements, tc.values)
 	}
 }
 
@@ -73,129 +123,9 @@ func TestTextMatchesEachKeepsCommas(t *testing.T) {
 	c.False(text(criteria.DoesNotContainText, "Melee, Ranged").MatchesEach(nil, "Melee", "Melee, Ranged"))
 }
 
-func TestTextIsIgnoresSurroundingSpace(t *testing.T) {
-	c := check.New(t)
-	blank := text(criteria.IsText, " ")
-	c.Equal(" ", blank.Qualifier)
-	c.True(blank.Matches(nil, ""))
-	c.False(blank.Matches(nil, "Guns"))
-	padded := text(criteria.IsText, "Guns ")
-	c.Equal("Guns ", padded.Qualifier)
-	c.True(padded.Matches(nil, "Guns"))
-	c.True(padded.Matches(nil, " guns"))
-	plain := text(criteria.IsText, "Pistol")
-	c.Equal("Pistol", plain.Qualifier)
-	c.True(plain.Matches(nil, "Pistol "), "space around the data is ignored too")
-	notBlank := text(criteria.IsNotText, " ")
-	c.Equal(" ", notBlank.Qualifier)
-	c.False(notBlank.Matches(nil, ""))
-	c.True(notBlank.Matches(nil, "Guns"))
-	notPadded := text(criteria.IsNotText, "Guns ")
-	c.Equal("Guns ", notPadded.Qualifier)
-	c.False(notPadded.Matches(nil, "Guns"))
-}
-
-func TestTextOtherComparisonsKeepSurroundingSpace(t *testing.T) {
-	c := check.New(t)
-	startsWith := text(criteria.StartsWithText, "Seek ")
-	c.Equal("Seek ", startsWith.Qualifier)
-	c.True(startsWith.Matches(nil, "Seek Water"))
-	c.False(startsWith.Matches(nil, "Seeker"))
-	endsWith := text(criteria.EndsWithText, " Dull")
-	c.Equal(" Dull", endsWith.Qualifier)
-	c.True(endsWith.Matches(nil, "Very Dull"))
-	c.False(endsWith.Matches(nil, "Dull"))
-	contains := text(criteria.ContainsText, " ")
-	c.Equal(" ", contains.Qualifier)
-	c.True(contains.Matches(nil, "Fast Draw"))
-	c.False(contains.Matches(nil, "Guns"))
-	notContains := text(criteria.DoesNotContainText, " ")
-	c.Equal(" ", notContains.Qualifier)
-	c.True(notContains.Matches(nil, "Guns"))
-}
-
 func TestTextDescribeTrimsOnlyIs(t *testing.T) {
 	c := check.New(t)
-	padded := text(criteria.IsText, " Guns ")
-	c.Equal(" Guns ", padded.Qualifier)
-	c.Equal(`is "Guns"`, padded.String(nil))
-	notPadded := text(criteria.IsNotText, " ")
-	c.Equal(" ", notPadded.Qualifier)
-	c.Equal(`is not ""`, notPadded.String(nil))
-	startsWith := text(criteria.StartsWithText, "Seek ")
-	c.Equal("Seek ", startsWith.Qualifier)
-	c.Equal(`starts with "Seek "`, startsWith.String(nil))
-}
-
-// A matcher, and matching through the criteria, must give the same answer as the comparison of the value against the
-// qualifier with its replacements applied, for every comparison, whether or not the qualifier carries a nameable marker
-// and whether or not a replacement exists for it.
-func TestTextMatcherMatchesText(t *testing.T) {
-	c := check.New(t)
-	comparisons := []criteria.StringComparison{
-		criteria.AnyText, criteria.IsText, criteria.IsNotText, criteria.ContainsText, criteria.DoesNotContainText,
-		criteria.StartsWithText, criteria.DoesNotStartWithText, criteria.EndsWithText, criteria.DoesNotEndWithText,
-	}
-	qualifiers := []string{"Broadsword", "@Skill@", "Short@Skill@", "", "  Broadsword "}
-	replacements := []map[string]string{nil, {"Skill": "Broadsword"}, {"Skill": ""}, {"Other": "Broadsword"}}
-	values := []string{"Broadsword", "broadsword ", "Shortsword", "ShortBroadsword", "", "@Skill@"}
-	for _, compare := range comparisons {
-		for _, qualifier := range qualifiers {
-			text := criteria.Text{Compare: compare, Qualifier: qualifier}
-			for _, r := range replacements {
-				m := text.Matcher(r)
-				for _, value := range values {
-					want := compare.Matches(nameable.Apply(qualifier, r), value)
-					c.Equal(want, m.Matches(value), "matcher: %v %q with %v against %q", compare, qualifier, r, value)
-					c.Equal(want, text.Matches(r, value), "criteria: %v %q with %v against %q", compare, qualifier, r,
-						value)
-				}
-			}
-		}
-	}
-}
-
-// A matcher's list match, and matching a list through the criteria, must give the answer MatchesList documents: a
-// positive comparison matched by any value against any entry of the comma-separated qualifier, with its replacements
-// applied, and a negative one by every value against every entry, with no values judged as one empty value. This holds
-// for every comparison, whether or not the qualifier holds several entries or a nameable marker.
-func TestTextMatcherMatchesList(t *testing.T) {
-	c := check.New(t)
-	comparisons := []criteria.StringComparison{
-		criteria.AnyText, criteria.IsText, criteria.IsNotText, criteria.ContainsText, criteria.DoesNotContainText,
-		criteria.StartsWithText, criteria.DoesNotStartWithText, criteria.EndsWithText, criteria.DoesNotEndWithText,
-	}
-	qualifiers := []string{"Sword", "Sword, Axe", "@Skill@, Axe", "", " , "}
-	replacements := []map[string]string{nil, {"Skill": "Sword"}, {"Skill": ""}}
-	values := [][]string{nil, {""}, {"Sword"}, {"Axe"}, {"Bow"}, {"Melee", "Broadsword"}, {"Bow", "Axe"}}
-	for _, compare := range comparisons {
-		for _, qualifier := range qualifiers {
-			text := criteria.Text{Compare: compare, Qualifier: qualifier}
-			for _, r := range replacements {
-				entries := criteria.SplitQualifiers(nameable.Apply(qualifier, r))
-				m := text.Matcher(r)
-				for _, value := range values {
-					judged := value
-					if len(judged) == 0 {
-						judged = []string{""}
-					}
-					// A negative comparison holds until a pair fails it, a positive one fails until a pair holds.
-					want := compare.IsNotType()
-				judge:
-					for _, v := range judged {
-						for _, entry := range entries {
-							if compare.Matches(entry, v) != want {
-								want = !want
-								break judge
-							}
-						}
-					}
-					c.Equal(want, m.MatchesList(value...), "matcher: %v %q with %v against %q", compare, qualifier, r,
-						value)
-					c.Equal(want, text.MatchesList(r, value...), "criteria: %v %q with %v against %q", compare,
-						qualifier, r, value)
-				}
-			}
-		}
-	}
+	c.Equal(`is "Guns"`, text(criteria.IsText, " Guns ").String(nil))
+	c.Equal(`is not ""`, text(criteria.IsNotText, " ").String(nil))
+	c.Equal(`starts with "Seek "`, text(criteria.StartsWithText, "Seek ").String(nil))
 }

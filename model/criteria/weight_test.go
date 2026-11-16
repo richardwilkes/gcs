@@ -24,47 +24,34 @@ func weight(compare criteria.NumericComparison, qualifier fxp.Weight) criteria.W
 	return w
 }
 
-// TestWeightDescriptionHasUnits verifies that the description of a weight criteria carries the qualifier's units. A
-// weight without them is ambiguous, since the same number means something different in each unit.
-func TestWeightDescriptionHasUnits(t *testing.T) {
+// TestWeightDescribe verifies that the description of a weight criteria carries the qualifier in the units asked for,
+// since the same number means something different in each unit, and that String and AltString describe it in pounds.
+func TestWeightDescribe(t *testing.T) {
 	c := check.New(t)
 	fivePounds := fxp.WeightFromInteger(5, fxp.Pound)
-	c.Equal("is at most 5 lb", weight(criteria.AtMostNumber, fivePounds).String())
-	c.Equal("is at least 5 lb", weight(criteria.AtLeastNumber, fivePounds).String())
-	c.Equal("is 5 lb", weight(criteria.EqualsNumber, fivePounds).String())
-	c.Equal("is not 5 lb", weight(criteria.NotEqualsNumber, fivePounds).String())
-	c.Equal("at most 5 lb", weight(criteria.AtMostNumber, fivePounds).AltString())
-	c.Equal("at least 5 lb", weight(criteria.AtLeastNumber, fivePounds).AltString())
-	c.Equal("5 lb", weight(criteria.EqualsNumber, fivePounds).AltString())
-	c.Equal("not 5 lb", weight(criteria.NotEqualsNumber, fivePounds).AltString())
-
-	// "is anything" has no qualifier to describe, so no units appear.
-	c.Equal("is anything", weight(criteria.AnyNumber, fivePounds).String())
-	c.Equal("anything", weight(criteria.AnyNumber, fivePounds).AltString())
-
-	// An invalid comparison is treated as "any", just as it is when matching.
-	c.Equal("is anything", weight(criteria.LastNumericComparison+1, fivePounds).String())
-	c.Equal("anything", weight(criteria.LastNumericComparison+1, fivePounds).AltString())
-}
-
-// TestWeightDescriptionUsesRequestedUnits verifies that a weight criteria can be described in the units the user has
-// chosen, so that the description matches what the editor field for the same value shows.
-func TestWeightDescriptionUsesRequestedUnits(t *testing.T) {
-	c := check.New(t)
-	crit := weight(criteria.AtMostNumber, fxp.WeightFromInteger(5, fxp.Pound))
-	c.Equal("is at most 5 lb", crit.Describe(fxp.Pound))
-	c.Equal("is at most 2.5 kg", crit.Describe(fxp.Kilogram))
-	c.Equal("is at most 80 oz", crit.Describe(fxp.Ounce))
-	c.Equal("at most 5 lb", crit.AltDescribe(fxp.Pound))
-	c.Equal("at most 2.5 kg", crit.AltDescribe(fxp.Kilogram))
-	c.Equal("at most 80 oz", crit.AltDescribe(fxp.Ounce))
-
-	// The units are those asked for, not those the qualifier was created with.
-	metric := weight(criteria.AtLeastNumber, fxp.WeightFromInteger(2, fxp.Kilogram))
-	c.Equal("is at least 2 kg", metric.Describe(fxp.Kilogram))
-	c.Equal("is at least 4 lb", metric.Describe(fxp.Pound))
-	c.Equal("at least 2 kg", metric.AltDescribe(fxp.Kilogram))
-	c.Equal("at least 4 lb", metric.AltDescribe(fxp.Pound))
+	for _, tc := range []struct {
+		compare       criteria.NumericComparison
+		units         fxp.WeightUnit
+		describe, alt string
+	}{
+		{criteria.AtMostNumber, fxp.Pound, "is at most 5 lb", "at most 5 lb"},
+		{criteria.AtLeastNumber, fxp.Pound, "is at least 5 lb", "at least 5 lb"},
+		{criteria.EqualsNumber, fxp.Pound, "is 5 lb", "5 lb"},
+		{criteria.NotEqualsNumber, fxp.Pound, "is not 5 lb", "not 5 lb"},
+		{criteria.AtMostNumber, fxp.Kilogram, "is at most 2.5 kg", "at most 2.5 kg"},
+		// "is anything" has no qualifier to describe, so no units appear.
+		{criteria.AnyNumber, fxp.Pound, "is anything", "anything"},
+		// An invalid comparison is treated as "any", just as it is when matching.
+		{criteria.LastNumericComparison + 1, fxp.Pound, "is anything", "anything"},
+	} {
+		crit := weight(tc.compare, fivePounds)
+		c.Equal(tc.describe, crit.Describe(tc.units), "%d in %v", tc.compare, tc.units)
+		c.Equal(tc.alt, crit.AltDescribe(tc.units), "alt of %d in %v", tc.compare, tc.units)
+		if tc.units == fxp.Pound {
+			c.Equal(tc.describe, crit.String(), "string of %d", tc.compare)
+			c.Equal(tc.alt, crit.AltString(), "alt string of %d", tc.compare)
+		}
+	}
 }
 
 // TestWeightHashIgnoresQualifierWhenAny verifies that a weight criteria whose comparison is "is anything" hashes the

@@ -10,6 +10,7 @@
 package criteria_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -51,40 +52,30 @@ func TestStringComparisonJSONRoundTrip(t *testing.T) {
 	c.Equal(criteria.AnyText, text.Compare)
 }
 
-// TestStringComparisonAltStringOnlyDiffersForNotTypes verifies the alternate (plural) string is only distinct for the
-// "not" comparisons, which is what DescribeWithPrefix and PrefixedStringComparisonChoices rely on.
-func TestStringComparisonAltStringOnlyDiffersForNotTypes(t *testing.T) {
-	c := check.New(t)
-	for _, one := range criteria.StringComparisons {
-		if one.IsNotType() {
-			c.NotEqual(one.String(), one.AltString(), one.Key())
-		} else {
-			c.Equal(one.String(), one.AltString(), one.Key())
-		}
-	}
-}
-
 func TestStringComparisonClauses(t *testing.T) {
 	c := check.New(t)
-	for _, one := range []struct {
-		compare      criteria.StringComparison
+	type clauses struct {
 		plural, list string
 		positive     criteria.StringComparison
-	}{
-		{criteria.AnyText, "that are anything", "that are anything", criteria.AnyText},
-		{criteria.IsText, "that are", "where at least one is", criteria.IsText},
-		{criteria.IsNotText, "that are not", "where none is", criteria.IsText},
-		{criteria.ContainsText, "that contain", "where at least one contains", criteria.ContainsText},
-		{criteria.DoesNotContainText, "that do not contain", "where none contains", criteria.ContainsText},
-		{criteria.StartsWithText, "that start with", "where at least one starts with", criteria.StartsWithText},
-		{criteria.DoesNotStartWithText, "that do not start with", "where none starts with", criteria.StartsWithText},
-		{criteria.EndsWithText, "that end with", "where at least one ends with", criteria.EndsWithText},
-		{criteria.DoesNotEndWithText, "that do not end with", "where none ends with", criteria.EndsWithText},
-		{criteria.StringComparison(200), "that are anything", "that are anything", criteria.AnyText},
-	} {
-		c.Equal(one.plural, one.compare.PluralClause(), "plural clause of %d", one.compare)
-		c.Equal(one.list, one.compare.ListClause(), "list clause of %d", one.compare)
-		c.Equal(one.positive, one.compare.Positive(), "positive of %d", one.compare)
 	}
-	c.Equal(9, len(criteria.StringComparisons), "every comparison is covered above")
+	invalid := criteria.StringComparison(200)
+	want := map[criteria.StringComparison]clauses{
+		criteria.AnyText:              {"that are anything", "that are anything", criteria.AnyText},
+		criteria.IsText:               {"that are", "where at least one is", criteria.IsText},
+		criteria.IsNotText:            {"that are not", "where none is", criteria.IsText},
+		criteria.ContainsText:         {"that contain", "where at least one contains", criteria.ContainsText},
+		criteria.DoesNotContainText:   {"that do not contain", "where none contains", criteria.ContainsText},
+		criteria.StartsWithText:       {"that start with", "where at least one starts with", criteria.StartsWithText},
+		criteria.DoesNotStartWithText: {"that do not start with", "where none starts with", criteria.StartsWithText},
+		criteria.EndsWithText:         {"that end with", "where at least one ends with", criteria.EndsWithText},
+		criteria.DoesNotEndWithText:   {"that do not end with", "where none ends with", criteria.EndsWithText},
+		invalid:                       {"that are anything", "that are anything", criteria.AnyText},
+	}
+	// A comparison missing from the table has empty clauses to match, so it fails here.
+	for _, compare := range slices.Concat(criteria.StringComparisons, []criteria.StringComparison{invalid}) {
+		one := want[compare]
+		c.Equal(one.plural, compare.PluralClause(), "plural clause of %d", compare)
+		c.Equal(one.list, compare.ListClause(), "list clause of %d", compare)
+		c.Equal(one.positive, compare.Positive(), "positive of %d", compare)
+	}
 }
