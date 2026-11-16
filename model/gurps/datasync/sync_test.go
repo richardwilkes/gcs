@@ -17,41 +17,31 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// newPopulatedEntity returns an entity holding a trait and a piece of carried equipment, so that a sync of it has
-// something to walk.
-func newPopulatedEntity() *gurps.Entity {
-	e := gurps.NewEntity()
-	gurpstest.AddTraitWithFeatures(e, "Claws")
-	gurpstest.AddCarriedEquipmentWithFeatures(e, "Backpack")
-	e.Recalculate()
-	return e
-}
-
-// TestLibrarySyncersCoverSyncedFileTypes verifies that the sheet, template and loot file types each have a loader in
-// the table SyncToLibraryData dispatches through, keyed the way the dispatch looks them up.
-func TestLibrarySyncersCoverSyncedFileTypes(t *testing.T) {
-	c := check.New(t)
-	for _, ext := range []string{gurps.SheetExt, gurps.TemplatesExt, gurps.LootExt} {
-		_, exists := librarySyncers[ext]
-		c.True(exists, "%s has a loader entry", ext)
-	}
-	for ext := range librarySyncers {
-		c.Equal(strings.ToLower(ext), ext, "%s is keyed in lowercase, which is what the dispatch looks up", ext)
-	}
-}
-
-// TestSyncToLibraryDataProcessesEachFileType verifies that SyncToLibraryData loads and writes back every sheet,
-// template and loot file it finds, regardless of the case of the extension, leaves other files alone, and reports a
-// file it cannot load rather than overwriting it.
+// TestSyncToLibraryDataProcessesEachFileType verifies that SyncToLibraryData syncs every sheet, template and loot file
+// it finds with its library sources and writes it back out, regardless of the case of the extension, leaves other
+// files alone, and reports a file it cannot load rather than overwriting it.
 func TestSyncToLibraryDataProcessesEachFileType(t *testing.T) {
 	c := check.New(t)
+	libFile := gurps.LibraryFile{Library: "Sync Test", Path: "Test" + gurps.TraitsExt}
+	lib := library.NewLibrary(libFile.Library, "", "", libFile.Library, t.TempDir())
+	libs := gurps.GlobalSettings().Libraries
+	libs.Store(libFile.Library, lib)
+	t.Cleanup(func() { libs.Remove(libFile.Library) })
+	libTrait := gurps.NewTrait(nil, nil, false)
+	libTrait.Name = "Claws"
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{libTrait}, filepath.Join(lib.Path(false), libFile.Path)))
+
 	dir := t.TempDir()
 	sheetPath := filepath.Join(dir, "sheet"+gurps.SheetExt)
-	c.NoError(newPopulatedEntity().Save(sheetPath))
+	sheet := gurps.NewEntity()
+	stale := libTrait.Clone(libFile, sheet, nil, gurps.Reference)
+	stale.Name = "Claws (old)"
+	sheet.Traits = []*gurps.Trait{stale}
+	c.NoError(sheet.Save(sheetPath))
 	upperSheetPath := filepath.Join(dir, "upper"+strings.ToUpper(gurps.SheetExt))
 	c.NoError(gurps.NewEntity().Save(upperSheetPath))
 	templatePath := filepath.Join(dir, "template"+gurps.TemplatesExt)
@@ -78,6 +68,13 @@ func TestSyncToLibraryDataProcessesEachFileType(t *testing.T) {
 	info, err := os.Stat(notesPath)
 	c.NoError(err)
 	c.Equal(past, info.ModTime().UTC(), "a file of an unrelated type is left untouched")
+	sheet, err = gurps.NewEntityFromFile(os.DirFS(dir), filepath.Base(sheetPath))
+	c.NoError(err)
+	names := make([]string, len(sheet.Traits))
+	for i, one := range sheet.Traits {
+		names[i] = one.Name
+	}
+	c.Equal([]string{libTrait.Name}, names, "a trait that differs from its library source is brought back in line")
 
 	broken := []byte("not json")
 	c.NoError(os.WriteFile(templatePath, broken, 0o600))

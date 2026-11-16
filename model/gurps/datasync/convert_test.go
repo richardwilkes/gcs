@@ -23,58 +23,78 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// TestConvertWalkerUnreadableRoot verifies that the conversion walker tolerates a root it can't stat. filepath.WalkDir
-// hands the callback a nil DirEntry along with the error in that case, which previously panicked on the immediate
-// d.Name() call rather than skipping the path.
-func TestConvertWalkerUnreadableRoot(t *testing.T) {
-	c := check.New(t)
-	pathSet := make(map[string]struct{})
-	extSet := map[string]struct{}{gurps.SheetExt: {}}
-	missing := filepath.Join(t.TempDir(), "does-not-exist")
-	c.NotPanics(func() {
-		c.NoError(filepath.WalkDir(missing, convertWalker(pathSet, extSet)), "a missing root is skipped, not reported")
-	}, "a missing root must not panic")
-	c.Equal(0, len(pathSet), "nothing is collected from a missing root")
+// TestConvertWalker verifies which files the conversion walker collects: those with one of the wanted extensions, in
+// any case, other than hidden files and what hidden directories hold, including what a symlink leads to.
+func TestConvertWalker(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// root is the directory to walk and files the files to create, each relative to the test's directory.
+		root  string
+		files []string
+		// links maps each symlink to create to its target, each relative to the test's directory.
+		links map[string]string
+		// want holds the names of the files that are collected, sorted.
+		want []string
+	}{
+		// filepath.WalkDir hands the walker a nil DirEntry along with the error for a root it can't stat.
+		{name: "a root that does not exist is skipped", root: "does-not-exist", want: []string{}},
+		{
+			name:  "extensions match regardless of case",
+			files: []string{"lower.gcs", "upper.GCS", "Mixed.GcS", "template.GCT", "notes.TXT"},
+			want:  []string{"Mixed.GcS", "lower.gcs", "template.GCT", "upper.GCS"},
+		},
+		{
+			name:  "hidden files and directories are skipped",
+			files: []string{".hidden.gcs", ".hidden/inside.gcs", "seen.gcs", "sub/inner.gcs"},
+			want:  []string{"inner.gcs", "seen.gcs"},
+		},
+		{
+			name:  "symlinks are followed",
+			root:  "root",
+			files: []string{"outside/dir/in-dir.gcs", "outside/file.gcs"},
+			links: map[string]string{"root/dir-link": "outside/dir", "root/file-link": "outside/file.gcs"},
+			want:  []string{"file.gcs", "in-dir.gcs"},
+		},
+		{
+			// Following this one would never end.
+			name:  "a symlink back to a directory it lies within is not followed",
+			files: []string{"sub/inner.gcs"},
+			links: map[string]string{"sub/up": "."},
+			want:  []string{"inner.gcs"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			// Convert resolves the paths it is given before walking them, which the walker relies on to recognize a
+			// directory it has already visited.
+			dir, err := filepath.EvalSymlinks(t.TempDir())
+			c.NoError(err)
+			for _, name := range tc.files {
+				p := filepath.Join(dir, name)
+				c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+				c.NoError(os.WriteFile(p, []byte("{}"), 0o600))
+			}
+			for link, target := range tc.links {
+				p := filepath.Join(dir, link)
+				c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+				// Windows requires a privilege for this by default.
+				if err = os.Symlink(filepath.Join(dir, target), p); err != nil {
+					t.Skipf("unable to create a symlink here: %v", err)
+				}
+			}
 
-	// A readable root still collects the files with matching extensions.
-	dir := t.TempDir()
-	wanted := filepath.Join(dir, "sheet"+gurps.SheetExt)
-	c.NoError(os.WriteFile(wanted, []byte("{}"), 0o600))
-	c.NoError(os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("{}"), 0o600))
-	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
-	c.Equal(1, len(pathSet), "only the file with a matching extension is collected")
-}
+			pathSet := make(map[string]struct{})
+			walker := convertWalker(pathSet, map[string]struct{}{".gcs": {}, ".gct": {}})
+			c.NotPanics(func() { c.NoError(filepath.WalkDir(filepath.Join(dir, tc.root), walker)) })
 
-// TestConvertWalkerIgnoresExtensionCase verifies that the conversion walker collects data files whose extension is
-// upper- or mixed-case. The converters map is keyed by the lowercase extension, so a file the walker declines to
-// collect here is silently skipped by both --convert and --sync, with nothing said about it.
-func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	wanted := []string{
-		"lower" + gurps.SheetExt,
-		"upper" + strings.ToUpper(gurps.SheetExt),
-		"Mixed.GcS",
-		"template" + strings.ToUpper(gurps.TemplatesExt),
+			collected := make([]string, 0, len(pathSet))
+			for p := range pathSet {
+				collected = append(collected, filepath.Base(p))
+			}
+			slices.Sort(collected)
+			c.Equal(tc.want, collected)
+		})
 	}
-	for _, name := range append(slices.Clone(wanted), "notes.TXT") {
-		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o600))
-	}
-
-	pathSet := make(map[string]struct{})
-	extSet := map[string]struct{}{gurps.SheetExt: {}, gurps.TemplatesExt: {}}
-	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
-
-	// The collected paths have been resolved through any symlinks, so compare the names rather than the paths.
-	collected := make(map[string]struct{}, len(pathSet))
-	for p := range pathSet {
-		collected[filepath.Base(p)] = struct{}{}
-	}
-	for _, name := range wanted {
-		_, exists := collected[name]
-		c.True(exists, "%s is collected", name)
-	}
-	c.Equal(len(wanted), len(collected), "the file with an unrelated extension is not collected")
 }
 
 // TestConvertersCoverCollectedExtensions verifies that every extension the conversion walker collects has an entry in
@@ -97,15 +117,24 @@ func TestConvertersCoverCollectedExtensions(t *testing.T) {
 }
 
 // TestConvertRewritesCollectedFiles verifies that Convert brings each collected file up to the current data version,
-// including files that use an alternate extension and files written before they carried a header, which gain one with
-// their content kept.
+// whether it is of a registered file type or a secondary one, uses an alternate extension or an upper-case one, or was
+// written before such files carried a header, which it gains with its content kept, and that a file which cannot be
+// loaded is reported rather than overwritten.
 func TestConvertRewritesCollectedFiles(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
-	bodyPath := filepath.Join(dir, "body"+gurps.BodyExtAlt)
-	saveWithOldVersion(c, bodyPath, gurps.FactoryBody().Save)
-	attrPath := filepath.Join(dir, "attributes"+gurps.AttributesExtAlt1)
-	saveWithOldVersion(c, attrPath, gurps.FactoryAttributeDefs().Save)
+	outdated := []struct {
+		name string
+		save func(string) error
+	}{
+		{name: "traits" + gurps.TraitsExt, save: func(p string) error { return gurps.SaveTraits(nil, p) }},
+		{name: "body" + gurps.BodyExtAlt, save: gurps.FactoryBody().Save},
+		{name: "UPPER" + strings.ToUpper(gurps.BodyExt), save: gurps.FactoryBody().Save},
+		{name: "attributes" + gurps.AttributesExtAlt1, save: gurps.FactoryAttributeDefs().Save},
+	}
+	for _, one := range outdated {
+		saveWithOldVersion(c, filepath.Join(dir, one.name), one.save)
+	}
 	binding := unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Control | mod.Shift}.Key()
 	headerless := []struct {
 		ext, kind, content string
@@ -133,9 +162,10 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 			want:    []string{"refs", "B", "path"},
 		},
 		{
+			// A compound generator with nothing to combine can't generate names, but is still converted.
 			ext: gurps.NamesExt, kind: gurps.NamesDataKind,
-			content: `{"type":"simple","training_data":["Zelda"]}`,
-			want:    []string{"training_data"},
+			content: `{"type":"compound","separator":"-"}`,
+			want:    []string{"separator"},
 		},
 		{
 			ext: gurps.CalendarExt, kind: gurps.CalendarDataKind,
@@ -149,8 +179,10 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 
 	c.NoError(Convert(dir))
 
-	c.Equal(jio.CurrentDataVersion, fileVersion(c, bodyPath), "the body file is rewritten in the current format")
-	c.Equal(jio.CurrentDataVersion, fileVersion(c, attrPath), "the attributes file is rewritten in the current format")
+	for _, one := range outdated {
+		c.Equal(jio.CurrentDataVersion, fileVersion(c, filepath.Join(dir, one.name)),
+			"%s is rewritten in the current format", one.name)
+	}
 	for _, one := range headerless {
 		p := filepath.Join(dir, "legacy"+one.ext)
 		data, err := os.ReadFile(p)
@@ -168,21 +200,13 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 			c.True(ok, "the %s file keeps %q", one.ext, key)
 		}
 	}
-}
 
-// TestConvertFile verifies that the converter built for a list file type reloads the file and writes it back out
-// with the current data version, and that a file which cannot be loaded is reported rather than overwritten.
-func TestConvertFile(t *testing.T) {
-	c := check.New(t)
-	traitsPath := filepath.Join(t.TempDir(), "traits"+gurps.TraitsExt)
-	saveWithOldVersion(c, traitsPath, func(p string) error { return gurps.SaveTraits(nil, p) })
-	c.NoError(converters[gurps.TraitsExt](traitsPath))
-	c.Equal(jio.CurrentDataVersion, fileVersion(c, traitsPath))
-
+	// A filter list is used because a nil one saves without complaint, so ignoring the failed load would overwrite it.
 	broken := []byte("not json")
-	c.NoError(os.WriteFile(traitsPath, broken, 0o600))
-	c.HasError(converters[gurps.TraitsExt](traitsPath), "a file that fails to load is reported")
-	data, err := os.ReadFile(traitsPath)
+	brokenPath := filepath.Join(dir, "broken"+gurps.ListFiltersExt)
+	c.NoError(os.WriteFile(brokenPath, broken, 0o600))
+	c.HasError(Convert(dir), "a file that fails to load is reported")
+	data, err := os.ReadFile(brokenPath)
 	c.NoError(err)
 	c.Equal(broken, data, "a file that fails to load is not overwritten")
 }
