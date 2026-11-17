@@ -19,7 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // The saved_calc.gcs fixture records, in its "calc" objects, values that recalculating the sheet would not produce:
@@ -59,39 +61,21 @@ func TestNewEntityFromFileWithSavedCalc(t *testing.T) {
 	c.NotNil(e.Traits[0].DataOwner())
 }
 
-// TestStringWithSavedCalcOfGrantedTrait verifies that a granted trait loaded with its saved calc shows the level the
-// sheet recorded, as a bought trait does, since whether its grant was in effect is known only from that record.
-func TestStringWithSavedCalcOfGrantedTrait(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	bonus := NewTraitBonus()
-	bonus.NameCriteria.Qualifier = "Night Vision"
-	addTraitWithFeatures(e, "Boost", bonus)
-	addTraitWithFeatures(e, "Racial", newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two,
-		grantmerge.Ignore))
-	e.Recalculate()
-	c.Equal("Night Vision 3", grantedOf(e.Traits)[0].String(), "precondition: the bonus adds a level")
-	data, err := json.Marshal(e)
-	c.NoError(err)
-	dir := t.TempDir()
-	c.NoError(os.WriteFile(filepath.Join(dir, "granted.gcs"), data, 0o600))
-	loaded, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "granted.gcs")
-	c.NoError(err)
-	c.Equal("Night Vision 3", grantedOf(loaded.Traits)[0].StringWithSavedCalc())
-}
-
 // TestStringWithSavedCalcMatchesStringAtSave verifies that a trait loaded with its saved calc reads as String read it
 // when the sheet was saved, whether its recorded level is zero because the trait is at level zero, or because it was
-// disabled or not in effect, in which case String shows the level it would have.
+// disabled or not in effect, in which case String shows the level it would have. A granted trait shows the level the
+// sheet recorded, as a bought trait does, since whether its grant was in effect is known only from that record.
 func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 	for _, tc := range []struct {
 		name string
+		// atSave is what String reads for the trait when the sheet is saved.
+		atSave string
 		// add puts the trait on the sheet and returns it, and find returns the same trait in the sheet loaded from the
 		// file, or, when nil, it is the last trait at the top of the list.
 		add  func(e *Entity) *Trait
 		find func(loaded *Entity) *Trait
 	}{
-		{name: "enabled at level zero", add: func(e *Entity) *Trait {
+		{name: "enabled at level zero", atSave: "Acute Vision 0", add: func(e *Entity) *Trait {
 			bonus := NewTraitBonus()
 			bonus.NameCriteria.Qualifier = "Acute Vision"
 			bonus.Amount = -fxp.Two
@@ -100,21 +84,30 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			vision.Levels = fxp.Two
 			return vision
 		}},
-		{name: "granted but not in effect", add: func(e *Entity) *Trait {
+		{name: "granted, with a bonus", atSave: "Night Vision 3", add: func(e *Entity) *Trait {
+			bonus := NewTraitBonus()
+			bonus.NameCriteria.Qualifier = "Night Vision"
+			addTraitWithFeatures(e, "Boost", bonus)
+			addTraitWithFeatures(e, "Racial",
+				newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore))
+			e.Recalculate()
+			return grantedOf(e.Traits)[0]
+		}},
+		{name: "granted but not in effect", atSave: "Night Vision 2", add: func(e *Entity) *Trait {
 			goggles := addCarriedEquipmentWithFeatures(e, "Goggles",
 				newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore))
 			goggles.Equipped = false
 			e.Recalculate()
 			return grantedOf(e.Traits)[0]
 		}},
-		{name: "disabled by unmet prerequisites", add: func(e *Entity) *Trait {
+		{name: "disabled by unmet prerequisites", atSave: "Magery 3", add: func(e *Entity) *Trait {
 			e.SheetSettings.EnforceTraitPrereqs = true
 			magery := addTrait(e, newGrantLeveledTrait("Magery", fxp.Ten))
 			magery.Levels = fxp.Three
 			magery.Prereq = newPrereqListForTrait("Magic Aptitude", true)
 			return magery
 		}},
-		{name: "unmet prerequisites not enforced, with a bonus", add: func(e *Entity) *Trait {
+		{name: "unmet prerequisites not enforced, with a bonus", atSave: "Magery 4", add: func(e *Entity) *Trait {
 			bonus := NewTraitBonus()
 			bonus.NameCriteria.Qualifier = "Magery"
 			addTraitWithFeatures(e, "Boost", bonus)
@@ -123,7 +116,7 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			magery.Prereq = newPrereqListForTrait("Magic Aptitude", true)
 			return magery
 		}},
-		{name: "disabled by a bonus", add: func(e *Entity) *Trait {
+		{name: "disabled by a bonus", atSave: "Magery 4", add: func(e *Entity) *Trait {
 			bonus := NewTraitBonus()
 			bonus.NameCriteria.Qualifier = "Magery"
 			addTraitWithFeatures(e, "Boost", bonus)
@@ -132,7 +125,7 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			magery.SetDisabled(true)
 			return magery
 		}},
-		{name: "in a container disabled by unmet prerequisites", add: func(e *Entity) *Trait {
+		{name: "in a container disabled by unmet prerequisites", atSave: "Magery 3", add: func(e *Entity) *Trait {
 			e.SheetSettings.EnforceTraitPrereqs = true
 			group := NewTrait(e, nil, true)
 			group.Name = "Group"
@@ -152,6 +145,7 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			e.Recalculate()
 			data, err := json.Marshal(e)
 			c.NoError(err)
+			c.Equal(tc.atSave, trait.String(), "precondition: what String reads when the sheet is saved")
 			dir := t.TempDir()
 			c.NoError(os.WriteFile(filepath.Join(dir, "sheet.gcs"), data, 0o600))
 			loaded, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "sheet.gcs")
@@ -165,35 +159,48 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 	}
 }
 
-func TestStringWithSavedCalcFallsBackWhenNothingUsableWasRecorded(t *testing.T) {
+// TestStringWithSavedCalcFallback verifies when a trait or note loaded with its saved calc falls back to its own
+// unadjusted level or text: for a calc that fails to decode, even if part of it would, a missing one, or a granted
+// trait's zero current level from a file that predates the recorded level, but not for a bought trait's recorded zero.
+func TestStringWithSavedCalcFallback(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	data := fmt.Appendf(nil, `{
 	"version": %d,
 	"profile": {"name": "Plain"},
-	"traits": [{"name": "Magery", "levels": 3, "can_level": true, "calc": "not an object"}],
+	"traits": [
+		{"name": "Magery", "levels": 3, "can_level": true, "calc": {"level": 5, "unsatisfied_reason": 7}},
+		{"name": "Night Vision", "levels": 2, "can_level": true, "granted_by": {"grantor": %q, "key": %q, "hash": "x"},
+			"calc": {"current_level": 0}},
+		{"name": "Acute Vision", "levels": 2, "can_level": true, "calc": {"current_level": 0}}
+	],
 	"notes": [{"markdown": "ST <script>2+2</script>"}]
-}`, jio.CurrentDataVersion)
+}`, jio.CurrentDataVersion, tid.MustNewTID(kinds.Trait), tid.MustNewTID(kinds.Trait))
 	c.NoError(os.WriteFile(filepath.Join(dir, "plain.gcs"), data, 0o600))
 	e, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "plain.gcs")
 	c.NoError(err)
-	c.Equal("Magery 3", e.Traits[0].StringWithSavedCalc())
+	c.Equal("Magery 3", e.Traits[0].StringWithSavedCalc(), "no part of a calc that fails to decode is used")
+	c.Equal("Night Vision 2", e.Traits[1].StringWithSavedCalc(), "a granted trait's grant may not have been in effect")
+	c.Equal("Acute Vision 0", e.Traits[2].StringWithSavedCalc(), "a bought trait's recorded zero is its level")
 	c.Equal("ST <script>2+2</script>", e.Notes[0].StringWithSavedCalc())
 }
 
+// TestNewNotesFromFileWithSavedCalc verifies that the note list loader keeping the saved calc shows the text the file
+// recorded, while the ordinary one does not.
 func TestNewNotesFromFileWithSavedCalc(t *testing.T) {
 	c := check.New(t)
 	notes, err := NewNotesFromFileWithSavedCalc(os.DirFS("testdata"), "saved_calc.not")
 	c.NoError(err)
 	c.Equal(2, len(notes))
 	c.Equal("ST 42", notes[0].StringWithSavedCalc())
-	c.Equal("Plain note", notes[1].StringWithSavedCalc())
 	// The ordinary loader ignores the recorded text.
 	notes, err = NewNotesFromFile(os.DirFS("testdata"), "saved_calc.not")
 	c.NoError(err)
 	c.Equal("ST <script>2+2</script>", notes[0].StringWithSavedCalc())
 }
 
+// TestNewTemplateFromFileWithSavedCalc verifies that the template loader keeping the saved calc shows the levels and
+// text the file recorded, while the ordinary one does not.
 func TestNewTemplateFromFileWithSavedCalc(t *testing.T) {
 	c := check.New(t)
 	tmpl, err := NewTemplateFromFileWithSavedCalc(os.DirFS("testdata"), "saved_calc.gct")
@@ -202,20 +209,20 @@ func TestNewTemplateFromFileWithSavedCalc(t *testing.T) {
 	c.Equal(2, len(tmpl.Notes))
 	c.Equal("Magery 5", tmpl.Traits[0].StringWithSavedCalc())
 	c.Equal("ST 42", tmpl.Notes[0].StringWithSavedCalc())
-	c.Equal("Plain note", tmpl.Notes[1].StringWithSavedCalc())
 	tmpl, err = NewTemplateFromFile(os.DirFS("testdata"), "saved_calc.gct")
 	c.NoError(err)
 	c.Equal("Magery 3", tmpl.Traits[0].StringWithSavedCalc())
 	c.Equal("ST <script>2+2</script>", tmpl.Notes[0].StringWithSavedCalc())
 }
 
+// TestNewLootFromFileWithSavedCalc verifies that the loot sheet loader keeping the saved calc shows the text the file
+// recorded, while the ordinary one does not.
 func TestNewLootFromFileWithSavedCalc(t *testing.T) {
 	c := check.New(t)
 	loot, err := NewLootFromFileWithSavedCalc(os.DirFS("testdata"), "saved_calc.loot")
 	c.NoError(err)
 	c.Equal(2, len(loot.Notes))
 	c.Equal("ST 42", loot.Notes[0].StringWithSavedCalc())
-	c.Equal("Plain note", loot.Notes[1].StringWithSavedCalc())
 	loot, err = NewLootFromFile(os.DirFS("testdata"), "saved_calc.loot")
 	c.NoError(err)
 	c.Equal("ST <script>2+2</script>", loot.Notes[0].StringWithSavedCalc())

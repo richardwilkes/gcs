@@ -64,3 +64,14 @@ func TestReconciliationKeepsTiedPointsRecordsInOrder(t *testing.T) {
 	c.Equal([]string{"3", "5", "10"}, pointsRecordReasons(loaded.PointsRecord[1:4]),
 		"the records sharing the latest time keep the order they had")
 }
+
+// TestClonePointsRecordListCopiesRecords checks that a cloned points record list holds copies of the records, so that
+// editing the clone, as the points editor does, leaves the original records alone.
+func TestClonePointsRecordListCopiesRecords(t *testing.T) {
+	c := check.New(t)
+	list := pointsRecordsAt(0, 1)
+	clone := ClonePointsRecordList(list)
+	c.Equal(*list[1], *clone[1], "a clone holds the same records")
+	clone[1].Points = fxp.Ten
+	c.Equal(fxp.One, list[1].Points, "editing a clone leaves the original records alone")
+}

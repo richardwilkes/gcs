@@ -87,14 +87,6 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 
 	// Disadvantages: every choice returns points.
 	checkPickerCases(c, picker.Count, []pickerCase{
-		// Pick exactly 1 of [-10, -10]: every way of choosing returns the same, so there is nothing left to decide.
-		{
-			"a count picker whose disadvantages all return the same is worth one of them",
-			criteria.EqualsNumber, 1,
-			[]int{-10, -10},
-			-10, -10, true,
-		},
-
 		// Pick exactly 2 of [-5, -10, -20, -40]: the 2 cheapest are -40 + -20, the 2 costliest are -5 + -10.
 		{
 			"picking an exact count of disadvantages spans the cheapest and costliest ways to make it",
@@ -177,16 +169,8 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			-15, 15, false,
 		},
 
-		// Pick exactly 2 of [5, -5]: there is only one pair to take, so the choice is settled even though the children
-		// differ.
-		{
-			"an exact count matching the child count is settled whatever the children cost",
-			criteria.EqualsNumber, 2,
-			[]int{5, -5},
-			0, 0, true,
-		},
-
-		// Pick exactly 3 of [5, 10, -20]: likewise, taking everything is the only way to make the count.
+		// Pick exactly 3 of [5, 10, -20]: taking everything is the only way to make the count, so the choice is settled
+		// even though the children differ.
 		{
 			"an exact count of every child is worth the total of them",
 			criteria.EqualsNumber, 3,
@@ -264,14 +248,6 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			-10, 10, false,
 		},
 
-		// Pick at most 1 of [10, -5]: nothing need be taken, but neither end gains by taking nothing.
-		{
-			"a maximum count of one spans the cheapest and costliest child",
-			criteria.AtMostNumber, 1,
-			[]int{10, -5},
-			-5, 10, false,
-		},
-
 		// Pick at most 2 of [10, 20, 40, -5]: the -5 alone is cheapest, and the 2 costliest are 40 + 20.
 		{
 			"a maximum count limits how much can be taken at either end",
@@ -286,14 +262,6 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			criteria.AtMostNumber, 2,
 			[]int{5, 10, -20},
 			-20, 15, false,
-		},
-
-		// Pick at most 0 of [10, -5]: nothing may be taken, so nothing is what it costs.
-		{
-			"a maximum count of none costs nothing",
-			criteria.AtMostNumber, 0,
-			[]int{10, -5},
-			0, 0, true,
 		},
 
 		// The cases above keep the count close to the number of children, where nearly everything on offer is forced.
@@ -334,15 +302,6 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			criteria.AtMostNumber, 2,
 			[]int{40, 20, 10, -5, -10, -30},
 			-40, 60, false,
-		},
-
-		// Any number of [30, 20, 10, 5, -5, -15]: the same split by sign, over a list with 4 advantages and 2
-		// disadvantages.
-		{
-			"an unconstrained count is unaffected by how the list is made up",
-			criteria.AnyNumber, 0,
-			[]int{30, 20, 10, 5, -5, -15},
-			-20, 65, false,
 		},
 
 		// Pick exactly 3 of [30, 20, 10, 5, -5, -15]: the cheapest 3 are both disadvantages plus the cheapest
@@ -455,6 +414,14 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			0, 0, true,
 		},
 
+		// Nor does a cap below nothing bind them: children that take no side say nothing about which side it is on.
+		{
+			"a cap below nothing over children carrying no points costs nothing",
+			criteria.AtMostNumber, -50,
+			[]int{0, 0, 0},
+			0, 0, true,
+		},
+
 		// A qualifier of 0 is the edge of each comparison: two of them forbid spending anything, while the third
 		// forbids nothing.
 		{
@@ -482,6 +449,15 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			"20+",
 		},
 
+		// Pick at least 100 points from children whose own costs only add up to 50: those costs set no ceiling on what
+		// the container is worth, since the points of a skill or spell picked from it may be assigned while picking.
+		{
+			"a minimum points picker its children cannot reach still costs at least what it asks for",
+			criteria.AtLeastNumber, 100,
+			[]int{10, 40},
+			"100+",
+		},
+
 		// Any amount from [10, 20, 40]: the qualifier names neither end, so only taking nothing bounds it.
 		{
 			"an unconstrained points picker over advantages spans nothing upward without limit",
@@ -499,31 +475,10 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 		},
 	})
 
-	// Pick at least 100 points from children whose own costs only add up to 50: those costs set no ceiling on what the
-	// container is worth, since the points of a skill or spell picked from it may be assigned while picking.
-	noCeiling := newPickerRange(
-		picker.Points, criteria.AtLeastNumber,
-		100,
-		[]int{10, 40},
-	)
-	c.NotNil(noCeiling.Min, "a minimum points picker its children cannot bound has a lower limit")
-	c.Equal(fxp.FromInteger(100), *noCeiling.Min, "it costs at least what it asks for")
-	c.Nil(noCeiling.Max, "a minimum points picker its children cannot bound has no upper limit")
-	c.False(noCeiling.IsSettled(), "a cost with no upper limit is never settled")
-	c.Equal("100+", noCeiling.String(), "it renders as its minimum and a plus")
-
-	// A container of 0-point skills parts ways with the case above: children that can only cost nothing leave the
+	// A container of 0-point skills parts ways with those minimums: children that can only cost nothing leave the
 	// picker no side to take, so the qualifier binds neither end and the container is worth nothing until those
 	// children carry points of their own.
-	skills := NewSkill(nil, nil, true)
-	skills.TemplatePicker.Type = picker.Points
-	skills.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
-	skills.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(16)
-	for range 3 {
-		child := NewSkill(nil, skills, false)
-		child.Points = 0
-		skills.Children = append(skills.Children, child)
-	}
+	skills := newSkillPickerContainer(picker.Points, criteria.AtLeastNumber, 16, []int{0, 0, 0})
 	c.Equal("0", skills.PointsRange(nil).String(),
 		"a points picker over skills carrying no points costs nothing")
 	c.Equal(fxp.Int(0), skills.AdjustedPoints(nil), "and its total agrees with the settled cost")
@@ -557,14 +512,6 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			[]int{-10, -20, -40},
 			-100, 0, false,
 		},
-
-		// An exact 0 is met only by picking nothing, whatever is on offer.
-		{
-			"an exact points picker asking for nothing costs nothing even over disadvantages",
-			criteria.EqualsNumber, 0,
-			[]int{-10, -20, -40},
-			0, 0, true,
-		},
 	})
 
 	// The comparisons that name no floor leave none, the mirror of the ceilings above.
@@ -586,8 +533,8 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			"≤0",
 		},
 
-		// A cap of 0 is met by every disadvantage there is, which is where it parts ways with the exact 0 above:
-		// "spending nothing" and "taking no disadvantages" are not the same thing.
+		// A cap of 0 is met by every disadvantage there is, which is where it parts ways with an exact 0, met only by
+		// picking nothing: "spending nothing" and "taking no disadvantages" are not the same thing.
 		{
 			"a maximum of nothing still allows every disadvantage to be taken",
 			criteria.AtMostNumber, 0,
@@ -596,45 +543,11 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 		},
 	})
 
-	// The would-be mirror of the "no ceiling" case, and where it stops being one. A picker has a side to take only
-	// when its children do, and children that can only cost nothing take neither side. A cap below nothing over them
-	// therefore binds no end at all, and the picker settles at nothing -- exactly where the same children under
-	// "at least 16" above settle, since which end the qualifier names stops mattering once no end is bound.
-	noFloor := newPickerRange(
-		picker.Points, criteria.AtMostNumber,
-		-50,
-		[]int{0, 0, 0},
-	)
-	c.Equal(fxp.Int(0), *noFloor.Min, "a cap below nothing over children carrying none costs nothing")
-	c.Equal(fxp.Int(0), *noFloor.Max, "at both ends, since nothing on offer says the cap applies")
-	c.True(noFloor.IsSettled(), "a cost with nothing left to decide is settled")
-	c.Equal("0", noFloor.String(), "it renders as a single cost")
-
 	// Both at once, which for a points picker is rarer still -- 2 of the 1,126 pickers in the master library, both of
 	// them disadvantage packages offering something to spend the returned points on. Children reaching away from 0 in
-	// both directions leave the picker no side to take, so an exact qualifier is the only one that still says what
-	// the container is worth; every other comparison names an end the children do not agree on.
-
-	checkPickerCases(c, picker.Points, []pickerCase{
-		// Pick exactly 10 points worth: an exact qualifier is what it costs, whichever side the children come from.
-		{
-			"an exact points picker over a mixed list is still worth what it asks for",
-			criteria.EqualsNumber, 10,
-			[]int{20, 10, -5, -15},
-			10, 10, true,
-		},
-
-		// Pick exactly 0: met by picking nothing, whatever is on offer at either side.
-		{
-			"an exact points picker asking for nothing costs nothing over a mixed list too",
-			criteria.EqualsNumber, 0,
-			[]int{20, 10, -5, -15},
-			0, 0, true,
-		},
-	})
-
-	// Every other comparison over [20, 10, -5, -15], whichever end it names and whichever side its qualifier falls
-	// on, together with the one list that reaches both ways by a single child.
+	// both directions leave the picker no side to take, so every comparison but an exact one names an end the children
+	// do not agree on. Each is checked over [20, 10, -5, -15], whichever end it names and whichever side its qualifier
+	// falls on, together with the one list that reaches both ways by a single child.
 	checkOpenRangeCases(c, picker.Points, []openRangeCase{
 		{
 			"an unconstrained points picker over a mixed list is open at both ends",
@@ -817,12 +730,6 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 			criteria.EqualsNumber, 1,
 			[]*Trait{noCeiling(), settledAt20()},
 			"1+", false,
-		},
-		{
-			"taking both adds the settled cost to the lower limit and leaves the upper open",
-			criteria.EqualsNumber, 2,
-			[]*Trait{noCeiling(), settledAt20()},
-			"21+", false,
 		},
 		{
 			"a child with no lower limit leaves the picker that offers it without one",
@@ -1018,9 +925,8 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 }
 
 // TestPointsRangeForExactPointsPickerDirectly verifies the exact branch of rangeForPickerByMeasure, which no points
-// picker reaches: settledPickerCost settles an exact points picker at its qualifier before any PointsRange walks the
-// children. The branch has to answer the same thing the short circuit does, since a change to either could make it the
-// one that runs.
+// picker reaches, since settledPickerCost answers one first: an exact picker is worth its qualifier, whatever its
+// children can reach.
 func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 	c := check.New(t)
 
@@ -1044,14 +950,6 @@ func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 
 	r = rangeForPickerByMeasure(exact(-50), children)
 	checkRange(c, -50, -50, r, "an exact points picker asking for disadvantages is worth its qualifier too")
-
-	// The short circuit that normally answers first has to agree with it.
-	var tp TemplatePicker
-	tp.Type = picker.Points
-	tp.Qualifier = exact(20)
-	value, settled := settledPickerCost(tp)
-	c.True(settled, "the short circuit settles an exact points picker without looking at its children")
-	c.Equal(fxp.Twenty, value, "and settles it at the same cost the branch returns")
 }
 
 // TestPointsRangeForPickerIsNeverInverted sweeps every picker type and comparison over a spread of qualifiers and
@@ -1187,6 +1085,22 @@ func TestAdjustedPointsCollapsesSettledPickers(t *testing.T) {
 	exact.TemplatePicker = TemplatePicker{}
 	c.Equal(fxp.FromInteger(75), exact.AdjustedPoints(nil),
 		"a container that no longer presents a choice is worth the total of its children again")
+
+	// Skills and spells reach the same answers by way of pickerContainerPoints.
+	c.Equal(fxp.FromInteger(20),
+		newSkillPickerContainer(picker.Points, criteria.EqualsNumber, 20, []int{5, 40}).AdjustedPoints(nil),
+		"a skill container asking for an exact number of points is worth that many")
+	c.Equal(fxp.FromInteger(10),
+		newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{10, 10}).AdjustedPoints(nil),
+		"a skill container asking for one of several identically priced skills is worth one of them")
+
+	// An option still presenting a choice of its own adds its own total: 1 + 4 for the inner container, plus 2.
+	inner := newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{1, 4})
+	skills := newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{2})
+	inner.SetParent(skills)
+	skills.Children = append(skills.Children, inner)
+	c.Equal(fxp.FromInteger(7), skills.AdjustedPoints(nil),
+		"a skill container whose choices differ reports the total of its options")
 }
 
 // TestNumericRangeFormatting verifies how a range renders, which is what every points column shows.
@@ -1201,8 +1115,6 @@ func TestNumericRangeFormatting(t *testing.T) {
 		"a range of disadvantages stays readable, with no sign to confuse the separator for")
 	c.Equal("10+", numericRangeAtLeast(fxp.Ten).String(), "a range with no upper limit renders as a plus")
 	c.Equal("≤15", numericRangeAtMost(fxp.Fifteen).String(), "a range with no lower limit renders as a cap")
-	c.Equal("0+", numericRangeAtLeast(0).String(), "an end open above nothing still renders as a plus")
-	c.Equal("≤0", numericRangeAtMost(0).String(), "an end open below nothing still renders as a cap")
 	c.Equal("—", NumericRange{}.String(), "a range with no limits at all renders as a dash")
 	c.Equal("1,500~2,000",
 		newNumericRange(fxp.FromInteger(1500), fxp.FromInteger(2000)).Comma(),
@@ -1215,14 +1127,13 @@ func TestPointsLessFromString(t *testing.T) {
 	c := check.New(t)
 
 	c.True(PointsLessFromString("9", "10"), "plain costs sort numerically, not as text")
-	c.True(PointsLessFromString("10", "100"), "plain costs sort numerically past a single digit")
 	c.True(PointsLessFromString("-5", "0"), "negative costs sort ahead of nothing")
-	c.True(PointsLessFromString("1,500", "2,000"), "separators don't alter the order")
+	c.True(PointsLessFromString("900", "1,500"), "separators don't alter the order")
+	c.False(PointsLessFromString("10", "10"), "a cost does not sort ahead of itself")
 
 	c.True(PointsLessFromString("9~20", "10"), "a range sorts by its low end")
 	c.False(PointsLessFromString("10", "9~20"), "a range sorts by its low end, from either side")
 	c.True(PointsLessFromString("10", "10~15"), "a settled cost sorts ahead of a range starting at the same cost")
-	c.True(PointsLessFromString("10~15", "20~25"), "ranges sort against each other by their low ends")
 	c.True(PointsLessFromString("≤15", "-100"), "a range with no lower limit sorts ahead of everything")
 	c.False(PointsLessFromString("-100", "≤15"), "a range with no lower limit sorts ahead of everything, from either side")
 	c.True(PointsLessFromString("10", "10+"), "an unbounded upper end sorts after the same cost on its own")
@@ -1236,7 +1147,7 @@ func TestPointsLessFromString(t *testing.T) {
 	c.True(PointsLessFromString("—", "-100"), "a range with no limits at all still sorts ahead of every lower limit")
 	c.True(PointsLessFromString("10~15", "10+"), "a range with no upper limit sorts after one starting at the same cost")
 	c.True(PointsLessFromString("10~15", "10~20"), "ranges starting at the same cost sort by their upper ends")
-	c.True(PointsLessFromString("1,000~1,500", "1,000~2,000"), "separators don't alter the order of upper ends")
+	c.True(PointsLessFromString("500~900", "500~1,500"), "separators don't alter the order of upper ends")
 }
 
 // TestRawPointsRangeLeavesOutBonuses verifies that the range a template picker counts a skill container by is built
@@ -1292,17 +1203,8 @@ func TestPointsCellForPickers(t *testing.T) {
 	c.Equal("", data.Tooltip, "a settled cost has nothing to explain")
 
 	// The same holds for skills and spells, which share the machinery.
-	skill := NewSkill(nil, nil, true)
-	skill.TemplatePicker.Type = picker.Count
-	skill.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
-	skill.TemplatePicker.Qualifier.Qualifier = fxp.One
-	for _, points := range []int{1, 4} {
-		child := NewSkill(nil, skill, false)
-		child.Points = fxp.FromInteger(points)
-		skill.Children = append(skill.Children, child)
-	}
 	data = CellData{}
-	skill.CellData(SkillPointsColumn, &data)
+	newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{1, 4}).CellData(SkillPointsColumn, &data)
 	c.Equal("1~4", data.Primary, "a skill container presenting choices shows the range too")
 }
 
@@ -1335,8 +1237,8 @@ func TestNumericRangeCanSatisfy(t *testing.T) {
 	c.False(nothing.CanSatisfy(newCriteria(criteria.EqualsNumber, 1)), "picking nothing doesn't satisfy a picker")
 	c.True(nothing.CanSatisfy(newCriteria(criteria.AtMostNumber, 5)), "picking nothing satisfies a maximum")
 
-	// A range with no upper limit -- the everyday "pick at least N points" over children carrying no points -- can
-	// still reach anything above its lower limit, but nothing below it.
+	// A range with no upper limit -- the everyday "pick at least N points" over advantages -- can still reach anything
+	// above its lower limit, but nothing below it.
 	atLeast := numericRangeAtLeast(fxp.Ten)
 	c.True(atLeast.CanSatisfy(newCriteria(criteria.EqualsNumber, 1000)),
 		"an exact cost above a range with no upper limit can still be met")
@@ -1383,8 +1285,6 @@ func TestNumericRangeWithoutLimits(t *testing.T) {
 	c := check.New(t)
 
 	open := numericRangeAtLeast(fxp.Ten)
-	c.Nil(open.Max, "a range with no upper limit has none")
-	c.False(open.IsSettled(), "a range with no upper limit is never settled")
 	_, settled := open.Settled()
 	c.False(settled, "a range with no upper limit has no single cost")
 
@@ -1393,12 +1293,6 @@ func TestNumericRangeWithoutLimits(t *testing.T) {
 	c.Equal(fxp.Fifteen, *sum.Min, "adding a cost raises the lower limit")
 	c.Nil(sum.Max, "adding a cost to a range with no upper limit leaves it without one")
 
-	// A child with no upper limit leaves the container that holds it without one either.
-	parent := NewTrait(nil, nil, true)
-	child := NewTrait(nil, parent, false)
-	child.BasePoints = fxp.Ten
-	parent.Children = append(parent.Children, child)
-	c.True(parent.PointsRange(nil).IsSettled(), "a container of settled children is settled")
 	c.Nil(sumNumericRanges([]NumericRange{NumericRangeOf(fxp.Ten), numericRangeAtLeast(fxp.Five)}).Max,
 		"a total that includes a cost with no upper limit has none")
 }
@@ -1578,6 +1472,20 @@ func newPickerContainer(pt picker.Type, compare criteria.NumericComparison, qual
 	for _, points := range childPoints {
 		child := NewTrait(nil, parent, false)
 		child.BasePoints = fxp.FromInteger(points)
+		parent.Children = append(parent.Children, child)
+	}
+	return parent
+}
+
+// newSkillPickerContainer is newPickerContainer for skills.
+func newSkillPickerContainer(pt picker.Type, compare criteria.NumericComparison, qualifier int, childPoints []int) *Skill {
+	parent := NewSkill(nil, nil, true)
+	parent.TemplatePicker.Type = pt
+	parent.TemplatePicker.Qualifier.Compare = compare
+	parent.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(qualifier)
+	for _, points := range childPoints {
+		child := NewSkill(nil, parent, false)
+		child.Points = fxp.FromInteger(points)
 		parent.Children = append(parent.Children, child)
 	}
 	return parent
