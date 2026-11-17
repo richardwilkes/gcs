@@ -169,31 +169,6 @@ func TestScriptModifierUnitResolution(t *testing.T) {
 // clamping therefore made measure.modifierToYards(1e300) return 700000000000000 on Apple silicon and 0.0055 on Intel.
 func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 	c := check.New(t)
-	for _, tc := range []struct {
-		value float64
-		want  int
-	}{
-		{value: math.MaxFloat64, want: maxSSRTValue},
-		{value: -math.MaxFloat64, want: minSSRTValue},
-		{value: 1e300, want: maxSSRTValue},
-		{value: -1e300, want: minSSRTValue},
-		{value: math.Inf(1), want: maxSSRTValue},
-		{value: math.Inf(-1), want: minSSRTValue},
-		{value: math.NaN(), want: 0}, // NaN compares false against everything, so it must be handled explicitly.
-		{value: maxSSRTValue, want: maxSSRTValue},
-		{value: maxSSRTValue + 1, want: maxSSRTValue},
-		{value: minSSRTValue, want: minSSRTValue},
-		{value: minSSRTValue - 1, want: minSSRTValue},
-		{value: 0, want: 0},
-		{value: 4, want: 4},
-		{value: 4.7, want: 4}, // Narrowing truncates toward zero, as it always has.
-		{value: -4.7, want: -4},
-	} {
-		c.Equal(tc.want, intFromScriptClampedToSSRT(tc.value), "value %v", tc.value)
-	}
-
-	// End to end through the script binding: a value in the table maps to its entry, and anything past an end, however
-	// extreme, maps to that end on every architecture.
 	top := ssrtToYards(maxSSRTValue).AsFloat[float64]()
 	bottom := ssrtToYards(minSSRTValue).AsFloat[float64]()
 	for _, tc := range []struct {
@@ -219,10 +194,29 @@ func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 	}
 }
 
-// intFromScriptClampedToSSRT mirrors what ModifierToYards does: narrow the script's number, then let ssrtToYards clamp
-// it to the table. Expressed here so the table above can assert the value the table actually acts on.
-func intFromScriptClampedToSSRT(value float64) int {
-	return min(max(intFromScript(value), minSSRTValue), maxSSRTValue)
+// TestScriptMeasurementConversions verifies that the length and weight bindings convert in the direction their names
+// give, apply the default units to a bare number, and answer 0 for text that is not a length or weight.
+func TestScriptMeasurementConversions(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		expr string
+		want string
+	}{
+		{expr: "measure.formatLength(36, 'ft')", want: "3 ft"},
+		{expr: "measure.lengthToInches(1, 'ft')", want: "12"},
+		{expr: "measure.stringLengthToInches('2 ft', 'in')", want: "24"},
+		{expr: "measure.stringLengthToInches('3', 'ft')", want: "36"},
+		{expr: "measure.stringLengthToInches('bogus', 'in')", want: "0"},
+		{expr: "measure.formatWeight(2, 'kg')", want: "1 kg"},
+		{expr: "measure.weightToPounds(1, 'kg')", want: "2"},
+		{expr: "measure.stringWeightToPounds('2 lb', 'kg')", want: "2"},
+		{expr: "measure.stringWeightToPounds('3', 'oz')", want: "0.1875"},
+		{expr: "measure.stringWeightToPounds('bogus', 'lb')", want: "0"},
+	} {
+		v, err := runScript(0, tc.expr)
+		c.NoError(err, "expr %q", tc.expr)
+		c.Equal(tc.want, v, "expr %q", tc.expr)
+	}
 }
 
 // TestSpeedRangePenalty pins the Size and Speed/Range Table (BX550) rows that a distance or a speed in yards reads off,

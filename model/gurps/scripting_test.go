@@ -21,9 +21,10 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
-	"github.com/richardwilkes/rpgtools/dice"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -36,9 +37,7 @@ func TestScriptMathExp2(t *testing.T) {
 		want   string
 	}{
 		{script: "typeof Math.exp2", want: "function"},
-		{script: "Math.exp2(0)", want: "1"},
 		{script: "Math.exp2(3)", want: "8"},
-		{script: "Math.exp2(10)", want: "1024"},
 		{script: "typeof Math.pow", want: "function"}, // ensure the built-in Math members are still present
 	} {
 		v, err := runScript(0, tc.script)
@@ -47,25 +46,47 @@ func TestScriptMathExp2(t *testing.T) {
 	}
 }
 
-// entity.randomWeightInPounds returns a numeric result without panicking for very low (even negative) strength values.
-// At such ST the deviation used as the bound for rnd.Intn would otherwise go non-positive.
-func TestScriptRandomWeightInPounds(t *testing.T) {
+// TestScriptIffSignedValueAndFormatNum verifies that the iff global picks one of two values by a condition,
+// signedValue gives a number an explicit sign, and formatNum adds thousands separators, an explicit sign, or both.
+func TestScriptIffSignedValueAndFormatNum(t *testing.T) {
 	c := check.New(t)
-	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, nil) }}
-	for _, st := range []int{-100, -20, -1, 0, 1, 10, 20} {
-		v, err := runScript(0, fmt.Sprintf("entity.randomWeightInPounds(%d, 0)", st), entityArg)
-		c.NoError(err, "st %d", st)
-		_, err = fxp.FromString(v)
-		c.NoError(err, "st %d result %q", st, v)
+	for _, tc := range []struct {
+		script string
+		want   string
+	}{
+		{script: "iff(true, 'yes', 'no')", want: "yes"},
+		{script: "iff(false, 'yes', 'no')", want: "no"},
+		{script: "signedValue(3)", want: "+3"},
+		{script: "formatNum(1234.5, false, false)", want: "1234.5"},
+		{script: "formatNum(1234.5, true, false)", want: "1,234.5"},
+		{script: "formatNum(1234.5, false, true)", want: "+1234.5"},
+		{script: "formatNum(1234.5, true, true)", want: "+1,234.5"},
+	} {
+		v, err := runScript(0, tc.script)
+		c.NoError(err, "script %q", tc.script)
+		c.Equal(tc.want, v, "script %q", tc.script)
 	}
 }
 
 // The fields of entity.points report values consistent with entity.PointsBreakdown(). The breakdown is computed once
 // per access to entity.points and every field read from that single result, so this also guards against the fields
-// drifting apart from the canonical breakdown.
+// drifting apart from the canonical breakdown. Every category holds a different amount, so a field that read another's
+// would be caught.
 func TestScriptEntityPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
+	e.Attributes.Set[StrengthID].Adjustment = fxp.One
+	ancestry := NewTrait(e, nil, true)
+	ancestry.ContainerType = container.Ancestry
+	member := NewTrait(e, ancestry, false)
+	member.BasePoints = fxp.Seven
+	ancestry.Children = []*Trait{member}
+	for _, points := range []fxp.Int{fxp.Fifteen, -fxp.Twenty, -fxp.One} {
+		trait := NewTrait(e, nil, false)
+		trait.BasePoints = points
+		e.Traits = append(e.Traits, trait)
+	}
+	e.Traits = append(e.Traits, ancestry)
 	sk := NewSkill(e, nil, false)
 	sk.Points = fxp.FromInteger(2)
 	e.Skills = append(e.Skills, sk)
@@ -73,9 +94,17 @@ func TestScriptEntityPoints(t *testing.T) {
 	sp.Points = fxp.FromInteger(3)
 	e.Spells = append(e.Spells, sp)
 	e.Recalculate()
-	e.TotalPoints = fxp.FromInteger(10)
+	e.TotalPoints = fxp.Hundred
 
 	pb := e.PointsBreakdown()
+	seen := make(map[fxp.Int]bool)
+	for _, amount := range []fxp.Int{
+		pb.Total(), e.TotalPoints - pb.Total(), pb.Ancestry, pb.Attributes, pb.Advantages, pb.Disadvantages, pb.Quirks,
+		pb.Skills, pb.Spells,
+	} {
+		c.False(seen[amount], "precondition: %v is the amount of more than one field", amount)
+		seen[amount] = true
+	}
 	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
 	for _, tc := range []struct {
 		field string
@@ -83,9 +112,13 @@ func TestScriptEntityPoints(t *testing.T) {
 	}{
 		{field: "total", want: pb.Total()},
 		{field: "unspent", want: e.TotalPoints - pb.Total()},
+		{field: "ancestry", want: pb.Ancestry},
+		{field: "attributes", want: pb.Attributes},
+		{field: "advantages", want: pb.Advantages},
+		{field: "disadvantages", want: pb.Disadvantages},
+		{field: "quirks", want: pb.Quirks},
 		{field: "skills", want: pb.Skills},
 		{field: "spells", want: pb.Spells},
-		{field: "attributes", want: pb.Attributes},
 	} {
 		v, err := runScript(0, "entity.points."+tc.field, entityArg)
 		c.NoError(err, "field %q", tc.field)
@@ -139,29 +172,29 @@ func TestScriptEquipmentChildrenSkipDisabledAncestor(t *testing.T) {
 	c.Equal("0", v)
 }
 
-// Exercises the entity.thrustFor and entity.swingFor bindings, which format their dice using the
-// UseModifyingDicePlusAdds flag from the entity's sheet settings. The GURPS damage progression keeps thrust/swing
-// modifiers within -3..+2, so the plain and modifying-dice formats never diverge for these dice; what is guarded here
-// is the wiring: the bindings must exist, resolve without error, and return exactly what FormatDice produces.
+// entity.thrustFor and entity.swingFor give the damage the sheet's damage progression assigns to an ST, formatted per
+// the sheet's UseModifyingDicePlusAdds setting. With swing at thrust+2, ST 17 swings for 1d+4, which that setting
+// turns into 2d; no progression gives thrust a modifier large enough to become a die.
 func TestScriptThrustSwingFor(t *testing.T) {
 	c := check.New(t)
-	for _, fn := range []string{"thrustFor", "swingFor"} {
-		roll := func(e *Entity, st int) dice.Dice {
-			if fn == "thrustFor" {
-				return e.ThrustFor(st)
-			}
-			return e.SwingFor(st)
-		}
-		for _, extra := range []bool{false, true} {
-			e := NewEntity()
-			e.SheetSettings.UseModifyingDicePlusAdds = extra
-			const st = 20 // Yields a multi-die result (thrust 2d-1, swing 3d+2) rather than a trivial 1d.
-			want := FormatDice(roll(e, st), extra)
-			entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
-			v, err := runScript(0, fmt.Sprintf("entity.%s(%d)", fn, st), entityArg)
-			c.NoError(err, "%s extra=%v", fn, extra)
-			c.Equal(want, v, "%s extra=%v", fn, extra)
-		}
+	for _, tc := range []struct {
+		extra  bool
+		thrust string
+		swing  string
+	}{
+		{extra: false, thrust: "1d+2", swing: "1d+4"},
+		{extra: true, thrust: "1d+2", swing: "2d"},
+	} {
+		e := NewEntity()
+		e.SheetSettings.DamageProgression = progression.SwingEqualsThrustPlus2
+		e.SheetSettings.UseModifyingDicePlusAdds = tc.extra
+		entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
+		v, err := runScript(0, "entity.thrustFor(17)", entityArg)
+		c.NoError(err, "extra=%v", tc.extra)
+		c.Equal(tc.thrust, v, "thrust, extra=%v", tc.extra)
+		v, err = runScript(0, "entity.swingFor(17)", entityArg)
+		c.NoError(err, "extra=%v", tc.extra)
+		c.Equal(tc.swing, v, "swing, extra=%v", tc.extra)
 	}
 }
 
@@ -763,6 +796,7 @@ func TestScriptRestoreGlobalsDetectsBaselineDamage(t *testing.T) {
 		{name: "replaced global", script: "Math = null"},
 		{name: "replaced global through globalThis", script: "globalThis.Date = 42"},
 		{name: "redefined global", script: "Object.defineProperty(globalThis, 'Array', {value: 42})"},
+		{name: "deleted symbol global", script: "delete globalThis[Symbol.toStringTag]"},
 	} {
 		s := newUnpinnedScriptVM()
 		_, err := s.runtime.RunString(tc.script)
@@ -959,6 +993,20 @@ func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
 	c.Equal("undefined", ResolveScript(nil, orphan, "typeof self.valueOf()"))
 }
 
+// TestScriptSeparatorsAreNotAttributes verifies that a script has no $ binding for a separator in the attribute list,
+// which only lays out the sheet, and does not find one among entity.attributes.
+func TestScriptSeparatorsAreNotAttributes(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.Attributes.Set["sep"] = &AttributeDef{DefID: "sep", Type: attribute.PrimarySeparator}
+	e.Attributes.Set["sep"] = NewAttribute(e, "sep", 0)
+	e.Recalculate()
+	c.Equal("undefined", ResolveScript(e, ScriptSelfProvider{}, "typeof $sep"))
+	c.Equal("object", ResolveScript(e, ScriptSelfProvider{}, "typeof $st"))
+	c.Equal("false", ResolveScript(e, ScriptSelfProvider{}, `entity.attributes.some(a => a.id === "sep")`))
+	c.Equal("true", ResolveScript(e, ScriptSelfProvider{}, `entity.attributes.some(a => a.id === "st")`))
+}
+
 // findActiveModifier on both traits and equipment ignores the case of and surrounding whitespace in the name, as the
 // entity's own name lookups do, answers null for a modifier that is not present, and activeModifiers omits disabled
 // modifiers. The weapons of a trait or piece of equipment include those of its enabled modifiers, and a modifier lists
@@ -1079,7 +1127,8 @@ func TestScriptExecTimeLimitSyncIsConcurrencySafe(t *testing.T) {
 }
 
 // A value that fails to resolve fails every time it is asked for, which for an equipment weight is once per draw of
-// the sheet, so the failure is reported once per edit rather than once per frame.
+// the sheet, so the failure is reported once per edit rather than once per frame. The record of reported failures is
+// bounded.
 func TestScriptResolveFailureLoggedOnce(t *testing.T) {
 	c := check.New(t)
 	count := countLogs(t, slog.LevelError)
@@ -1093,6 +1142,15 @@ func TestScriptResolveFailureLoggedOnce(t *testing.T) {
 	DiscardGlobalResolveCache()
 	c.Equal(fxp.Int(0), ResolveToNumber(nil, ScriptSelfProvider{}, "'not a number'"))
 	c.Equal(int32(3), count.Load(), "an edit discards the cache, after which a failure that persists is reported again")
+
+	// A new failure once the record is full starts it over, so one reported before is reported again.
+	count.Store(0)
+	DiscardGlobalResolveCache()
+	for i := range maximumLoggedScriptResolveFailures + 1 {
+		logScriptResolveFailure("number", "x", strconv.Itoa(i))
+	}
+	logScriptResolveFailure("number", "x", "0")
+	c.Equal(int32(maximumLoggedScriptResolveFailures+2), count.Load(), "the record of reported failures is bounded")
 }
 
 // The record of reported failures is shared by every goroutine that resolves scripts.

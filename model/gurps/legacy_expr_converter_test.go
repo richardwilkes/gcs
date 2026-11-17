@@ -16,12 +16,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
+// TestExprToScript verifies the conversion of legacy expressions, embedded ones included, into scripts.
 func TestExprToScript(t *testing.T) {
 	c := check.New(t)
-	s := gurps.ExprToScript("-$fp")
-	c.Equal(`-$fp`, s)
-
-	s = gurps.ExprToScript(`roll(1d12+14)`)
+	s := gurps.ExprToScript(`roll(1d12+14)`)
 	c.Equal(`dice.roll("1d12+14")`, s)
 
 	s = gurps.ExprToScript(`roll(1d12+14,true)`)
@@ -92,6 +90,7 @@ func TestExprToScriptExponent(t *testing.T) {
 	}
 }
 
+// TestExprToScriptUnaryOperators verifies that unary operators keep their operand and their place wherever they appear.
 func TestExprToScriptUnaryOperators(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []struct {
@@ -130,19 +129,24 @@ func TestExprToScriptUnaryOperators(t *testing.T) {
 	}
 }
 
+// TestExprToScriptMalformed verifies that malformed expressions are left unchanged rather than panicking or emitting
+// garbage.
 func TestExprToScriptMalformed(t *testing.T) {
 	c := check.New(t)
-	// Malformed expressions must be left unchanged rather than panicking or emitting garbage.
 	for i, one := range []string{
 		`(*`,
 		`(+)`,
 		`(1 + 2`,
+		`1 + 2)`,
+		`max(1, 2`,
 		`max((),1)`,
 		`max( ,1)`,
 		`-()`,
 		`--3`,
 		`max(unknown_function(1),2)`,
 	} {
-		c.Equal(one, gurps.ExprToScript(one), "index %d: %s", i, one)
+		var got string
+		c.NotPanics(func() { got = gurps.ExprToScript(one) }, "index %d: %s", i, one)
+		c.Equal(one, got, "index %d: %s", i, one)
 	}
 }

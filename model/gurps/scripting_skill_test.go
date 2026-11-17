@@ -17,54 +17,42 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// newUnlearnableSkill returns a skill attached to the given entity that has no points and no usable default, so its
-// computed level is the fxp.Min sentinel.
-func newUnlearnableSkill(e *Entity, name string) *Skill {
-	sk := NewSkill(e, nil, false)
-	sk.Name = name
-	sk.Specialization = "None"
-	sk.Points = 0
-	e.Skills = append(e.Skills, sk)
-	e.Recalculate()
-	return sk
-}
-
-// entity.skillLevel() applies the same sentinel guard as the skill wrapper when it matches an unlearnable skill.
-func TestScriptEntitySkillLevelSentinel(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	newUnlearnableSkill(e, "Unlearnable Via Entity")
-	c.Equal("0", ResolveScript(e, ScriptSelfProvider{},
-		`entity.skillLevel("Unlearnable Via Entity", "None", false, "")`))
-	c.Equal("0", ResolveScript(e, ScriptSelfProvider{},
-		`entity.skillLevel("Unlearnable Via Entity", "None", true, "")`))
-}
-
-// A skill whose level cannot be computed (no points and no usable default) reports 0 to scripts rather than leaking the
-// fxp.Min sentinel as -922337203685477, while a normally-resolvable skill still reports its real level and relative
-// level, so the sentinel guard doesn't disturb the usual case. A relative level may legitimately be negative, so it
-// must not be clamped.
+// A skill whose level cannot be computed (no points and no usable default, or no owning entity, as in a library or
+// template) reports 0 to scripts, through both the skill wrapper and entity.skillLevel, rather than leaking the fxp.Min
+// sentinel as -922337203685477, while a normally-resolvable skill still reports its real level and relative level, so
+// the sentinel guard doesn't disturb the usual case. A relative level may legitimately be negative, so it must not be
+// clamped.
 func TestScriptSkillLevelWithPoints(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
 		name     string
 		points   fxp.Int
 		sentinel bool
+		unowned  bool
 	}{
 		{name: "Learnable", points: fxp.One},
 		{name: "Unlearnable", points: 0, sentinel: true},
+		{name: "Unowned", points: fxp.One, unowned: true},
 	} {
-		e := NewEntity()
-		sk := NewSkill(e, nil, false)
+		var e *Entity
+		var owner DataOwner
+		if !tc.unowned {
+			e = NewEntity()
+			owner = e
+		}
+		sk := NewSkill(owner, nil, false)
 		sk.Name = tc.name
 		sk.Specialization = "None"
 		sk.Points = tc.points
-		e.Skills = append(e.Skills, sk)
-		e.Recalculate()
 		level, relativeLevel := "0", "0"
-		if tc.sentinel {
+		if e != nil {
+			e.Skills = append(e.Skills, sk)
+			e.Recalculate()
+		}
+		switch {
+		case tc.sentinel:
 			c.Equal(fxp.Min, sk.LevelData.Level, "%s: precondition: the stored level really is the sentinel", tc.name)
-		} else {
+		case e != nil:
 			c.NotEqual(fxp.Min, sk.LevelData.Level, tc.name)
 			c.True(sk.LevelData.RelativeLevel < 0,
 				"%s: precondition: an Average skill with 1 point is below its attribute", tc.name)
@@ -73,7 +61,20 @@ func TestScriptSkillLevelWithPoints(t *testing.T) {
 		}
 		c.Equal(level, ResolveScript(e, deferredNewScriptSkill(sk), "self.level"), tc.name)
 		c.Equal(relativeLevel, ResolveScript(e, deferredNewScriptSkill(sk), "self.relativeLevel"), tc.name)
+		if e != nil {
+			c.Equal(level, ResolveScript(e, ScriptSelfProvider{}, `entity.skillLevel("`+tc.name+`", "None", false)`),
+				tc.name)
+			c.Equal(relativeLevel,
+				ResolveScript(e, ScriptSelfProvider{}, `entity.skillLevel("`+tc.name+`", "None", true)`), tc.name)
+		}
 	}
+}
+
+// TestScriptSkillKind verifies that a technique and a skill tell themselves apart to a script by kind.
+func TestScriptSkillKind(t *testing.T) {
+	c := check.New(t)
+	c.Equal("skill", ResolveScript(nil, deferredNewScriptSkill(NewSkill(nil, nil, false)), "self.kind"))
+	c.Equal("technique", ResolveScript(nil, deferredNewScriptSkill(NewTechnique(nil, nil, "Judo")), "self.kind"))
 }
 
 // A panic while recalculating a skill's level for a script must not leave the skill-level resolution exclusion

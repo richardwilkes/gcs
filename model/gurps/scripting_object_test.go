@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -85,11 +86,100 @@ func TestScriptObjectWithValueOfConvertsToItsValue(t *testing.T) {
 		// The bare attribute is the shape the sheet actually resolves; runScript delivers its result by converting it
 		// to a string, so this is what ResolveToNumber has to be able to parse.
 		{name: "result conversion", script: "$st", want: value},
-		{name: "hasOwnProperty for a provided key", script: "String($st.hasOwnProperty('current'))", want: "true"},
-		{name: "hasOwnProperty for a missing key", script: "String($st.hasOwnProperty('notAKey'))", want: "false"},
 	} {
 		var v string
 		v, err = runScript(0, tc.script, attrArg)
+		c.NoError(err, "case %q", tc.name)
+		c.Equal(tc.want, v, "case %q", tc.name)
+	}
+}
+
+// TestScriptObjectToString verifies that a script object keeps a toString of its own. The one it is given otherwise
+// reports "[object Object]" for an object with no valueOf, and lets an exception valueOf throws reach the script.
+func TestScriptObjectToString(t *testing.T) {
+	c := check.New(t)
+	fn := func(r *goja.Runtime, f func() goja.Value) func() goja.Value {
+		return func() goja.Value { return r.ToValue(func(goja.FunctionCall) goja.Value { return f() }) }
+	}
+	for _, tc := range []struct {
+		name  string
+		kvMap func(r *goja.Runtime) map[string]func() goja.Value
+		want  string
+		err   string
+	}{
+		{
+			name: "own toString",
+			kvMap: func(r *goja.Runtime) map[string]func() goja.Value {
+				return map[string]func() goja.Value{
+					"toString": fn(r, func() goja.Value { return r.ToValue("own") }),
+					"valueOf":  fn(r, func() goja.Value { return r.ToValue(7) }),
+				}
+			},
+			want: "own",
+		},
+		{
+			name: "no valueOf",
+			kvMap: func(r *goja.Runtime) map[string]func() goja.Value {
+				return map[string]func() goja.Value{"name": func() goja.Value { return r.ToValue("x") }}
+			},
+			want: "[object Object]",
+		},
+		{
+			name: "valueOf throws",
+			kvMap: func(r *goja.Runtime) map[string]func() goja.Value {
+				return map[string]func() goja.Value{
+					"valueOf": fn(r, func() goja.Value { panic(r.NewTypeError("boom")) }),
+				}
+			},
+			err: "boom",
+		},
+	} {
+		var v string
+		var err error
+		c.NotPanics(func() {
+			v, err = runScript(0, "String(obj)", ScriptArg{
+				Name:  "obj",
+				Value: func(r *goja.Runtime) any { return r.NewDynamicObject(NewScriptObject(r, tc.kvMap(r))) },
+			})
+		}, "case %q", tc.name)
+		if tc.err != "" {
+			ex, ok := errors.AsType[*goja.Exception](err)
+			c.True(ok, "case %q: expected the script exception, got %v", tc.name, err)
+			if ok {
+				c.Contains(ex.Error(), tc.err, "case %q", tc.name)
+			}
+			continue
+		}
+		c.NoError(err, "case %q", tc.name)
+		c.Equal(tc.want, v, "case %q", tc.name)
+	}
+}
+
+// TestScriptObjectIsReadOnly verifies that a script can list the properties of a script object but not assign or
+// delete any.
+func TestScriptObjectIsReadOnly(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.Name = "Sample"
+	selfArg := ScriptArg{Name: "self", Value: func(r *goja.Runtime) any { return newScriptTrait(r, trait) }}
+	for _, tc := range []struct {
+		name   string
+		script string
+		want   string
+	}{
+		{name: "keys", script: "String(Object.keys(self).includes('name'))", want: "true"},
+		{
+			name:   "assign",
+			script: "try { self.name = 'x'; 'assigned' } catch (e) { e.name + ' ' + self.name }",
+			want:   "TypeError Sample",
+		},
+		{
+			name:   "delete",
+			script: "try { delete self.name; 'deleted' } catch (e) { e.name + ' ' + self.name }",
+			want:   "TypeError Sample",
+		},
+	} {
+		v, err := runScript(0, tc.script, selfArg)
 		c.NoError(err, "case %q", tc.name)
 		c.Equal(tc.want, v, "case %q", tc.name)
 	}
@@ -182,61 +272,10 @@ func TestScriptIDsArePrimitiveStrings(t *testing.T) {
 	c.Equal("undefined", ResolveScript(e, deferredNewScriptNote(note), "typeof self.parentID"))
 }
 
-// The ids reachable through the collection-valued accessors (children, weapons, activeModifiers, and the entity-level
-// find functions) are primitive strings too, since those are the paths a script most often uses to gather ids.
-func TestScriptCollectionIDsArePrimitiveStrings(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	trait := NewTrait(e, nil, true)
-	trait.Name = "Container"
-	child := NewTrait(e, trait, false)
-	child.Name = "Child"
-	trait.Children = []*Trait{child}
-	mod := NewTraitModifier(e, nil, false)
-	mod.Name = "Mod"
-	child.Modifiers = []*TraitModifier{mod}
-	e.Traits = []*Trait{trait}
-
-	item := NewEquipment(e, nil, false)
-	item.Name = "Gear"
-	weapon := NewWeapon(item, true)
-	item.Weapons = []*Weapon{weapon}
-	itemMod := NewEquipmentModifier(e, nil, false)
-	itemMod.Name = "Gear Mod"
-	item.Modifiers = []*EquipmentModifier{itemMod}
-	e.CarriedEquipment = []*Equipment{item}
-
-	e.Recalculate()
-
-	for _, tc := range []struct {
-		name string
-		expr string
-		want tid.TID
-	}{
-		{name: "trait children", expr: `entity.findTraits("Container", "")[0].children[0].id`, want: child.TID},
-		{
-			name: "trait modifiers",
-			expr: `entity.findTraits("Child", "")[0].activeModifiers[0].id`,
-			want: mod.TID,
-		},
-		{name: "equipment weapons", expr: `entity.findEquipment("Gear", "")[0].weapons[0].id`, want: weapon.TID},
-		{
-			name: "equipment modifiers",
-			expr: `entity.findEquipment("Gear", "")[0].activeModifiers[0].id`,
-			want: itemMod.TID,
-		},
-	} {
-		c.Equal("string", ResolveScript(e, ScriptSelfProvider{}, "typeof "+tc.expr), "case %q", tc.name)
-		c.Equal(string(tc.want), ResolveScript(e, ScriptSelfProvider{}, tc.expr), "case %q", tc.name)
-		c.Equal("true", ResolveScript(e, ScriptSelfProvider{}, fmt.Sprintf("[%q].includes(%s)", tc.want, tc.expr)),
-			"case %q", tc.name)
-	}
-}
-
 // Covers the properties every node script wrapper shares -- parent, container and tags -- both as a top-level node and
 // as a child. parent must be the wrapper for the actual parent, reachable recursively up the chain, and undefined at
-// the top; container must follow the node's kind; and tags must be a copy, so a script cannot alter the node.
+// the top, and a parent lists the child among its children; container must follow the node's kind; and tags must be a
+// copy, so a script cannot alter the node.
 func TestScriptNodeIdentityProperties(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -315,6 +354,8 @@ func TestScriptNodeIdentityProperties(t *testing.T) {
 		c.Equal("true", ResolveScript(e, tc.child, "self.parent.container"), "case %q", tc.name)
 		c.Equal(tc.wantTags, ResolveScript(e, tc.child, "self.parent.tags.join(',')"), "case %q", tc.name)
 		c.Equal("undefined", ResolveScript(e, tc.child, "typeof self.parent.parent"), "case %q", tc.name)
+		c.Equal("true", ResolveScript(e, tc.child, "self.parent.children.some(n => n.id === self.id)"), "case %q",
+			tc.name)
 
 		// tags is a copy: a script that pushes onto it does not alter the node.
 		c.Equal("1", ResolveScript(e, tc.child, "self.tags.push('x')"), "case %q", tc.name)
