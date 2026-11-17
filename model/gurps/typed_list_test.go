@@ -21,8 +21,7 @@ import (
 )
 
 // TestEveryFeatureTypeDecodesToItsConcreteType verifies that the polymorphic feature decoder has a concrete type for
-// every feature type this build knows about, so that none of them is quietly preserved as an UnknownFeature, and that
-// the reserved Unknown type itself, which has no concrete representation, is.
+// every feature type this build knows about, so that none of them is quietly preserved as an UnknownFeature.
 func TestEveryFeatureTypeDecodesToItsConcreteType(t *testing.T) {
 	for _, one := range feature.Types {
 		t.Run(one.Key(), func(t *testing.T) {
@@ -34,7 +33,7 @@ func TestEveryFeatureTypeDecodesToItsConcreteType(t *testing.T) {
 				return
 			}
 			_, isUnknown := features[0].(*gurps.UnknownFeature)
-			c.Equal(one == feature.Unknown, isUnknown, "unknown wrapper used")
+			c.False(isUnknown, "unknown wrapper used")
 			c.Equal(one, features[0].FeatureType())
 			if one.IsWeaponBonus() {
 				_, isWeaponBonus := features[0].(*gurps.WeaponBonus)
@@ -57,7 +56,7 @@ func TestEveryPrereqTypeDecodesToItsConcreteType(t *testing.T) {
 				return
 			}
 			_, isUnknown := prereqs[0].(*gurps.UnknownPrereq)
-			c.Equal(one == prereq.Unknown, isUnknown, "unknown wrapper used")
+			c.False(isUnknown, "unknown wrapper used")
 			c.Equal(one, prereqs[0].PrereqType())
 		})
 	}

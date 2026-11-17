@@ -15,6 +15,25 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
+// TestTraverseVisitsDepthFirst verifies that Traverse visits each node before its children, and a node's descendants
+// before its next sibling, which decides the node a walk that stops early finds.
+func TestTraverseVisitsDepthFirst(t *testing.T) {
+	c := check.New(t)
+	newTrait := func(name string, children ...*Trait) *Trait {
+		trait := NewTrait(nil, nil, len(children) != 0)
+		trait.Name = name
+		trait.Children = children
+		return trait
+	}
+	list := []*Trait{newTrait("A", newTrait("A1", newTrait("A1a")), newTrait("A2")), newTrait("B")}
+	var names []string
+	Traverse(func(trait *Trait) bool {
+		names = append(names, trait.Name)
+		return false
+	}, false, false, list...)
+	c.Equal([]string{"A", "A1", "A1a", "A2", "B"}, names)
+}
+
 // TestCountNodes verifies that CountNodes descends into containers, honors the enabled-only flag the way Traverse does,
 // and applies the optional filter.
 func TestCountNodes(t *testing.T) {

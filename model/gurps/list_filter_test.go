@@ -12,8 +12,6 @@ package gurps_test
 import (
 	"encoding/json/jsontext"
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -96,7 +94,8 @@ func checkFilterParents(c check.Checker, group *gurps.FilterGroup, path string) 
 
 // TestListFilterJSONRoundTrip verifies that a filter holding every kind of node survives a save and load unchanged,
 // both in what it writes, which leaves out whatever a node doesn't have, and in the parent links that the JSON doesn't
-// carry and the load has to restore, and that a padded name is trimmed on the way in.
+// carry and the load has to restore, that a padded name is trimmed on the way in, and that a child that can't be
+// decoded into its type fails the load.
 func TestListFilterJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 
@@ -185,6 +184,25 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"name": "  Padded  ", "root": {"type": "group", "all": true}}`), &padded),
 		"a filter with a padded name should unmarshal")
 	c.Equal("Padded", padded.Name, "loading trims the name")
+
+	var malformed gurps.ListFilter
+	c.HasError(jio.Unmarshal([]byte(`{"name":"x","root":{"type":"group","children":[{"type":"condition","not":1}]}}`),
+		&malformed), "a child that can't be decoded fails the load")
+}
+
+// TestListFilterEnsureValidity verifies that EnsureValidity drops nil children and labels each condition as one, at any
+// depth, as a filter built in code needs before it is checked or saved.
+func TestListFilterEnsureValidity(t *testing.T) {
+	c := check.New(t)
+	cond := &gurps.FilterCondition{Field: "name"}
+	sub := gurps.NewFilterGroup(nil)
+	sub.Children = gurps.FilterNodes{nil, cond, (*gurps.FilterCondition)(nil)}
+	f := &gurps.ListFilter{Name: "Built", Root: gurps.NewFilterGroup(nil)}
+	f.Root.Children = gurps.FilterNodes{(*gurps.FilterGroup)(nil), sub}
+	c.NotPanics(f.EnsureValidity, "nil children must not stop it")
+	c.Equal(gurps.FilterNodes{sub}, f.Root.Children, "the root's nil child is dropped")
+	c.Equal(gurps.FilterNodes{cond}, sub.Children, "and so are the nested group's")
+	c.Equal(filternode.Condition, cond.Type, "a condition built without its type is labeled as one")
 }
 
 // TestListFilterUnknownNodePreserved verifies that a filter node whose type this build doesn't recognize loads as an
@@ -558,8 +576,8 @@ func TestListFilterTraitLevels(t *testing.T) {
 // unmet, which its negation swaps, a condition on an unknown field or a node of an unknown kind fails, and a group
 // leaves out the children that are skipped and is skipped when nothing is left. Of the rest, an unmet child decides an
 // "all of" group and a met one an "any of" group, even beside a failed one; otherwise the group has failed when one of
-// the rest has, and is met or unmet as they all are. Negating a group then swaps met and unmet only. A node is shown
-// when the filter is met or skipped.
+// the rest has, and is met or unmet as they all are. Negating a group then swaps met and unmet only. A missing filter,
+// or one without a root, is skipped, and a node is shown when the filter is met or skipped.
 func TestListFilterCheckResults(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
@@ -661,6 +679,10 @@ func TestListFilterCheckResults(t *testing.T) {
 	}
 	c.Equal(gurps.CheckSkipped, gurps.NewListFilterChecker(nil, fields)(trait), "no filter is skipped")
 	c.True(matchesListFilter(nil, fields, trait), "so it shows everything")
+	rootless := gurps.CheckFailed
+	c.NotPanics(func() { rootless = gurps.NewListFilterChecker(&gurps.ListFilter{Name: "Rootless"}, fields)(trait) },
+		"a filter without a root can be checked")
+	c.Equal(gurps.CheckSkipped, rootless, "a filter without a root is skipped")
 	c.Nil(findFilterField(fields, "field_from_a_newer_gcs"), "the field really is unknown")
 }
 
@@ -964,7 +986,8 @@ func TestFilterFieldContainerTypeChoices(t *testing.T) {
 }
 
 // TestFilterFieldDifficultyChoices verifies that the difficulty fields offer each attribute, and 10, at each difficulty
-// level, followed by the bare levels of a technique, spelled as the fields report a skill's or spell's difficulty.
+// level, followed by the bare levels of a technique, spelled as the fields report a skill's or spell's difficulty, and
+// each spelling only once.
 func TestFilterFieldDifficultyChoices(t *testing.T) {
 	c := check.New(t)
 	// The tests load the user's settings file, whose attributes may be anything.
@@ -992,6 +1015,10 @@ func TestFilterFieldDifficultyChoices(t *testing.T) {
 	c.Equal(attributes*len(difficulty.Levels)+len(difficulty.TechniqueLevels), len(choices),
 		"each attribute at each level and the technique levels are offered, and nothing else")
 	c.Equal(choices, spellField.Suggestions(nil, false), "skills and spells offer the same difficulties")
+	twin := *sheet.Attributes.Set["dx"]
+	twin.DefID = "dx2"
+	sheet.Attributes.Set[twin.DefID] = &twin
+	c.Equal(choices, skillField.Suggestions(nil, false), "an attribute that shares another's name adds nothing")
 
 	tenEasy := gurps.NewSkill(nil, nil, false)
 	tenEasy.Difficulty.Attribute = "10"
@@ -1020,7 +1047,8 @@ func TestFilterFieldDifficultyChoices(t *testing.T) {
 }
 
 // TestListFilterCloneIsDeep verifies that a clone shares nothing with the filter it came from, since the filter editor
-// works on a clone and must not alter the saved filter until the user accepts the changes.
+// works on a clone and must not alter the saved filter until the user accepts the changes, and that it always has a
+// root group.
 func TestListFilterCloneIsDeep(t *testing.T) {
 	c := check.New(t)
 
@@ -1062,6 +1090,7 @@ func TestListFilterCloneIsDeep(t *testing.T) {
 	c.Equal("Alertness", cond.Text.Qualifier, "the original's qualifier was not changed")
 	c.NotEqual(gurps.Hash64(f), gurps.Hash64(clone), "the mutated clone no longer matches the original")
 	checkFilterParents(c, clone.Root, "mutated clone root")
+	c.NotNil((&gurps.ListFilter{Name: "Rootless"}).Clone().Root, "the clone of a filter without a root has one")
 }
 
 // TestFilterGroupEmpty verifies that a group counts as empty while it holds nothing but groups, however deeply nested,
@@ -1146,6 +1175,11 @@ func TestListFilterHash(t *testing.T) {
 	c.NotPanics(func() { _ = gurps.Hash64(nilFilter) }, "hashing a nil filter must not panic")
 	var nilGroup *gurps.FilterGroup
 	c.NotPanics(func() { _ = gurps.Hash64(nilGroup) }, "hashing a nil group must not panic")
+	c.NotPanics(func() {
+		_ = gurps.Hash64(&gurps.FilterGroup{Children: gurps.FilterNodes{
+			(*gurps.FilterCondition)(nil), (*gurps.UnknownFilterNode)(nil),
+		}})
+	}, "hashing a group holding a nil condition or unknown node must not panic")
 	c.NotPanics(func() { _ = gurps.Hash64(&gurps.ListFilter{Name: "Rootless"}) },
 		"hashing a filter without a root must not panic")
 	c.NotEqual(base, gurps.Hash64(&gurps.ListFilter{Name: "Rootless"}),
@@ -1221,10 +1255,11 @@ func TestSettingsListFilterHelpers(t *testing.T) {
 	_, exists = s.ListFilters[key]
 	c.False(exists, "removing the last filter deletes the key")
 
-	// EnsureValidity prunes what can't be used and keeps what it doesn't recognize.
+	// EnsureValidity prunes what can't be used and keeps what it doesn't recognize. A filter that hasn't been made
+	// valid yet has its name trimmed before it is checked.
 	s.ListFilters = map[string][]*gurps.ListFilter{
 		key:      {nil, gurps.NewListFilter("Keep"), gurps.NewListFilter("  "), gurps.NewListFilter("keep")},
-		"spl":    {nil, gurps.NewListFilter("")},
+		"spl":    {nil, gurps.NewListFilter(""), {Name: "  ", Root: gurps.NewFilterGroup(nil)}},
 		"future": {gurps.NewListFilter("From a newer GCS")},
 	}
 	s.EnsureValidity()
@@ -1328,22 +1363,6 @@ func TestListFilterManagementHelpers(t *testing.T) {
 	other.Root.All = false
 	c.False(s.HasIdenticalListFilter(key, other), "different conditions aren't identical")
 	c.False(s.HasIdenticalListFilter("skl", alpha), "filters are compared per list type")
-}
-
-// TestListFiltersFileRoundTrip verifies that saved filters survive a trip through a file, and that loading drops the
-// ones the settings would.
-func TestListFiltersFileRoundTrip(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	filters := map[string][]*gurps.ListFilter{
-		"adq": {gurps.NewListFilter("Alpha"), gurps.NewListFilter("alpha"), gurps.NewListFilter(" ")},
-		"skl": {gurps.NewListFilter("Beta")},
-	}
-	c.NoError(gurps.SaveListFilters(filters, filepath.Join(dir, "x"+gurps.ListFiltersExt)))
-	loaded, err := gurps.NewListFiltersFromFile(os.DirFS(dir), "x"+gurps.ListFiltersExt)
-	c.NoError(err)
-	c.Equal([]string{"Alpha"}, listFilterNames(loaded["adq"]), "duplicate and empty names are dropped")
-	c.Equal([]string{"Beta"}, listFilterNames(loaded["skl"]), "every list type is kept")
 }
 
 // TestNewMergedListFilter verifies that a merge folds in a source that combines its conditions the same way, or holds

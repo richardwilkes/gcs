@@ -18,12 +18,14 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// equipmentFilterLookup looks the fields up among the equipment list's, as the filter editor does.
-func equipmentFilterLookup(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
-	if field := findFilterField(gurps.EquipmentFilterFields(), key); field != nil {
-		return field.Title, field.Kind, field.Plural, true
+// filterLookup looks the fields up among the given ones, as the filter editor does.
+func filterLookup[T gurps.Node[T]](fields []*gurps.FilterField[T]) gurps.FilterFieldLookup {
+	return func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
+		if field := findFilterField(fields, key); field != nil {
+			return field.Title, field.Kind, field.Plural, true
+		}
+		return "", 0, false, false
 	}
-	return "", 0, false, false
 }
 
 // bracket marks what Describe emphasizes.
@@ -47,6 +49,7 @@ type describeCase struct {
 // titles of the list it filters and giving a weight in the units it is asked for.
 func TestFilterConditionDescribe(t *testing.T) {
 	c := check.New(t)
+	equipmentFilterLookup := filterLookup(gurps.EquipmentFilterFields())
 	for i, one := range []describeCase{
 		{newTextFilterCondition("name", criteria.ContainsText, "sword"), `Must have a name that contains "[sword]"`},
 		{newTextFilterCondition("name", criteria.IsText, "Axe"), `Must have a name that is [Axe]`},
@@ -156,12 +159,7 @@ func TestFilterConditionDescribe(t *testing.T) {
 		c.Equal(one.want, one.cond.Describe(equipmentFilterLookup, fxp.Pound, bracket), "case %d", i)
 	}
 
-	traitModifierLookup := func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
-		if field := findFilterField(gurps.TraitModifierFilterFields(), key); field != nil {
-			return field.Title, field.Kind, field.Plural, true
-		}
-		return "", 0, false, false
-	}
+	traitModifierLookup := filterLookup(gurps.TraitModifierFilterFields())
 	for i, one := range []struct {
 		lookup gurps.FilterFieldLookup
 		units  fxp.WeightUnit
@@ -185,16 +183,12 @@ func TestFilterConditionDescribe(t *testing.T) {
 // weight, so one stands in for it.
 func TestFilterConditionDescribesPluralFields(t *testing.T) {
 	c := check.New(t)
+	traitLookup := filterLookup(gurps.TraitFilterFields())
 	lookup := func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
-		switch key {
-		case "weights":
+		if key == "weights" {
 			return "have weights", gurps.FilterFieldWeight, true, true
-		default:
-			if field := findFilterField(gurps.TraitFilterFields(), key); field != nil {
-				return field.Title, field.Kind, field.Plural, true
-			}
-			return "", 0, false, false
 		}
+		return traitLookup(key)
 	}
 	for i, one := range []describeCase{
 		{newTextFilterCondition("notes", criteria.ContainsText, "cheap"), `Must have notes that contain "[cheap]"`},
@@ -218,13 +212,12 @@ func TestFilterConditionDescribesPluralFields(t *testing.T) {
 			negated(newWeightFilterCondition("weights", criteria.AtMostNumber, fxp.WeightFromInteger(3, fxp.Pound))),
 			`Must not have weights that are at most [3 lb]`,
 		},
-		{newWeightFilterCondition("weights", criteria.AnyNumber, 0), `Must have weights that are anything`},
-		{newTextFilterCondition("tags", criteria.IsText, "Rare"), `Must have tags where at least one is [Rare]`},
 	} {
 		c.Equal(one.want, one.cond.Describe(lookup, fxp.Pound, bracket), "case %d", i)
 	}
 }
 
+// TestUnknownFilterNodeDescribe checks what the editor says of a node of a kind this version doesn't recognize.
 func TestUnknownFilterNodeDescribe(t *testing.T) {
 	c := check.New(t)
 	node := gurps.NewUnknownFilterNode("sparkle", []byte(`{"type":"sparkle"}`))

@@ -288,9 +288,43 @@ func TestFilterSkillAndSpellFields(t *testing.T) {
 	c.False(matchesListFilter(tl, spellFields, plainSpell), "a spell without one doesn't")
 }
 
+// TestFilterItemOrContainerOnlyFields checks that a text field only an item has, such as a modifier's cost or a skill's
+// difficulty, is empty for a container, and that a trait's container type is empty for a trait that isn't one, so that
+// they satisfy no criteria on the field.
+func TestFilterItemOrContainerOnlyFields(t *testing.T) {
+	c := check.New(t)
+	modifierText := func(key string, container bool) string {
+		return findFilterField(gurps.TraitModifierFilterFields(), key).Text(gurps.NewTraitModifier(nil, nil, container))
+	}
+	for _, one := range []struct {
+		name  string
+		value string
+		empty bool
+	}{
+		{"trait modifier cost", modifierText("cost", false), false},
+		{"trait modifier cost, container", modifierText("cost", true), true},
+		{"trait modifier cost application", modifierText("affects", false), false},
+		{"trait modifier cost application, container", modifierText("affects", true), true},
+		{
+			"skill difficulty, container",
+			findFilterField(gurps.SkillFilterFields(), "difficulty").Text(gurps.NewSkill(nil, nil, true)), true,
+		},
+		{
+			"spell difficulty, container",
+			findFilterField(gurps.SpellFilterFields(), "difficulty").Text(gurps.NewSpell(nil, nil, true)), true,
+		},
+		{
+			"trait container type, not a container",
+			findFilterField(gurps.TraitFilterFields(), "container_type").Text(gurps.NewTrait(nil, nil, false)), true,
+		},
+	} {
+		c.Equal(one.empty, one.value == "", "%s: %q", one.name, one.value)
+	}
+}
+
 // TestFilterIncludeDisabledDroppedWhereUnused checks that loading saved filters clears IncludeDisabled on a condition
-// whose field can't include disabled modifiers, at any depth, while keeping it where it can, on a field this version
-// doesn't know, and under a list type this version doesn't know.
+// whose field can't include disabled modifiers, at any depth and under every list type, while keeping it where it can,
+// on a field this version doesn't know, and under a list type this version doesn't know.
 func TestFilterIncludeDisabledDroppedWhereUnused(t *testing.T) {
 	c := check.New(t)
 	tags := includingDisabled(gurps.NewFilterCondition(nil, "tags"))
@@ -305,23 +339,31 @@ func TestFilterIncludeDisabledDroppedWhereUnused(t *testing.T) {
 	for _, one := range []*gurps.FilterCondition{tags, names, future, nestedTags, futureListTags} {
 		c.True(one.IncludeDisabled, "precondition: %s starts out including disabled modifiers", one.Field)
 	}
+	filters := map[string][]*gurps.ListFilter{"zzz": {futureList}}
+	for _, key := range gurps.ListFilterKeys() {
+		filters[key] = []*gurps.ListFilter{newTestListFilter(includingDisabled(gurps.NewFilterCondition(nil, "tags")))}
+	}
+	filters["adq"] = []*gurps.ListFilter{traits}
 
 	dir := t.TempDir()
-	c.NoError(gurps.SaveListFilters(map[string][]*gurps.ListFilter{"adq": {traits}, "zzz": {futureList}},
-		filepath.Join(dir, "x"+gurps.ListFiltersExt)), "the filters should save")
+	c.NoError(gurps.SaveListFilters(filters, filepath.Join(dir, "x"+gurps.ListFiltersExt)), "the filters should save")
 	loaded, err := gurps.NewListFiltersFromFile(os.DirFS(dir), "x"+gurps.ListFiltersExt)
 	c.NoError(err, "the filters should load")
-	c.Equal(1, len(loaded["adq"]), "the trait filter loads")
+	includes := func(node gurps.FilterNode) bool {
+		cond, ok := node.(*gurps.FilterCondition)
+		return ok && cond.IncludeDisabled
+	}
+	for _, key := range gurps.ListFilterKeys() {
+		c.Equal(1, len(loaded[key]), "the %s filter loads", key)
+		if len(loaded[key]) == 1 {
+			c.False(includes(loaded[key][0].Root.Children[0]), "a tags condition drops it under %s", key)
+		}
+	}
 	c.Equal(1, len(loaded["zzz"]), "the filter of an unknown list type loads")
 	if len(loaded["adq"]) != 1 || len(loaded["zzz"]) != 1 {
 		return
 	}
 	root := loaded["adq"][0].Root
-	includes := func(node gurps.FilterNode) bool {
-		cond, ok := node.(*gurps.FilterCondition)
-		return ok && cond.IncludeDisabled
-	}
-	c.False(includes(root.Children[0]), "a tags condition drops it")
 	c.True(includes(root.Children[1]), "a modifier names condition keeps it")
 	c.True(includes(root.Children[2]), "a condition on an unknown field keeps it")
 	group, ok := root.Children[3].(*gurps.FilterGroup)
