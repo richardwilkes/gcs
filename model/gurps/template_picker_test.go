@@ -218,8 +218,8 @@ func TestTemplateLoadNormalizesSkillAndSpellChoices(t *testing.T) {
 	c.Equal([]string{"Fire"}, loaded.Spells[1].Tags, "an ordinary spell container keeps its tags")
 }
 
-// TestTemplateChoiceConversion verifies which containers may become choice containers, what the conversion reports it
-// will lose, and that converting back only removes the choice.
+// TestTemplateChoiceConversion verifies which containers may become choice containers, leaving any other alone, what
+// the conversion reports it will lose, and that converting back only removes the choice.
 func TestTemplateChoiceConversion(t *testing.T) {
 	c := check.New(t)
 	meta := NewTrait(nil, nil, true)
@@ -228,6 +228,9 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.False(CanConvertToTemplateChoiceContainer(NewTrait(nil, nil, false)), "only a container may become one")
 	c.False(CanConvertToTemplateChoiceContainer(NewTraitChoiceContainer(nil, nil)), "a choice container already is one")
 	c.True(CanConvertToTemplateChoiceContainer(NewSkill(nil, nil, true)), "any skill container may become one")
+	ConvertToTemplateChoiceContainer(meta)
+	c.False(IsTemplateChoiceContainer(meta), "a container that may not become one is left alone")
+	c.Equal(container.MetaTrait, meta.ContainerType)
 
 	group := NewTrait(nil, nil, true)
 	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare group loses nothing")
@@ -361,8 +364,8 @@ func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
 	c.Equal(fxp.Int(0), eqp.TemplatePicker.Qualifier.Qualifier, "a value may not be less than nothing")
 }
 
-// TestPickerMeasureRange verifies what each kind of node counts toward a choice of each type, and that a node counts
-// nothing toward a choice made by a measure it doesn't have.
+// TestPickerMeasureRange verifies what each kind of node counts toward a choice of each type, that a node counts
+// nothing toward a choice made by a measure it doesn't have, and that a nil node counts nothing toward any choice.
 func TestPickerMeasureRange(t *testing.T) {
 	c := check.New(t)
 	skill := NewSkill(nil, nil, false)
@@ -379,6 +382,7 @@ func TestPickerMeasureRange(t *testing.T) {
 	c.Equal(NumericRangeOf(fxp.Int(rope.ExtendedWeight(false, units))), PickerMeasureRange(rope, picker.Weight, false, nil))
 	c.Equal(NumericRangeOf(0), PickerMeasureRange(rope, picker.Points, false, nil), "equipment has no points")
 	c.Equal(NumericRangeOf(0), PickerMeasureRange(skill, picker.Weight, false, nil), "a skill has no weight")
+	c.Equal(NumericRangeOf(0), PickerMeasureRange[*Skill](nil, picker.Count, false, nil), "no node counts as nothing")
 }
 
 // TestGroupConversionHelpers verifies that the group conversion helpers work through the node types that have groups,
@@ -397,6 +401,11 @@ func TestGroupConversionHelpers(t *testing.T) {
 	c.Equal(0, len(GroupConversionLosses(choice)), "the choice isn't counted among the losses")
 	ConvertToGroupContainer(choice)
 	c.False(IsTemplateChoiceContainer(choice))
+
+	modifierChoice := NewEquipmentModifierChoice(nil, nil)
+	c.True(CanConvertToGroupContainer(modifierChoice), "a modifier choice becomes a group by losing its choice")
+	ConvertToGroupContainer(modifierChoice)
+	c.False(IsModifierChoice(modifierChoice), "the modifier choice must have lost its choice")
 
 	skillContainer := NewSkill(nil, nil, true)
 	c.False(CanConvertToGroupContainer(skillContainer), "a skill container is already only a group")
@@ -520,10 +529,16 @@ func TestEquipmentChoiceContainers(t *testing.T) {
 	c.True(choice.IsGroup(), "a cleared choice must be left a group")
 }
 
-// TestEquipmentChoiceDescriptions verifies how a choice made by value or weight describes itself, a weight in the
-// sheet's default units unless it is given others.
-func TestEquipmentChoiceDescriptions(t *testing.T) {
+// TestTemplatePickerDescriptions verifies how a choice made by points, value or weight describes itself, a single point
+// in the singular and a weight in the sheet's default units unless it is given others.
+func TestTemplatePickerDescriptions(t *testing.T) {
 	c := check.New(t)
+	points := TemplatePicker{Type: picker.Points}
+	points.Qualifier.Compare = criteria.AtMostNumber
+	points.Qualifier.Qualifier = fxp.FromInteger(10)
+	c.Equal("Pick at most 10 points worth", points.String())
+	points.Qualifier.Qualifier = fxp.One
+	c.Equal("Pick at most 1 point worth", points.String())
 	c.Equal("Pick at most $1,500 worth",
 		newRangeTestChoice(picker.Value, criteria.AtMostNumber, fxp.FromInteger(1500)).TemplatePicker.String())
 	units := SheetSettingsFor(nil).DefaultWeightUnits
