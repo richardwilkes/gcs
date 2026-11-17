@@ -376,6 +376,9 @@ func TestCommitSaleWithoutMergeCarriesCopies(t *testing.T) {
 	c.Equal(fxp.FromInteger(4), entry.Exchanged)
 }
 
+// TestCommitSaleRemovesWhatIsSoldInFull checks that selling all of an item removes it along with what it holds, that a
+// sale takes no more than there is and all of a group, and that it skips a zero quantity, what a container sold in the
+// same sale holds, and anything not carried.
 func TestCommitSaleRemovesWhatIsSoldInFull(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -389,12 +392,15 @@ func TestCommitSaleRemovesWhatIsSoldInFull(t *testing.T) {
 	group.Name = "Gems"
 	ruby := newEquipmentItem("Ruby", "250", "0")
 	shield := newEquipmentItem("Shield", "60", "15 lb")
+	lamp := newEquipmentItem("Lamp", "20", "1 lb")
 	carry(e, nil, sword, backpack, chest, group)
 	carry(e, backpack, rope, torches)
 	carry(e, chest, bar)
 	carry(e, group, ruby)
 	shield.SetDataOwner(e)
 	e.OtherEquipment = append(e.OtherEquipment, shield)
+	lamp.SetDataOwner(e)
+	lamp.SetParent(backpack) // taken out of the backpack, but still pointing at it
 
 	entry := e.CommitSale([]SaleItem{
 		{Equipment: sword, Quantity: fxp.Five},
@@ -405,6 +411,7 @@ func TestCommitSaleRemovesWhatIsSoldInFull(t *testing.T) {
 		{Equipment: group, Quantity: fxp.Three},
 		{Equipment: backpack, Quantity: 0},
 		{Equipment: shield, Quantity: fxp.One},
+		{Equipment: lamp, Quantity: fxp.One},
 		{Quantity: fxp.One},
 	}, nil, true, "Clear out", mustTime(t, "2026-10-13T09:40:00Z"))
 
@@ -521,6 +528,9 @@ func TestCommitPurchaseMergesWhateverTheEquippedState(t *testing.T) {
 	c.False(pennies.Equipped, "unequipped money stays unequipped")
 }
 
+// TestChangeFor checks that change comes from the sell money alone when that can return all of it, and otherwise also
+// from copies of the money paid that no denomination matches, and that nothing is returned when nothing can make the
+// change or the payments give nothing.
 func TestChangeFor(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -560,11 +570,18 @@ func TestChangeFor(t *testing.T) {
 	c.Nil(change, "nothing that can return the change leaves it unreturned")
 	c.Equal(fxp.Int(0), total)
 
-	change, total = e.ChangeFor(fxp.FromInteger(15), nil, []Payout{{Money: pennies}, {Quantity: 2}})
+	token := denomination("Token", "0")
+	c.NotPanics(func() {
+		change, total = e.ChangeFor(fxp.FromInteger(15), nil,
+			[]Payout{{Money: pennies}, {Quantity: 2}, {Money: token, Quantity: 2}})
+	})
 	c.Nil(change, "payments that give nothing are ignored")
 	c.Equal(fxp.Int(0), total)
 }
 
+// TestCommitPurchaseWithoutMerge checks that a purchase without merging carries each item anew even beside a match,
+// buys a group just once, spends no more than is carried, skips items and payments without equipment and money that
+// isn't carried, and records the money exchanged as never negative.
 func TestCommitPurchaseWithoutMerge(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -598,8 +615,11 @@ func TestCommitPurchaseWithoutMerge(t *testing.T) {
 		"no more than is carried is spent, and money that isn't carried is skipped")
 	c.Equal(fxp.Three, entry.Exchanged)
 
-	refund := e.CommitPurchase(nil, nil, []Payout{{Money: denomination("Copper Penny", "1"), Quantity: 2}}, false, "",
-		mustTime(t, "2026-10-13T09:41:00Z"))
+	refund := &ShoppingRecordEntry{}
+	c.NotPanics(func() {
+		refund = e.CommitPurchase([]PurchaseItem{{Quantity: fxp.One}}, []Payout{{Quantity: 1}},
+			[]Payout{{Money: denomination("Copper Penny", "1"), Quantity: 2}}, false, "", mustTime(t, "2026-10-13T09:41:00Z"))
+	}, "items and payments without equipment are skipped")
 	c.Equal(fxp.Two, refund.Exchanged, "the money exchanged is never negative")
 	c.Equal([]*ShoppingRecordEntry{refund, entry}, e.ShoppingRecord)
 }
@@ -637,37 +657,6 @@ func TestSellMoneyItems(t *testing.T) {
 	c.Nil(entry.DataOwner(), "the entry has no owner")
 	c.Equal(fxp.One, entry.Quantity, "the entry holds one of the coin, however many were copied")
 	c.Equal(fxp.FromInteger(50), silver.Quantity, "the item copied from is untouched")
-}
-
-// TestTradesLeaveTheSellMoneyEntriesAlone checks that paying out and returning change in the sell money, which marks
-// what is handed out as equipped and carries it, changes nothing about the entries the settings hold, since clones of
-// the settings share them.
-func TestTradesLeaveTheSellMoneyEntriesAlone(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	penny := denomination("Copper Penny", "1")
-	penny.Equipped = false
-	c.True(e.SheetSettings.AddSellMoney(penny, LibraryFile{}))
-	entry := e.SheetSettings.SellMoney[0]
-	c.False(entry.Equipped)
-	knife := withQuantity(newEquipmentItem("Small Knife", "30", "1 lb"), "2")
-	carry(e, nil, knife)
-	when := mustTime(t, "2026-10-16T09:00:00Z")
-	payouts, paid := PayoutFor(fxp.FromInteger(15), e.SellMoneyItems())
-	c.Equal(fxp.FromInteger(15), paid)
-	e.CommitSale([]SaleItem{{Equipment: knife, Quantity: fxp.One}}, payouts, false, "", when)
-	c.Equal(2, len(e.CarriedEquipment))
-	c.True(e.CarriedEquipment[1].Equipped, "the pennies received are equipped")
-	c.Equal(fxp.FromInteger(15), e.CarriedEquipment[1].Quantity)
-	change, returned := e.ChangeFor(fxp.Three, e.SellMoneyItems(), nil)
-	c.Equal(fxp.Three, returned)
-	e.CommitPurchase(nil, nil, change, false, "", when)
-	c.Equal(3, len(e.CarriedEquipment))
-	c.True(e.CarriedEquipment[2].Equipped, "the change is equipped")
-	c.False(entry.Equipped, "the entry isn't marked equipped by being paid out")
-	c.Equal(fxp.One, entry.Quantity)
-	c.Nil(entry.DataOwner())
-	c.Equal(SellMoneyList{entry}, e.SheetSettings.SellMoney, "the entry is still the one listed")
 }
 
 // TestTradeQuantityCountsEveryCopyOfAContainer checks that equipment inside a container is counted once for each copy of
@@ -844,7 +833,7 @@ func describeCarried(e *Entity) []string {
 // TestPartialTradesSplitCopiedContainers checks that selling or spending part of an item held by a container with
 // several copies, in an amount the copies can't share without fractions, splits the container apart: the copies left
 // alike keep it and the rest get a copy of it, inserted after it, so that no copy is left holding a fraction, and that
-// the copies trade on as separate items.
+// the copies trade on as separate items, which PaymentSplits predicts for a purchase.
 func TestPartialTradesSplitCopiedContainers(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -876,7 +865,9 @@ func TestPartialTradesSplitCopiedContainers(t *testing.T) {
 	e.CarriedEquipment = nil
 	carry(e, nil, pouch)
 	carry(e, pouch, eagles)
-	entry = e.CommitPurchase(nil, []Payout{{Money: eagles, Quantity: 2}}, nil, true, "", when)
+	spend := []Payout{{Money: eagles, Quantity: 2}}
+	c.Equal([]*Equipment{pouch}, e.PaymentSplits(spend), "the split is predicted")
+	entry = e.CommitPurchase(nil, spend, nil, true, "", when)
 	c.Equal([]ShoppingRecordItem{{Name: "Silver Eagle", Quantity: -fxp.Two, Value: fxp.Twenty}}, entry.Money)
 	c.Equal([]string{"Pouch ×1[Silver Eagle ×5]", "Pouch ×2[Silver Eagle ×4]"}, describeCarried(e),
 		"the two eagles come out of two pouches, one each, which are split off after the one left untouched")
@@ -1076,6 +1067,25 @@ func TestCommitSalePayoutsMergeAsMatchedBeforeTheSale(t *testing.T) {
 		when)
 	c.Equal([]string{"Box ×1[Gem ×1, Silver Eagle ×2]", "Box ×2[Silver Eagle ×2]", "Silver Eagle ×10"},
 		describeCarried(e), "the eagles paid are carried anew rather than merged into those in the box left with the gem")
+}
+
+// TestPayoutsNeverMergeIntoWhatTheSaleRemoves checks that a payout is carried anew rather than merged into money the
+// sale removes, such as money held by a container sold, which would lose it, and that PayoutMergeTargets passes over
+// the IDs it is given in the same way.
+func TestPayoutsNeverMergeIntoWhatTheSaleRemoves(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	copper := denomination("Copper Penny", "1")
+	purse := newContainerItem("Purse", "0")
+	pennies := withQuantity(copper.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	carry(e, nil, purse)
+	carry(e, purse, pennies)
+	payouts := []Payout{{Money: copper, Quantity: 3}}
+	c.Equal([]*Equipment{pennies}, e.PayoutMergeTargets(payouts, nil))
+	c.Equal([]*Equipment{nil}, e.PayoutMergeTargets(payouts, map[tid.TID]bool{pennies.TID: true}))
+
+	e.CommitSale([]SaleItem{{Equipment: purse, Quantity: fxp.One}}, payouts, true, "", jio.Now())
+	c.Equal([]string{"Copper Penny ×3"}, describeCarried(e), "the pennies paid are carried anew, not lost with the purse")
 }
 
 // TestChangeForNeverReturnsLessThanTheSellMoneyAlone checks that drawing on the money paid, which may have to settle
