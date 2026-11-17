@@ -169,12 +169,12 @@ func TestOrganizeTraitsResortsExistingContainer(t *testing.T) {
 	c.Equal([]string{"Acute Vision", "Zeal"}, organizedNames(organized[0].Children), "the children were sorted")
 }
 
-// A container whose type gives it a meaning of its own -- a meta-trait or a set of alternative abilities -- is never
-// filed into, even when it carries a category name. A fresh group container is made instead and the typed one keeps its
-// contents and its place in the tail.
+// TestOrganizeTraitsIgnoresNonGroupContainers verifies that a container whose type gives it a meaning of its own -- a
+// meta-trait or a set of alternative abilities -- is never filed into, even when it carries a category name. A fresh
+// group container is made instead and the typed one keeps its contents and its place in the tail.
 func TestOrganizeTraitsIgnoresNonGroupContainers(t *testing.T) {
 	for _, containerType := range []container.Type{container.MetaTrait, container.AlternativeAbilities} {
-		t.Run(containerType.Key(), func(_ *testing.T) {
+		t.Run(containerType.Key(), func(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
 			typed := newOrganizableContainer(e, "Advantages", containerType)

@@ -124,11 +124,14 @@ func TestPickSeparatelyClearing(t *testing.T) {
 	c.False(group.PickSeparately, "nor once converted to one")
 }
 
+// TestPickSeparatelyHasEffect verifies which nodes can be picked from separately, and that the flag only takes effect,
+// making a group an organizing one, in a template choice, directly or through organizing groups.
 func TestPickSeparatelyHasEffect(t *testing.T) {
 	c := check.New(t)
 	choice, outer, inner := newOrganizedChoice()
 	c.False(CanPickSeparately(choice))
 	c.False(CanPickSeparately(choice.Children[0]))
+	c.False(PickSeparatelyHasEffect(choice.Children[0]), "not for an option that can't be")
 	c.True(PickSeparatelyHasEffect(outer))
 	c.True(IsOrganizingGroup(outer))
 	c.True(IsOrganizingGroup(inner), "through an organizing group")

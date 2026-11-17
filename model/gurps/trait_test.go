@@ -14,8 +14,12 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -39,6 +43,14 @@ func TestHasTag(t *testing.T) {
 	c.False(HasTag("Advantage: Physical", tags), "a colon-containing tag that isn't present isn't found")
 	c.False(HasTag("Social", tags), "a tag that isn't present isn't found")
 	c.False(HasTag("Advantage: Mental", nil), "nothing matches an empty set of tags")
+}
+
+// TestExtractTags verifies that a combined tags string is split at its commas, each tag trimmed and the empty ones
+// dropped.
+func TestExtractTags(t *testing.T) {
+	c := check.New(t)
+	c.Equal([]string{"Mental", "Social"}, ExtractTags(" Mental ,, Social , "))
+	c.Equal(0, len(ExtractTags(" , ")), "a string holding no tags gives none")
 }
 
 // TestTraitLevelSelfReferentialBonus verifies that a per-level TraitBonus which matches the very trait carrying it
@@ -181,6 +193,38 @@ func TestTraitDescriptionSelfControlSuffix(t *testing.T) {
 	c.Equal("Berserk (No CR)", data.Primary, `"Never resist" is shown as "No CR"`)
 }
 
+// TestTraitModifierNotesShowTheSelfControlAdjustment verifies that a trait's modifier notes follow its self-control
+// roll with the roll's adjustment.
+func TestTraitModifierNotesShowTheSelfControlAdjustment(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	trait.SelfControl = selfctrl.CR12
+	trait.SelfControlAdj = selfctrl.ReactionPenalty
+	c.Equal("Self-Control Roll (CR): "+selfctrl.CR12.String()+", "+selfctrl.ReactionPenalty.Description(selfctrl.CR12),
+		trait.ModifierNotes())
+}
+
+// TestTraitContainerInlineTag verifies that a container's description cell is tagged with its type, followed for
+// alternative abilities by the number of slots when there is more than one.
+func TestTraitContainerInlineTag(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, true)
+	trait.ContainerType = container.AlternativeAbilities
+	tag := container.AlternativeAbilities.AltString()
+	for _, tc := range []struct {
+		slots    int
+		expected string
+	}{
+		{1, tag},
+		{2, tag + " x2"},
+	} {
+		trait.AlternativeSlots = tc.slots
+		var data CellData
+		trait.CellData(TraitDescriptionColumn, &data)
+		c.Equal(tc.expected, data.InlineTag, "%d slots", tc.slots)
+	}
+}
+
 // TestAlternativeAbilitiesCost verifies that the AlternativeSlots most expensive children of an alternative abilities
 // container (one when unset) are billed at full cost and the rest at 20%, even when every child costs negative points.
 func TestAlternativeAbilitiesCost(t *testing.T) {
@@ -212,6 +256,116 @@ func TestAlternativeAbilitiesCost(t *testing.T) {
 			parent.Children = append(parent.Children, child)
 		}
 		c.Equal(fxp.FromInteger(tc.expected), parent.AdjustedPoints(nil), tc.msg)
+	}
+}
+
+// TestTraitContainerLeavesOutDisabledTraits verifies that a disabled trait inside a container adds nothing to the
+// container's cost, and that a disabled container's range is nothing, whatever its choices would settle at.
+func TestTraitContainerLeavesOutDisabledTraits(t *testing.T) {
+	c := check.New(t)
+	parent := NewTrait(nil, nil, true)
+	newTraitWithPoints(parent, 10)
+	newTraitWithPoints(parent, 20).SetDisabled(true)
+	c.Equal(fxp.Ten, parent.AdjustedPoints(nil))
+	c.Equal("10", parent.PointsRange(nil).String())
+
+	choice := newPickerContainer(picker.Points, criteria.EqualsNumber, 10, []int{5, 10})
+	choice.SetParent(parent)
+	parent.Children = []*Trait{choice}
+	parent.SetDisabled(true)
+	c.Equal("0", parent.PointsRange(nil).String())
+}
+
+// TestAdjustedPoints verifies how each kind of cost modifier, the self-control and frequency rolls and the rounding
+// direction combine into the cost of a trait with 10 base points and 3 levels at 5 points each.
+func TestAdjustedPoints(t *testing.T) {
+	c := check.New(t)
+	multiplicative := NewEntity()
+	multiplicative.SheetSettings.UseMultiplicativeModifiers = true
+	type mod struct {
+		cost    string
+		affects affects.Option
+	}
+	for _, tc := range []struct {
+		msg            string
+		mods           []mod
+		cr             selfctrl.Roll
+		fr             frequency.Roll
+		multiplicative bool
+		roundDown      bool
+		expected       int
+	}{
+		// 10 + 3*(5+2)
+		{msg: "a point adder for the levels only adds to each level", mods: []mod{{"+2", affects.LevelsOnly}}, expected: 31},
+		// 10*1.5 + 15
+		{msg: "an enhancement for the base only", mods: []mod{{"+50%", affects.BaseOnly}}, expected: 30},
+		// 10*0.5 + 15
+		{msg: "a limitation for the base only", mods: []mod{{"-50%", affects.BaseOnly}}, expected: 20},
+		// 10 + 15*1.2
+		{msg: "an enhancement for the levels only", mods: []mod{{"+20%", affects.LevelsOnly}}, expected: 28},
+		// 10 + 15*0.8
+		{msg: "a limitation for the levels only", mods: []mod{{"-20%", affects.LevelsOnly}}, expected: 22},
+		// 25*50% = 12.5, rounded up
+		{msg: "a percentage multiplier", mods: []mod{{"x50%", affects.Total}}, expected: 13},
+		{msg: "a cost rounded down", mods: []mod{{"x50%", affects.Total}}, roundDown: true, expected: 12},
+		{msg: "a multiplier", mods: []mod{{"x2", affects.Total}}, expected: 50},
+		// 25*1.5*2
+		{msg: "self-control and frequency rolls", cr: selfctrl.CR9, fr: frequency.FR12, expected: 75},
+		// 25*(1-80%)
+		{msg: "a limitation is held to -80%", mods: []mod{{"-90%", affects.Total}}, expected: 5},
+		{
+			msg:            "a multiplicative limitation is held to -80%",
+			mods:           []mod{{"-90%", affects.Total}},
+			multiplicative: true,
+			expected:       5,
+		},
+		// 10*(1-80%) + 15*1.2
+		{
+			msg:            "a multiplicative limitation for the base only is held to -80%",
+			mods:           []mod{{"-90%", affects.BaseOnly}, {"+20%", affects.LevelsOnly}},
+			multiplicative: true,
+			expected:       20,
+		},
+		// 10*1.5 + 15*(1-80%)
+		{
+			msg:            "a multiplicative limitation for the levels only is held to -80%",
+			mods:           []mod{{"+50%", affects.BaseOnly}, {"-90%", affects.LevelsOnly}},
+			multiplicative: true,
+			expected:       18,
+		},
+	} {
+		var entity *Entity
+		if tc.multiplicative {
+			entity = multiplicative
+		}
+		mods := make([]*TraitModifier, 0, len(tc.mods))
+		for _, one := range tc.mods {
+			m := NewTraitModifier(nil, nil, false)
+			m.CostAdj = one.cost
+			m.Affects = one.affects
+			mods = append(mods, m)
+		}
+		c.Equal(fxp.FromInteger(tc.expected), AdjustedPoints(entity, nil, true, fxp.Ten, fxp.Three, fxp.Five, tc.cr, tc.fr,
+			mods, tc.roundDown), tc.msg)
+	}
+}
+
+// TestTraitContainerHashCoversItsTypeData verifies that the ancestry of an ancestry container and the slots of an
+// alternative abilities container are hashed, so that a copy differing from its library source in one is mismatched.
+func TestTraitContainerHashCoversItsTypeData(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		containerType container.Type
+		change        func(*Trait)
+	}{
+		{container.Ancestry, func(trait *Trait) { trait.Ancestry = "Elf" }},
+		{container.AlternativeAbilities, func(trait *Trait) { trait.AlternativeSlots = 2 }},
+	} {
+		trait := NewTrait(nil, nil, true)
+		trait.ContainerType = tc.containerType
+		hash := Hash64(trait)
+		tc.change(trait)
+		c.NotEqual(hash, Hash64(trait), tc.containerType.Key())
 	}
 }
 
@@ -425,6 +579,25 @@ func TestLoadingOffASheetClearsUserDesc(t *testing.T) {
 	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)
 	c.Equal([]string{"", ""}, descs(rows[0]), "a trait list must not keep them")
+}
+
+// TestTraitLoadRepairsLevels verifies that loading a trait that isn't a container raises negative levels to zero and
+// makes one with levels or points per level leveled.
+func TestTraitLoadRepairsLevels(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		data   string
+		levels fxp.Int
+	}{
+		{`{"type":"trait","can_level":true,"levels":-2}`, 0},
+		{`{"type":"trait","levels":2}`, fxp.Two},
+		{`{"type":"trait","points_per_level":5}`, 0},
+	} {
+		var trait Trait
+		c.NoError(json.Unmarshal([]byte(tc.data), &trait), tc.data)
+		c.Equal(tc.levels, trait.Levels, tc.data)
+		c.True(trait.CanLevel, tc.data)
+	}
 }
 
 // TestTraitLevelBonusUsesResolvedName verifies that a TraitBonus aimed at a leveled trait's resolved
