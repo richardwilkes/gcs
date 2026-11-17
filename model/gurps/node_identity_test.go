@@ -18,16 +18,19 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// roundTripEquipment returns the list as deserializing its serialized form yields it: the same data in fresh objects.
-func roundTripEquipment(c check.Checker, list []*gurps.Equipment) []*gurps.Equipment {
+// roundTrip returns the list as deserializing its serialized form yields it: the same data in fresh objects.
+func roundTrip[T any](c check.Checker, list []T) []T {
 	c.Helper()
 	data, err := jio.SerializeAndCompress(list)
 	c.NoError(err)
-	var fresh []*gurps.Equipment
+	var fresh []T
 	c.NoError(jio.DecompressAndDeserialize(data, &fresh))
 	return fresh
 }
 
+// TestRecycleNodesReusesTheObjectsTheDataCameFrom verifies that recycling a deserialized list puts back the objects
+// its nodes, their children, weapons and modifiers came from, carrying the deserialized data and pointing their
+// children at the recycled parents.
 func TestRecycleNodesReusesTheObjectsTheDataCameFrom(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -52,7 +55,7 @@ func TestRecycleNodesReusesTheObjectsTheDataCameFrom(t *testing.T) {
 	gurps.CollectNodeIdentities(identities, list)
 	c.Equal(5, len(identities), "the container, its child, the child's weapon and both modifiers")
 
-	fresh := roundTripEquipment(c, list)
+	fresh := roundTrip(c, list)
 	c.True(fresh[0] != backpack, "deserializing makes fresh objects")
 	fresh[0].Name = "Rucksack"
 	fresh[0].Children[0].Name = "Cord"
@@ -88,7 +91,7 @@ func TestRecycleNodesKeepsNodesSharingAnIDDistinct(t *testing.T) {
 	identities := make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, list)
 
-	fresh := roundTripEquipment(c, list)
+	fresh := roundTrip(c, list)
 	freshFirst, freshSecond := fresh[0], fresh[1]
 	recycled := gurps.RecycleNodes(identities, fresh)
 	c.Equal(2, len(recycled))
@@ -106,7 +109,7 @@ func TestRecycleNodesKeepsNodesSharingAnIDDistinct(t *testing.T) {
 	only.Name = "Only"
 	only.TID = first.TID
 	gurps.CollectNodeIdentities(identities, []*gurps.Equipment{only})
-	fresh = roundTripEquipment(c, list)
+	fresh = roundTrip(c, list)
 	freshFirst, freshSecond = fresh[0], fresh[1]
 	recycled = gurps.RecycleNodes(identities, fresh)
 	c.True(recycled[0] == freshFirst, "an ID shared when collected must stay shared when a later collection holds it once")
@@ -116,13 +119,16 @@ func TestRecycleNodesKeepsNodesSharingAnIDDistinct(t *testing.T) {
 	identities = make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, []*gurps.Equipment{only})
 	gurps.CollectNodeIdentities(identities, list)
-	fresh = roundTripEquipment(c, []*gurps.Equipment{only})
+	fresh = roundTrip(c, []*gurps.Equipment{only})
 	freshOnly := fresh[0]
 	recycled = gurps.RecycleNodes(identities, fresh)
 	c.True(recycled[0] == freshOnly, "an ID a later collection finds shared must not be recycled either")
 	c.Equal("Only", only.Name)
 }
 
+// TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem verifies that the recycled modifiers and
+// weapons target, belong to and are held by the objects that hold them once recycled, whether the fresh list was
+// attached to a data owner first or not, and whether the node holding them was recycled or kept.
 func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -146,7 +152,7 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	// Nothing attached to the fresh list, as a template's or a loot sheet's list setter leaves it.
 	identities := make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, list)
-	recycled := gurps.RecycleNodes(identities, roundTripEquipment(c, list))
+	recycled := gurps.RecycleNodes(identities, roundTrip(c, list))
 	c.True(recycled[0] == rope)
 	c.True(whip.Owner == rope, "the weapon must belong to the object holding it, not the deserialized node")
 	c.True(whip.Damage.Owner == whip, "the damage must belong to the recycled weapon, not the deserialized one")
@@ -160,7 +166,7 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	// The fresh list attached to an entity before recycling, as an entity's list setter leaves it.
 	identities = make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, list)
-	fresh := roundTripEquipment(c, list)
+	fresh := roundTrip(c, list)
 	entity.SetOtherEquipmentList(fresh)
 	recycled = gurps.RecycleNodes(identities, fresh)
 	c.True(recycled[0] == rope)
@@ -179,7 +185,7 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	// A node that is kept as it is, with a weapon and a modifier that are recycled into it.
 	identities = make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, list)
-	fresh = roundTripEquipment(c, list)
+	fresh = roundTrip(c, list)
 	freshRope := fresh[0]
 	freshRope.TID = gurps.NewEquipment(entity, nil, false).TID
 	recycled = gurps.RecycleNodes(identities, fresh)
@@ -194,4 +200,45 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	c.True(lash.Owner == freshRope, "and belongs to the node that holds the modifier")
 	c.True(lash.HoldingModifier() == veryFine, "and is held by the recycled modifier")
 	c.True(lash.Damage.Owner == lash)
+}
+
+// TestRecycleNodesReusesTheNestedObjectsOfTraitsSkillsAndSpells verifies that recycling a list of traits, skills or
+// spells reuses the objects of the modifiers and weapons nested in them, as it does for equipment.
+func TestRecycleNodesReusesTheNestedObjectsOfTraitsSkillsAndSpells(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	claws := gurps.NewTrait(entity, nil, false)
+	scratch := gurps.NewWeapon(claws, true)
+	claws.Weapons = []*gurps.Weapon{scratch}
+	long := gurps.NewTraitModifier(entity, nil, false)
+	slash := gurps.NewWeapon(claws, true)
+	long.Weapons = []*gurps.Weapon{slash}
+	claws.Modifiers = []*gurps.TraitModifier{long}
+	gurps.AttachModifiers(claws, claws.Modifiers)
+	traits := []*gurps.Trait{claws}
+	identities := make(gurps.NodeIdentities)
+	gurps.CollectNodeIdentities(identities, traits)
+	gurps.RecycleNodes(identities, roundTrip(c, traits))
+	c.True(slices.Equal(claws.Weapons, []*gurps.Weapon{scratch}), "a trait's weapon must come back as the object it was")
+	c.True(slices.Equal(claws.Modifiers, []*gurps.TraitModifier{long}), "and so must its modifier")
+	c.True(long.Target() == claws, "which targets the recycled trait")
+	c.True(slices.Equal(long.Weapons, []*gurps.Weapon{slash}), "a trait modifier's weapon must be recycled too")
+
+	brawling := gurps.NewSkill(entity, nil, false)
+	punch := gurps.NewWeapon(brawling, true)
+	brawling.Weapons = []*gurps.Weapon{punch}
+	skills := []*gurps.Skill{brawling}
+	identities = make(gurps.NodeIdentities)
+	gurps.CollectNodeIdentities(identities, skills)
+	gurps.RecycleNodes(identities, roundTrip(c, skills))
+	c.True(slices.Equal(brawling.Weapons, []*gurps.Weapon{punch}), "a skill's weapon must come back as the object it was")
+
+	fireball := gurps.NewSpell(entity, nil, false)
+	throw := gurps.NewWeapon(fireball, false)
+	fireball.Weapons = []*gurps.Weapon{throw}
+	spells := []*gurps.Spell{fireball}
+	identities = make(gurps.NodeIdentities)
+	gurps.CollectNodeIdentities(identities, spells)
+	gurps.RecycleNodes(identities, roundTrip(c, spells))
+	c.True(slices.Equal(fireball.Weapons, []*gurps.Weapon{throw}), "a spell's weapon must come back as the object it was")
 }

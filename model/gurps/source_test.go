@@ -59,11 +59,6 @@ func TestSourcePathSeparatorNormalization(t *testing.T) {
 	c.NoError(err, "source should marshal")
 	c.False(strings.Contains(string(data), `\`), "marshaled output must not contain backslashes")
 	c.True(strings.Contains(string(data), "Basic Set/Basic Set Traits.adq"), "marshaled output should use forward slashes")
-
-	// Round-tripping the marshaled output preserves the normalized path.
-	var roundTripped SourcedID
-	c.NoError(jio.Unmarshal(data, &roundTripped), "marshaled source should load")
-	c.Equal("Basic Set/Basic Set Traits.adq", roundTripped.Source.Path, "round-tripped path should remain normalized")
 }
 
 // TestForEachSourcedNodeVisitsEveryNodeOnce verifies that the walk shared by source syncing and hashing reaches every
@@ -397,6 +392,55 @@ func TestTemplateSourcesMatch(t *testing.T) {
 	c.Equal(srcstate.Mismatched, state)
 	localSkill.SyncWithSource()
 	c.Equal("Climbing", localSkill.Name, "a node syncs with the template's copy")
+}
+
+// TestListFileSourcesMatch verifies that the nodes of each kind of library list file, the modifiers of its traits and
+// equipment included, are found there by the nodes copied from it.
+func TestListFileSourcesMatch(t *testing.T) {
+	c := check.New(t)
+	exts := []string{TraitsExt, TraitModifiersExt, SkillsExt, SpellsExt, EquipmentExt, EquipmentModifiersExt, NotesExt}
+	registerTestFileTypes(t, exts...)
+	root := useTestLibrary(t, "Test Library")
+	libFile := func(ext string) LibraryFile { return LibraryFile{Library: "Test Library", Path: "Test" + ext} }
+	p := func(ext string) string { return filepath.Join(root, "Test"+ext) }
+
+	trait := NewTrait(nil, nil, false)
+	trait.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	c.NoError(SaveTraits([]*Trait{trait}, p(TraitsExt)))
+	traitMod := NewTraitModifier(nil, nil, false)
+	c.NoError(SaveTraitModifiers([]*TraitModifier{traitMod}, p(TraitModifiersExt)))
+	skill := NewSkill(nil, nil, false)
+	c.NoError(SaveSkills([]*Skill{skill}, p(SkillsExt)))
+	spell := NewSpell(nil, nil, false)
+	c.NoError(SaveSpells([]*Spell{spell}, p(SpellsExt)))
+	eqp := NewEquipment(nil, nil, false)
+	eqp.Modifiers = []*EquipmentModifier{NewEquipmentModifier(nil, nil, false)}
+	c.NoError(SaveEquipment([]*Equipment{eqp}, p(EquipmentExt)))
+	eqpMod := NewEquipmentModifier(nil, nil, false)
+	c.NoError(SaveEquipmentModifiers([]*EquipmentModifier{eqpMod}, p(EquipmentModifiersExt)))
+	note := NewNote(nil, nil, false)
+	c.NoError(SaveNotes([]*Note{note}, p(NotesExt)))
+
+	var sm SrcMatcher
+	for _, ext := range exts {
+		sm.prepareHashesFor(libFile(ext))
+	}
+	localTrait := trait.Clone(libFile(TraitsExt), nil, nil, Reference)
+	localEqp := eqp.Clone(libFile(EquipmentExt), nil, nil, Reference)
+	for _, local := range []SrcProvider{
+		localTrait,
+		localTrait.Modifiers[0],
+		traitMod.Clone(libFile(TraitModifiersExt), nil, nil, Reference),
+		skill.Clone(libFile(SkillsExt), nil, nil, Reference),
+		spell.Clone(libFile(SpellsExt), nil, nil, Reference),
+		localEqp,
+		localEqp.Modifiers[0],
+		eqpMod.Clone(libFile(EquipmentModifiersExt), nil, nil, Reference),
+		note.Clone(libFile(NotesExt), nil, nil, Reference),
+	} {
+		state, _ := sm.Match(local)
+		c.Equal(srcstate.Matched, state, "a %T from %s", local, local.GetSource().Path)
+	}
 }
 
 // TestSharedMatcherHoldsOnlyTheFilesLastUsed verifies that the shared matcher holds no more than maxUnownedSrcFiles

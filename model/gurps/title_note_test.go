@@ -40,9 +40,6 @@ func TestTitleNoteJSONHashAndDescribe(t *testing.T) {
 	first := newTitleNoteFor("@Who@")
 	first.BeforeBuiltIn = true
 	blank := newTitleNoteFor("  ")
-	c.Equal(who.Text, first.Text, "precondition: the two notes differ only in the flag")
-	c.False(who.BeforeBuiltIn, "precondition: the who note goes after the built-in notes")
-	c.Equal("  ", blank.Text, "precondition: the blank note is only spaces")
 	checkFeaturesJSONRoundTrip(c, Features{who, first, NewTitleNote()})
 	c.NotEqual(Hash64(who), Hash64(first), "the flag is source data and is hashed")
 	c.NotEqual(Hash64(who), Hash64(blank), "the text is source data and is hashed")
@@ -184,12 +181,6 @@ func TestPrereqDescribeTitleNotes(t *testing.T) {
 	spellIs.SubType = spellcmp.TitleNote
 	spellIs.SamePowerSource = false
 	spellIs.QualifierCriteria.Qualifier = "Blue"
-	c.Equal(criteria.IsText, traitIs.TitleNoteCriteria.Compare, "precondition: the trait prereq checks is")
-	c.Equal(criteria.ContainsText, skillContains.TitleNoteCriteria.Compare,
-		"precondition: the skill prereq checks contains")
-	c.Equal(criteria.IsNotText, equippedNot.TitleNoteCriteria.Compare,
-		"precondition: the equipment prereq checks is not")
-	c.Equal(spellcmp.TitleNote, spellIs.SubType, "precondition: the spell prereq checks title notes")
 
 	em := func(s string) string { return "[" + s + "]" }
 	c.Equal("Has trait [Allies] with the title note [Bob]", traitIs.Describe(nil, nil, em))
@@ -299,7 +290,6 @@ func TestEquipmentModifiersInTheTitle(t *testing.T) {
 	c.True(fine.ShowsInTitle(), "precondition: the fine modifier shows in the title")
 	c.False(silver.ShowsInTitle(), "precondition: the silver modifier stays in the notes")
 	c.False(cheap.Enabled(), "precondition: the cheap modifier is disabled")
-	c.True(first.BeforeBuiltIn, "precondition: the first note goes before the built-in notes")
 	c.Equal("Broadsword (First; Own; Fine; Balanced; Engraved)", sword.String(),
 		"a disabled modifier adds nothing, while one in a group does")
 	c.Equal("Silvered", sword.ModifierNotes())
@@ -319,13 +309,11 @@ func TestTitleNotesBeforeBuiltIn(t *testing.T) {
 	guns := addTestSkill(e, "Guns", "Pistol", "", fxp.One)
 	guns.OptionalSpecialization = "Revolver"
 	guns.Features = Features{newTitleNoteFor("Custom"), first()}
-	c.Equal("Revolver", guns.OptionalSpecialization, "precondition: the skill has an optional specialization")
 	c.Equal("Guns (First; Pistol; Revolver; Custom)", guns.String())
 	c.Equal([]string{"First", "Custom"}, guns.TitleNotes(), "the notes placed first lead the list")
 
 	fireball := addTestSpell(e, "Fireball", fxp.One)
 	fireball.Features = Features{newTitleNoteFor("Late"), first()}
-	c.Equal(2, len(fireball.Features), "precondition: the spell has both notes")
 	c.Equal("Fireball (First; Late)", fireball.String())
 
 	trait := addTraitWithFeatures(e, "Allies", newTitleNoteFor("Own"))

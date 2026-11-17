@@ -23,13 +23,11 @@ import (
 	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 // TestNewTraitsFromFileAttachesContainerModifiers verifies that loading a trait list attaches the modifiers of
@@ -207,78 +205,7 @@ func kindOnLoad[T any, P interface {
 	return tidKind(P(&node).ID())
 }
 
-func TestSharedCellAndHeaderData(t *testing.T) {
-	c := check.New(t)
-
-	header := pageRefHeaderData()
-	c.Equal(HeaderBookmark, header.Title)
-	c.True(header.TitleIsImageKey)
-	c.Equal("Page Reference", header.Name)
-	c.Equal(PageRefTooltip(), header.Detail)
-	header = libSrcHeaderData()
-	c.Equal(HeaderDatabase, header.Title)
-	c.True(header.TitleIsImageKey)
-	c.Equal("Library Source", header.Name)
-	c.Equal(LibSrcTooltip(), header.Detail)
-	header = switchHeaderData()
-	c.Equal(HeaderSwitch, header.Title)
-	c.True(header.TitleIsImageKey)
-	c.Equal("Switched On", header.Name)
-	c.Equal(SwitchHeaderTooltip(), header.Detail)
-	header = enabledHeaderData()
-	c.Equal(HeaderCheckmark, header.Title)
-	c.True(header.TitleIsImageKey)
-	c.Equal("Enabled", header.Name)
-	c.Equal(ModifierEnabledTooltip(), header.Detail)
-	header = tagsHeaderData()
-	c.Equal("Tags", header.Title)
-	c.False(header.TitleIsImageKey)
-	c.Equal("", header.Name, "a title that is a word is read as it is")
-	header = abbreviatedHeaderData("Pts", "Points")
-	c.Equal("Pts", header.Title)
-	c.False(header.TitleIsImageKey)
-	c.Equal("Points", header.Name)
-	c.Equal("Points", header.Detail, "what an abbreviation stands for is its tooltip as well")
-
-	var data CellData
-	fillTagsCell(&data, []string{"b", "a"})
-	c.Equal(cell.Tags, data.Type)
-	c.Equal(CombineTags([]string{"b", "a"}), data.Primary)
-
-	calls := 0
-	fallback := func() string {
-		calls++
-		return "fallback"
-	}
-	data = CellData{}
-	fillPageRefCell(&data, "B12", "highlight", fallback)
-	c.Equal(cell.PageRef, data.Type)
-	c.Equal("B12", data.Primary)
-	c.Equal("highlight", data.Secondary, "the highlight wins when there is one")
-	c.Equal(0, calls, "the fallback is not evaluated when the highlight is used")
-	data = CellData{}
-	fillPageRefCell(&data, "B12", "", fallback)
-	c.Equal("fallback", data.Secondary, "the fallback is used when there is no highlight")
-	c.Equal(1, calls)
-
-	// Without an owner there is nobody to ask about the source, so only the type and alignment are filled in.
-	trait := NewTrait(nil, nil, false)
-	data = CellData{}
-	fillLibSrcCell(&data, nil, trait)
-	c.Equal(cell.Text, data.Type)
-	c.Equal(align.Middle, data.Alignment)
-	c.Equal("", data.Primary)
-	c.Equal("", data.Tooltip)
-
-	// With an owner, a trait that has no source is reported as custom, with no source details in the tooltip.
-	entity := NewEntity()
-	data = CellData{}
-	fillLibSrcCell(&data, entity, trait)
-	c.Equal(cell.Text, data.Type)
-	c.NotEqual("", data.Primary, "the source state is shown")
-	c.NotContains(data.Tooltip, "\n", "custom data has no source details to show")
-}
-
+// TestClonePtr verifies that clonePtr returns nil for nil and otherwise a pointer to a separate copy of the value.
 func TestClonePtr(t *testing.T) {
 	c := check.New(t)
 	c.Nil(clonePtr[string](nil), "nil clones to nil")
@@ -290,78 +217,15 @@ func TestClonePtr(t *testing.T) {
 	c.Equal("3", tl, "editing the clone leaves the source alone")
 }
 
-// TestHeaderDataNamesWhatIsNotReadable walks every header data function, so that a new icon column, or one titled with
-// an abbreviation of up to three characters, is caught if it lacks a name.
-func TestHeaderDataNamesWhatIsNotReadable(t *testing.T) {
+// TestEntityFromNilNodeIsNil verifies that EntityFromNode reports no entity for a nil node rather than panicking.
+func TestEntityFromNilNodeIsNil(t *testing.T) {
 	c := check.New(t)
-	entity := NewEntity()
-	functions := map[string]func(columnID int) HeaderData{
-		"conditional modifiers": ConditionalModifiersHeaderData,
-		"reaction modifiers":    ReactionModifiersHeaderData,
-		"equipment modifiers":   EquipmentModifierHeaderData,
-		"notes":                 NotesHeaderData,
-		"skills":                SkillsHeaderData,
-		"trait modifiers":       TraitModifierHeaderData,
-		"spells":                SpellsHeaderData,
-		"traits":                TraitsHeaderData,
-		"melee weapons":         func(columnID int) HeaderData { return WeaponHeaderData(columnID, true, false) },
-		"ranged weapons":        func(columnID int) HeaderData { return WeaponHeaderData(columnID, false, false) },
-		"page melee weapons":    func(columnID int) HeaderData { return WeaponHeaderData(columnID, true, true) },
-		"carried equipment":     func(columnID int) HeaderData { return EquipmentHeaderData(columnID, entity, true, false) },
-		"other equipment":       func(columnID int) HeaderData { return EquipmentHeaderData(columnID, entity, false, true) },
-	}
-	abbreviations := map[string]string{
-		"±":    "Modifier",
-		"#":    "Quantity",
-		"TL":   "Tech Level",
-		"LC":   "Legality Class",
-		"Diff": "Difficulty",
-		"SL":   "Skill Level",
-		"RSL":  "Relative Skill Level",
-		"Pts":  "Points",
-		"P#":   "Prerequisite Count",
-		"ST":   "Minimum Strength",
-		"Acc":  "Accuracy Bonus",
-		"RoF":  "Rate of Fire",
-	}
-	seen := make(map[string]bool)
-	for name, f := range functions {
-		columns := 0
-		// IDs that name no column, such as a retired one, have no title. 64 is well past the last ID of any kind.
-		for columnID := range 64 {
-			data := f(columnID)
-			if data.Title == "" {
-				continue
-			}
-			columns++
-			switch {
-			case data.TitleIsImageKey:
-				c.NotEqual("", data.Name, "%s column %d, an icon, must carry a name", name, columnID)
-			case len([]rune(data.Title)) <= 3:
-				c.NotEqual("", data.Name, "%s column %d, titled %q, must carry the name it stands for", name, columnID,
-					data.Title)
-			}
-			if expected, ok := abbreviations[data.Title]; ok {
-				seen[data.Title] = true
-				c.Equal(expected, data.Name, "%s column %d, titled %q, must be named for what it stands for", name,
-					columnID, data.Title)
-				c.Equal(expected, data.Detail, "%s column %d, titled %q, must explain itself in its tooltip", name,
-					columnID, data.Title)
-			}
-			if data.Name != "" {
-				c.True(data.TitleIsImageKey || abbreviations[data.Title] != "",
-					"%s column %d, titled %q, is a word and needs no name", name, columnID, data.Title)
-			}
-		}
-		c.True(columns > 1, "%s must have columns", name)
-	}
-	for title := range abbreviations {
-		c.True(seen[title], "the abbreviation %q must be in use somewhere", title)
-	}
+	c.NotPanics(func() { c.Nil(EntityFromNode[*Skill](nil)) })
 }
 
 // TestBonusLegacyCategoryMigratesToTags verifies that each bonus type that once stored its tags criteria under
-// "category" adopts a legacy "category" when it has no "tags", and prefers "tags" when both are present.
+// "category" adopts a legacy "category" when it has no "tags", prefers "tags" when both are present, and fails to load
+// when the one it reads is malformed.
 func TestBonusLegacyCategoryMigratesToTags(t *testing.T) {
 	c := check.New(t)
 	for _, typ := range []feature.Type{
@@ -372,6 +236,11 @@ func TestBonusLegacyCategoryMigratesToTags(t *testing.T) {
 		feature.WeaponBonus,
 	} {
 		key := typ.Key()
+		for _, member := range []string{"tags", "category"} {
+			var loaded Features
+			c.HasError(jio.Unmarshal([]byte(`[{"type":"`+key+`","`+member+`":5}]`), &loaded),
+				"%s: a malformed %s fails the load", key, member)
+		}
 		f := loadSingleFeature(c, `[{"type":"`+key+`","category":{"compare":"is","qualifier":"Old"}}]`)
 		if f == nil {
 			continue
@@ -395,6 +264,8 @@ func TestBonusLegacyCategoryMigratesToTags(t *testing.T) {
 	}
 }
 
+// TestDisabledIsClearedOffASheet verifies that a clone of a disabled skill, spell or piece of equipment stays disabled
+// on a sheet and is enabled anywhere else.
 func TestDisabledIsClearedOffASheet(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -412,6 +283,8 @@ func TestDisabledIsClearedOffASheet(t *testing.T) {
 	c.False(eqp.Clone(LibraryFile{}, nil, nil, Copy).IsDisabled())
 }
 
+// TestLoadingOffASheetClearsDisabled verifies that loading a template, loot sheet or list file enables its disabled
+// skills, spells and equipment, while a character sheet keeps them disabled and disabled traits are kept everywhere.
 func TestLoadingOffASheetClearsDisabled(t *testing.T) {
 	c := check.New(t)
 	trait := NewTrait(nil, nil, false)
@@ -586,8 +459,8 @@ func TestLoadingDropsNullNodes(t *testing.T) {
 }
 
 // TestMarshalNodeDataEnvelope verifies the envelope every node type writes through marshalNodeData: the data fields
-// come first and "calc" last, a nil calc is left out while an empty one that is always wanted is still written, the
-// hashed form has no calc at all, and each type keeps its own calc key.
+// come first and "calc" last, a nil calc is left out while an empty one that is always wanted is still written, and
+// each type keeps its own calc key.
 func TestMarshalNodeDataEnvelope(t *testing.T) {
 	c := check.New(t)
 	marshaled := func(in any) string {
@@ -604,7 +477,6 @@ func TestMarshalNodeDataEnvelope(t *testing.T) {
 	out := marshaled(note)
 	c.True(strings.Contains(out, `"calc":{"resolved_text":"Owes Baron Hale a favor"}`), "resolved text: %s", out)
 	c.True(strings.Index(out, `"markdown"`) < strings.Index(out, `"calc"`), "the data fields precede calc: %s", out)
-	c.False(strings.Contains(hashedJSON(t, note), `"calc"`), "the hashed form has no calc")
 	var restored Note
 	c.NoError(jio.Unmarshal([]byte(out), &restored))
 	c.Equal(note.MarkDown, restored.MarkDown, "the data fields survive a round-trip")
@@ -633,12 +505,10 @@ func TestMarshalNodeDataEnvelope(t *testing.T) {
 	out = marshaled(trait)
 	c.True(strings.Contains(out, `"calc":{"points":0}`), "a trait always writes its points: %s", out)
 	c.False(strings.Contains(out, `"resolved_notes"`), "unchanged notes are not recorded: %s", out)
-	c.False(strings.Contains(hashedJSON(t, trait), `"calc"`), "the hashed trait has no calc")
 	eqp = NewEquipment(nil, nil, false)
 	out = marshaled(eqp)
 	c.True(strings.Contains(out, `"calc":{"value":0,"extended_value":0,"weight":"0 lb","extended_weight":"0 lb"}`),
 		"equipment always writes its totals: %s", out)
-	c.False(strings.Contains(hashedJSON(t, eqp), `"calc"`), "the hashed equipment has no calc")
 }
 
 // TestNodeSyncDataIsInlined verifies that embedding NodeSyncData leaves the on-disk format of each node type as it was

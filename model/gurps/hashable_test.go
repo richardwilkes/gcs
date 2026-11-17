@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/json/v2"
 	"hash"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -405,6 +406,20 @@ func TestHashStartsWithSyncKind(t *testing.T) {
 	}
 }
 
+// TestHashingReportsWhatCannotBeMarshaled verifies that HashJSON logs an object it cannot marshal and that
+// MarshalWithoutCalc returns the error.
+func TestHashingReportsWhatCannotBeMarshaled(t *testing.T) {
+	c := check.New(t)
+	logged := countLogs(t, slog.LevelError)
+	var rec recordingHasher
+	HashJSON(&rec, make(chan int))
+	c.Equal(int32(1), logged.Load(), "HashJSON logs the failure")
+	_, err := MarshalWithoutCalc(make(chan int))
+	c.HasError(err, "MarshalWithoutCalc returns the failure")
+}
+
+// TestNameablesTakePartInSync verifies that a change to an item's nameables changes its hash, while an empty set of
+// them leaves the hash as it was before nameables existed.
 func TestNameablesTakePartInSync(t *testing.T) {
 	c := check.New(t)
 	trait := NewTrait(nil, nil, false)

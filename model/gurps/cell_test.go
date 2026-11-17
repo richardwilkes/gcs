@@ -14,8 +14,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // TestForSortDistinguishesSwitchStates verifies that the on, off and nothing-to-switch states of a switch column sort
@@ -47,9 +49,181 @@ func TestForSortDistinguishesSwitchStates(t *testing.T) {
 	c.Equal("", (&CellData{Type: cell.Toggle}).ForSort(), "an off toggle sorts as nothing")
 }
 
-// The level cells show the level the last recalculation recorded rather than computing one of their own: computing
-// a level walks the skills list, which for a sheet with hundreds of spells was most of what every update cost, and
-// the recorded level is what every other reader of a level, from the weapons to the prerequisites, already uses.
+// TestForSortMatchesTheShownText verifies that a cell sorts and searches by the text it shows: a text cell by both of
+// its lines, a page reference or Markdown cell by its primary text alone, and the tags cell fillTagsCell makes by its
+// tags.
+func TestForSortMatchesTheShownText(t *testing.T) {
+	c := check.New(t)
+	var tags CellData
+	fillTagsCell(&tags, []string{"Alpha", "Beta"})
+	c.Equal(cell.Tags, tags.Type, "fillTagsCell makes a tags cell")
+	for _, one := range []struct {
+		data CellData
+		want string
+	}{
+		{CellData{Type: cell.Text, Primary: "Name"}, "Name"},
+		{CellData{Type: cell.Text, Primary: "Name", Secondary: "Notes"}, "Name\nNotes"},
+		{CellData{Type: cell.PageRef, Primary: "B12", Secondary: "Name"}, "B12"},
+		{tags, "Alpha, Beta"},
+		{CellData{Type: cell.Markdown, Primary: "**Bold**"}, "**Bold**"},
+	} {
+		c.Equal(one.want, one.data.ForSort(), "a %v cell that should sort as %q", one.data.Type, one.want)
+	}
+}
+
+// TestJoinTooltipBlocks verifies that two tooltip blocks are set apart by a rule, with a blank line ahead of it so that
+// Markdown doesn't make a heading of the first block's last line, and that an empty block adds nothing.
+func TestJoinTooltipBlocks(t *testing.T) {
+	c := check.New(t)
+	c.Equal("", JoinTooltipBlocks("", ""))
+	c.Equal("first", JoinTooltipBlocks("first", ""))
+	c.Equal("second", JoinTooltipBlocks("", "second"))
+	c.Equal("first\n\n---\nsecond", JoinTooltipBlocks("first", "second"))
+}
+
+// TestSharedHeaderData verifies that the icon columns the node types share show their icons, carry the names a screen
+// reader announces for them, and explain themselves in their tooltips.
+func TestSharedHeaderData(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		header  HeaderData
+		icon    string
+		name    string
+		tooltip string
+	}{
+		{pageRefHeaderData(), HeaderBookmark, "Page Reference", PageRefTooltip()},
+		{libSrcHeaderData(), HeaderDatabase, "Library Source", LibSrcTooltip()},
+		{switchHeaderData(), HeaderSwitch, "Switched On", SwitchHeaderTooltip()},
+		{enabledHeaderData(), HeaderCheckmark, "Enabled", ModifierEnabledTooltip()},
+	} {
+		c.Equal(one.icon, one.header.Title)
+		c.Equal(one.name, one.header.Name, "the name of the %s column", one.icon)
+		c.Equal(one.tooltip, one.header.Detail, "the tooltip of the %s column", one.icon)
+	}
+}
+
+// TestHeaderDataNamesWhatIsNotReadable walks every header data function, so that a new icon column, or one titled with
+// an abbreviation of up to three characters, is caught if it lacks a name.
+func TestHeaderDataNamesWhatIsNotReadable(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	functions := map[string]func(columnID int) HeaderData{
+		"conditional modifiers": ConditionalModifiersHeaderData,
+		"reaction modifiers":    ReactionModifiersHeaderData,
+		"equipment modifiers":   EquipmentModifierHeaderData,
+		"notes":                 NotesHeaderData,
+		"skills":                SkillsHeaderData,
+		"trait modifiers":       TraitModifierHeaderData,
+		"spells":                SpellsHeaderData,
+		"traits":                TraitsHeaderData,
+		"melee weapons":         func(columnID int) HeaderData { return WeaponHeaderData(columnID, true, false) },
+		"ranged weapons":        func(columnID int) HeaderData { return WeaponHeaderData(columnID, false, false) },
+		"page melee weapons":    func(columnID int) HeaderData { return WeaponHeaderData(columnID, true, true) },
+		"carried equipment":     func(columnID int) HeaderData { return EquipmentHeaderData(columnID, entity, true, false) },
+		"other equipment":       func(columnID int) HeaderData { return EquipmentHeaderData(columnID, entity, false, true) },
+	}
+	abbreviations := map[string]string{
+		"±":    "Modifier",
+		"#":    "Quantity",
+		"TL":   "Tech Level",
+		"LC":   "Legality Class",
+		"Diff": "Difficulty",
+		"SL":   "Skill Level",
+		"RSL":  "Relative Skill Level",
+		"Pts":  "Points",
+		"P#":   "Prerequisite Count",
+		"ST":   "Minimum Strength",
+		"Acc":  "Accuracy Bonus",
+		"RoF":  "Rate of Fire",
+	}
+	seen := make(map[string]bool)
+	for name, f := range functions {
+		columns := 0
+		// IDs that name no column, such as a retired one, have no title. 64 is well past the last ID of any kind.
+		for columnID := range 64 {
+			data := f(columnID)
+			if data.Title == "" {
+				continue
+			}
+			columns++
+			switch {
+			case data.TitleIsImageKey:
+				c.NotEqual("", data.Name, "%s column %d, an icon, must carry a name", name, columnID)
+			case len([]rune(data.Title)) <= 3:
+				c.NotEqual("", data.Name, "%s column %d, titled %q, must carry the name it stands for", name, columnID,
+					data.Title)
+			}
+			if expected, ok := abbreviations[data.Title]; ok {
+				seen[data.Title] = true
+				c.Equal(expected, data.Name, "%s column %d, titled %q, must be named for what it stands for", name,
+					columnID, data.Title)
+				c.Equal(expected, data.Detail, "%s column %d, titled %q, must explain itself in its tooltip", name,
+					columnID, data.Title)
+			}
+			if data.Name != "" {
+				c.True(data.TitleIsImageKey || abbreviations[data.Title] != "",
+					"%s column %d, titled %q, is a word and needs no name", name, columnID, data.Title)
+			}
+		}
+		c.True(columns > 1, "%s must have columns", name)
+	}
+	for title := range abbreviations {
+		c.True(seen[title], "the abbreviation %q must be in use somewhere", title)
+	}
+}
+
+// TestFillPageRefCell verifies that a page reference cell gives the text to look for on the page as the highlight when
+// there is one and otherwise as what the fallback produces, which is only computed when it is needed.
+func TestFillPageRefCell(t *testing.T) {
+	c := check.New(t)
+	calls := 0
+	fallback := func() string {
+		calls++
+		return "fallback"
+	}
+	var data CellData
+	fillPageRefCell(&data, "B12", "highlight", fallback)
+	c.Equal(cell.PageRef, data.Type)
+	c.Equal("B12", data.Primary)
+	c.Equal("highlight", data.Secondary, "the highlight wins when there is one")
+	c.Equal(0, calls, "the fallback is not evaluated when the highlight is used")
+	data = CellData{}
+	fillPageRefCell(&data, "B12", "", fallback)
+	c.Equal("fallback", data.Secondary, "the fallback is used when there is no highlight")
+	c.Equal(1, calls)
+}
+
+// TestFillLibSrcCell verifies that a library source cell shows how the node compares to its library source, with the
+// source's details in the tooltip when it has one, and shows nothing when there is no owner to ask.
+func TestFillLibSrcCell(t *testing.T) {
+	c := check.New(t)
+	trait := NewTrait(nil, nil, false)
+	var data CellData
+	fillLibSrcCell(&data, nil, trait)
+	c.Equal(cell.Text, data.Type)
+	c.Equal(align.Middle, data.Alignment)
+	c.Equal("", data.Primary, "without an owner there is nobody to ask about the source")
+	c.Equal("", data.Tooltip)
+
+	entity := NewEntity()
+	data = CellData{}
+	fillLibSrcCell(&data, entity, trait)
+	c.Equal(srcstate.Custom.AltString(), data.Primary)
+	c.Equal(srcstate.Custom.String(), data.Tooltip, "custom data has no source details to show")
+
+	trait.Source = Source{Library: "Test Library", Path: "Test" + TraitsExt, TID: "SourceTID"}
+	data = CellData{}
+	fillLibSrcCell(&data, entity, trait)
+	c.Equal(srcstate.Missing.AltString(), data.Primary)
+	for _, detail := range []string{srcstate.Missing.String(), "Test Library", "Test" + TraitsExt, "SourceTID"} {
+		c.Contains(data.Tooltip, detail, "the tooltip gives the state and the source's details")
+	}
+}
+
+// TestLevelCellsShowRecordedLevel verifies that the level cells show the level the last recalculation recorded rather
+// than computing one of their own: computing a level walks the skills list, which for a sheet with hundreds of spells
+// was most of what every update cost, and the recorded level is what every other reader of a level, from the weapons
+// to the prerequisites, already uses.
 func TestLevelCellsShowRecordedLevel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
