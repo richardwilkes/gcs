@@ -15,10 +15,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // addTestSpell adds a spell with the given name and points to the entity.
@@ -343,7 +345,7 @@ func TestRitualMagicSpellWithOptionallySpecializedRitualSkill(t *testing.T) {
 
 // TestSpellRitualsFollowLevelClassAndOverrides pins the rituals text each level band gives, the parts the missile,
 // blocking and enchantment classes leave out, and the ritual overrides, which replace a part at every level, drop it
-// when "-", and take replacements.
+// when "-", and take replacements. A sheet that doesn't show spell adjustments shows no rituals.
 func TestSpellRitualsFollowLevelClassAndOverrides(t *testing.T) {
 	const (
 		fullRitual  = "**Ritual:** need both hands and feet free and must speak"
@@ -358,6 +360,7 @@ func TestSpellRitualsFollowLevelClassAndOverrides(t *testing.T) {
 		class     string
 		overrides RitualOverrides
 		answers   map[string]string
+		hidden    bool
 		want      string
 	}{
 		{name: "below 10", iq: fxp.Nine, want: fullRitual + "; **Time:** Doubled"},
@@ -413,11 +416,12 @@ func TestSpellRitualsFollowLevelClassAndOverrides(t *testing.T) {
 			answers:   map[string]string{"Ritual": "must speak", "Time": "as listed", "Cost": "full"},
 			want:      "**Ritual:** must speak; **Time:** as listed; **Cost:** full",
 		},
+		{name: "hidden by the sheet", iq: fxp.Nine, hidden: true, want: ""},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
-			e.SheetSettings.ShowSpellAdj = true
+			e.SheetSettings.ShowSpellAdj = !tc.hidden
 			e.Attributes.Set[IntelligenceID].Adjustment = tc.iq - fxp.Ten
 			sp := addTestSpell(e, "Spell", fxp.Four)
 			if tc.class != "" {
@@ -464,6 +468,8 @@ func TestSpellRitualOverridesAreSourceDataSavedOnlyWhenSet(t *testing.T) {
 	c.Equal(spell.RitualOverrides, restored.RitualOverrides, "the overrides load back")
 }
 
+// TestSpellLevelStepping verifies that incrementing or decrementing a spell's level moves its points to the fewest that
+// buy the next or previous level, for Hard and Wildcard spells, and leaves containers alone.
 func TestSpellLevelStepping(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -482,6 +488,13 @@ func TestSpellLevelStepping(t *testing.T) {
 
 	sp.DecrementSkillLevel()
 	c.Equal(fxp.Int(0), sp.Points)
+
+	// Wildcard spells cost three times as much per level.
+	sp.Difficulty.Difficulty = difficulty.Wildcard
+	sp.SetRawPoints(fxp.Three)
+	stepLevelUpAndDown(t, sp, cached,
+		[]fxp.Int{fxp.Six, fxp.Twelve, fxp.TwentyFour, fxp.ThirtySix},
+		[]fxp.Int{fxp.TwentyFour, fxp.Twelve, fxp.Six, fxp.Three})
 
 	container := NewSpell(e, nil, true)
 	container.IncrementSkillLevel()
@@ -668,10 +681,10 @@ func TestSpellBonusFromItsOwnSpell(t *testing.T) {
 	c.NotEqual(fxp.Min, spell.LevelData.Level, "the spell's level stays resolvable")
 }
 
-// TestSpellFillWithNameableKeysIncludesFeatures verifies that the substitution keys used inside a spell's features are
-// offered to the user along with the ones in the spell's own text, so a spell can carry a feature whose target is
-// filled in when the spell is added to a sheet.
-func TestSpellFillWithNameableKeysIncludesFeatures(t *testing.T) {
+// TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons verifies that the substitution keys used inside a spell's
+// features and weapons are offered to the user along with the ones in the spell's own text, so a spell can carry a
+// feature whose target is filled in when the spell is added to a sheet.
+func TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons(t *testing.T) {
 	c := check.New(t)
 
 	spell := NewSpell(nil, nil, false)
@@ -680,6 +693,9 @@ func TestSpellFillWithNameableKeysIncludesFeatures(t *testing.T) {
 	bonus.SpecializationCriteria.Compare = criteria.IsText
 	bonus.SpecializationCriteria.Qualifier = "@spec@"
 	spell.Features = Features{bonus}
+	w := NewWeapon(spell, false)
+	w.Usage = "@use@"
+	spell.Weapons = []*Weapon{w}
 
 	m := make(map[string]string)
 	spell.FillWithNameableKeys(m, nil)
@@ -687,5 +703,80 @@ func TestSpellFillWithNameableKeysIncludesFeatures(t *testing.T) {
 		"what":  nameable.Unset,
 		"skill": nameable.Unset,
 		"spec":  nameable.Unset,
-	}, m, "the keys from the spell's features are offered along with its own")
+		"use":   nameable.Unset,
+	}, m, "the keys from the spell's features and weapons are offered along with its own")
+}
+
+// TestRitualMagicSatisfiedNamesWhatIsMissing verifies that a ritual magic spell no ritual skill serves names what it
+// lacks: a college, or a ritual skill of any one of its colleges.
+func TestRitualMagicSatisfiedNamesWhatIsMissing(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		colleges []string
+		want     string
+	}{
+		{nil, "- Must be assigned to a college"},
+		{[]string{"Fire"}, "- Requires a skill named Ritual Magic (Fire)"},
+		{[]string{"Fire", "Water"}, "- Requires a skill named Ritual Magic (Fire) or Ritual Magic (Water)"},
+	} {
+		spell := addTestRitualMagicSpell(NewEntity(), "Fireball", tc.colleges...)
+		var tooltip xbytes.InsertBuffer
+		c.False(spell.RitualMagicSatisfied(&tooltip, "- "), "colleges %v: no ritual skill serves the spell", tc.colleges)
+		c.Equal(tc.want, tooltip.String(), "colleges %v", tc.colleges)
+	}
+}
+
+// TestSpellDescriptionForPage verifies that the page's spell description adds the spell's details, leaving out those
+// that are blank or "-", after its notes, where the sheet's notes display puts them.
+func TestSpellDescriptionForPage(t *testing.T) {
+	c := check.New(t)
+	const details = "**Resistance:** HT; **Class:** Regular; **Cast:** 1; **Time:** 1 second; **Duration:** Instant; " +
+		"**College:** Fire"
+	for _, tc := range []struct {
+		option             display.Option
+		notes              string
+		secondary, tooltip string
+	}{
+		{display.NotShown, "Hot", "", ""},
+		{display.Inline, "", details, ""},
+		{display.Inline, "Hot", "Hot\n" + details, ""},
+		{display.Tooltip, "", "", details},
+		{display.Tooltip, "Hot", "", "Hot\n" + details},
+	} {
+		e := NewEntity()
+		e.SheetSettings.NotesDisplay = tc.option
+		e.SheetSettings.ShowSpellAdj = false
+		spell := addTestSpell(e, "Fireball", fxp.One)
+		spell.Resist = "HT"
+		spell.MaintenanceCost = "-"
+		spell.College = CollegeList{"Fire"}
+		spell.LocalNotes = tc.notes
+		e.Recalculate()
+		var data CellData
+		spell.CellData(SpellDescriptionForPageColumn, &data)
+		c.Equal(tc.secondary, data.Secondary, "%v with notes %q: inline", tc.option, tc.notes)
+		c.Equal(tc.tooltip, data.Tooltip, "%v with notes %q: tooltip", tc.option, tc.notes)
+	}
+}
+
+// TestSpellCloneCopiesChildren verifies that cloning a spell container clones each of its children into the clone, for
+// the clone's owner, leaving the originals with their container.
+func TestSpellCloneCopiesChildren(t *testing.T) {
+	c := check.New(t)
+	container := NewSpell(nil, nil, true)
+	child := NewSpell(nil, container, false)
+	child.Name = "Fireball"
+	container.Children = []*Spell{child}
+	e := NewEntity()
+	clone := container.Clone(LibraryFile{}, e, nil, Copy)
+	c.Equal(1, len(clone.Children), "the child is cloned")
+	if len(clone.Children) != 1 {
+		return
+	}
+	copied := clone.Children[0]
+	c.True(copied != child, "the clone holds a copy of the child")
+	c.Equal("Fireball", copied.Name)
+	c.True(copied.Parent() == clone, "the copy's parent is the clone")
+	c.True(copied.DataOwner() == DataOwner(e), "the copy belongs to the clone's owner")
+	c.True(child.Parent() == container, "the original child stays with its container")
 }

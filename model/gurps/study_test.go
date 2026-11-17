@@ -38,6 +38,41 @@ func TestCloneStudyList(t *testing.T) {
 	c.Equal(fxp.Four, list[0].Hours, "editing the clone leaves the source alone")
 }
 
+// TestResolveStudyHours verifies that each session's hours count toward the total by what its type of study is worth:
+// half for self-study, a quarter on the job, in full with a teacher and double for intensive training.
+func TestResolveStudyHours(t *testing.T) {
+	c := check.New(t)
+	// No other assignment of the four multipliers to these hours gives the same total.
+	c.Equal(fxp.Eight, ResolveStudyHours([]*Study{
+		{Type: study.Self, Hours: fxp.Four},
+		{Type: study.Job, Hours: fxp.Eight},
+		{Type: study.Teacher, Hours: fxp.Two},
+		{Type: study.Intensive, Hours: fxp.One},
+	}))
+}
+
+// TestStudyHoursProgressText verifies the study progress text: nothing without hours unless forced, when negative hours
+// show as 0, the hours the study level needs, and emphasis unless forced.
+func TestStudyHoursProgressText(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		hours  fxp.Int
+		needed study.Level
+		force  bool
+		want   string
+	}{
+		{0, study.Standard, false, ""},
+		{-fxp.One, study.Standard, false, ""},
+		{-fxp.One, study.Standard, true, "Studied 0 of 200 hours"},
+		{fxp.Fifty, study.Standard, false, "_Studied 50 of 200 hours._"},
+		{fxp.Fifty, study.Level2, false, "_Studied 50 of 160 hours._"},
+		{fxp.Fifty, study.Level2, true, "Studied 50 of 160 hours"},
+	} {
+		c.Equal(tc.want, StudyHoursProgressText(tc.hours, tc.needed, tc.force), "%v hours, %v, forced %v", tc.hours,
+			tc.needed, tc.force)
+	}
+}
+
 // TestLoadingOffASheetClearsStudy verifies that a template and a trait, skill or spell list have any study and study
 // hours needed removed when loaded, while a character sheet keeps both.
 func TestLoadingOffASheetClearsStudy(t *testing.T) {

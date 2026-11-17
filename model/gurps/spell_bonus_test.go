@@ -89,3 +89,24 @@ func TestSpellBonusTypesShareData(t *testing.T) {
 	c.Equal(Hash64(nilSpell), Hash64(nilPoints), "nil bonuses hash alike")
 	c.NotEqual(Hash64(nilSpell), Hash64(spell), "a nil bonus hashes unlike a real one")
 }
+
+// TestSpellBonusNameableKeysByMatchType verifies that a spell bonus offers the key in its name criterion only when its
+// match type consults that criterion, which matching all colleges does not, and the key in its tags criterion always.
+func TestSpellBonusNameableKeysByMatchType(t *testing.T) {
+	c := check.New(t)
+	b := NewSpellBonus()
+	b.NameCriteria.Qualifier = "@Name@"
+	b.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "@Tag@"}
+	for _, one := range []struct {
+		match spellmatch.Type
+		keys  []string
+	}{
+		{spellmatch.AllColleges, []string{"Tag"}},
+		{spellmatch.CollegeName, []string{"Name", "Tag"}},
+		{spellmatch.PowerSource, []string{"Name", "Tag"}},
+		{spellmatch.Name, []string{"Name", "Tag"}},
+	} {
+		b.SpellMatchType = one.match
+		c.Equal(one.keys, nameableKeysOf(b), "matching %v", one.match)
+	}
+}

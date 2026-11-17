@@ -63,8 +63,9 @@ func referenceSkillMatching(e *gurps.Entity, nameCriteria, specializationCriteri
 	return list
 }
 
-// Reordering the tests a skill lookup makes must not change which skills it finds, nor their order, for any name,
-// specialization, points requirement or exclusion a sheet full of skills can present.
+// TestSkillLookupOrderingEquivalence verifies that reordering the tests a skill lookup makes changes neither which
+// skills it finds nor their order, for any name, specialization, points requirement or exclusion a sheet full of skills
+// can present.
 func TestSkillLookupOrderingEquivalence(t *testing.T) {
 	c := check.New(t)
 	size := gurpstest.DefaultLargeEntitySize.Scaled(0.1)
