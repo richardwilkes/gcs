@@ -21,7 +21,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
@@ -266,6 +269,10 @@ func newPrereqListNeedingEquipment() *PrereqList {
 	return list
 }
 
+// TestEntityAttributeBonus verifies how a bonus to ST reaches the sheet: a plain one raises ST, a per-level one by the
+// trait's levels, one limited to striking, lifting or throwing leaves ST alone and raises only Swing, Basic Lift or the
+// throwing ST bonus, and a multiplier alters ST's current value alone, which Swing comes from, or under a lifting
+// limitation, Basic Lift alone.
 func TestEntityAttributeBonus(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1527,7 +1534,7 @@ func TestEntityEnforceTraitPrereqsContainers(t *testing.T) {
 
 // TestEntityEnforceTraitPrereqsMaxLevel verifies that a trait above its maximum level, which the sheet flags the same
 // way as an unmet prerequisite, is disabled by the setting as well, and re-enabled once its level is brought back
-// within the maximum.
+// within the maximum, and that a trait both above its maximum and with unmet prerequisites records both reasons.
 func TestEntityEnforceTraitPrereqsMaxLevel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1549,6 +1556,15 @@ func TestEntityEnforceTraitPrereqsMaxLevel(t *testing.T) {
 	c.Equal("", trait.UnsatisfiedReason, "a trait within its maximum level is not flagged")
 	c.False(trait.DisabledByPrereqs(), "a trait within its maximum level is enabled again")
 	checkRecalculationConsistency(c, e, "within the maximum")
+
+	trait.Levels = fxp.Three
+	trait.Prereq = newPrereqListRequiringTrait("Combat Reflexes")
+	e.Recalculate()
+	c.True(strings.HasPrefix(trait.UnsatisfiedReason, e.evaluatePrereqs(trait.Prereq, trait, nil)),
+		"the unmet prerequisites are recorded first")
+	c.True(strings.HasSuffix(trait.UnsatisfiedReason, unsatisfiedReasonPrefix+levelExceedsMaximumReason(fxp.Two)),
+		"followed by the level above the maximum")
+	checkRecalculationConsistency(c, e, "above the maximum with unmet prerequisites")
 }
 
 // TestEntityReactionsUseResolvedSelfControl verifies that the reaction penalty derived from a trait's self-control
@@ -1648,6 +1664,36 @@ func TestEntityTraitLevels(t *testing.T) {
 	levels, found = e.TraitLevels("Telekinesis (Reach)")
 	c.False(found, "the name must match in full")
 	c.Equal(fxp.Int(0), levels, "a non-matching name contributes no levels")
+}
+
+// TestEntityHasTraitNamed verifies that HasTraitNamed finds an enabled trait by name, ignoring case and surrounding
+// whitespace, and never finds an empty name, a disabled trait, one under a disabled container, or anything without
+// an entity.
+func TestEntityHasTraitNamed(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
+
+	c.True(e.HasTraitNamed("Magery"), "exact match")
+	c.True(e.HasTraitNamed(" magery "), "case-insensitive and trimmed match")
+	c.False(e.HasTraitNamed("Combat Reflexes"), "absent trait")
+	c.False(e.HasTraitNamed(""), "empty name never matches")
+	c.False((*Entity)(nil).HasTraitNamed("Magery"), "nil entity never matches")
+
+	disabled := newTraitNamed(e, "Sense of Duty")
+	disabled.SetDisabled(true)
+	e.Traits = append(e.Traits, disabled)
+	c.False(e.HasTraitNamed("Sense of Duty"), "disabled traits are ignored")
+
+	// A trait nested under a disabled container is also ignored.
+	container := NewTrait(e, nil, true)
+	container.Name = "Package"
+	container.SetDisabled(true)
+	child := newTraitNamed(e, "Racial Memory")
+	child.parent = container
+	container.Children = append(container.Children, child)
+	e.Traits = append(e.Traits, container)
+	c.False(e.HasTraitNamed("Racial Memory"), "traits under a disabled container are ignored")
 }
 
 // TestNewEntityFromFileDropsNullPointsRecords checks that a sheet file whose points record holds a null entry loads,
@@ -1880,6 +1926,8 @@ func TestEntityRecalculateReportsWhetherTheDerivedStateChanged(t *testing.T) {
 	c.True(e.DerivedStateChanged(), "a change to a skill's level changes the derived state")
 }
 
+// TestDisabledItemsAreAsIfAbsent verifies that a disabled skill, spell or piece of equipment counts for nothing: its
+// features, points, level, weight and value drop out, skill lookups pass it over, and a prerequisite it met is unmet.
 func TestDisabledItemsAreAsIfAbsent(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -2000,8 +2048,8 @@ func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
 	c.NotEqual("", boxed.UnsatisfiedReason)
 }
 
-// The carried weight is derived from every carried item, so it is cached until the caches are discarded, as the
-// encumbrance level derived from it already was.
+// TestWeightCarriedCached verifies that the carried weight is kept until the caches are discarded rather than found
+// afresh on every read.
 func TestWeightCarriedCached(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -2057,4 +2105,137 @@ func TestSkillMatchingEmptySpecialization(t *testing.T) {
 
 	c.Equal(5, len(e.SkillMatching(nameIs, criteria.Text{}, nil, false, nil)),
 		"an empty (any) specialization criteria must match every skill")
+}
+
+// TestEntityPointsBreakdown verifies where PointsBreakdown files a container's points: a group's children each by their
+// own sign, with -1 counting as a quirk, an ancestry or attributes container whole under its own heading, and any other
+// container whole by the sign of its total.
+func TestEntityPointsBreakdown(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		kind traitcontainer.Type
+		want PointsBreakdown
+	}{
+		{traitcontainer.Group, PointsBreakdown{Advantages: fxp.Five, Disadvantages: -fxp.Ten, Quirks: -fxp.One}},
+		{traitcontainer.MetaTrait, PointsBreakdown{Disadvantages: -fxp.Six}},
+		{traitcontainer.Ancestry, PointsBreakdown{Ancestry: -fxp.Six}},
+		{traitcontainer.Attributes, PointsBreakdown{Attributes: -fxp.Six}},
+	} {
+		e := NewEntity()
+		box := NewTrait(e, nil, true)
+		box.ContainerType = one.kind
+		for _, points := range []fxp.Int{fxp.Five, -fxp.Ten, -fxp.One} {
+			child := NewTrait(e, box, false)
+			child.BasePoints = points
+			box.Children = append(box.Children, child)
+		}
+		e.Traits = append(e.Traits, box)
+		e.Recalculate()
+		c.Equal(one.want, *e.PointsBreakdown(), "%s", one.kind)
+	}
+}
+
+// TestEntitySetPointsRecord verifies that SetPointsRecord makes the total points the sum of the records and keeps a
+// copy of them, newest first, leaving the list it was given as it was.
+func TestEntitySetPointsRecord(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	records := pointsRecordsAt(0, 20, 10)
+	records[0].Points = fxp.FromInteger(100)
+	e.SetPointsRecord(records)
+	c.Equal(fxp.FromInteger(102), e.TotalPoints, "the total is the sum of the records")
+	c.Equal([]string{"1", "2", "0"}, pointsRecordReasons(e.PointsRecord), "the records are kept newest first")
+	c.Equal([]string{"0", "1", "2"}, pointsRecordReasons(records), "the list given is not reordered")
+	records[0].Points = fxp.One
+	c.Equal(fxp.FromInteger(100), e.PointsRecord[2].Points, "nor does a later change to one of its records reach them")
+}
+
+// TestEntityMoveAndDodgeUnderEncumbrance verifies that each level of encumbrance takes a fifth of Basic Move off Move,
+// rounding down, and one off Dodge, but never brings either below 1, except that Move stays 0 when Basic Move is 0.
+func TestEntityMoveAndDodgeUnderEncumbrance(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name   string
+		attrID string
+		adjust fxp.Int
+		value  func(e *Entity, enc encumbrance.Level) int
+		want   []int
+	}{
+		{"Move from Basic Move 6", BasicMoveID, fxp.One, (*Entity).Move, []int{6, 4, 3, 2, 1}},
+		{"Move from Basic Move 1", BasicMoveID, -fxp.Four, (*Entity).Move, []int{1, 1, 1, 1, 1}},
+		{"Move from Basic Move 0", BasicMoveID, -fxp.Five, (*Entity).Move, []int{0, 0, 0, 0, 0}},
+		{"Dodge from Basic Speed 5", BasicSpeedID, 0, (*Entity).Dodge, []int{8, 7, 6, 5, 4}},
+		{"Dodge from Basic Speed 0", BasicSpeedID, -fxp.Five, (*Entity).Dodge, []int{3, 2, 1, 1, 1}},
+	} {
+		e := NewEntity()
+		e.Attributes.Set[one.attrID].Adjustment = one.adjust
+		e.Recalculate()
+		got := make([]int, len(encumbrance.Levels))
+		for i, enc := range encumbrance.Levels {
+			got[i] = one.value(e, enc)
+		}
+		c.Equal(one.want, got, one.name)
+	}
+}
+
+// TestEntityEncumbranceLevel verifies that a load up to and including a multiple of Basic Lift falls in the level that
+// multiple bounds, and that a load beyond the most Extra-Heavy allows is still Extra-Heavy.
+func TestEntityEncumbranceLevel(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		weight string
+		want   encumbrance.Level
+	}{
+		{"20 lb", encumbrance.No},
+		{"21 lb", encumbrance.Light},
+		{"200 lb", encumbrance.ExtraHeavy},
+		{"201 lb", encumbrance.ExtraHeavy},
+	} {
+		e := NewEntity()
+		addCarriedEquipmentWithFeatures(e, "Load").BaseWeight = one.weight
+		e.Recalculate()
+		c.Equal(fxp.WeightFromInteger(20, fxp.Pound), e.BasicLift(), "precondition: Basic Lift is 20 lb")
+		c.Equal(one.want, e.EncumbranceLevel(false), "carrying %s", one.weight)
+	}
+}
+
+// TestBasicLiftForST verifies Basic Lift under each damage progression: nothing below ST 1, and otherwise ST²/5, kept
+// to tenths below 10 lb and rounded from there, except under Knowing Your Own Strength, where it is 2×10^(ST/10),
+// rounded to the nearest tenth below 10 lb and to whole from there, and ten times that of ST-10 from ST 20 on; its
+// variant that leaves lifting alone uses ST²/5.
+func TestBasicLiftForST(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		progression progression.Option
+		st          int
+		want        string
+	}{
+		{progression.BasicSet, 6, "7.2 lb"},
+		{progression.KnowingYourOwnStrength, 0, "0 lb"},
+		{progression.KnowingYourOwnStrength, 5, "6.3 lb"},
+		{progression.KnowingYourOwnStrength, 6, "8 lb"},
+		{progression.KnowingYourOwnStrength, 25, "630 lb"},
+		{progression.KnowingYourOwnStrengthNoLift, 12, "29 lb"},
+	} {
+		c.Equal(fxp.WeightFromStringForced(one.want, fxp.Pound), BasicLiftForST(fxp.FromInteger(one.st), one.progression),
+			"%s: ST %d", one.progression, one.st)
+	}
+}
+
+// TestEntityResolveMissingAttribute verifies what the resolvers give for an attribute the sheet lacks: "<unknown>" for
+// its name and an error and no value for its variable, as for one whose definition is gone, and without an entity,
+// fxp.Min for its current value.
+func TestEntityResolveMissingAttribute(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	logged := countLogs(t, slog.LevelError)
+	c.Equal("<unknown>", e.ResolveAttributeName("nosuch"))
+	c.Equal("", e.ResolveVariable("nosuch"))
+	c.Equal("", e.ResolveVariable("nosuch.current"))
+	delete(e.SheetSettings.Attributes.Set, "will")
+	e.DiscardCaches()
+	c.Equal("", e.ResolveVariable("will"), "an attribute without a definition has no value either")
+	c.Equal(int32(3), logged.Load(), "each failed variable is logged")
+	var none *Entity
+	c.Equal(fxp.Min, none.ResolveAttributeCurrent(StrengthID))
 }
