@@ -157,3 +157,37 @@ func TestInitialSheetPaginatedDefaultsToOn(t *testing.T) {
 	c.NoError(err)
 	c.False(loaded.InitialSheetPaginated, "turning the setting off survives a save and load")
 }
+
+// TestGeneralSettingsMigratesOlderVersions verifies that validating settings of an older revision applies the changes
+// of each later revision once: revision 1 cut the sheet scale default from 150% to 100%, while revisions 2 and 3 turned
+// on page reference expansion and paginated sheets, which didn't exist before them.
+func TestGeneralSettingsMigratesOlderVersions(t *testing.T) {
+	c := check.New(t)
+	savedSize := unison.CursorSize()
+	savedFocus := unison.FocusForReading()
+	defer func() {
+		unison.SetCursorSize(savedSize)
+		unison.SetFocusForReading(savedFocus)
+	}()
+	for _, tc := range []struct {
+		version   int
+		scale     int
+		expand    bool
+		paginated bool
+	}{
+		{version: 0, scale: 100, expand: true, paginated: true},
+		{version: 1, scale: 150, expand: true, paginated: true},
+		{version: 2, scale: 150, paginated: true},
+	} {
+		s := NewGeneralSettings()
+		s.Version = tc.version
+		s.InitialSheetUIScale = 150
+		s.ExpandPageReferences = false
+		s.InitialSheetPaginated = false
+		s.EnsureValidity()
+		c.Equal(tc.scale, s.InitialSheetUIScale, "sheet scale of version %d", tc.version)
+		c.Equal(tc.expand, s.ExpandPageReferences, "page reference expansion of version %d", tc.version)
+		c.Equal(tc.paginated, s.InitialSheetPaginated, "paginated sheets of version %d", tc.version)
+		c.Equal(currentGeneralSettingsVersion, s.Version, "version %d is brought up to date", tc.version)
+	}
+}

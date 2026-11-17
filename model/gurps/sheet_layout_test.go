@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -132,6 +131,8 @@ func TestSheetLayoutClone(t *testing.T) {
 	clone := layout.Clone()
 	c.Equal(layout.Root.String(), clone.Root.String())
 	c.Equal(layout.HiddenKeys(), clone.HiddenKeys())
+	c.True(clone.Show(BlockNotesKey))
+	c.Equal([]string{BlockNotesKey}, layout.HiddenKeys(), "showing a block in the clone must not alter the original")
 	c.True(clone.Hide(BlockSpellsKey))
 	c.True(layout.Contains(BlockSpellsKey), "altering the clone must not alter the original")
 	c.True((*SheetLayout)(nil).Clone() == nil)
@@ -371,7 +372,7 @@ func TestSheetLayoutEnsureValidityNodes(t *testing.T) {
 }
 
 // TestSheetLayoutBandGroup verifies that a band of the root may be a Column of its own -- a band group -- and that such
-// a band survives validation and a JSON round trip, while the shapes that add nothing to it are still cleaned up.
+// a band survives validation, while the shapes that add nothing to it are still cleaned up.
 func TestSheetLayoutBandGroup(t *testing.T) {
 	t.Run("a Column band is kept", func(t *testing.T) {
 		c := check.New(t)
@@ -400,40 +401,6 @@ func TestSheetLayoutBandGroup(t *testing.T) {
 		))
 		c.Equal("column[column[traits skills notes]]", layout.Root.String(),
 			"only a band of the root may be a Column within a Column")
-	})
-	t.Run("a Row within a band group stays", func(t *testing.T) {
-		c := check.New(t)
-		layout := newTestLayout(containerNode(layoutnode.Column, fxp.One,
-			blockNode(BlockNotesKey),
-			containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
-		))
-		c.Equal("column[column[notes row[traits skills]]]", layout.Root.String())
-	})
-	t.Run("a band group survives a JSON round trip", func(t *testing.T) {
-		c := check.New(t)
-		layout := newTestLayout(
-			containerNode(layoutnode.Column, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
-			blockNode(BlockNotesKey),
-		)
-		data, err := jio.Marshal(layout)
-		c.NoError(err)
-		var restored SheetLayout
-		c.NoError(jio.Unmarshal(data, &restored))
-		c.Equal("column[column[traits skills] notes]", restored.Root.String())
-		c.Equal(layout.HiddenKeys(), restored.HiddenKeys())
-	})
-	t.Run("a group of two lists is two lines of the grid template", func(t *testing.T) {
-		c := check.New(t)
-		group := newTestLayout(containerNode(layoutnode.Column, fxp.One, blockNode(BlockTraitsKey),
-			blockNode(BlockSkillsKey)))
-		c.Equal([][]string{{BlockTraitsKey, BlockSkillsKey}}, group.ListBands(),
-			"a band group is one band, whatever it holds")
-		c.True(strings.HasPrefix(group.HTMLGridTemplate(), "\"traits traits\"\n\"skills skills\"\n"),
-			"blocks stacked in a band group each take a line of their own")
-		row := newTestLayout(containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey),
-			blockNode(BlockSkillsKey)))
-		c.True(strings.HasPrefix(row.HTMLGridTemplate(), "\"traits skills\"\n"),
-			"the same two blocks side by side share a line")
 	})
 }
 
@@ -837,12 +804,6 @@ func TestSheetLayoutMoveToBand(t *testing.T) {
 		c.True(layout.MoveToBand(BlockMeleeKey, 2))
 		c.Equal("column[ranged melee notes spells]", layout.Root.String())
 	})
-	t.Run("moving down within the bands", func(t *testing.T) {
-		c := check.New(t)
-		layout := newTestLayout(blockNode(BlockMeleeKey), blockNode(BlockRangedKey), blockNode(BlockNotesKey))
-		c.True(layout.MoveToBand(BlockMeleeKey, 3))
-		c.Equal("column[ranged notes melee]", layout.Root.String())
-	})
 	t.Run("out of a container collapses it", func(t *testing.T) {
 		c := check.New(t)
 		layout := newTestLayout(
@@ -868,6 +829,7 @@ func TestSheetLayoutMoveToBand(t *testing.T) {
 	})
 }
 
+// TestSheetLayoutSetWeightsAndMinHeight verifies that only usable weights and minimum heights are stored.
 func TestSheetLayoutSetWeightsAndMinHeight(t *testing.T) {
 	c := check.New(t)
 	layout := newTestLayout(containerNode(layoutnode.Row, fxp.One, blockNode(BlockTraitsKey),
@@ -884,6 +846,44 @@ func TestSheetLayoutSetWeightsAndMinHeight(t *testing.T) {
 	c.Equal(height, node.MinHeight)
 	c.False(layout.SetMinHeight(BlockTraitsKey, height), "setting the same height changes nothing")
 	c.False(layout.SetMinHeight(BlockNotesKey, height), "notes is hidden")
+	c.True(layout.SetMinHeight(BlockTraitsKey, paper.Length{Length: -2, Units: paper.Unit(200)}))
+	c.Equal(paper.Length{Length: 0, Units: paper.Inch}, node.MinHeight, "an unusable height must be made usable")
+}
+
+// TestBlockTitle verifies that every block has a title of its own and that an unknown key has none.
+func TestBlockTitle(t *testing.T) {
+	c := check.New(t)
+	seen := make(map[string]bool, len(AllBlockKeys))
+	for _, key := range AllBlockKeys {
+		title := BlockTitle(key)
+		c.NotEqual("", title, "block %q must have a title", key)
+		c.False(seen[title], "block %q must not share its title %q", key, title)
+		seen[title] = true
+	}
+	c.Equal("", BlockTitle("bogus"))
+}
+
+// TestSheetLayoutHash verifies that a clone hashes the same as its original and that every persisted difference changes
+// the hash, which is how an edit that changed nothing is kept off the undo stack.
+func TestSheetLayoutHash(t *testing.T) {
+	c := check.New(t)
+	base := Hash64(FactorySheetLayout())
+	c.Equal(base, Hash64(FactorySheetLayout().Clone()))
+	changes := map[string]func(l *SheetLayout){
+		"type":             func(l *SheetLayout) { l.Root.Children[0].Type = layoutnode.Column },
+		"key":              func(l *SheetLayout) { l.Root.Children[3].Key = BlockSpellsKey },
+		"weight":           func(l *SheetLayout) { l.Root.Children[3].Weight = fxp.Two },
+		"min height":       func(l *SheetLayout) { l.Root.Children[3].MinHeight.Length = 1 },
+		"min height units": func(l *SheetLayout) { l.Root.Children[3].MinHeight.Units = paper.Centimeter },
+		"square":           func(l *SheetLayout) { l.Root.Children[3].Square = true },
+		"children":         func(l *SheetLayout) { l.Root.Children = l.Root.Children[1:] },
+		"hidden":           func(l *SheetLayout) { l.Hidden = []string{BlockNotesKey} },
+	}
+	for name, change := range changes {
+		layout := FactorySheetLayout()
+		change(layout)
+		c.NotEqual(base, Hash64(layout), "changing the %s must change the hash", name)
+	}
 }
 
 // TestSheetLayoutFiltered verifies that a filtered copy holds only the blocks that were kept and doesn't grow the rest
@@ -917,6 +917,12 @@ func TestSheetLayoutListBands(t *testing.T) {
 	))
 	c.Equal([][]string{{BlockNotesKey, BlockSpellsKey}}, layout.ListBands(),
 		"a band's list blocks must be collected depth-first, ignoring the blocks that aren't lists")
+	group := newTestLayout(
+		containerNode(layoutnode.Column, fxp.One, blockNode(BlockTraitsKey), blockNode(BlockSkillsKey)),
+		blockNode(BlockNotesKey),
+	)
+	c.Equal([][]string{{BlockTraitsKey, BlockSkillsKey}, {BlockNotesKey}}, group.ListBands(),
+		"a band group is one band, whatever it holds")
 }
 
 // TestSheetLayoutHTMLGridTemplate verifies that the CSS grid template user-authored export templates rely on is

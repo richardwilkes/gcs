@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,9 +104,15 @@ func TestNewSheetSettingsFromFileLegacyFields(t *testing.T) {
 // factory defaults.
 func TestNewSheetSettingsFromFileErrors(t *testing.T) {
 	c := check.New(t)
-	_, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, `{"damage_progression":`))
-	c.HasError(err)
-	_, err = NewSheetSettingsFromFile(nil, filepath.Join(t.TempDir(), "does_not_exist.sheet"))
+	for _, content := range []string{
+		`{"damage_progression":`,
+		`{"buy_percent":"lots"}`,
+		`{"sheet_settings":5}`,
+	} {
+		_, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, content))
+		c.HasError(err, content)
+	}
+	_, err := NewSheetSettingsFromFile(nil, filepath.Join(t.TempDir(), "does_not_exist.sheet"))
 	c.HasError(err)
 }
 
@@ -250,8 +257,8 @@ func newTestSellMoney() *Equipment {
 // TestSheetSettingsSellMoneyRoundTrip checks that the sell money is written without the derived "calc" values and read
 // back as copies with their IDs and sources, no data owner, their weapons and modifiers attached, and the preconfigured
 // mark and disabled state cleared; and that what a file can hold but can't be money is dropped without error: null,
-// containers, equipment not tagged as money, and the entries of the unreleased format that named a library item by its
-// source, which decode as equipment with nothing but an ID.
+// containers, equipment not tagged as money, the entries of the unreleased format that named a library item by its
+// source, which decode as equipment with nothing but an ID, and a value that isn't a list at all.
 func TestSheetSettingsSellMoneyRoundTrip(t *testing.T) {
 	c := check.New(t)
 	libFile := LibraryFile{Library: "Test Library", Path: "Coins" + EquipmentExt}
@@ -300,6 +307,14 @@ func TestSheetSettingsSellMoneyRoundTrip(t *testing.T) {
 	loaded = SheetSettings{}
 	c.NoError(jio.Unmarshal([]byte(old), &loaded), "an entry of the unreleased format must not fail the load")
 	c.Equal(0, len(loaded.SellMoney), "it is dropped")
+
+	loaded = SheetSettings{}
+	logged := countLogs(t, slog.LevelError)
+	c.NoError(jio.Unmarshal([]byte(`{"sell_money":{"id":"x"},"buy_percent":120}`), &loaded),
+		"sell money that isn't a list must not fail the load")
+	c.Equal(0, len(loaded.SellMoney), "it is dropped")
+	c.Equal(int32(1), logged.Load(), "and that is logged")
+	c.Equal(120, loaded.BuyPercent, "the rest of the settings still load")
 
 	empty, err := jio.Marshal(FactorySheetSettings())
 	c.NoError(err)

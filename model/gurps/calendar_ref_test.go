@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -34,4 +35,13 @@ func TestCalendarRefSaveRoundTrip(t *testing.T) {
 	c.NoError(err)
 	c.Equal(original.Name, reloaded.Name)
 	c.Equal(original.Calendar.Config(), reloaded.Calendar.Config())
+}
+
+// TestNewCalendarRefFromFSRefusesAnInvalidCalendar verifies that a calendar file that decodes but doesn't describe a
+// usable calendar is refused rather than yielding a reference with no calendar in it.
+func TestNewCalendarRefFromFSRefusesAnInvalidCalendar(t *testing.T) {
+	c := check.New(t)
+	ref, err := NewCalendarRefFromFS(fstest.MapFS{"Empty.calendar": {Data: []byte(`{}`)}}, "Empty.calendar")
+	c.HasError(err)
+	c.Nil(ref)
 }

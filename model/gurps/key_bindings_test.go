@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -44,4 +45,27 @@ func TestKeyBindingsFileRoundTrip(t *testing.T) {
 	b, err = NewKeyBindingsFromFS(nil, p)
 	c.NoError(err)
 	c.Equal(want, b.data, "every binding survives a save and load")
+}
+
+// TestKeyBindingsWriteOnlyOverrides verifies that, once factory bindings are registered, only the bindings that differ
+// from them are written, so that one left at its default follows any later change to that default, while one for an ID
+// no longer registered is dropped.
+func TestKeyBindingsWriteOnlyOverrides(t *testing.T) {
+	c := check.New(t)
+	saved := factoryBindings
+	t.Cleanup(func() { factoryBindings = saved })
+	factoryBindings = make(map[string]*Binding)
+	cut := unison.KeyBinding{KeyCode: unison.KeyX, Modifiers: mod.Command}
+	RegisterKeyBinding("cut", &unison.Action{Title: "Cut", KeyBinding: cut})
+	RegisterKeyBinding("copy", &unison.Action{Title: "Copy", KeyBinding: unison.KeyBinding{KeyCode: unison.KeyC}})
+	b := &KeyBindings{data: map[string]unison.KeyBinding{"cut": cut}}
+	c.True(b.IsZero(), "bindings left at their defaults leave nothing to write")
+	custom := unison.KeyBinding{KeyCode: unison.KeyF19, Modifiers: mod.Shift}
+	b.data["copy"] = custom
+	b.data["gone"] = custom
+	data, err := jio.Marshal(b)
+	c.NoError(err)
+	var loaded KeyBindings
+	c.NoError(jio.Unmarshal(data, &loaded))
+	c.Equal(map[string]unison.KeyBinding{"copy": custom}, loaded.data)
 }
