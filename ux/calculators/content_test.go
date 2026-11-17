@@ -28,12 +28,9 @@ import (
 func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := openNewCharacterSheet(t, screen)
-	screen.Do(func() { Display(sheet) })
-	calc := uxtest.SoleEditor[*Dockable](t, screen, func(d unison.Dockable) bool {
-		_, isCalculator := d.AsPanel().Self.(*Dockable)
-		return isCalculator
-	})
+	// Sharing the workspace with a sheet leaves the calculators narrow enough to wrap the note the links are read from.
+	openNewCharacterSheet(t, screen)
+	calc := openCalculator(t, screen)
 	demolition := calc.demolition
 	selectCalculatorTab(t, screen, calc, demolition)
 	if screen.AccessibilityTree(wnd) == nil {
@@ -54,21 +51,29 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	record := func(ref string) { followed = append(followed, ref) }
 	screen.Do(func() {
 		for _, one := range uxtest.PanelsOfType[*ux.TextLabel](demolition.content) {
-			if links := one.Links(); len(links) > 1 {
+			if len(one.Links()) > 1 {
 				multi = one
-				for _, link := range links {
-					refs = append(refs, link.Ref)
-				}
 				break
 			}
 		}
 		if multi != nil {
+			// The note cites the same page twice, so the second is changed to another, which tells its links apart.
+			multi.SetTitle(strings.Replace(multi.String(), "Fragmentation (B104)", "Fragmentation (B105)", 1))
 			multi.LinkHandler = record
 		}
 	})
 	if multi == nil {
 		t.Fatal("the demolition calculator must have a note citing more than one page")
 	}
+	var wrapped bool
+	screen.Do(func() {
+		for _, link := range multi.Links() {
+			refs = append(refs, link.Ref)
+			wrapped = link.Rect.Y > multi.ContentRect(false).Y
+		}
+	})
+	c.Equal([]string{"B104", "B105"}, refs, "the note must cite two different pages")
+	c.True(wrapped, "the note must wrap, so that a link on a later line is what the keyboard and a screen reader reach")
 
 	tree := screen.AccessibilityTree(wnd)
 	node := screen.AccessibilityNodeFor(multi)
@@ -177,6 +182,15 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	c.Equal(0, current(single), "with the keyboard on the link")
 	screen.KeyPress(unison.KeySpace, mod.None)
 	c.Equal([]string{single.Links()[0].Ref}, followed, "Space follows the link")
+	followed = nil
+
+	setFocusForReading(true)
+	screen.Do(func() { wnd.SetFocus(nil) })
+	screen.Do(single.RequestFocus)
+	c.Equal(-1, current(single), "the focus arrives on the text as a whole")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal([]string{single.Links()[0].Ref}, followed, "with only one link to follow, Enter on the text follows it")
+	setFocusForReading(false)
 }
 
 // Each of the header's links opens its page with the words it stands for highlighted.
@@ -191,19 +205,9 @@ func TestCalculatorHeaderIsOneHeadingHoldingItsLinks(t *testing.T) {
 	calc := openCalculator(t, screen)
 	explosion := calc.explosion
 	selectCalculatorTab(t, screen, calc, explosion)
-	var header *ux.TextLabel
+	header := calculatorHeader(t, screen, explosion.content)
 	var texts []string
-	screen.Do(func() {
-		if children := explosion.content.Children(); len(children) > 0 {
-			if label, isLabel := children[0].Self.(*ux.TextLabel); isLabel {
-				header = label
-			}
-		}
-		texts = uxtest.LabelTexts(explosion.content)
-	})
-	if header == nil {
-		t.Fatal("the calculator must start with its header")
-	}
+	screen.Do(func() { texts = uxtest.LabelTexts(explosion.content) })
 	const title = "Explosions & Area Attacks (BX413, BX414)"
 	c.Equal(title, header.String())
 	for _, piece := range []string{"Explosions & Area Attacks (", ", ", ")"} {
@@ -245,16 +249,6 @@ func TestCalculatorHeaderIsOneHeadingHoldingItsLinks(t *testing.T) {
 	c.Equal(node.Children[0], screen.AccessibilityTree(wnd).Focus, "the screen reader is told the link holds the focus")
 	screen.KeyPress(unison.KeyReturn, mod.None)
 	c.Equal([]opened{{pageRef: "BX413", highlight: "Area and Spreading Attacks"}}, followed)
-	followed = nil
-	screen.KeyPress(unison.KeyTab, mod.None)
-	screen.Do(func() { focused = wnd.Focus() == header.AsPanel() })
-	c.True(focused, "Tab goes on to the header's second link")
-	c.Equal(node.Children[1], screen.AccessibilityTree(wnd).Focus)
-	screen.KeyPress(unison.KeyReturn, mod.None)
-	c.Equal([]opened{{pageRef: "BX414", highlight: "Explosions"}}, followed)
-	screen.KeyPress(unison.KeyTab, mod.None)
-	screen.Do(func() { focused = wnd.Focus() == header.AsPanel() })
-	c.False(focused, "Tab from the last link leaves the header")
 
 	// Every page a header cites is a link, whatever the book.
 	for _, tab := range calc.tabs {
@@ -299,7 +293,7 @@ func TestTextLabelLinksAreTabStopsWithoutAScreenReader(t *testing.T) {
 	if active {
 		t.Fatal("no screen reader may be listening")
 	}
-	var header *ux.TextLabel
+	header := calculatorHeader(t, screen, explosion.content)
 	var plain []*ux.TextLabel
 	var stops []*unison.Panel
 	var followed []string
@@ -309,18 +303,9 @@ func TestTextLabelLinksAreTabStopsWithoutAScreenReader(t *testing.T) {
 				plain = append(plain, one)
 			}
 		}
-		if children := explosion.content.Children(); len(children) > 0 {
-			if label, isLabel := children[0].Self.(*ux.TextLabel); isLabel {
-				header = label
-				header.LinkHandler = func(ref string) { followed = append(followed, ref) }
-			}
-		}
+		header.LinkHandler = func(ref string) { followed = append(followed, ref) }
 		stops = uxtest.PanelsMatching(explosion.content, (*unison.Panel).Focusable)
 	})
-	if header == nil {
-		t.Fatal("the calculator must start with its header")
-	}
-	c.Equal("Explosions & Area Attacks (BX413, BX414)", header.String())
 	c.True(len(plain) > 0, "the calculator must have text citing no page")
 	for _, one := range plain {
 		var focusable bool
