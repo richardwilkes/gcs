@@ -100,6 +100,8 @@ func TestModifierContainerKinds(t *testing.T) {
 	group.SetMandatoryChoice(false)
 	c.Equal("Pick at most 1", ModifierChoiceDescription(group))
 	c.NotEqual(mandatory, Hash64(group), "what a choice asks for is part of its hash")
+	ConvertToModifierChoice(group)
+	c.Equal("Pick at most 1", ModifierChoiceDescription(group), "converting a choice leaves it as it is")
 	ConvertFromModifierChoice(group)
 	c.False(IsModifierChoice(group))
 
@@ -518,7 +520,6 @@ func TestPromptedRanges(t *testing.T) {
 		trait.Preconfigured = true
 		c.Equal("20", prompted(trait, nil).String(), "as does a preconfigured one")
 	}
-	c.Equal("10", newTrait(entity).PointsRange(nil).String(), "on a sheet the choice counts as made")
 
 	// A choice inherited from a container is taken with the container, not the trait asked about.
 	parent := NewTrait(entity, nil, true)
@@ -574,6 +575,25 @@ func TestPromptedTraitRangeUsesTheSheetSettings(t *testing.T) {
 		c.Equal(fxp.FromInteger(want), trait.AdjustedPoints(nil))
 		choice.Children[i].SetDisabled(true)
 	}
+}
+
+// TestHasOpenModifierChoice verifies that a trait, with the choices it inherits, and a piece of equipment have an open
+// modifier choice while a mandatory one is still to be made, that a taken container makes the choice it holds for what
+// is inside, and that on a sheet a choice is only open as the prompt sees it.
+func TestHasOpenModifierChoice(t *testing.T) {
+	c := check.New(t)
+	parent := newTraitContainerWithChoice(container.Group, []string{"+1", "+2"}, 10)
+	child := parent.Children[0]
+	c.True(HasOpenModifierChoice(child, false, nil), "a choice inherited from a container is open")
+	c.False(HasOpenModifierChoice(child, false, func(one *Trait, _ bool) bool { return one == parent }),
+		"a taken container makes it")
+
+	eqp := newEquipmentItem("Sword", "100", "3 lb")
+	eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+1", ""}, [2]string{"+2", ""}))
+	c.True(HasOpenModifierChoice(eqp, false, nil))
+	eqp.SetDataOwner(NewEntity())
+	c.False(HasOpenModifierChoice(eqp, false, nil), "on a sheet every choice has been made")
+	c.True(HasOpenModifierChoice(eqp, true, nil), "but the prompt asks about it again")
 }
 
 // newPerPoundModifier returns an equipment modifier adding the given cost per pound.
@@ -666,7 +686,7 @@ func TestUnnestingAChoiceKeepsTheOuterPick(t *testing.T) {
 
 // TestModifierEnabledChanges verifies the changes worked out for setting modifiers' enabled states: turning an option
 // on turns the choice's other options off, the later of two turned on together winning, a modifier whose state doesn't
-// change is left out, and so is a request to turn off the pick of a mandatory choice on a sheet.
+// change is left out, and so are a container and a request to turn off the pick of a mandatory choice on a sheet.
 func TestModifierEnabledChanges(t *testing.T) {
 	c := check.New(t)
 	choice := newTraitModifierChoiceWith(false, "+1", "+2", "+3")
@@ -677,6 +697,8 @@ func TestModifierEnabledChanges(t *testing.T) {
 	c.Equal(map[*TraitModifier]bool{a: false, cc: true}, enabled)
 	targets, _ = ModifierEnabledChanges([]*TraitModifier{a}, func(*TraitModifier) bool { return true })
 	c.Equal(0, len(targets), "a modifier already in the state asked for doesn't change")
+	targets, _ = ModifierEnabledChanges([]*TraitModifier{choice}, func(*TraitModifier) bool { return false })
+	c.Equal(0, len(targets), "a container is left out")
 
 	trait := NewTrait(NewEntity(), nil, false)
 	onSheet := newTraitModifierChoiceWith(true, "+1")

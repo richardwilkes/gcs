@@ -239,6 +239,35 @@ func TestFormatWeightRange(t *testing.T) {
 		"ends in different units must each keep their own")
 }
 
+// TestEquipmentRangeCellsApplyDisplayFormatsOnPages verifies that the extended value and weight ranges of a choice are
+// shown on a page with each end in the sheet's equipment display formats, the exact range offered as the tooltip, and
+// exactly everywhere else.
+func TestEquipmentRangeCellsApplyDisplayFormatsOnPages(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	entity.SheetSettings.EquipmentWeightFormat = fxp.NumberFormat{Places: fxp.OnePlace, PadWithZeros: true}
+	entity.SheetSettings.EquipmentValueFormat = fxp.NumberFormat{Places: fxp.TwoPlaces, PadWithZeros: true}
+	choice := newRangeTestChoice(picker.Count, criteria.EqualsNumber, fxp.One)
+	choice.SetDataOwner(entity)
+	for _, one := range []struct {
+		column  int
+		exact   string
+		forPage string
+	}{
+		{EquipmentExtendedCostColumn, "10~30", "10.00~30.00"},
+		{EquipmentExtendedWeightColumn, "1~3 lb", "1.0~3.0 lb"},
+	} {
+		var data CellData
+		choice.CellData(one.column, &data)
+		c.Equal(one.exact, data.Primary, "column %d off the page", one.column)
+		c.Equal("", data.Tooltip, "column %d off the page", one.column)
+		data = CellData{ForPage: true}
+		choice.CellData(one.column, &data)
+		c.Equal(one.forPage, data.Primary, "column %d on the page", one.column)
+		c.Equal(one.exact, data.Tooltip, "column %d on the page", one.column)
+	}
+}
+
 // TestEquipmentChoiceCountsAsItsLowerEnd verifies that a choice yet to be made counts as the least it may come to
 // wherever a single value or weight is needed, including what is written into a template's file, and so does anything
 // holding one.

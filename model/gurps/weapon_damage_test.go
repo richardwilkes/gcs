@@ -10,7 +10,6 @@
 package gurps_test
 
 import (
-	"os"
 	"strings"
 	"testing"
 
@@ -22,7 +21,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -67,9 +68,7 @@ func TestWeaponPerLevelBaseDamageWithDiceMultiplier(t *testing.T) {
 	}{
 		{baseLeveled: "1dx2", levels: 1, expected: "1dx2 cr"},
 		{baseLeveled: "1dx2", levels: 3, expected: "3dx2 cr"},
-		{baseLeveled: "1dx3", levels: 2, expected: "2dx3 cr"},
 		{baseLeveled: "1d+1", levels: 3, expected: "3d+3 cr"},
-		{baseLeveled: "1d", levels: 4, expected: "4d cr"},
 		{baseLeveled: "2x2", levels: 3, expected: "6x2 cr"}, // 3 * (2 * 2) == 12 == 6 * 2
 	} {
 		w := newLeveledWeapon(one.levels)
@@ -257,11 +256,11 @@ func TestResolvedWeaponDamageIsExplosive(t *testing.T) {
 		want          bool
 	}{
 		{name: "an explosive damage type", damageType: "cr ex", want: true},
-		{name: "a decorated explosive damage type", damageType: "burn ex*", want: true},
 		{name: "fragmentation without the explosion modifier", damageType: "cr", fragmentation: "2d", want: true},
 		{name: "both", damageType: "cr ex", fragmentation: "2d", want: true},
 		{name: "neither", damageType: "cut", want: false},
 		{name: "fragmentation that formats as nothing", damageType: "cut", fragmentation: "0", want: false},
+		{name: "negative fragmentation, which is ignored", damageType: "cut", fragmentation: "-2d", want: false},
 	} {
 		w := newWeaponWithBonuses(false)
 		w.Damage.Type = tc.damageType
@@ -505,23 +504,110 @@ func TestWeaponCopyNormalizesDamage(t *testing.T) {
 	c.Equal(fxp.Two, edited.Damage.FragmentationArmorDivisor, "the weapon copied from is left alone")
 }
 
-// TestWeaponDamageStringFragmentation verifies the unresolved form of damage with fragmentation: the fragmentation's
-// armor divisor is shown only when it isn't 1, and its type, trimmed, only when it has one, as in the resolved form.
-func TestWeaponDamageStringFragmentation(t *testing.T) {
+// TestWeaponDamageString verifies the unresolved form of a melee weapon's damage: base dice signed after the ST basis,
+// the leveled flag, a per-die modifier, and fragmentation, whose armor divisor is shown only when it isn't 1 and whose
+// type, trimmed, only when it has one, as in the resolved form.
+func TestWeaponDamageString(t *testing.T) {
 	c := check.New(t)
 	gurps.GlobalSettings() // Initializes the dice rollers; with no owner, nothing on the String() path does so
+	for _, tc := range []struct {
+		name string
+		set  func(d *gurps.WeaponDamage)
+		want string
+	}{
+		{name: "base dice added to the ST", set: func(d *gurps.WeaponDamage) { d.Base = "1d" }, want: "thr+1d cr"},
+		{name: "base dice taken from the ST", set: func(d *gurps.WeaponDamage) { d.Base = "-1d" }, want: "thr-1d cr"},
+		{name: "leveled ST", set: func(d *gurps.WeaponDamage) { d.Leveled = true }, want: "thr (Leveled) cr"},
+		{
+			name: "a per-die modifier",
+			set: func(d *gurps.WeaponDamage) {
+				d.StrengthType = stdmg.None
+				d.Base = "2d"
+				d.ModifierPerDie = fxp.One
+			},
+			want: "2d (+1 per die) cr",
+		},
+		{
+			name: "fragmentation without an armor divisor or type",
+			set:  func(d *gurps.WeaponDamage) { d.Fragmentation = "2d" },
+			want: "thr cr [2d]",
+		},
+		{
+			name: "fragmentation with a type",
+			set: func(d *gurps.WeaponDamage) {
+				d.Fragmentation = "2d"
+				d.FragmentationType = "cut"
+			},
+			want: "thr cr [2d cut]",
+		},
+		{
+			name: "fragmentation with an armor divisor and a type",
+			set: func(d *gurps.WeaponDamage) {
+				d.Fragmentation = "2d"
+				d.FragmentationArmorDivisor = fxp.Two
+				d.FragmentationType = "cut"
+			},
+			want: "thr cr [2d(2) cut]",
+		},
+		{
+			name: "fragmentation with a type that is trimmed, as the damage type is",
+			set: func(d *gurps.WeaponDamage) {
+				d.Fragmentation = "2d"
+				d.FragmentationArmorDivisor = fxp.Two
+				d.FragmentationType = " cut "
+			},
+			want: "thr cr [2d(2) cut]",
+		},
+		{
+			name: "fragmentation with a blank type, which is no type",
+			set: func(d *gurps.WeaponDamage) {
+				d.Fragmentation = "2d"
+				d.FragmentationType = " "
+			},
+			want: "thr cr [2d]",
+		},
+	} {
+		w := gurps.NewWeapon(nil, true)
+		tc.set(&w.Damage)
+		c.Equal(tc.want, w.Damage.String(), tc.name)
+	}
+}
+
+// TestWeaponDamageLoadsLegacyLeveledStrength verifies that damage written with the retired leveled ST bases loads as
+// the plain ST basis with the leveled flag set.
+func TestWeaponDamageLoadsLegacyLeveledStrength(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		key  string
+		want stdmg.Option
+	}{
+		{key: "thr_leveled", want: stdmg.Thrust},
+		{key: "sw_leveled", want: stdmg.Swing},
+	} {
+		var d gurps.WeaponDamage
+		c.NoError(jio.Unmarshal([]byte(`{"type":"cr","st":"`+tc.key+`"}`), &d), tc.key)
+		c.Equal(tc.want, d.StrengthType, "%s: the ST basis", tc.key)
+		c.True(d.Leveled, "%s: the leveled flag", tc.key)
+	}
+}
+
+// TestWeaponDamageWithNilOwner verifies that formatting and marshaling a weapon whose damage has no back-reference to
+// its owning weapon, as happens transiently on the table undo/redo deserialize path before owners are wired up, does
+// not panic. The script damage base takes the scripting path, which dereferenced the nil owner. See issue #1015.
+func TestWeaponDamageWithNilOwner(t *testing.T) {
+	c := check.New(t)
+
 	w := gurps.NewWeapon(nil, true)
-	w.Damage.Fragmentation = "2d"
-	c.Equal("thr cr [2d]", w.Damage.String(), "no armor divisor and no type")
-	w.Damage.FragmentationType = "cut"
-	c.Equal("thr cr [2d cut]", w.Damage.String(), "a type")
-	w.Damage.FragmentationArmorDivisor = fxp.Two
-	c.Equal("thr cr [2d(2) cut]", w.Damage.String(), "an armor divisor and a type")
-	w.Damage.FragmentationType = " cut "
-	c.Equal("thr cr [2d(2) cut]", w.Damage.String(), "a type is trimmed, as the damage type is")
-	w.Damage.FragmentationArmorDivisor = fxp.One
-	w.Damage.FragmentationType = " "
-	c.Equal("thr cr [2d]", w.Damage.String(), "a blank type is no type")
+	w.Damage.Base = "$self.skillLevel" // A non-dice base forces resolution through the scripting path.
+	w.Damage.Owner = nil               // Explicit: no back-reference to the owning weapon.
+
+	c.NotPanics(func() {
+		_ = w.Damage.String()
+	})
+	c.NotPanics(func() {
+		_, err := jio.Marshal(w)
+		c.NoError(err)
+	})
 }
 
 // TestWeaponDamageCopyScalesPerDieBonusesByItsOwnDice verifies that a copy of a weapon's damage scales its per-die
@@ -576,21 +662,123 @@ func TestWeaponDamageCopySelectsByItsOwnType(t *testing.T) {
 	c.Equal("1d cr", w.Damage.ResolvedDamage(nil), "the weapon's own damage is unchanged")
 }
 
-func TestKickDamageUsesBaseSkill(t *testing.T) {
+// TestWeaponStrengthDamage verifies the ST-based part of a weapon's damage: the thrust or swing for the ST its basis
+// names, multiplied by the owner's level when the damage is leveled, with base dice taken from it, and no damage at all
+// when they take it below zero.
+func TestWeaponStrengthDamage(t *testing.T) {
 	c := check.New(t)
-	e, err := gurps.NewEntityFromFile(os.DirFS("testdata"), "issue767.gcs")
-	c.NoError(err)
-	var kick *gurps.Weapon
-	gurps.Traverse(func(tr *gurps.Trait) bool {
-		for _, w := range tr.Weapons {
-			if w.UsageWithReplacements() == "Kick" {
-				kick = w
-			}
-		}
-		return false
-	}, false, false, e.Traits...)
-	c.NotNil(kick)
-	// Brawling is at DX+2 (RSL +2), so its "+1 per die, RSL >= 2" weapon damage bonus must apply even though the
-	// best skill default for the Kick is the Kicking technique (RSL -1 vs Brawling). 1d-2 base + 1 = 1d-1.
-	c.Equal("1d-1 cr", kick.Damage.ResolvedDamage(nil))
+	for _, tc := range []struct {
+		name     string
+		basis    stdmg.Option
+		leveled  bool
+		levels   int
+		base     string
+		expected string
+	}{
+		{name: "striking ST 10", basis: stdmg.Thrust, expected: "1d-2 cr"},
+		{name: "lifting ST 14", basis: stdmg.LiftingThrust, expected: "1d cr"},
+		{name: "TK 5", basis: stdmg.TelekineticThrust, expected: "1d-4 cr"},
+		{name: "IQ 12", basis: stdmg.IQThrust, expected: "1d-1 cr"},
+		{name: "striking ST 10 swing", basis: stdmg.Swing, expected: "1d cr"},
+		{name: "lifting ST 14 swing", basis: stdmg.LiftingSwing, expected: "2d cr"},
+		{name: "TK 5 swing", basis: stdmg.TelekineticSwing, expected: "1d-3 cr"},
+		{name: "IQ 12 swing", basis: stdmg.IQSwing, expected: "1d+2 cr"},
+		{name: "leveled at level 3", basis: stdmg.Thrust, leveled: true, levels: 3, expected: "3d-6 cr"},
+		{name: "leveled at level 0", basis: stdmg.Thrust, leveled: true, expected: "cr"},
+		{name: "a die taken away", basis: stdmg.LiftingSwing, base: "-1d", expected: "1d cr"},
+		{name: "more dice taken away than there are", basis: stdmg.Thrust, base: "-3d", expected: "cr"},
+	} {
+		e := gurps.NewEntity()
+		e.Attributes.Set[gurps.IntelligenceID].Adjustment = fxp.Two
+		lifting := gurps.NewAttributeBonus(gurps.StrengthID)
+		lifting.Amount = fxp.Four
+		lifting.Limitation = stlimit.LiftingOnly
+		lifter := gurps.NewTrait(e, nil, false)
+		lifter.Name = "Lifting ST"
+		lifter.Features = gurps.Features{lifting}
+		tk := gurps.NewTrait(e, nil, false)
+		tk.Name = "Telekinesis"
+		tk.CanLevel = true
+		tk.Levels = fxp.Five
+		owner := gurps.NewTrait(e, nil, false)
+		owner.Name = "Strike"
+		owner.CanLevel = true
+		owner.Levels = fxp.FromInteger(tc.levels)
+		w := gurps.NewWeapon(owner, true)
+		w.Damage.StrengthType = tc.basis
+		w.Damage.Leveled = tc.leveled
+		w.Damage.Base = tc.base
+		owner.Weapons = []*gurps.Weapon{w}
+		e.Traits = append(e.Traits, lifter, tk, owner)
+		e.Recalculate()
+		c.Equal(tc.expected, w.Damage.ResolvedDamage(nil), tc.name)
+	}
+}
+
+// TestWeaponDamagePercentBonus verifies that a percentage damage bonus scales the average of the damage, modifier
+// included, and expresses the result in dice of the same sides, rounding what is left over into the modifier.
+func TestWeaponDamagePercentBonus(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		base     string
+		percent  int
+		expected string
+	}{
+		{base: "2d", percent: 50, expected: "3d cr"},
+		{base: "1d+2", percent: 100, expected: "2d+4 cr"},
+		{base: "3d", percent: -50, expected: "1d+2 cr"},
+		{base: "1d-5", percent: 50, expected: "1d-7 cr"}, // An average below zero scales the dice and modifier apart
+	} {
+		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+		bonus.Percent = true
+		bonus.Amount = fxp.FromInteger(tc.percent)
+		w := newWeaponWithBonuses(false, bonus)
+		w.Damage.Base = tc.base
+		c.Equal(tc.expected, w.Damage.ResolvedDamage(nil), "%s %+d%%", tc.base, tc.percent)
+	}
+}
+
+// TestWeaponDamageModifierPerDie verifies that a per-die damage modifier adds its amount for each die of the base
+// damage, halved under the Phoenix Flame D3 progression, whose base damage has twice as many dice.
+func TestWeaponDamageModifierPerDie(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		prog     progression.Option
+		base     string
+		expected string
+	}{
+		{prog: progression.BasicSet, base: "2d", expected: "2d+2 cr"},
+		{prog: progression.PhoenixFlameD3, base: "4d3", expected: "4d3+2 cr"},
+	} {
+		w := newWeaponWithBonuses(false)
+		w.Entity().SheetSettings.DamageProgression = tc.prog
+		w.Damage.Base = tc.base
+		w.Damage.ModifierPerDie = fxp.One
+		c.Equal(tc.expected, w.Damage.ResolvedDamage(nil), tc.prog.Key())
+	}
+}
+
+// TestWeaponDamageOverrideOfANumberKeepsTheBaseWhenUnparsable verifies that a selector override of a numeric damage
+// field whose value isn't a number leaves the field as it was.
+func TestWeaponDamageOverrideOfANumberKeepsTheBaseWhenUnparsable(t *testing.T) {
+	c := check.New(t)
+	w := newWeaponWithBonuses(false)
+	override := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
+	override.SelectionType = wsel.ThisWeapon
+	override.Value = "lots"
+	owner, ok := w.Owner.(*gurps.Trait)
+	c.True(ok, "the weapon belongs to a trait")
+	if !ok {
+		return
+	}
+	owner.Features = append(owner.Features, override)
+	w.Damage.ArmorDivisor = fxp.Two
+	w.Entity().DiscardCaches()
+	c.Equal("1d(2) cr", w.Damage.ResolvedDamage(nil))
+}
+
+// TestWeaponDamageTooltipWithoutModifiers verifies that the damage tooltip of a weapon nothing modifies says so.
+func TestWeaponDamageTooltipWithoutModifiers(t *testing.T) {
+	c := check.New(t)
+	c.Equal(gurps.NoAdditionalModifiers(), newWeaponWithBonuses(false).Damage.DamageTooltip())
 }

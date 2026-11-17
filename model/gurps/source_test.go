@@ -59,70 +59,6 @@ func TestSourcePathSeparatorNormalization(t *testing.T) {
 	c.NoError(err, "source should marshal")
 	c.False(strings.Contains(string(data), `\`), "marshaled output must not contain backslashes")
 	c.True(strings.Contains(string(data), "Basic Set/Basic Set Traits.adq"), "marshaled output should use forward slashes")
-
-	// Round-tripping the marshaled output preserves the normalized path.
-	var roundTripped SourcedID
-	c.NoError(jio.Unmarshal(data, &roundTripped), "marshaled source should load")
-	c.Equal("Basic Set/Basic Set Traits.adq", roundTripped.Source.Path, "round-tripped path should remain normalized")
-}
-
-// TestForEachSourcedNodeVisitsEveryNodeOnce verifies that the walk shared by source syncing and hashing reaches every
-// node a provider holds exactly once: nested children, the modifiers of traits and equipment, disabled nodes, and both
-// equipment lists, while the lists a provider doesn't have (a loot sheet's traits, skills and spells) contribute
-// nothing.
-func TestForEachSourcedNodeVisitsEveryNodeOnce(t *testing.T) {
-	c := check.New(t)
-	visits := func(provider ListProvider) map[sourcedNode]int {
-		m := make(map[sourcedNode]int)
-		forEachSourcedNode(provider, func(node sourcedNode) { m[node]++ })
-		return m
-	}
-
-	tmpl := NewTemplate()
-	traitContainer := NewTrait(tmpl, nil, true)
-	trait := NewTrait(tmpl, traitContainer, false)
-	trait.SetDisabled(true)
-	traitMod := NewTraitModifier(tmpl, nil, false)
-	trait.Modifiers = append(trait.Modifiers, traitMod)
-	traitContainer.Children = append(traitContainer.Children, trait)
-	tmpl.Traits = append(tmpl.Traits, traitContainer)
-	skill := NewSkill(tmpl, nil, false)
-	tmpl.Skills = append(tmpl.Skills, skill)
-	spell := NewSpell(tmpl, nil, false)
-	tmpl.Spells = append(tmpl.Spells, spell)
-	eqp := NewEquipment(tmpl, nil, false)
-	eqpMod := NewEquipmentModifier(tmpl, nil, false)
-	eqp.Modifiers = append(eqp.Modifiers, eqpMod)
-	tmpl.Equipment = append(tmpl.Equipment, eqp)
-	note := NewNote(tmpl, nil, false)
-	tmpl.Notes = append(tmpl.Notes, note)
-	got := visits(tmpl)
-	c.Equal(8, len(got), "every node of the template is visited")
-	for _, node := range []sourcedNode{traitContainer, trait, traitMod, skill, spell, eqp, eqpMod, note} {
-		c.Equal(1, got[node], "each node is visited exactly once")
-	}
-
-	e := NewEntity()
-	before := len(visits(e))
-	carried := NewEquipment(e, nil, false)
-	e.CarriedEquipment = append(e.CarriedEquipment, carried)
-	other := NewEquipment(e, nil, false)
-	e.OtherEquipment = append(e.OtherEquipment, other)
-	got = visits(e)
-	c.Equal(before+2, len(got), "both equipment lists of an entity are visited")
-	c.Equal(1, got[carried], "carried equipment is visited once")
-	c.Equal(1, got[other], "other equipment is visited once")
-
-	loot := NewLoot()
-	lootEqp := NewEquipment(loot, nil, false)
-	lootMod := NewEquipmentModifier(loot, nil, false)
-	lootEqp.Modifiers = append(lootEqp.Modifiers, lootMod)
-	loot.Equipment = append(loot.Equipment, lootEqp)
-	lootNote := NewNote(loot, nil, false)
-	loot.Notes = append(loot.Notes, lootNote)
-	got = visits(loot)
-	c.Equal(3, len(got), "a loot sheet's equipment, its modifier and its note are visited and nothing else")
-	c.Equal(1, got[lootMod], "the loot equipment's modifier is visited once")
 }
 
 // unmatchedOwner is a data owner without a source matcher, as an equipment list file is.
@@ -397,6 +333,55 @@ func TestTemplateSourcesMatch(t *testing.T) {
 	c.Equal(srcstate.Mismatched, state)
 	localSkill.SyncWithSource()
 	c.Equal("Climbing", localSkill.Name, "a node syncs with the template's copy")
+}
+
+// TestListFileSourcesMatch verifies that the nodes of each kind of library list file, the modifiers of its traits and
+// equipment included, are found there by the nodes copied from it.
+func TestListFileSourcesMatch(t *testing.T) {
+	c := check.New(t)
+	exts := []string{TraitsExt, TraitModifiersExt, SkillsExt, SpellsExt, EquipmentExt, EquipmentModifiersExt, NotesExt}
+	registerTestFileTypes(t, exts...)
+	root := useTestLibrary(t, "Test Library")
+	libFile := func(ext string) LibraryFile { return LibraryFile{Library: "Test Library", Path: "Test" + ext} }
+	p := func(ext string) string { return filepath.Join(root, "Test"+ext) }
+
+	trait := NewTrait(nil, nil, false)
+	trait.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	c.NoError(SaveTraits([]*Trait{trait}, p(TraitsExt)))
+	traitMod := NewTraitModifier(nil, nil, false)
+	c.NoError(SaveTraitModifiers([]*TraitModifier{traitMod}, p(TraitModifiersExt)))
+	skill := NewSkill(nil, nil, false)
+	c.NoError(SaveSkills([]*Skill{skill}, p(SkillsExt)))
+	spell := NewSpell(nil, nil, false)
+	c.NoError(SaveSpells([]*Spell{spell}, p(SpellsExt)))
+	eqp := NewEquipment(nil, nil, false)
+	eqp.Modifiers = []*EquipmentModifier{NewEquipmentModifier(nil, nil, false)}
+	c.NoError(SaveEquipment([]*Equipment{eqp}, p(EquipmentExt)))
+	eqpMod := NewEquipmentModifier(nil, nil, false)
+	c.NoError(SaveEquipmentModifiers([]*EquipmentModifier{eqpMod}, p(EquipmentModifiersExt)))
+	note := NewNote(nil, nil, false)
+	c.NoError(SaveNotes([]*Note{note}, p(NotesExt)))
+
+	var sm SrcMatcher
+	for _, ext := range exts {
+		sm.prepareHashesFor(libFile(ext))
+	}
+	localTrait := trait.Clone(libFile(TraitsExt), nil, nil, Reference)
+	localEqp := eqp.Clone(libFile(EquipmentExt), nil, nil, Reference)
+	for _, local := range []SrcProvider{
+		localTrait,
+		localTrait.Modifiers[0],
+		traitMod.Clone(libFile(TraitModifiersExt), nil, nil, Reference),
+		skill.Clone(libFile(SkillsExt), nil, nil, Reference),
+		spell.Clone(libFile(SpellsExt), nil, nil, Reference),
+		localEqp,
+		localEqp.Modifiers[0],
+		eqpMod.Clone(libFile(EquipmentModifiersExt), nil, nil, Reference),
+		note.Clone(libFile(NotesExt), nil, nil, Reference),
+	} {
+		state, _ := sm.Match(local)
+		c.Equal(srcstate.Matched, state, "a %T from %s", local, local.GetSource().Path)
+	}
 }
 
 // TestSharedMatcherHoldsOnlyTheFilesLastUsed verifies that the shared matcher holds no more than maxUnownedSrcFiles

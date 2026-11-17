@@ -65,12 +65,15 @@ func TestScriptDiceFromIsArchitectureIndependent(t *testing.T) {
 		{expr: "dice.from(-1e300, 6, 0, 1)", want: Roller.Format(diceOf(0, 6, 0, 1))},
 		{expr: "dice.from(2, 6, -1e300, 1)", want: Roller.Format(diceOf(2, 6, -cfg.MaxModifier, 1))},
 
-		// Ordinary values, and the dice(sides) shorthand, are untouched.
+		// Ordinary values, and the dice(sides) shorthand, are untouched, and no sides at all yields no dice.
 		{expr: "dice.from(3, 6, 2, 1)", want: Roller.Format(diceOf(3, 6, 2, 1))},
 		{expr: "dice.from(6)", want: Roller.Format(diceOf(1, 6, 0, 1))},
 		{expr: "dice.from(3, 6)", want: Roller.Format(diceOf(3, 6, 0, 1))},
+		{expr: "dice.from()", want: ""},
 	} {
-		v, err := runScript(0, tc.expr)
+		var v string
+		var err error
+		c.NotPanics(func() { v, err = runScript(0, tc.expr) }, "expr %q", tc.expr)
 		c.NoError(err, "expr %q", tc.expr)
 		c.Equal(tc.want, v, "expr %q", tc.expr)
 	}

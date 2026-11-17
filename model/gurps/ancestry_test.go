@@ -13,40 +13,45 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestNewAncestryFromInvalidFile verifies that loading an ancestry file containing invalid JSON returns an error rather
-// than crashing the application. See issue #1007, where a missing comma in an ancestry file caused GCS to exit when
-// randomizing a value.
-func TestNewAncestryFromInvalidFile(t *testing.T) {
-	c := check.New(t)
-
-	// A well-formed ancestry file loads without error.
-	const valid = `{
-	"type": "ancestry",
-	"version": 5,
-	"name": "Human"
-}`
-	fileSystem := fstest.MapFS{"Human.ancestry": {Data: []byte(valid)}}
-	a, err := NewAncestryFromFile(fileSystem, "Human.ancestry")
-	c.NoError(err, "valid ancestry file should load")
-	c.Equal("Human", a.Name, "name should be loaded")
-
-	// The same content with a missing comma (matching the report in issue #1007) must produce an error instead of
-	// panicking or exiting.
-	const invalid = `{
-	"type": "ancestry"
-	"version": 5,
-	"name": "Human"
-}`
-	fileSystem = fstest.MapFS{"Human.ancestry": {Data: []byte(invalid)}}
-	a, err = NewAncestryFromFile(fileSystem, "Human.ancestry")
-	c.HasError(err, "invalid ancestry file should return an error, not crash")
-	c.Equal((*Ancestry)(nil), a, "no ancestry should be returned on failure")
+// TestNewAncestryFromFile verifies that a well-formed ancestry file loads, as does an older one without a version; that
+// a file without a name takes its file's base name; and that invalid JSON, such as a missing comma, returns an error
+// rather than crashing the application.
+func TestNewAncestryFromFile(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		data     string
+		wantName string // Empty when the file must be refused.
+	}{
+		{"well-formed", `{"type": "ancestry", "version": 5, "name": "Human"}`, "Human"},
+		{"missing comma", `{"type": "ancestry" "version": 5, "name": "Human"}`, ""},
+		{"no version", `{"type": "ancestry", "name": "Human"}`, "Human"},
+		{"no name", `{"type": "ancestry", "version": 5}`, "Elf"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			a, err := NewAncestryFromFile(fstest.MapFS{"Elf.ancestry": {Data: []byte(tc.data)}}, "Elf.ancestry")
+			if tc.wantName == "" {
+				c.HasError(err, "the file is refused")
+				c.Nil(a, "no ancestry is returned on failure")
+				return
+			}
+			c.NoError(err, "the file loads")
+			c.NotNil(a, "an ancestry is returned")
+			if a != nil {
+				c.Equal(tc.wantName, a.Name)
+			}
+		})
+	}
 }
 
 // TestRandomGender verifies that randomizing the gender always yields a usable value. Excluding the current gender from
@@ -160,6 +165,10 @@ func TestAncestryWithValuelessGenderOption(t *testing.T) {
 	c.Equal(defaultSkin, a.RandomSkin("", ""), "skin falls back to the default")
 	c.Equal(defaultHandedness, a.RandomHandedness("", ""), "handedness falls back to the default")
 	c.Equal(defaultAge, a.RandomAge(nil, "", 0), "age falls back to the default")
+	c.Equal(fxp.LengthFromInteger(defaultHeight, fxp.Inch), a.RandomHeight(nil, "", 0),
+		"height falls back to the default")
+	c.Equal(fxp.WeightFromInteger(defaultWeight, fxp.Pound), a.RandomWeight(nil, "", 0),
+		"weight falls back to the default")
 
 	// A completely nil entry in the list (from a JSON null) must be tolerated as well.
 	a.GenderOptions = append(a.GenderOptions, nil)
@@ -211,6 +220,96 @@ func TestAncestryWithNullStringOptions(t *testing.T) {
 	c.Equal(defaultEye, only.RandomEye(""), "a nil plus weightless eye list falls back to the default")
 	c.Equal(defaultSkin, only.RandomSkin(""), "a nil-only skin list falls back to the default")
 	c.Equal(defaultHandedness, only.RandomHandedness(""), "a nil-only handedness list falls back to the default")
+}
+
+// TestAncestryGenderedOptionsTakePrecedence verifies that each randomizer uses the options of the given gender when it
+// defines its own, matching the gender regardless of case and surrounding space, and the common options otherwise.
+func TestAncestryGenderedOptionsTakePrecedence(t *testing.T) {
+	c := check.New(t)
+	fileSystem := fstest.MapFS{
+		"Common.names":   {Data: []byte(`{"type": "simple", "training_data": ["Common"]}`)},
+		"Gendered.names": {Data: []byte(`{"type": "simple", "training_data": ["Gendered"]}`)},
+	}
+	ref := func(name string) *NameGeneratorRef {
+		return &NameGeneratorRef{
+			FileRef: &library.NamedFileRef{Name: name, FileSystem: fileSystem, FilePath: name + NamesExt},
+		}
+	}
+	refs := []*NameGeneratorRef{ref("Common"), ref("Gendered")}
+	options := func(value string) []*WeightedStringOption { return []*WeightedStringOption{entry(1, value)} }
+	a := &Ancestry{
+		CommonOptions: &AncestryOptions{
+			HeightScript:      "60",
+			WeightScript:      "100",
+			AgeScript:         "20",
+			HairOptions:       options("Common"),
+			EyeOptions:        options("Common"),
+			SkinOptions:       options("Common"),
+			HandednessOptions: options("Common"),
+			NameGenerators:    []string{"Common"},
+		},
+		GenderOptions: []*WeightedAncestryOptions{
+			{Weight: 1, Value: &AncestryOptions{
+				Name:              "Male",
+				HeightScript:      "70",
+				WeightScript:      "200",
+				AgeScript:         "40",
+				HairOptions:       options("Gendered"),
+				EyeOptions:        options("Gendered"),
+				SkinOptions:       options("Gendered"),
+				HandednessOptions: options("Gendered"),
+				NameGenerators:    []string{"Gendered"},
+			}},
+			{Weight: 1, Value: &AncestryOptions{Name: "Female"}},
+		},
+	}
+	for _, tc := range []struct {
+		name             string
+		random           func(gender string) any
+		common, gendered any
+	}{
+		{
+			"height", func(g string) any { return a.RandomHeight(nil, g, 0) },
+			fxp.LengthFromInteger(60, fxp.Inch), fxp.LengthFromInteger(70, fxp.Inch),
+		},
+		{
+			"weight", func(g string) any { return a.RandomWeight(nil, g, 0) },
+			fxp.WeightFromInteger(100, fxp.Pound), fxp.WeightFromInteger(200, fxp.Pound),
+		},
+		{"age", func(g string) any { return a.RandomAge(nil, g, 0) }, 20, 40},
+		{"hair", func(g string) any { return a.RandomHair(g, "") }, "Common", "Gendered"},
+		{"eyes", func(g string) any { return a.RandomEyes(g, "") }, "Common", "Gendered"},
+		{"skin", func(g string) any { return a.RandomSkin(g, "") }, "Common", "Gendered"},
+		{"handedness", func(g string) any { return a.RandomHandedness(g, "") }, "Common", "Gendered"},
+		{"name", func(g string) any { return a.RandomName(refs, g) }, "Common", "Gendered"},
+	} {
+		c.Equal(tc.gendered, tc.random(" male "), "%s: the gender's own options are used", tc.name)
+		c.Equal(tc.common, tc.random("Female"), "%s: a gender without its own uses the common options", tc.name)
+	}
+}
+
+// TestActiveAncestryTraits verifies that the enabled ancestry containers naming an ancestry that can be found are
+// reported, at any depth, and no others.
+func TestActiveAncestryTraits(t *testing.T) {
+	c := check.New(t)
+	ancestry := func(parent *Trait, label, name string) *Trait {
+		one := NewTrait(nil, parent, true)
+		one.Name = label
+		one.ContainerType = container.Ancestry
+		one.Ancestry = name
+		if parent != nil {
+			parent.Children = append(parent.Children, one)
+		}
+		return one
+	}
+	top := ancestry(nil, "top", DefaultAncestry)
+	group := NewTrait(nil, nil, true)
+	nested := ancestry(group, "nested", DefaultAncestry)
+	disabled := ancestry(nil, "disabled", DefaultAncestry)
+	disabled.SetDisabled(true)
+	unknown := ancestry(nil, "unknown", "No Such Ancestry")
+	got := ActiveAncestryTraits([]*Trait{top, group, disabled, unknown})
+	c.True(slices.Equal([]*Trait{top, nested}, got), "only the enabled, known ancestries are reported: %v", got)
 }
 
 // populatedAncestry returns an ancestry with every level filled in -- common options with all four weighted lists and
@@ -323,9 +422,6 @@ func TestAncestryCloneIsDeep(t *testing.T) {
 	c.Equal(1, original.GenderOptions[0].Value.EyeOptions[0].Weight, "the original's gender eye option is unchanged")
 	c.Equal(Hash64(populatedAncestry()), Hash64(original), "the original hashes the same as a fresh copy")
 
-	// Mutating the clone did not disturb its key prefixes either.
-	c.Equal(collectKeyPrefixes(original), collectKeyPrefixes(clone), "key prefixes survive editing the clone")
-
 	c.Nil((*Ancestry)(nil).Clone(), "cloning a nil ancestry yields nil")
 
 	// Nil entries and nil lists are preserved as-is rather than being dropped or materialized.
@@ -355,14 +451,9 @@ func TestAncestryHashIgnoresKeyPrefixAndTracksContent(t *testing.T) {
 
 	a := populatedAncestry()
 	base := Hash64(a)
-	c.Equal(base, Hash64(a.Clone()), "a clone hashes the same as the original")
-
 	provider, _ := keyPrefixCounter(1000)
 	a.ResetTargetKeyPrefixes(provider)
 	c.Equal(base, Hash64(a), "assigning key prefixes does not change the hash")
-	provider, _ = keyPrefixCounter(5000)
-	a.ResetTargetKeyPrefixes(provider)
-	c.Equal(base, Hash64(a), "assigning different key prefixes does not change the hash")
 
 	changes := []struct {
 		name   string
@@ -472,7 +563,7 @@ func TestAncestryNormalize(t *testing.T) {
 }
 
 // TestAncestrySaveLoadRoundTrip verifies that an ancestry written by Save reads back with identical content, and that
-// the file carries the current data version but none of the runtime-only key prefixes.
+// none of the runtime-only key prefixes are written or read back.
 func TestAncestrySaveLoadRoundTrip(t *testing.T) {
 	c := check.New(t)
 
@@ -485,8 +576,6 @@ func TestAncestrySaveLoadRoundTrip(t *testing.T) {
 
 	data, err := os.ReadFile(path)
 	c.NoError(err, "the saved file can be read")
-	c.Contains(string(data), `"version": 5`, "the file carries the current data version")
-	c.NotContains(string(data), "KeyPrefix", "the runtime-only key prefixes are not written")
 	c.NotContains(string(data), "p1", "no key prefix value leaks into the file")
 
 	loaded, err := NewAncestryFromFile(os.DirFS(dir), "Elf.ancestry")

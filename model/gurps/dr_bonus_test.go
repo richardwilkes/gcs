@@ -93,6 +93,26 @@ func TestThisArmorDRBonusResolvesSpecialization(t *testing.T) {
 	c.Equal(1, drMap["cold"], "torso: the 'this armor' copy resolves its marker through the equipment")
 }
 
+// TestDRBonusLoadNormalizesLocations verifies that loading a DR bonus trims its locations, reduces a list naming "all"
+// in any case to just "all", and adds the single location older data held under "location".
+func TestDRBonusLoadNormalizesLocations(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		data string
+		want []string
+	}{
+		{`{"type":"dr_bonus","locations":[" skull ","arm"]}`, []string{"skull", "arm"}},
+		{`{"type":"dr_bonus","locations":["skull","ALL","arm"]}`, []string{AllID}},
+		{`{"type":"dr_bonus","location":"arm"}`, []string{"arm"}},
+	} {
+		bonus, ok := loadSingleFeature(c, "["+one.data+"]").(*DRBonus)
+		c.True(ok, "%s: loads as a DR bonus", one.data)
+		if ok {
+			c.Equal(one.want, bonus.Locations, one.data)
+		}
+	}
+}
+
 // newTestEntityWithDRTrait creates an entity holding a single non-container trait that carries the given DR bonus and
 // nameable replacements, then recalculates so the bonus is collected and its owner set.
 func newTestEntityWithDRTrait(bonus *DRBonus, replacements map[string]string) (*Entity, *Trait) {

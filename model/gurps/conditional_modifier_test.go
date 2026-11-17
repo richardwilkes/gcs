@@ -27,8 +27,8 @@ func addReaction(e *Entity, name, situation, group string, amt fxp.Int) *Trait {
 	return addTraitWithFeatures(e, name, bonus)
 }
 
-// addGroupedConditionalModifier adds a trait carrying one conditional modifier bonus with the given situation, group and
-// amount to the entity.
+// addGroupedConditionalModifier adds a trait carrying one conditional modifier bonus with the given situation, group
+// and amount to the entity.
 func addGroupedConditionalModifier(e *Entity, name, situation, group string, amt fxp.Int) *Trait {
 	bonus := NewConditionalModifierBonus()
 	bonus.Situation = situation
@@ -114,9 +114,10 @@ func TestConditionalModifierGroupsProduceContainerRows(t *testing.T) {
 	}
 }
 
-// TestConditionalModifierGroupCellDataLeavesTheValueColumnBlank verifies that a group container shows only its name:
-// the modifier column is empty, with no tooltip, since the members apply in different situations and don't sum.
-func TestConditionalModifierGroupCellDataLeavesTheValueColumnBlank(t *testing.T) {
+// TestConditionalModifierCellData verifies that a group container shows only its name: the modifier column is empty,
+// with no tooltip, since the members apply in different situations and don't sum. A modifier's column shows its total,
+// with each source on its own line of the tooltip.
+func TestConditionalModifierCellData(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	group := NewConditionalModifierGroup(e.ID, BlockConditionalModifiersKey, "Combat")
@@ -129,7 +130,6 @@ func TestConditionalModifierGroupCellDataLeavesTheValueColumnBlank(t *testing.T)
 	c.Equal("Combat", data.Primary, "the description column shows the group name")
 	c.Equal(fxp.Int(0), group.Total(), "a group has no total of its own")
 	c.Equal("Combat", group.String(), "a group's string form is just its name")
-	c.Equal("Conditional Modifier Container", group.Kind())
 
 	leaf := NewConditionalModifier("from trait X", "from everyone", fxp.Two)
 	data = CellData{}
@@ -137,7 +137,11 @@ func TestConditionalModifierGroupCellDataLeavesTheValueColumnBlank(t *testing.T)
 	c.Equal("+2", data.Primary, "a modifier still shows its total")
 	c.Equal("+2 from trait X", data.Tooltip, "a modifier still lists its sources")
 	c.Equal("+2 from everyone", leaf.String())
-	c.Equal("Conditional Modifier", leaf.Kind())
+
+	leaf.Add("from trait Y", -fxp.One)
+	data = CellData{}
+	leaf.CellData(ConditionalModifierValueColumn, &data)
+	c.Equal("+2 from trait X\n-1 from trait Y", data.Tooltip, "each source is listed on its own line")
 }
 
 // TestConditionalModifierOrderingHonorsGroupContainersOnSort verifies the two orderings: with the general setting on,

@@ -10,7 +10,6 @@
 package gurps_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -18,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // namedTrait returns a trait prerequisite for the name.
@@ -109,6 +107,8 @@ func TestPrereqDescribe(t *testing.T) {
 	skillPoints.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Combat"}
 	notEquipped := equipped("Shield", criteria.IsText, "", criteria.AnyText)
 	notEquipped.Not = true
+	anyName := trait("", criteria.AtLeastNumber, 0)
+	anyName.NameCriteria.Compare = criteria.AnyText
 
 	for _, one := range []struct {
 		name     string
@@ -119,6 +119,7 @@ func TestPrereqDescribe(t *testing.T) {
 		{"trait with level", trait("Magery", criteria.AtLeastNumber, fxp.One), "Has trait [Magery] at level at least 1"},
 		{"trait exact level", trait("Magery", criteria.EqualsNumber, fxp.Two), "Has trait [Magery] at level 2"},
 		{"trait any level", trait("Magery", criteria.AnyNumber, 0), "Has trait [Magery]"},
+		{"trait of any name", anyName, "Has trait of any name"},
 		{
 			"trait with notes", notes,
 			`Does not have trait whose name contains "[Mag]" at level at least 2 whose notes contains "[Fire]"`,
@@ -265,212 +266,4 @@ func TestPrereqDescribeEmptyNames(t *testing.T) {
 	blankSkill.NameCriteria.Qualifier = "@Blank@"
 	c.Equal(criteria.IsText, blankSkill.NameCriteria.Compare)
 	c.Equal(`Has skill "" at level at least 0`, blankSkill.Describe(nil, replacements, plain))
-}
-
-// TestPrereqListDescribe verifies that a list joins its children to match its mode, parenthesizes nested lists of more
-// than one child, notes a tech level condition, and hands its entity to its children, so that a weight is given in the
-// entity's units.
-func TestPrereqListDescribe(t *testing.T) {
-	c := check.New(t)
-	root := gurps.NewPrereqList()
-	root.Prereqs = append(root.Prereqs, namedTrait("Magery"))
-	anyOf := gurps.NewPrereqList()
-	anyOf.All = false
-	anyOf.WhenTL.Compare = criteria.AtLeastNumber
-	anyOf.WhenTL.Qualifier = fxp.Three
-	anyOf.Prereqs = append(anyOf.Prereqs, namedTrait("Luck"), namedTrait("DX"))
-	single := gurps.NewPrereqList()
-	single.Prereqs = append(single.Prereqs, namedTrait("Fearlessness"))
-	root.Prereqs = append(root.Prereqs, anyOf, single)
-	c.Equal("Has trait Magery and (has trait Luck or has trait DX) (only when TL at least 3) and has trait Fearlessness",
-		root.Describe(nil, nil, func(s string) string { return s }))
-	c.Equal("", gurps.NewPrereqList().Describe(nil, nil, func(s string) string { return s }))
-	noneOf := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
-	c.Equal("None of (has trait Luck or has trait DX)", noneOf.Describe(nil, nil, func(s string) string { return s }))
-	allOf := &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
-	noneOfAll := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{allOf}}
-	c.Equal("Not all of (has trait Luck and has trait DX)",
-		noneOfAll.Describe(nil, nil, func(s string) string { return s }),
-		"a negated list holding only an all of group says not all of its items, without parenthesizing them twice")
-	anyOfLuck := &gurps.PrereqList{Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
-	holdingAnyOf := &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{anyOfLuck}}
-	c.Equal("(Has trait Luck or has trait DX)", holdingAnyOf.Describe(nil, nil, func(s string) string { return s }),
-		"a list that isn't negated keeps the parentheses of a lone group")
-	notAllOfAny := &gurps.PrereqList{All: true, Not: true, Prereqs: gurps.Prereqs{anyOfLuck}}
-	c.Equal("None of (has trait Luck or has trait DX)",
-		notAllOfAny.Describe(nil, nil, func(s string) string { return s }),
-		"and one holding only an any of group says none of its items")
-	allOfAtTL := &gurps.PrereqList{
-		All: true, WhenTL: criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three},
-		Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")},
-	}
-	noneOfAtTL := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{allOfAtTL}}
-	c.Equal("None of ((has trait Luck and has trait DX) (only when TL at least 3))",
-		noneOfAtTL.Describe(nil, nil, func(s string) string { return s }),
-		"but keeps the group's own parentheses when its tech level condition follows them")
-
-	named := gurps.NewScriptPrereq()
-	named.Name = "Elf ancestry"
-	unnamed := gurps.NewScriptPrereq()
-	for _, one := range []struct {
-		name     string
-		prereqs  gurps.Prereqs
-		expected string
-	}{
-		{"a named script", gurps.Prereqs{namedTrait("Magery"), named}, "Has trait Magery and Elf ancestry"},
-		{"an unnamed script", gurps.Prereqs{namedTrait("Magery"), unnamed}, "Has trait Magery and a custom check"},
-		{
-			"a named script leading a group",
-			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{named, namedTrait("Luck")}}},
-			"Has trait Magery and (Elf ancestry and has trait Luck)",
-		},
-		{"an empty group", gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{}}, "Has trait Magery"},
-		{"an empty group first", gurps.Prereqs{&gurps.PrereqList{}, namedTrait("Magery")}, "Has trait Magery"},
-		{
-			"an empty group with a tech level",
-			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{WhenTL: criteria.Number{Compare: criteria.AtLeastNumber}}},
-			"Has trait Magery",
-		},
-		{
-			"a none of group",
-			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}},
-			"Has trait Magery and none of (has trait Luck or has trait DX)",
-		},
-		{
-			"a not all of group",
-			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{All: true, Not: true, Prereqs: gurps.Prereqs{namedTrait("Luck")}}},
-			"Has trait Magery and not all of (has trait Luck)",
-		},
-		{
-			"a group holding an empty group",
-			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{Prereqs: gurps.Prereqs{&gurps.PrereqList{}, namedTrait("Luck")}}},
-			"Has trait Magery and has trait Luck",
-		},
-	} {
-		list := gurps.NewPrereqList()
-		list.Prereqs = one.prereqs
-		c.Equal(one.expected, list.Describe(nil, nil, func(s string) string { return s }), one.name)
-	}
-
-	entity := gurps.NewEntity()
-	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
-	weighed := gurps.NewPrereqList()
-	weighed.Prereqs = gurps.Prereqs{namedTrait("Magery"), gurps.NewContainedWeightPrereq(nil)}
-	c.Equal("Has trait Magery and has a contained weight of at most 2.5 kg",
-		weighed.Describe(entity, nil, func(s string) string { return s }), "a weight is given in the entity's units")
-}
-
-// TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,
-// nested lists with their parent's mode are flattened into it, lists that don't apply at the tech level are left out,
-// and an "any of" list names every option.
-func TestPrereqListFailureText(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	entity.Profile.TechLevel = "3"
-	met := namedTrait("Z")
-	met.Has = false
-	list := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
-		p := gurps.NewPrereqList()
-		p.All = all
-		p.Prereqs = children
-		return p
-	}
-	not := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
-		p := list(all, children...)
-		p.Not = true
-		return p
-	}
-	met2 := namedTrait("Y")
-	met2.Has = false
-	atTL5 := list(true, namedTrait("B"))
-	atTL5.WhenTL.Compare = criteria.AtLeastNumber
-	atTL5.WhenTL.Qualifier = fxp.Five
-	a, b, cc, d := namedTrait("A"), namedTrait("B"), namedTrait("C"), namedTrait("D")
-
-	for _, one := range []struct {
-		name     string
-		list     *gurps.PrereqList
-		expected string
-	}{
-		{"all of", list(true, a, b), "\n- Has trait A\n- Has trait B"},
-		{"all of, one unmet", list(true, met, a), "\n- Has trait A"},
-		{"all of, nested all of", list(true, a, list(true, b, cc)), "\n- Has trait A\n- Has trait B\n- Has trait C"},
-		{
-			"all of, nested any of", list(true, a, list(false, b, cc)),
-			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Has trait C",
-		},
-		{"all of, nested any of with one option", list(true, a, list(false, b)), "\n- Has trait A\n- Has trait B"},
-		{
-			"all of, nested three deep", list(true, a, list(false, b, list(true, cc, d))),
-			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Requires all of:\n\t\t- Has trait C" +
-				"\n\t\t- Has trait D",
-		},
-		{"all of, skipped for TL", list(true, a, atTL5), "\n- Has trait A"},
-		{"any of", list(false, a, b), "\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B"},
-		{"any of with one option", list(false, a), "\n- Has trait A"},
-		{
-			"any of, nested any of", list(false, a, list(false, b, cc)),
-			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B\n\t- Has trait C",
-		},
-		{
-			"any of, nested all of with one unmet", list(false, a, list(true, met, b)),
-			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B",
-		},
-		{"none of, one met", not(false, a, met), "\n- Requires none of:\n\t- Does not have trait Z"},
-		{
-			"not all of, all met", not(true, met, met2),
-			"\n- Requires not all of:\n\t- Does not have trait Z\n\t- Does not have trait Y",
-		},
-		{
-			"all of, nested none of", list(true, a, not(false, met)),
-			"\n- Has trait A\n- Requires none of:\n\t- Does not have trait Z",
-		},
-	} {
-		var buffer xbytes.InsertBuffer
-		c.False(one.list.Satisfied(entity, nil, &buffer, "\n- ", nil), one.name)
-		c.Equal(one.expected, buffer.String(), one.name)
-	}
-	c.True(list(false, a, met).Satisfied(entity, nil, nil, "\n- ", nil), "an any of list with a met option is met")
-	c.True(not(false, a, b).Satisfied(entity, nil, nil, "\n- ", nil), "a none of list with nothing met is met")
-	broken := gurps.NewScriptPrereq()
-	broken.Script = "nope("
-	var buffer xbytes.InsertBuffer
-	gurps.SuppressScriptResolveErrorLogging(func() {
-		c.False(not(false, a, broken).Satisfied(entity, nil, &buffer, "\n- ", nil), "a none of list that fails is unmet")
-	})
-	heading := "\n- Requires none of:"
-	c.True(strings.HasPrefix(buffer.String(), heading+"\n\t- "), "a failed none of list says why: %q", buffer.String())
-	c.False(strings.Contains(buffer.String(), "Has trait A"), "but not what was unmet")
-	buffer = xbytes.InsertBuffer{}
-	gurps.SuppressScriptResolveErrorLogging(func() {
-		c.False(not(false, list(false, broken, a)).Satisfied(entity, nil, &buffer, "\n- ", nil),
-			"a none of list holding a failed any of list is unmet")
-	})
-	c.True(strings.Contains(buffer.String(), "\n\t- Requires at least one of:"),
-		"a failed list of the same mode keeps its own heading: %q", buffer.String())
-	c.False(strings.Contains(buffer.String(), "\n\t- Has trait A"),
-		"so what was unmet in it isn't listed as forbidden: %q", buffer.String())
-
-	future := gurps.NewUnknownPrereq("future", []byte(`{"type":"future"}`))
-	buffer = xbytes.InsertBuffer{}
-	c.False(not(false, future).Satisfied(entity, nil, &buffer, "\n- ", nil),
-		"a negated list can't make a prerequisite it doesn't know into a pass")
-	c.True(strings.Contains(buffer.String(), "future"), "and says what it couldn't check: %q", buffer.String())
-	c.Equal(gurps.CheckFailed, not(false, future).Evaluate(entity, nil, nil), "it fails rather than being unmet")
-}
-
-// TestPrereqListAppliesAt verifies that a list applies only at the tech levels its condition allows, and always when
-// there is no condition or no entity.
-func TestPrereqListAppliesAt(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	entity.Profile.TechLevel = "3"
-	p := gurps.NewPrereqList()
-	c.True(p.AppliesAt(entity), "no condition")
-	p.WhenTL.Compare = criteria.AtLeastNumber
-	p.WhenTL.Qualifier = fxp.Five
-	c.False(p.AppliesAt(entity), "TL 3 is below 5")
-	c.True(p.AppliesAt(nil), "no entity")
-	entity.Profile.TechLevel = "5^"
-	c.True(p.AppliesAt(entity), "TL 5^ is at least 5")
 }

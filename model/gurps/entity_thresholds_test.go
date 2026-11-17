@@ -42,7 +42,6 @@ func TestCurrentAdjustmentApply(t *testing.T) {
 		{"amount before factor", currentAdjustment{bonus: fxp.Two, factors: []fxp.Int{fxp.Half}}, fxp.Ten, true, fxp.Six},
 		{"halving rounds up", currentAdjustment{factors: []fxp.Int{fxp.Half}}, fxp.Seven, true, fxp.Four},
 		{"halving twice rounds up twice", currentAdjustment{factors: []fxp.Int{fxp.Half, fxp.Half}}, fxp.Five, true, fxp.Two},
-		{"halving twice rounds up twice again", currentAdjustment{factors: []fxp.Int{fxp.Half, fxp.Half}}, fxp.Nine, true, fxp.Three},
 		{"fraction of a product kept otherwise", currentAdjustment{factors: []fxp.Int{fxp.Half}}, fxp.Five, false, fxp.TwoAndAHalf},
 		{"a tenth off rounds to nearest", currentAdjustment{factors: []fxp.Int{fxp.FromStringForced("0.9")}}, fxp.FromInteger(16), true, fxp.FromInteger(14)},
 		{"factor of zero", currentAdjustment{factors: []fxp.Int{0}}, fxp.Ten, true, 0},

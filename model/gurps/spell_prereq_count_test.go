@@ -14,15 +14,18 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestCountPrereqsForSpellUnderNegation verifies what CountPrereqsForSpell counts: a required spell along with its own
-// prerequisites, but nothing for a missing list (a typed-nil Prereq), a nil entry, or an "any of" option with nothing
-// to check. A negated list counts what it holds turned around: what it rules out isn't counted, traits and other
-// prerequisites turn around as spells do, it asks for every one or any one of its children turned around, a script
-// under it is left out, a spell it requires brings its own prerequisites along, and a second negation turns it back.
-func TestCountPrereqsForSpellUnderNegation(t *testing.T) {
+// TestCountPrereqsForSpell verifies what CountPrereqsForSpell counts: a required spell along with its own
+// prerequisites, the larger quantity asked of the same spells, each level of a trait from 1, or from 0 for Magery, one
+// for an attribute or a skill, and one for a script unless it says how many it stands for, but nothing for a missing
+// list (a typed-nil Prereq), a nil entry, or an "any of" option with nothing to check. A negated list counts what it
+// holds turned around: what it rules out isn't counted, traits and other prerequisites turn around as spells do, it
+// asks for every one or any one of its children turned around, a script under it is left out, a spell it requires
+// brings its own prerequisites along, and a second negation turns it back.
+func TestCountPrereqsForSpell(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	ignite := addTestSpell(e, "Ignite Fire", fxp.One)
@@ -57,6 +60,23 @@ func TestCountPrereqsForSpellUnderNegation(t *testing.T) {
 	trait.LevelCriteria.Compare = criteria.AnyNumber
 	script := NewScriptPrereq()
 	script.Script = "true"
+	counted := NewScriptPrereq()
+	counted.Script = "// prereq count: 3\ntrue"
+	leveled := func(name string) *TraitPrereq {
+		p := NewTraitPrereq()
+		p.NameCriteria.Qualifier = name
+		p.LevelCriteria.Qualifier = fxp.Two
+		return p
+	}
+	fromCollege := func(quantity fxp.Int) *SpellPrereq {
+		p := NewSpellPrereq()
+		p.SubType = spellcmp.College
+		p.QualifierCriteria.Qualifier = "Fire"
+		p.QuantityCriteria.Qualifier = quantity
+		return p
+	}
+	skill := NewSkillPrereq()
+	skill.NameCriteria.Qualifier = "Broadsword"
 	nothingToCheck := list(true, NewPrereqList(), (*PrereqList)(nil), nil)
 	for _, one := range []struct {
 		name string
@@ -67,6 +87,15 @@ func TestCountPrereqsForSpellUnderNegation(t *testing.T) {
 		{"a required spell without prerequisites counts just itself", list(true, knowing("Ignite Fire")), 1},
 		{"a required spell brings its own", list(true, knowing("Light")), 2},
 		{"a nil entry is skipped", list(true, knowing("Ignite Fire"), nil), 1},
+		{"spells asked for by college count their quantity", list(true, fromCollege(fxp.Three)), 3},
+		{"the larger quantity of the same spells counts", list(true, fromCollege(fxp.Two), fromCollege(fxp.Three)), 3},
+		{"and not the smaller one after it", list(true, fromCollege(fxp.Three), fromCollege(fxp.Two)), 3},
+		{"a leveled trait counts each level from 1", list(true, leveled("Luck")), 2},
+		{"Magery counts each level from 0", list(true, leveled("Magery")), 3},
+		{"an attribute counts one", list(true, NewAttributePrereq(nil)), 1},
+		{"a skill counts one", list(true, skill), 1},
+		{"a script counts one", list(true, script), 1},
+		{"a script can say how many it counts", list(true, counted), 3},
 		{
 			"an \"any of\" option with nothing to check isn't taken as the cheapest",
 			list(false, knowing("Ignite Fire"), NewPrereqList(), nothingToCheck),

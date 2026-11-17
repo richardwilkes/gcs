@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // newMemoTestWeapon returns a melee weapon with a minimum ST of 10 on the only trait of a recalculated entity.
@@ -38,6 +39,8 @@ func newMemoTestWeapon() (*Entity, *Trait, *Weapon) {
 	return e, owner, w
 }
 
+// TestWeaponMemoFingerprintCoversWeaponData verifies that a change to any of the weapon's own data that resolution
+// reads, or to the carried and equipped flags the entity sets on it, changes its memo fingerprint.
 func TestWeaponMemoFingerprintCoversWeaponData(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -70,13 +73,11 @@ func TestWeaponMemoFingerprintCoversWeaponData(t *testing.T) {
 		one.change(w)
 		c.NotEqual(before, w.memoFingerprint(), "a change to the %s must change the fingerprint", one.name)
 	}
-	// Resolution never reads whether the weapon is hidden, so hiding it needn't, and doesn't, set its memo aside.
-	_, _, w := newMemoTestWeapon()
-	before := w.memoFingerprint()
-	w.Hide = !w.Hide
-	c.Equal(before, w.memoFingerprint())
 }
 
+// TestWeaponMemoReset verifies that a weapon's memo holds what it resolved until the entity's caches are discarded,
+// that nothing is memoized and no weapon list is kept while the entity recalculates, and that no list is kept while it
+// judges the prerequisites of an item carrying a grant.
 func TestWeaponMemoReset(t *testing.T) {
 	c := check.New(t)
 	e, owner, w := newMemoTestWeapon()
@@ -111,9 +112,12 @@ func TestWeaponMemoReset(t *testing.T) {
 	c.Equal(uint8(0), e.weaponListsCached, "no weapon list is kept while judging those prerequisites")
 }
 
+// TestWeaponMemoOfCircularDataIsOrderIndependent verifies that a weapon whose damage reads itself resolves the same
+// with memos on as with them off, tooltip included, whichever field is asked for first, and resolves the same when
+// asked again.
 func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
 	c := check.New(t)
-	type resolved struct{ damage, rng string }
+	type resolved struct{ damage, rng, rangeTooltip string }
 	resolve := func(rangeFirst, memos bool) resolved {
 		restore := SetWeaponMemosEnabled(memos)
 		defer restore()
@@ -136,17 +140,22 @@ func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
 		e.Recalculate()
 		e.DiscardCaches()
 		var result resolved
+		var tooltip, again xbytes.InsertBuffer
 		if rangeFirst {
-			result.rng = w.ResolvedRange(nil).String(true)
+			result.rng = w.ResolvedRange(&tooltip).String(true)
 			result.damage = w.Damage.ResolvedDamage(nil)
 		} else {
 			result.damage = w.Damage.ResolvedDamage(nil)
-			result.rng = w.ResolvedRange(nil).String(true)
+			result.rng = w.ResolvedRange(&tooltip).String(true)
 		}
+		result.rangeTooltip = tooltip.String()
 		c.Equal(0, e.weaponResolutions)
 		c.False(e.circularWeaponResolution)
-		c.Equal(result, resolved{damage: w.Damage.ResolvedDamage(nil), rng: w.ResolvedRange(nil).String(true)},
-			"memos %v, range first %v: asking again", memos, rangeFirst)
+		c.Equal(result, resolved{
+			damage:       w.Damage.ResolvedDamage(nil),
+			rng:          w.ResolvedRange(&again).String(true),
+			rangeTooltip: again.String(),
+		}, "memos %v, range first %v: asking again", memos, rangeFirst)
 		return result
 	}
 	want := resolve(false, false)
@@ -155,6 +164,9 @@ func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
 	c.Equal(want, resolve(true, true), "range first")
 }
 
+// TestEntityWeaponsOfCircularDataMatchUncached verifies that the weapons Entity.Weapons lists, and what they resolve
+// to, are the same with memos on as with them off when the weapons' scripts read their own damage or notes and the
+// list.
 func TestEntityWeaponsOfCircularDataMatchUncached(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {

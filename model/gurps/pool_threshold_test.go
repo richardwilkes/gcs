@@ -15,6 +15,9 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -46,7 +49,6 @@ func TestPoolThresholdLegacyOpsBecomeFeatures(t *testing.T) {
 		want []string
 		ops  string
 	}{
-		{"halve move", `{"state":"Reeling","value":"0","ops":["halve_move"]}`, []string{move}, `["halve_move"]`},
 		{"halve dodge", `{"state":"Reeling","value":"0","ops":["halve_dodge"]}`, []string{dodge}, `["halve_dodge"]`},
 		{"halve st", `{"state":"Tired","value":"0","ops":["halve_st"]}`, []string{st}, `["halve_st"]`},
 		{
@@ -80,6 +82,12 @@ func TestPoolThresholdLegacyOpsBecomeFeatures(t *testing.T) {
 			[]string{dodge, "-1 to DX"},
 			"",
 		},
+		{
+			"features that differ from that in an amount",
+			`{"state":"Tired","value":"0","features":[{"type":"attribute_bonus","attribute":"dodge","multiply":true,"amount":0.25}]}`,
+			[]string{"×0.25 to Dodge"},
+			"",
+		},
 		{"none", `{"state":"Rested","value":"$fp"}`, nil, ""},
 	} {
 		var threshold PoolThreshold
@@ -102,29 +110,6 @@ func TestPoolThresholdLegacyOpsBecomeFeatures(t *testing.T) {
 				"%s: the ops follow the features", one.name)
 		}
 	}
-}
-
-// TestPoolThresholdFactoryDataWritesLegacyOps verifies that the factory thresholds, whose features are the conversion
-// of the operations older versions of GCS read, are written with those operations, so that a sheet saved by this
-// version loads in an older one with what its thresholds do intact.
-func TestPoolThresholdFactoryDataWritesLegacyOps(t *testing.T) {
-	c := check.New(t)
-	tired := poolThreshold(NewEntity(), FatiguePointsID, "Tired")
-	c.NotNil(tired)
-	data, err := jio.Marshal(tired)
-	c.NoError(err)
-	c.True(strings.Contains(string(data), `"ops":["halve_move","halve_dodge","halve_st"]`), "%s", data)
-	var old struct {
-		Ops []string `json:"ops"`
-	}
-	c.NoError(jio.Unmarshal(data, &old))
-	c.Equal([]string{"halve_move", "halve_dodge", "halve_st"}, old.Ops, "an older version reads the operations")
-	bonus, ok := tired.Features[0].(*AttributeBonus)
-	c.True(ok)
-	bonus.Amount = fxp.Quarter
-	data, err = jio.Marshal(tired)
-	c.NoError(err)
-	c.False(strings.Contains(string(data), `"ops"`), "changed features write no operations: %s", data)
 }
 
 // TestPoolThresholdLegacyOpsMatchFactoryThresholds verifies that the factory thresholds and the conversion of the
@@ -197,4 +182,107 @@ func TestPoolThresholdCloneCopiesFeatures(t *testing.T) {
 	bonus.Amount = fxp.One
 	c.Equal(hash, Hash64(original), "a change to the clone's feature leaves the original alone")
 	c.NotEqual(hash, Hash64(clone), "the clone's hash reflects its feature")
+}
+
+// TestPoolThresholdLegacyValue verifies how a threshold saved before its value was a script gets one: a value given
+// outright is kept, an expression is converted to a script, and without either, the multiplier, divisor and addition
+// become the expression round($self*multiplier/divisor+addition), which is just the addition for a multiplier of 0 and
+// needs no rounding for one of 1 or -1 with nothing to divide by.
+func TestPoolThresholdLegacyValue(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		data string
+		want string
+	}{
+		{`{"value":"7","expression":"9","multiplier":2}`, "7"},
+		{`{"expression":"$self/2"}`, ExprToScript("$self/2")},
+		{`{"addition":5}`, ExprToScript("5")},
+		{`{"multiplier":-1}`, ExprToScript("-$self")},
+		{`{"multiplier":-1,"divisor":1,"addition":2}`, ExprToScript("-$self+2")},
+		{`{"multiplier":1,"divisor":1}`, ExprToScript("$self")},
+		{`{"multiplier":1,"addition":-1}`, ExprToScript("$self-1")},
+		{`{"multiplier":1,"divisor":3,"addition":-1}`, ExprToScript("round($self/3-1)")},
+		{`{"multiplier":-1,"divisor":2}`, ExprToScript("round(-$self/2)")},
+		{`{"multiplier":2,"divisor":3}`, ExprToScript("round($self*2/3)")},
+		{`{"multiplier":-2}`, ExprToScript("round(-$self*2)")},
+	} {
+		var threshold PoolThreshold
+		c.NoError(jio.Unmarshal([]byte(one.data), &threshold), one.data)
+		c.Equal(one.want, threshold.Value, one.data)
+	}
+}
+
+// TestThresholdIgnores verifies which of a pool threshold's features do nothing: one of a type a threshold may not
+// hold, an amount per level, though not a factor marked as one, and a bonus to this armor or this weapon.
+func TestThresholdIgnores(t *testing.T) {
+	c := check.New(t)
+	perLevel := func(f Feature) Feature {
+		switch one := f.(type) {
+		case *AttributeBonus:
+			one.PerLevel = true
+		case *ConditionalModifierBonus:
+			one.PerLevel = true
+		case *DRBonus:
+			one.PerLevel = true
+		case *SkillBonus:
+			one.PerLevel = true
+		case *SkillPointBonus:
+			one.PerLevel = true
+		case *SpellBonus:
+			one.PerLevel = true
+		case *SpellPointBonus:
+			one.PerLevel = true
+		case *TraitBonus:
+			one.PerLevel = true
+		case *WeaponBonus:
+			one.PerLevel = true
+		}
+		return f
+	}
+	thisArmor := NewDRBonus()
+	thisArmor.Locations = nil
+	thisWeaponSkill := NewSkillBonus()
+	thisWeaponSkill.SelectionType = skillsel.ThisWeapon
+	thisWeapon := NewWeaponBonus(feature.WeaponBonus)
+	thisWeapon.SelectionType = wsel.ThisWeapon
+	byName := NewWeaponBonus(feature.WeaponBonus)
+	byName.SelectionType = wsel.WithName
+	defs := FactoryAttributeDefs()
+	for _, one := range []struct {
+		name    string
+		feature Feature
+		ignored bool
+	}{
+		{"a type a threshold may not hold", NewCostReduction(StrengthID), true},
+		{"a factor marked as per level", perLevel(newMultiplier(DexterityID, fxp.Half)), false},
+		{"a conditional modifier", NewConditionalModifierBonus(), false},
+		{"a conditional modifier per level", perLevel(NewConditionalModifierBonus()), true},
+		{"a DR bonus to a location", NewDRBonus(), false},
+		{"a DR bonus per level", perLevel(NewDRBonus()), true},
+		{"a DR bonus to this armor", thisArmor, true},
+		{"a skill bonus to this weapon", thisWeaponSkill, true},
+		{"a skill bonus per level", perLevel(NewSkillBonus()), true},
+		{"a skill point bonus per level", perLevel(NewSkillPointBonus()), true},
+		{"a spell bonus per level", perLevel(NewSpellBonus()), true},
+		{"a spell point bonus per level", perLevel(NewSpellPointBonus()), true},
+		{"a trait bonus per level", perLevel(NewTraitBonus()), true},
+		{"a weapon bonus by name", byName, false},
+		{"a weapon bonus per level", perLevel(NewWeaponBonus(feature.WeaponBonus)), true},
+		{"a weapon bonus to this weapon", thisWeapon, true},
+	} {
+		c.Equal(one.ignored, ThresholdIgnores(defs, one.feature), one.name)
+	}
+}
+
+// TestDescribeThresholdFeature verifies that a threshold's switchable feature is described as one that takes effect
+// whatever the switch, since a threshold has none, without the feature itself being changed.
+func TestDescribeThresholdFeature(t *testing.T) {
+	c := check.New(t)
+	em := func(s string) string { return s }
+	bonus := newAttrBonus(DexterityID, -fxp.One)
+	plain := bonus.Describe(nil, nil, em)
+	bonus.Switchable = true
+	c.NotEqual(plain, bonus.Describe(nil, nil, em), "precondition: a switchable feature says so")
+	c.Equal(plain, DescribeThresholdFeature(bonus, nil, nil, em))
+	c.True(bonus.IsSwitchable(), "the feature itself stays switchable")
 }

@@ -12,10 +12,12 @@ package gurps
 import (
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
@@ -291,6 +293,8 @@ func TestSkillPrereqIgnoresSkillWithNoPoints(t *testing.T) {
 	}
 }
 
+// TestDisabledSkillsAndSpellsShowNoLevel verifies that a disabled skill or spell shows "-" in its level column, with no
+// tooltip.
 func TestDisabledSkillsAndSpellsShowNoLevel(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -317,6 +321,8 @@ func TestDisabledSkillsAndSpellsShowNoLevel(t *testing.T) {
 	c.Equal("", data.Tooltip)
 }
 
+// TestDisabledSkillsAndSpellsCostNothing verifies that a disabled skill or spell adds no points to its container or to
+// the sheet's skill and spell totals.
 func TestDisabledSkillsAndSpellsCostNothing(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -350,6 +356,9 @@ func TestDisabledSkillsAndSpellsCostNothing(t *testing.T) {
 	c.Equal(e.PointsBreakdown().Spells, spells.AdjustedPoints(nil))
 }
 
+// TestSkillLevelStepping verifies that incrementing or decrementing a skill's level moves its points to the fewest that
+// buy the next or previous level, for Average and Wildcard skills, and leaves containers and skills with no higher
+// level to reach alone.
 func TestSkillLevelStepping(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -400,6 +409,8 @@ func TestSkillLevelStepping(t *testing.T) {
 	c.Equal(fxp.Five, sk.Points, "incrementing a skill with no higher level must leave its points alone")
 }
 
+// TestSkillLevelSteppingPastKeptLevel verifies level stepping for a skill, spell or technique whose level a Keep
+// Highest or Keep Lowest grant holds, or one with no points of its own that a grant adds levels to.
 func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -540,6 +551,8 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 	}
 }
 
+// TestDisabledSkillLevelStepping verifies that stepping the level of a disabled skill or spell, or of a skill under a
+// disabled container, leaves its points alone.
 func TestDisabledSkillLevelStepping(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -576,7 +589,7 @@ func TestDisabledSkillLevelStepping(t *testing.T) {
 }
 
 // TestSkillFillWithNameableKeys verifies that nameable substitution keys are extracted from all of a skill's text
-// fields, including the optional specialization (see issue #1054).
+// fields, including the optional specialization (see issue #1054), and from its weapons.
 func TestSkillFillWithNameableKeys(t *testing.T) {
 	c := check.New(t)
 	var s Skill
@@ -584,6 +597,9 @@ func TestSkillFillWithNameableKeys(t *testing.T) {
 	s.Specialization = "@spec@"
 	s.OptionalSpecialization = "@opt@"
 	s.LocalNotes = "@note@"
+	w := NewWeapon(&s, true)
+	w.Usage = "@use@"
+	s.Weapons = []*Weapon{w}
 	m := make(map[string]string)
 	s.FillWithNameableKeys(m, nil)
 	c.Equal(map[string]string{
@@ -591,6 +607,7 @@ func TestSkillFillWithNameableKeys(t *testing.T) {
 		"spec": nameable.Unset,
 		"opt":  nameable.Unset,
 		"note": nameable.Unset,
+		"use":  nameable.Unset,
 	}, m)
 }
 
@@ -770,67 +787,36 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 		"base's synthetic optional-spec default must track the best sibling (Fire), not stay locked on Earth")
 }
 
-// TestTechniqueDefaultAnySpecializationIgnoresQualifier reproduces issue #1061: a technique whose skill default was set
-// to a specific specialization ("is Demolition") and then switched to "whose specialization is anything" must resolve
-// against any matching specialization rather than staying locked on the leftover qualifier text, and of the skills it
-// matches must use the highest-level one rather than whichever is encountered first.
-func TestTechniqueDefaultAnySpecializationIgnoresQualifier(t *testing.T) {
+// TestTechniqueDefaultAnySpecialization verifies that a technique whose default takes a skill of any specialization
+// rests on the highest-level one, even with the qualifier of an earlier "is" selection left behind: its level, the
+// skill it defaults to, its satisfied check and its "Default:" note all follow that skill, while an "is" default rests
+// on the specialization it names.
+func TestTechniqueDefaultAnySpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	const explosives = "Explosives"
 	demolition := addTestSkill(e, explosives, "Demolition", "", fxp.Four)
 	underwater := addTestSkill(e, explosives, "Underwater Demolition", "", fxp.FromInteger(20))
-	e.Recalculate()
-	c.True(underwater.LevelData.Level > demolition.LevelData.Level,
-		"precondition: Underwater Demolition must be the higher-level skill")
-
-	// Restricted to "is Demolition", the default resolves only to the lower-level Demolition skill.
-	isDef := &SkillDefault{
-		DefaultType:    SkillID,
-		Name:           textCriteria(criteria.IsText, explosives),
-		Specialization: textCriteria(criteria.IsText, "Demolition"),
-	}
-	isResult := CalculateTechniqueLevel(e, nil, "Technique", "", nil, isDef, difficulty.Average, fxp.One, false, nil, nil)
-
-	// The same default still carrying the "Demolition" qualifier but with the comparison changed to "anything" must
-	// match any specialization, so the higher-level Underwater Demolition wins.
-	anyDef := &SkillDefault{
-		DefaultType:    SkillID,
-		Name:           textCriteria(criteria.IsText, explosives),
-		Specialization: textCriteria(criteria.AnyText, "Demolition"),
-	}
-	anyResult := CalculateTechniqueLevel(e, nil, "Technique", "", nil, anyDef, difficulty.Average, fxp.One, false, nil, nil)
-
-	c.True(anyResult.Level > isResult.Level, "an 'anything' specialization must resolve to the higher-level "+
-		"Underwater Demolition, not stay locked on the Demolition qualifier")
-	c.Equal(underwater.LevelData.Level+fxp.One, anyResult.Level,
-		"the default must resolve to the highest-level matching skill, plus the technique's 1 point")
-}
-
-// TestTechniqueDefaultAnySpecializationResolvesSkill exercises the full technique node path for issue #1061: the
-// resolved default skill, the technique's level, and the satisfied check must all honor the "anything" specialization
-// rather than the leftover qualifier text.
-func TestTechniqueDefaultAnySpecializationResolvesSkill(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	const explosives = "Explosives"
-	addTestSkill(e, explosives, "Demolition", "", fxp.Four)
-	underwater := addTestSkill(e, explosives, "Underwater Demolition", "", fxp.FromInteger(20))
-
 	tech := NewTechnique(e, nil, explosives)
-	// Leftover qualifier from a prior "is Demolition" selection, now switched to "anything".
 	tech.TechniqueDefault.Specialization = textCriteria(criteria.AnyText, "Demolition")
 	tech.TechniqueDefault.Modifier = -fxp.Two
 	e.Skills = append(e.Skills, tech)
 	e.Recalculate()
+	c.True(underwater.LevelData.Level > demolition.LevelData.Level,
+		"precondition: Underwater Demolition must be the higher-level skill")
 
-	def := tech.DefaultSkill()
-	c.NotNil(def, "the technique must resolve a default skill")
-	c.True(def == underwater, "the technique must default to the higher-level Underwater Demolition, not Demolition")
-	c.True(tech.TechniqueSatisfied(nil, ""), "the technique must be satisfied by any matching specialization")
-	// The "Default:" note must name the skill actually matched, not the stale qualifier text.
+	c.True(tech.DefaultSkill() == underwater, "the technique defaults to the higher-level Underwater Demolition")
+	c.Equal(underwater.LevelData.Level-fxp.Two+fxp.One, tech.LevelData.Level,
+		"the technique's level is Underwater Demolition's, less 2, plus its 1 point")
+	c.True(tech.TechniqueSatisfied(nil, ""), "any matching specialization satisfies the technique")
 	c.Equal("Default: "+explosives+" (Underwater Demolition)-2", tech.ModifierNotes(),
-		"the default note must show the resolved skill, not the leftover Demolition qualifier")
+		"the default note names the skill matched, not the leftover Demolition qualifier")
+
+	tech.TechniqueDefault.Specialization.Compare = criteria.IsText
+	e.Recalculate()
+	c.True(tech.DefaultSkill() == demolition, "an \"is Demolition\" default rests on Demolition")
+	c.Equal(demolition.LevelData.Level-fxp.Two+fxp.One, tech.LevelData.Level,
+		"the technique's level is Demolition's, less 2, plus its 1 point")
 }
 
 // TestSyntheticOptionalSpecDefaultSameRequiredSpec verifies the automatic optional-specialty default only relates
@@ -932,8 +918,8 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 	c.False(hasCycle(), "a forced mutual cycle must be broken on recalculation")
 }
 
-// TestMutualSwapDefaults verifies that the classic pairwise swap (two skills that default to each other) still flips
-// the primary skill and stays stable, using the same routing the UI uses.
+// TestMutualSwapDefaults verifies that the classic pairwise swap (two skills that default to each other) flips the
+// primary skill whichever of the two it is started from, and stays stable, using the same routing the UI uses.
 func TestMutualSwapDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -959,22 +945,28 @@ func TestMutualSwapDefaults(t *testing.T) {
 	}
 	c.Nil(broadsword.DefaultedFrom, "the swapped relationship should be stable")
 	c.NotNil(rapier.DefaultedFrom, "the swapped relationship should be stable")
+
+	// Swapping from the skill that stands on its own flips the pair back, through the partner defaulting to it.
+	swapViaUI(broadsword)
+	e.Recalculate()
+	c.NotNil(broadsword.DefaultedFrom, "after swapping back, Broadsword should default to Rapier")
+	c.Nil(rapier.DefaultedFrom, "after swapping back, Rapier should stand on its own")
 }
 
-// swapViaUI mirrors the routing in the sheet's swapDefaults handler: prefer a mutual swap, then a best-swappable
-// partner, and finally cycling the skill's own alternate defaults.
+// swapViaUI mirrors the routing in the sheet's swapDefaults handler: cycle the skill's own alternate defaults if it has
+// them, else swap with the skill it defaults to, else with the best partner defaulting to it.
 func swapViaUI(skill *Skill) {
 	if !skill.CanSwapDefaults() {
 		return
 	}
-	if swap := skill.DefaultSkill(); skill.CanSwapDefaultsWith(swap) {
+	if skill.AlternateDefaultsAvailable() {
+		skill.SwapToNextDefault()
+	} else if swap := skill.DefaultSkill(); skill.CanSwapDefaultsWith(swap) {
 		skill.DefaultedFrom = nil
 		swap.SwapDefaults()
 	} else if other := skill.BestSwappableSkill(); other != nil {
 		skill.DefaultedFrom = nil
 		other.SwapDefaults()
-	} else {
-		skill.SwapToNextDefault()
 	}
 }
 
@@ -1043,4 +1035,157 @@ func TestRecalculateSettlesDefaultDrivenSkillLevel(t *testing.T) {
 		c.Equal(want, w.SkillLevel(nil), "levels %v: the weapon's level must not lag behind", levels)
 		c.False(sk.UpdateLevel(), "levels %v: a further update must find nothing left to change", levels)
 	}
+}
+
+// TestNewSkillsFromFileRepairsHardTechniquePoints verifies that loading a skill list raises a Hard technique saved
+// with 1 point, which buys it nothing, to the 2 its first level costs, wherever it sits in the list, and leaves the
+// points of other skills and techniques, Hard ones saved with other points included, as saved.
+func TestNewSkillsFromFileRepairsHardTechniquePoints(t *testing.T) {
+	c := check.New(t)
+	newTechnique := func(diff difficulty.Level, points fxp.Int) *Skill {
+		tech := NewTechnique(nil, nil, "Karate")
+		tech.Difficulty.Difficulty = diff
+		tech.Points = points
+		return tech
+	}
+	hardSkill := NewSkill(nil, nil, false)
+	hardSkill.Difficulty.Difficulty = difficulty.Hard
+	container := NewSkill(nil, nil, true)
+	nested := newTechnique(difficulty.Hard, fxp.One)
+	nested.SetParent(container)
+	container.Children = []*Skill{nested}
+	data, err := jio.Marshal(&listData[*Skill]{
+		Header: jio.NewHeader(SkillListDataKind),
+		Rows: []*Skill{
+			hardSkill,
+			newTechnique(difficulty.Hard, fxp.One),
+			newTechnique(difficulty.Hard, 0),
+			newTechnique(difficulty.Hard, fxp.Three),
+			newTechnique(difficulty.Average, fxp.One),
+			container,
+		},
+	})
+	c.NoError(err)
+	rows, err := NewSkillsFromFile(fstest.MapFS{"list.skl": &fstest.MapFile{Data: data}}, "list.skl")
+	c.NoError(err)
+	c.Equal(6, len(rows), "every row loads")
+	if len(rows) != 6 {
+		return
+	}
+	c.Equal(fxp.One, rows[0].Points, "a Hard skill keeps its point")
+	c.Equal(fxp.Two, rows[1].Points, "a Hard technique with 1 point gets the 2 its first level costs")
+	c.Equal(fxp.Int(0), rows[2].Points, "a Hard technique with no points keeps none")
+	c.Equal(fxp.Three, rows[3].Points, "a Hard technique with 3 points keeps them")
+	c.Equal(fxp.One, rows[4].Points, "an Average technique keeps its point")
+	c.Equal(1, len(rows[5].Children), "the container's technique loads")
+	if len(rows[5].Children) == 1 {
+		c.Equal(fxp.Two, rows[5].Children[0].Points, "a Hard technique in a container is repaired too")
+	}
+}
+
+// TestTechniqueRelativeLevel verifies that a technique's relative level is measured from the skill it defaults to, so
+// it counts the default's modifier along with the levels its points buy, and that the relative level column shows it
+// as a signed number, +0 included.
+func TestTechniqueRelativeLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	karate := addTestSkill(e, "Karate", "", "", fxp.Four)
+	kick := NewTechnique(e, nil, "Karate")
+	kick.Name = "Kick"
+	kick.TechniqueDefault.Modifier = -fxp.Two
+	e.Skills = append(e.Skills, kick)
+	for _, tc := range []struct {
+		points fxp.Int
+		rsl    fxp.Int
+		want   string
+	}{
+		{fxp.Three, fxp.One, "+1"},
+		{fxp.Two, 0, "+0"},
+	} {
+		kick.Points = tc.points
+		e.Recalculate()
+		c.Equal(karate.LevelData.Level-fxp.Two+tc.points, kick.LevelData.Level,
+			"%v points: precondition: Kick is Karate-2 raised a level a point", tc.points)
+		c.Equal(tc.rsl, kick.AdjustedRelativeLevel(), "%v points: Kick's level relative to Karate", tc.points)
+		c.Equal(tc.want, kick.RelativeLevel(), "%v points: the exported relative level", tc.points)
+		var data CellData
+		kick.CellData(SkillRelativeLevelColumn, &data)
+		c.Equal(tc.want, data.Primary, "%v points: the relative level column", tc.points)
+	}
+}
+
+// TestTechniqueModifierNotes verifies that a technique's "Default:" note names the skill it rests on, followed by the
+// defense for a parry or block default, and the default's modifier.
+func TestTechniqueModifierNotes(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		defaultType string
+		modifier    fxp.Int
+		want        string
+	}{
+		{SkillID, -fxp.Two, "Default: Karate-2"},
+		{ParryID, -fxp.One, "Default: Karate Parry-1"},
+		{BlockID, 0, "Default: Karate Block"},
+	} {
+		e := NewEntity()
+		addTestSkill(e, "Karate", "", "", fxp.Four)
+		tech := NewTechnique(e, nil, "Karate")
+		tech.TechniqueDefault.DefaultType = tc.defaultType
+		tech.TechniqueDefault.Modifier = tc.modifier
+		e.Skills = append(e.Skills, tech)
+		e.Recalculate()
+		c.Equal(tc.want, tech.ModifierNotes(), tc.defaultType)
+	}
+}
+
+// TestSkillDescriptionShowsLevelModifiers verifies that a skill's description shows the modifiers its level includes
+// where the sheet's skill level adjustment display puts them: inline on one line, or in the tooltip one per line.
+func TestSkillDescriptionShowsLevelModifiers(t *testing.T) {
+	c := check.New(t)
+	const (
+		inline  = "Includes modifiers from: Training [+2], Talent [+1]"
+		tooltip = "Includes modifiers from:\nTraining [+2]\nTalent [+1]"
+	)
+	for _, tc := range []struct {
+		option             display.Option
+		secondary, tooltip string
+	}{
+		{display.NotShown, "", ""},
+		{display.Inline, inline, ""},
+		{display.Tooltip, "", tooltip},
+		{display.InlineAndTooltip, inline, tooltip},
+	} {
+		e := NewEntity()
+		e.SheetSettings.SkillLevelAdjDisplay = tc.option
+		sk := addTestSkill(e, "Broadsword", "", "", fxp.Four)
+		addTraitWithFeatures(e, "Training", newSkillBonusTo("Broadsword", fxp.Two))
+		addTraitWithFeatures(e, "Talent", newSkillBonusTo("Broadsword", fxp.One))
+		e.Recalculate()
+		var data CellData
+		sk.CellData(SkillDescriptionColumn, &data)
+		c.Equal(tc.secondary, data.Secondary, "%v: inline", tc.option)
+		c.Equal(tc.tooltip, data.Tooltip, "%v: tooltip", tc.option)
+	}
+}
+
+// TestSkillCloneCopiesChildren verifies that cloning a skill container clones each of its children into the clone, for
+// the clone's owner, leaving the originals with their container.
+func TestSkillCloneCopiesChildren(t *testing.T) {
+	c := check.New(t)
+	container := NewSkill(nil, nil, true)
+	child := NewSkill(nil, container, false)
+	child.Name = "Broadsword"
+	container.Children = []*Skill{child}
+	e := NewEntity()
+	clone := container.Clone(LibraryFile{}, e, nil, Copy)
+	c.Equal(1, len(clone.Children), "the child is cloned")
+	if len(clone.Children) != 1 {
+		return
+	}
+	copied := clone.Children[0]
+	c.True(copied != child, "the clone holds a copy of the child")
+	c.Equal("Broadsword", copied.Name)
+	c.True(copied.Parent() == clone, "the copy's parent is the clone")
+	c.True(copied.DataOwner() == DataOwner(e), "the copy belongs to the clone's owner")
+	c.True(child.Parent() == container, "the original child stays with its container")
 }

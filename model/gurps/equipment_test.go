@@ -12,27 +12,18 @@ package gurps
 import (
 	"encoding/json/v2"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
-
-// TestEquipmentRatedStrength verifies that equipment reports its user-settable rated ST. Unlike traits, skills and
-// spells -- whose RatedStrength always returns 0 -- equipment genuinely carries one, and weapon strength calculations
-// depend on getting it back.
-func TestEquipmentRatedStrength(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	equipment := NewEquipment(e, nil, false)
-	c.Equal(fxp.Int(0), equipment.RatedStrength(), "equipment with no rated ST reports 0")
-	equipment.RatedST = fxp.FromInteger(12)
-	c.Equal(fxp.FromInteger(12), equipment.RatedStrength(), "equipment reports the rated ST it was given")
-}
 
 // TestNewEquipmentFromFileAttachesContainerData verifies that loading an equipment list attaches the owner to
 // container rows as well as to leaf rows, so that a container's own weapons get their sub-version fixups applied and
@@ -274,6 +265,73 @@ func TestEquipmentPageRefCellLooksForTheName(t *testing.T) {
 	c.Equal("Broadswords", data.Secondary, "a highlight is looked for as given")
 }
 
+// TestEquipmentCellDataLeavesOutWhatAKindLacks verifies that a group shows no quantity, value or weight of its own,
+// that a group picked from separately within a choice shows no totals either, and that a choice container shows no
+// equipped state, while a piece of equipment shows them all.
+func TestEquipmentCellDataLeavesOutWhatAKindLacks(t *testing.T) {
+	c := check.New(t)
+	group := NewEquipmentGroup(nil, nil)
+	item(group, "Rope", "10", "1 lb")
+	choice := newEquipmentChoice("Knife")
+	organizing := NewEquipmentGroup(nil, choice)
+	organizing.PickSeparately = true
+	item(organizing, "Rope", "10", "1 lb")
+	choice.Children = append(choice.Children, organizing)
+	columns := []int{
+		EquipmentEquippedColumn, EquipmentQuantityColumn, EquipmentCostColumn, EquipmentExtendedCostColumn,
+		EquipmentWeightColumn, EquipmentExtendedWeightColumn,
+	}
+	for _, one := range []struct {
+		name  string
+		eqp   *Equipment
+		shown []int
+	}{
+		{"equipment", newEquipmentItem("Rope", "10", "1 lb"), columns},
+		{"group", group, []int{EquipmentEquippedColumn, EquipmentExtendedCostColumn, EquipmentExtendedWeightColumn}},
+		{"group picked from separately", organizing, []int{EquipmentEquippedColumn}},
+		{"choice", choice, []int{EquipmentExtendedCostColumn, EquipmentExtendedWeightColumn}},
+	} {
+		for _, column := range columns {
+			var data CellData
+			one.eqp.CellData(column, &data)
+			c.Equal(slices.Contains(one.shown, column), data.Primary != "" || data.Type == cell.Toggle,
+				"%s: whether column %d shows anything", one.name, column)
+		}
+	}
+}
+
+// TestEquipmentEquippedCellDimsWhatIsNotReallyEquipped verifies that the equipped checkmark of equipment inside an
+// unequipped container keeps its own state but is dimmed, since none of the container's contents count as equipped.
+func TestEquipmentEquippedCellDimsWhatIsNotReallyEquipped(t *testing.T) {
+	c := check.New(t)
+	bag := NewEquipment(nil, nil, true)
+	rope := item(bag, "Rope", "10", "1 lb")
+	var data CellData
+	rope.CellData(EquipmentEquippedColumn, &data)
+	c.True(data.Checked)
+	c.False(data.Dim, "equipment that is really equipped isn't dimmed")
+	bag.Equipped = false
+	data = CellData{}
+	rope.CellData(EquipmentEquippedColumn, &data)
+	c.True(data.Checked, "the contents keep their own equipped state")
+	c.True(data.Dim, "the contents of an unequipped container are dimmed")
+}
+
+// TestEquipmentSecondaryText verifies that the notes shown with equipment give its rated ST, the uses it has left,
+// never more than its maximum, and its local notes, separated only where there is something to separate.
+func TestEquipmentSecondaryText(t *testing.T) {
+	c := check.New(t)
+	eqp := NewEquipment(nil, nil, false)
+	eqp.RatedST = fxp.FromInteger(12)
+	eqp.MaxUses = 3
+	eqp.Uses = 5
+	eqp.LocalNotes = "Heavy"
+	all := func(display.Option) bool { return true }
+	c.Equal("Rated ST 12; 3 of 3 uses left; Heavy", eqp.SecondaryText(all))
+	eqp.RatedST = 0
+	c.Equal("3 of 3 uses left; Heavy", eqp.SecondaryText(all))
+}
+
 // TestEquipmentHeaderDataAppliesDisplayFormats verifies that the totals in the carried and other equipment headers on
 // a page use the sheet's equipment weight and value display formats, and that whenever those formats change how a
 // total reads, the exact totals are offered as the header's tooltip. The totals are chosen so that the padding, not
@@ -366,6 +424,33 @@ func TestEquipmentDisplayFormatsWithoutEntityUseDefaultSheetSettings(t *testing.
 	c.Equal("8 lb; $1,234.5678", header.Detail)
 }
 
+// TestEquipmentFillWithNameableKeys verifies that the nameable keys of equipment are gathered from its text, its
+// prerequisites, its features and its weapons.
+func TestEquipmentFillWithNameableKeys(t *testing.T) {
+	c := check.New(t)
+	eqp := NewEquipment(nil, nil, false)
+	eqp.Name = "@Name@"
+	eqp.LocalNotes = "@Notes@"
+	eqp.BaseValue = "@Value@"
+	eqp.BaseWeight = "@Weight@"
+	eqp.Prereq = newPrereqListRequiringTrait("@Trait@")
+	eqp.Features = Features{newSkillBonusTo("@Skill@", fxp.One)}
+	w := NewWeapon(eqp, true)
+	w.Usage = "@Usage@"
+	eqp.Weapons = []*Weapon{w}
+	m := make(map[string]string)
+	eqp.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{
+		"Name":   nameable.Unset,
+		"Notes":  nameable.Unset,
+		"Value":  nameable.Unset,
+		"Weight": nameable.Unset,
+		"Trait":  nameable.Unset,
+		"Skill":  nameable.Unset,
+		"Usage":  nameable.Unset,
+	}, m)
+}
+
 // TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying the replacements for the keys
 // a piece of equipment has in use keeps those held for its disabled modifiers, which are never offered, while dropping
 // any that nothing uses any more.
@@ -453,6 +538,31 @@ func TestDisabledItemsAreLeftOutOfTheListTotals(t *testing.T) {
 	c.Equal("Carried Equipment (3 lb; $10)", title)
 }
 
+// TestEquipmentExtendedValueOfJustOne verifies that the value of just one piece of equipment is nothing when there are
+// none of it at all.
+func TestEquipmentExtendedValueOfJustOne(t *testing.T) {
+	c := check.New(t)
+	rope := newEquipmentItem("Rope", "10", "1 lb")
+	rope.Quantity = 0
+	c.Equal(fxp.Int(0), rope.ExtendedValueOfJustOne())
+}
+
+// TestEquipmentContainedWeightCountsModifierReductions verifies that the contained weight reductions a container's
+// modifiers carry, by percentage and by a fixed weight, reduce the weight of its contents.
+func TestEquipmentContainedWeightCountsModifierReductions(t *testing.T) {
+	c := check.New(t)
+	bag := NewEquipment(nil, nil, true)
+	item(bag, "Rope", "10", "10 lb")
+	percentage := NewContainedWeightReduction()
+	percentage.Reduction = "50%"
+	fixed := NewContainedWeightReduction()
+	fixed.Reduction = "2 lb"
+	mod := NewEquipmentModifier(nil, nil, false)
+	mod.Features = Features{percentage, fixed}
+	bag.SetModifiers([]*EquipmentModifier{mod})
+	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), bag.ContainedWeight(false, fxp.Pound))
+}
+
 // TestEquipmentContainerTypeDefaultsToPhysical verifies that a container written without a container type, as every
 // container was before groups existed, loads as a physical container keeping everything it had, and that only a group
 // writes its type out.
@@ -479,6 +589,40 @@ func TestEquipmentContainerTypeDefaultsToPhysical(t *testing.T) {
 	var loaded Equipment
 	c.NoError(json.Unmarshal(data, &loaded))
 	c.True(loaded.IsGroup(), "a group must load as one")
+}
+
+// TestEquipmentLoadsLegacyValueAndWeight verifies that equipment written before base values and weights existed takes
+// its old value and weight as its base ones, while a base value or weight it was written with is kept.
+func TestEquipmentLoadsLegacyValueAndWeight(t *testing.T) {
+	c := check.New(t)
+	id := string(NewEquipment(nil, nil, false).TID)
+	var legacy Equipment
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+id+`","value":"12.5","weight":"3 lb"}`), &legacy))
+	c.Equal("12.5", legacy.BaseValue)
+	c.Equal("3 lb", legacy.BaseWeight)
+	var both Equipment
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+id+
+		`","base_value":"20","base_weight":"5 lb","value":"12.5","weight":"3 lb"}`), &both))
+	c.Equal("20", both.BaseValue)
+	c.Equal("5 lb", both.BaseWeight)
+}
+
+// TestEquipmentCalcRecordsWeightForSkills verifies that the calculated data written out with equipment includes the
+// weight that counts for skills only when equipped equipment ignores its own weight for them.
+func TestEquipmentCalcRecordsWeightForSkills(t *testing.T) {
+	c := check.New(t)
+	eqp := newEquipmentItem("Armor", "100", "20 lb")
+	data, err := json.Marshal(eqp)
+	c.NoError(err)
+	c.False(strings.Contains(string(data), `"extended_weight_for_skills"`), string(data))
+	eqp.WeightIgnoredForSkills = true
+	data, err = json.Marshal(eqp)
+	c.NoError(err)
+	c.True(strings.Contains(string(data), `"extended_weight_for_skills":"0 lb"`), string(data))
+	eqp.Equipped = false
+	data, err = json.Marshal(eqp)
+	c.NoError(err)
+	c.False(strings.Contains(string(data), `"extended_weight_for_skills"`), string(data))
 }
 
 // TestEquipmentKinds verifies that each kind of equipment is named after what it is.

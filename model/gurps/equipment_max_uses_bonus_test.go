@@ -70,6 +70,13 @@ func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 	eqp.Features = Features{newMaxUsesBonus(equipmentsel.ThisEquipment, "x-5")}
 	c.Equal(10, eqp.ResolvedMaxUses(), "non-positive multiplier treated as 1")
 
+	perLevelMultiplier := newMaxUsesBonus(equipmentsel.ThisEquipment, "x2")
+	perLevelMultiplier.PerLevel = true
+	eqp = NewEquipment(nil, nil, false)
+	eqp.MaxUses = 10
+	eqp.Features = Features{perLevelMultiplier}
+	c.Equal(10, eqp.ResolvedMaxUses(), "a per-level multiplier on an item with no level treated as 1")
+
 	eqp = NewEquipment(nil, nil, false)
 	eqp.Equipped = false
 	eqp.MaxUses = 10
@@ -179,6 +186,18 @@ func TestEquipmentMaxUsesBonusCannotCreateMaximum(t *testing.T) {
 	c.Equal(0, potion.ResolvedMaxUses(), "an entity-wide bonus must not create a maximum")
 	potion.MaxUses = 1
 	c.Equal(6, potion.ResolvedMaxUses(), "precondition: the same bonus raises a declared maximum")
+}
+
+// TestEquipmentMaxUsesBonusNameableKeys verifies that a bonus contributes the markers in its name and tags criteria
+// only while it selects equipment by name, the one selection that consults them.
+func TestEquipmentMaxUsesBonusNameableKeys(t *testing.T) {
+	c := check.New(t)
+	bonus := newMaxUsesBonus(equipmentsel.EquipmentWithName, "+1")
+	bonus.NameCriteria.Qualifier = "@Item@"
+	bonus.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Tag@"}
+	c.Equal([]string{"Item", "Tag"}, nameableKeysOf(bonus), "a bonus selecting equipment by name")
+	bonus.SelectionType = equipmentsel.ThisEquipment
+	c.Equal(0, len(nameableKeysOf(bonus)), "a bonus to this equipment")
 }
 
 // TestEquipmentMaxUsesBonusRoundTrip verifies that each selector/operation combination survives a JSON round-trip.

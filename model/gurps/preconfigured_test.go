@@ -17,7 +17,7 @@ import (
 )
 
 // TestLoadingASheetClearsPreconfigured verifies that a character sheet or a loot sheet clears the preconfigured mark on
-// every row it loads, however deeply nested, since the mark means nothing on a sheet.
+// every row it loads, however deeply nested and even if disabled, since the mark means nothing on a sheet.
 func TestLoadingASheetClearsPreconfigured(t *testing.T) {
 	c := check.New(t)
 	entity := NewEntity()
@@ -25,6 +25,7 @@ func TestLoadingASheetClearsPreconfigured(t *testing.T) {
 	group.Preconfigured = true
 	nested := NewTrait(entity, group, false)
 	nested.Preconfigured = true
+	nested.SetDisabled(true)
 	group.Children = []*Trait{nested}
 	entity.Traits = []*Trait{group}
 	skill := NewSkill(entity, nil, false)

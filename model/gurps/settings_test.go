@@ -14,9 +14,11 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -25,6 +27,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -49,8 +53,7 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 }
 
 // TestLoadSettingsOrDefaultsWithValidFile verifies that a settings file loads whether or not it carries a header, which
-// files written before headers existed lack, without logging an error or leaving a stray backup behind, and that saving
-// the settings writes the header first.
+// files written before headers existed lack, without logging an error or leaving a stray backup behind.
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 	const content = `"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]`
 	for name, data := range map[string]string{
@@ -69,16 +72,6 @@ func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 			c.Equal(int32(0), count.Load())
 			_, err := os.Stat(p + ".bad")
 			c.HasError(err)
-
-			prevPath := SettingsPath
-			SettingsPath = filepath.Join(dir, "saved.json")
-			t.Cleanup(func() { SettingsPath = prevPath })
-			c.NoError(settings.Save())
-			var saved []byte
-			saved, err = os.ReadFile(SettingsPath)
-			c.NoError(err)
-			c.True(strings.HasPrefix(string(saved), headerPrefix(SettingsDataKind)), "the header is written first: %s",
-				saved)
 		})
 	}
 }
@@ -119,15 +112,24 @@ func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
 	}
 }
 
-// TestLoadWrappedOrBareFileRefusesAHeaderWithoutTheMember verifies that a file carrying a header but not the member the
-// data belongs under, such as an export from the Java release, is refused rather than loaded as holding no data.
-func TestLoadWrappedOrBareFileRefusesAHeaderWithoutTheMember(t *testing.T) {
+// TestLoadWrappedOrBareFileRefusesUnusableFiles verifies that a file carrying a header but not the member the data
+// belongs under, such as an export from the Java release, or data of either form that can't be decoded, is refused
+// rather than loaded as holding no data.
+func TestLoadWrappedOrBareFileRefusesUnusableFiles(t *testing.T) {
 	for name, tc := range map[string]struct {
 		data string
 		load func(fs.FS, string) error
 	}{
 		"page refs": {
 			data: `{"version":2,"page_refs":{"B":{"path":"/refs/basic.pdf","offset":2}}}`,
+			load: loadOnly(NewPageRefsFromFS),
+		},
+		"undecodable bare page refs": {
+			data: `{"B":5}`,
+			load: loadOnly(NewPageRefsFromFS),
+		},
+		"undecodable wrapped page refs": {
+			data: `{"version":2,"refs":{"B":5}}`,
 			load: loadOnly(NewPageRefsFromFS),
 		},
 		"key bindings": {
@@ -140,6 +142,44 @@ func TestLoadWrappedOrBareFileRefusesAHeaderWithoutTheMember(t *testing.T) {
 			fileSystem := fstest.MapFS{"file": &fstest.MapFile{Data: []byte(tc.data)}}
 			c.HasError(tc.load(fileSystem, "file"), "the file is refused")
 		})
+	}
+}
+
+// TestLoadSettingsOrDefaultsWithNullEntries verifies that a settings file holding a null in place of a page reference
+// or a library is survivable. Decoding one used to panic, which bypassed loadSettingsOrDefaults' recovery entirely and
+// crashed GCS at startup rather than leaving it with usable settings.
+func TestLoadSettingsOrDefaultsWithNullEntries(t *testing.T) {
+	c := check.New(t)
+	countLogs(t, slog.LevelError)
+	for _, tc := range []struct {
+		name  string
+		data  string
+		check func(settings *Settings)
+	}{
+		{
+			name: "page reference",
+			data: `"page_refs":{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`,
+			check: func(settings *Settings) {
+				list := settings.PageRefs.List()
+				c.Equal(1, len(list), "the null entry was skipped")
+				c.Equal("BX", list[0].ID, "the usable page reference entry survived")
+			},
+		},
+		{
+			name: "library",
+			data: `"libraries":{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`,
+			check: func(settings *Settings) {
+				c.NotNil(settings.Libraries.Lookup("someone/repo"), "the usable library entry survived")
+				c.Nil(settings.Libraries.Lookup("a/b"), "the null entry was skipped")
+			},
+		},
+	} {
+		p := filepath.Join(t.TempDir(), "settings.json")
+		c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3",`+tc.data+`}`), 0o600))
+		var settings Settings
+		c.NotPanics(func() { settings = loadSettingsOrDefaults(p) }, tc.name)
+		c.Equal("1.2.3", settings.LastSeenGCSVersion, "%s: the rest of the settings file still loaded", tc.name)
+		tc.check(&settings)
 	}
 }
 
@@ -182,6 +222,105 @@ func TestSettingsSaveWithNullMapEntries(t *testing.T) {
 	c.Equal(1, len(reloaded.LibraryExplorer.Nodes), "the saved file has just the usable node entry")
 	c.Equal(1, len(reloaded.ColumnSizing), "the saved file has just the usable column sizing entry")
 	c.Equal(1, len(reloaded.PDFs), "the saved file has just the usable PDF entry")
+}
+
+// TestSettingsSavePrunesStaleEntries verifies that Save drops the navigator, closed-state, column-sizing and PDF
+// entries last used more than 120 days ago, and navigator entries keyed in the form that predates folders in the
+// favorites, while it keeps recent ones and stamps a column-sizing entry that has no last-used time instead of dropping
+// it.
+func TestSettingsSavePrunesStaleEntries(t *testing.T) {
+	c := check.New(t)
+	prevPath := SettingsPath
+	SettingsPath = filepath.Join(t.TempDir(), "settings.json")
+	t.Cleanup(func() { SettingsPath = prevPath })
+	fresh := time.Now().Unix()
+	stale := time.Now().Add(-time.Hour * 24 * 121).Unix()
+	settings := FactorySettings()
+	settings.LibraryExplorer.Nodes = map[string]*NavNodeInfo{
+		"F@fresh": {LastUsed: fresh},
+		"_@fresh": {LastUsed: fresh},
+		"F@stale": {LastUsed: stale},
+		"fresh":   {LastUsed: fresh},
+	}
+	settings.Closed = map[string]int64{"fresh": fresh, "stale": stale}
+	settings.ColumnSizing = map[string]map[int]float32{
+		"fresh":     {-1: ToColumnCutoff(fresh)},
+		"stale":     {-1: ToColumnCutoff(stale)},
+		"unstamped": {0: 120},
+	}
+	settings.PDFs = map[string]*PDFInfo{"fresh": {LastOpened: fresh}, "stale": {LastOpened: stale}}
+	c.NoError(settings.Save())
+	c.Equal([]string{"F@fresh", "_@fresh"}, slices.Sorted(maps.Keys(settings.LibraryExplorer.Nodes)))
+	c.Equal([]string{"fresh"}, slices.Sorted(maps.Keys(settings.Closed)))
+	c.Equal([]string{"fresh", "unstamped"}, slices.Sorted(maps.Keys(settings.ColumnSizing)))
+	c.True(settings.ColumnSizing["unstamped"][-1] >= ToColumnCutoff(fresh), "the unstamped entry is stamped as used now")
+	c.Equal([]string{"fresh"}, slices.Sorted(maps.Keys(settings.PDFs)))
+}
+
+// TestSettingsEnsureValidity verifies that the loot generator's value range is made usable and that the groups opened
+// in a window of their own are made valid, unique and sorted.
+func TestSettingsEnsureValidity(t *testing.T) {
+	c := check.New(t)
+	settings := FactorySettings()
+	settings.LootGenMinValue = -fxp.One
+	settings.OpenInWindow = []dgroup.Group{dgroup.Settings, dgroup.Group(200), dgroup.PDFs, dgroup.Settings}
+	settings.EnsureValidity()
+	c.Equal(fxp.Thousand, settings.LootGenMinValue, "a minimum that isn't positive takes the default")
+	c.Equal(fxp.TenThousand, settings.LootGenMaxValue, "a maximum that isn't positive takes the default")
+	c.Equal([]dgroup.Group{dgroup.CharacterSheets, dgroup.PDFs, dgroup.Settings}, settings.OpenInWindow)
+	settings.LootGenMaxValue = fxp.Hundred
+	settings.EnsureValidity()
+	c.Equal(fxp.Thousand, settings.LootGenMaxValue, "a maximum below the minimum is raised to it")
+}
+
+// TestSettingsRecentFiles verifies that only readable files of a type GCS opens are recorded, by absolute path, most
+// recent first, once each and at most maxRecentFiles of them, and that listing them forgets any no longer readable.
+func TestSettingsRecentFiles(t *testing.T) {
+	c := check.New(t)
+	savedRegistry := fileTypeRegistry
+	t.Cleanup(func() { fileTypeRegistry = savedRegistry })
+	fileTypeRegistry = map[string]*FileInfo{".rec": {}, ".special": {IsSpecial: true}}
+	dir := t.TempDir()
+	file := func(name string) string {
+		p := filepath.Join(dir, name)
+		c.NoError(os.WriteFile(p, nil, 0o600))
+		return p
+	}
+	var settings Settings
+	a := file("a.rec")
+	b := file("b.REC")
+	settings.AddRecentFile(a)
+	settings.AddRecentFile(strings.Join([]string{dir, "x", "..", "b.REC"}, string(filepath.Separator)))
+	c.Equal([]string{b, a}, settings.RecentFiles, "the most recent comes first, by its cleaned absolute path")
+	settings.AddRecentFile(a)
+	c.Equal([]string{a, b}, settings.RecentFiles, "reopening a file moves it to the front rather than adding it again")
+	settings.AddRecentFile(file("c.special"))
+	settings.AddRecentFile(file("d.txt"))
+	settings.AddRecentFile(filepath.Join(dir, "missing.rec"))
+	c.Equal([]string{a, b}, settings.RecentFiles, "files GCS doesn't open, or that can't be read, aren't recorded")
+	for i := range maxRecentFiles {
+		settings.AddRecentFile(file(fmt.Sprintf("%d.rec", i)))
+	}
+	c.Equal(maxRecentFiles, len(settings.RecentFiles), "the oldest fall off the end")
+	c.NoError(os.Remove(settings.RecentFiles[1]))
+	list := settings.ListRecentFiles()
+	c.Equal(maxRecentFiles-1, len(list), "a file no longer readable isn't listed")
+	c.Equal(list, settings.RecentFiles, "and is forgotten")
+}
+
+// TestIDForPDFTOC verifies that a table of contents entry keeps its ID, that entries sharing a title and page are told
+// apart by occurrence, and that the first occurrence keeps the ID recorded under the bare title before that.
+func TestIDForPDFTOC(t *testing.T) {
+	c := check.New(t)
+	settings := GlobalSettings()
+	const pdf = "/does/not/exist/toc.pdf"
+	known := tid.MustNewTID(kinds.TableOfContents)
+	settings.PDFs[pdf] = &PDFInfo{TOC: map[string]map[int]tid.TID{"Chapter 1": {3: known}}}
+	t.Cleanup(func() { delete(settings.PDFs, pdf) })
+	c.Equal(known, IDForPDFTOC(pdf, "Chapter 1", 3, 0), "the first occurrence is keyed by the bare title")
+	second := IDForPDFTOC(pdf, "Chapter 1", 3, 1)
+	c.NotEqual(known, second, "a later occurrence gets an ID of its own")
+	c.Equal(second, IDForPDFTOC(pdf, "Chapter 1", 3, 1), "and keeps it")
 }
 
 // TestSettingsSaveCapturesLiveThemeEdits verifies that Save writes the live theme colors and fonts. The settings UI
@@ -393,10 +532,10 @@ func TestLoadSettingsKeepsTheFileWhenASellMoneyEntryIsUnreadable(t *testing.T) {
 	c.False(xos.FileExists(path+".bad"), "and not set aside")
 }
 
-// TestClosedStateIsConcurrencySafe verifies that the unmarshalers for the legacy file format, which record the open
-// state of their container rows in the global closed-state map, can run on a background goroutine -- as the deep search
+// TestClosedStateIsConcurrencySafe verifies that the unmarshalers for the legacy file format, which pass the "open"
+// flag of their container rows to the global closed-state map, can run on a background goroutine -- as the deep search
 // content cache runs them -- while the UI thread refreshes and toggles closed states and saves the settings. Without
-// the lock, both sides write the map and the runtime throws with "concurrent map writes".
+// the lock, the two sides race on the map.
 func TestClosedStateIsConcurrencySafe(t *testing.T) {
 	c := check.New(t)
 	prevPath := SettingsPath

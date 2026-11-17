@@ -16,7 +16,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// Width and height come back in the units the size itself specifies, not always in inches.
+// TestParsePageSizeUnits verifies that width and height come back in the units the size itself specifies, not always in
+// inches.
 func TestParsePageSizeUnits(t *testing.T) {
 	c := check.New(t)
 
@@ -41,15 +42,38 @@ func TestParsePageSizeUnits(t *testing.T) {
 	c.True(valid)
 	c.Equal(paper.Length{Length: 100, Units: paper.Millimeter}, width)
 	c.Equal(paper.Length{Length: 20, Units: paper.Centimeter}, height)
+
+	width, height = MustParsePageSize("a4")
+	c.Equal(paper.Length{Length: 210, Units: paper.Millimeter}, width)
+	c.Equal(paper.Length{Length: 297, Units: paper.Millimeter}, height)
 }
 
+// TestParsePageSizeInvalid verifies that a size that is unknown, malformed or outside the usable range in either
+// dimension is refused, and that MustParsePageSize falls back to the first standard paper size for it.
 func TestParsePageSizeInvalid(t *testing.T) {
 	c := check.New(t)
-	for _, one := range []string{"", "bogus", "1x", "x1", "0.01in x 1in", "1000in x 1in"} {
+	for _, one := range []string{"", "bogus", "1x", "x1", "0.01in x 1in", "1000in x 1in", "8in x", "8in x 1000in"} {
 		_, _, valid := ParsePageSize(one)
 		c.False(valid, one)
 		width, height := MustParsePageSize(one)
 		c.Equal(StdPaperSizes[0].Width, width, one)
 		c.Equal(StdPaperSizes[0].Height, height, one)
 	}
+}
+
+// TestEnsurePageSizeIsValid verifies that a page size is stored in canonical form: a standard size by its name, whether
+// given by name or by dimensions, any other usable size as its two dimensions, and anything else as the first standard
+// size.
+func TestEnsurePageSizeIsValid(t *testing.T) {
+	c := check.New(t)
+	for in, want := range map[string]string{
+		" NA-Legal ":    "legal",
+		"210mm x 297mm": "a4",
+		"100mm x 20cm":  "100 mm x 20 cm",
+		"bogus":         "letter",
+	} {
+		c.Equal(want, EnsurePageSizeIsValid(in), in)
+	}
+	c.Equal("letter", ToPageSize(paper.Length{Length: 1, Units: paper.Inch}, paper.Length{Length: 11, Units: paper.Inch}),
+		"dimensions outside the usable range become the first standard size")
 }

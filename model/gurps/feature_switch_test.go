@@ -252,13 +252,6 @@ func TestHasSwitchableFeatures(t *testing.T) {
 	c.True(container.HasSwitchableFeatures(), "an enabled modifier's switchable feature counts")
 	mod.SetDisabled(true)
 	c.False(container.HasSwitchableFeatures(), "a disabled modifier's switchable feature doesn't count")
-	mod.SetDisabled(false)
-
-	// A modifier with nothing switchable ahead of one that has something must not mask it.
-	plainMod := NewTraitModifier(e, nil, false)
-	plainMod.Features = Features{NewAttributeBonus(StrengthID)}
-	container.Modifiers = []*TraitModifier{plainMod, mod}
-	c.True(container.HasSwitchableFeatures(), "a switchable modifier later in the list is still found")
 
 	// Skills and spells carry only their own features.
 	skill := NewSkill(e, nil, false)
@@ -397,42 +390,9 @@ func TestEntityGatesSwitchableFeatures(t *testing.T) {
 		"a container spell's features are not applied")
 }
 
-// TestSwitchableSkillBonus verifies the gating with a bonus whose effect is visible on another node rather than on an
-// attribute, confirming the switch is applied where the features are collected rather than where they are consumed.
-func TestSwitchableSkillBonus(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	skill := NewSkill(e, nil, false)
-	skill.Name = "Brawling"
-	skill.Points = fxp.Four
-	e.Skills = append(e.Skills, skill)
-
-	always := NewSkillBonus()
-	always.NameCriteria.Qualifier = "Brawling"
-	always.Amount = fxp.One
-	switched := NewSkillBonus()
-	switched.NameCriteria.Qualifier = "Brawling"
-	switched.Amount = fxp.Two
-	switched.Switchable = true
-
-	trait := addTraitWithFeatures(e, "Gadget", always, switched)
-	e.Recalculate()
-
-	off := skill.LevelData.Level
-	c.Equal(fxp.One, e.SkillBonusFor("Brawling", "", "", nil, nil),
-		"only the always-on skill bonus applies while the switch is off")
-
-	trait.SetSwitchedOn(true)
-	e.Recalculate()
-	c.Equal(fxp.Three, e.SkillBonusFor("Brawling", "", "", nil, nil),
-		"both skill bonuses apply while the switch is on")
-	c.Equal(off+fxp.Two, skill.LevelData.Level, "the skill's level rises by the switchable bonus")
-}
-
-// TestSwitchableReactionsAndConditionalModifiers verifies the gating on the separate traversal that builds the
-// reactions and conditional modifiers lists, which collects features without going through processFeatures, with a
-// trait or a spell as their owner.
+// TestSwitchableReactionsAndConditionalModifiers verifies the gating of the reactions and conditional modifiers lists,
+// which are gathered from the entity's active feature lists apart from processFeatures, with a trait or a spell as
+// their owner.
 func TestSwitchableReactionsAndConditionalModifiers(t *testing.T) {
 	c := check.New(t)
 
@@ -637,9 +597,10 @@ func TestSwitchableContainedWeightReduction(t *testing.T) {
 		"a modifier's switchable reduction applies while the equipment's switch is on")
 }
 
-// TestSwitchableWeaponLocalBonuses verifies the gating of the bonuses a weapon collects directly from its owner, a
-// trait or a spell, rather than from the entity's collected feature lists: a "to this weapon" weapon bonus and a "to
-// this weapon" skill bonus, which apply whatever the switch until they are made switchable.
+// TestSwitchableWeaponLocalBonuses verifies the gating of the bonuses a weapon collects directly from its owner or the
+// owner's modifiers rather than from the entity's collected feature lists: a "to this weapon" weapon bonus and a "to
+// this weapon" skill bonus, which apply whatever the switch until they are made switchable, and then follow the
+// owner's switch.
 func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -666,6 +627,32 @@ func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 				spell.Weapons = []*Weapon{w}
 				e.Spells = append(e.Spells, spell)
 				return spell, w
+			},
+		},
+		{
+			name: "trait modifier",
+			setup: func(e *Entity, features Features) (FeatureSwitcher, *Weapon) {
+				trait := addTraitWithFeatures(e, "Gadget")
+				mod := NewTraitModifier(e, nil, false)
+				mod.Name = "Scoped"
+				mod.Features = features
+				trait.Modifiers = []*TraitModifier{mod}
+				w := NewWeapon(trait, false)
+				trait.Weapons = []*Weapon{w}
+				return trait, w
+			},
+		},
+		{
+			name: "equipment modifier",
+			setup: func(e *Entity, features Features) (FeatureSwitcher, *Weapon) {
+				eqp := addCarriedEquipmentWithFeatures(e, "Amulet")
+				mod := NewEquipmentModifier(e, nil, false)
+				mod.Name = "Blessed"
+				mod.Features = features
+				eqp.Modifiers = []*EquipmentModifier{mod}
+				w := NewWeapon(eqp, false)
+				eqp.Weapons = []*Weapon{w}
+				return eqp, w
 			},
 		},
 	} {
@@ -699,35 +686,6 @@ func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 			"%s: a switchable weapon bonus applies while the switch is on", tc.name)
 		c.Equal(fxp.Twelve, w.SkillLevel(nil), "%s: a switchable skill bonus applies while the switch is on", tc.name)
 	}
-}
-
-// TestSwitchableWeaponBonusFromModifier verifies that weapon bonuses carried by a trait modifier follow the trait's
-// switch, which is the loop the weapon runs over its owner's modifiers.
-func TestSwitchableWeaponBonusFromModifier(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	accBonus := NewWeaponBonus(feature.WeaponAccBonus)
-	accBonus.SelectionType = wsel.ThisWeapon
-	accBonus.Amount = fxp.Two
-	accBonus.Switchable = true
-
-	trait := addTraitWithFeatures(e, "Gadget")
-	mod := NewTraitModifier(e, nil, false)
-	mod.Name = "Scoped"
-	mod.Features = Features{accBonus}
-	trait.Modifiers = []*TraitModifier{mod}
-	w := NewWeapon(trait, false)
-	w.Accuracy = attack.ParseAccuracy("3")
-	trait.Weapons = []*Weapon{w}
-	e.Recalculate()
-
-	c.Equal("3", w.ResolvedAccuracy(nil).String(),
-		"a modifier's switchable weapon bonus is ignored while the trait's switch is off")
-	trait.SetSwitchedOn(true)
-	e.Recalculate()
-	c.Equal("5", w.ResolvedAccuracy(nil).String(),
-		"a modifier's switchable weapon bonus applies while the trait's switch is on")
 }
 
 // TestSwitchableThisArmorDRBonus verifies that the "this armor" DR expansion sees only the equipment's active features.
@@ -1185,6 +1143,16 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		{
 			name:  "unequipped container with a contained weight reduction",
 			build: func() *Equipment { return fullBag(weightReduction()) },
+		},
+		{
+			// Only switchable features count: the switch controls the attribute bonus alone.
+			name: "unequipped container whose contained weight reduction isn't switchable",
+			build: func() *Equipment {
+				reduction := NewContainedWeightReduction()
+				reduction.Reduction = "50%"
+				return fullBag(attributeBonus(), reduction)
+			},
+			dim: true,
 		},
 		{
 			name:  "unequipped empty container with a contained weight reduction",

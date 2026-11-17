@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -26,12 +27,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/uti"
 )
 
-// TestFilteredExtensionLists verifies that each of the filtered extension lists selects only the registered
-// extensions carrying its flag and returns them in natural sort order, so that a type registered under several
-// extensions contributes each of them and a flag on one type never leaks into another list. The model tests don't run
-// the ux-layer file-type registration, so the registry is seeded here and restored afterward.
-func TestFilteredExtensionLists(t *testing.T) {
-	c := check.New(t)
+// useEmptyFileTypeRegistry empties the file type registry for the rest of the test, then restores it. The model tests
+// don't run the ux-layer file-type registration, so tests of the registry seed their own.
+func useEmptyFileTypeRegistry(t *testing.T) {
+	t.Helper()
 	savedRegistry := maps.Clone(fileTypeRegistry)
 	savedKnown := KnownFileTypes
 	t.Cleanup(func() {
@@ -40,20 +39,29 @@ func TestFilteredExtensionLists(t *testing.T) {
 	})
 	fileTypeRegistry = make(map[string]*FileInfo)
 	KnownFileTypes = nil
+}
+
+// TestFilteredExtensionLists verifies that each of the filtered extension lists selects only the registered
+// extensions carrying its flag and returns them in natural sort order, so that a type registered under several
+// extensions contributes each of them and a flag on one type never leaks into another list, and that the mime types
+// are those of the openable types, each listed once, in natural sort order.
+func TestFilteredExtensionLists(t *testing.T) {
+	c := check.New(t)
+	useEmptyFileTypeRegistry(t)
 
 	(&FileInfo{
 		Name:             "GCS Data",
-		UTI:              &uti.DataType{Extensions: []string{".test10", ".test2"}},
+		UTI:              &uti.DataType{Extensions: []string{".test10", ".test2"}, MimeTypes: []string{"x/b", "x/10"}},
 		IsGCSData:        true,
 		IsDeepSearchable: true,
 	}).Register()
 	(&FileInfo{
 		Name: "Openable Only",
-		UTI:  &uti.DataType{Extensions: []string{".test1"}},
+		UTI:  &uti.DataType{Extensions: []string{".test1"}, MimeTypes: []string{"x/a", "x/2", "x/10"}},
 	}).Register()
 	(&FileInfo{
 		Name:      "Special",
-		UTI:       &uti.DataType{Extensions: []string{".special"}},
+		UTI:       &uti.DataType{Extensions: []string{".special"}, MimeTypes: []string{"x/special"}},
 		IsSpecial: true,
 		IsGCSData: true,
 	}).Register()
@@ -61,6 +69,31 @@ func TestFilteredExtensionLists(t *testing.T) {
 	c.Equal([]string{".test1", ".test2", ".test10"}, AcceptableExtensions())
 	c.Equal([]string{".test2", ".test10"}, DeepSearchableExtensions())
 	c.Equal([]string{".special", ".test2", ".test10"}, GCSExtensions())
+	// The mime types come from a map, so an unsorted list could match by chance; repeat to make that vanishingly
+	// unlikely.
+	want := []string{"x/2", "x/10", "x/a", "x/b"}
+	for range 20 {
+		if got := RegisteredMimeTypes(); !slices.Equal(want, got) {
+			c.Equal(want, got)
+			break
+		}
+	}
+}
+
+// TestFileInfoFor verifies that a path's file type is found by its extension regardless of case, and that a path whose
+// extension isn't registered, or that has none, gets the generic file type.
+func TestFileInfoFor(t *testing.T) {
+	c := check.New(t)
+	useEmptyFileTypeRegistry(t)
+	generic := &FileInfo{Name: "Generic", UTI: &uti.DataType{Extensions: []string{GenericFile}}}
+	generic.Register()
+	sheet := &FileInfo{Name: "Sheet", UTI: &uti.DataType{Extensions: []string{SheetExt}}}
+	sheet.Register()
+
+	c.True(FileInfoFor("dir/Name"+SheetExt) == sheet, "the type is found by its extension")
+	c.True(FileInfoFor("dir/Name"+strings.ToUpper(SheetExt)) == sheet, "the extension's case doesn't matter")
+	c.True(FileInfoFor("dir/Name.unknown") == generic, "an unregistered extension gets the generic type")
+	c.True(FileInfoFor("dir/Name") == generic, "no extension gets the generic type")
 }
 
 // headerPrefix returns the text every saved file of the given kind starts with: the header, written first.
@@ -175,8 +208,10 @@ func TestDataFilesCarryTheirKind(t *testing.T) {
 			other := all[(i+1)%len(all)]
 			err = other.load(os.DirFS(dir), base)
 			c.HasError(err, "the file is refused as %s data", other.fileType)
-			c.Contains(err.Error(), `"`+kind.fileType+`"`)
-			c.Contains(err.Error(), `"`+other.fileType+`"`)
+			if err != nil {
+				c.Contains(err.Error(), `"`+kind.fileType+`"`)
+				c.Contains(err.Error(), `"`+other.fileType+`"`)
+			}
 		})
 	}
 }

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,9 +104,15 @@ func TestNewSheetSettingsFromFileLegacyFields(t *testing.T) {
 // factory defaults.
 func TestNewSheetSettingsFromFileErrors(t *testing.T) {
 	c := check.New(t)
-	_, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, `{"damage_progression":`))
-	c.HasError(err)
-	_, err = NewSheetSettingsFromFile(nil, filepath.Join(t.TempDir(), "does_not_exist.sheet"))
+	for _, content := range []string{
+		`{"damage_progression":`,
+		`{"buy_percent":"lots"}`,
+		`{"sheet_settings":5}`,
+	} {
+		_, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, content))
+		c.HasError(err, content)
+	}
+	_, err := NewSheetSettingsFromFile(nil, filepath.Join(t.TempDir(), "does_not_exist.sheet"))
 	c.HasError(err)
 }
 
@@ -250,8 +257,8 @@ func newTestSellMoney() *Equipment {
 // TestSheetSettingsSellMoneyRoundTrip checks that the sell money is written without the derived "calc" values and read
 // back as copies with their IDs and sources, no data owner, their weapons and modifiers attached, and the preconfigured
 // mark and disabled state cleared; and that what a file can hold but can't be money is dropped without error: null,
-// containers, equipment not tagged as money, and the entries of the unreleased format that named a library item by its
-// source, which decode as equipment with nothing but an ID.
+// containers, equipment not tagged as money, the entries of the unreleased format that named a library item by its
+// source, which decode as equipment with nothing but an ID, and a value that isn't a list at all.
 func TestSheetSettingsSellMoneyRoundTrip(t *testing.T) {
 	c := check.New(t)
 	libFile := LibraryFile{Library: "Test Library", Path: "Coins" + EquipmentExt}
@@ -300,6 +307,14 @@ func TestSheetSettingsSellMoneyRoundTrip(t *testing.T) {
 	loaded = SheetSettings{}
 	c.NoError(jio.Unmarshal([]byte(old), &loaded), "an entry of the unreleased format must not fail the load")
 	c.Equal(0, len(loaded.SellMoney), "it is dropped")
+
+	loaded = SheetSettings{}
+	logged := countLogs(t, slog.LevelError)
+	c.NoError(jio.Unmarshal([]byte(`{"sell_money":{"id":"x"},"buy_percent":120}`), &loaded),
+		"sell money that isn't a list must not fail the load")
+	c.Equal(0, len(loaded.SellMoney), "it is dropped")
+	c.Equal(int32(1), logged.Load(), "and that is logged")
+	c.Equal(120, loaded.BuyPercent, "the rest of the settings still load")
 
 	empty, err := jio.Marshal(FactorySheetSettings())
 	c.NoError(err)
@@ -379,6 +394,63 @@ func TestSellMoneyCopiesLeaveNoClosedStates(t *testing.T) {
 	e.SheetSettings.SellMoney = SellMoneyList{coin}
 	c.Equal(1, len(e.SellMoneyItems()))
 	c.Equal(before, count(), "paying out records nothing")
+}
+
+func librarySourced(eqp *Equipment) *Equipment {
+	lib := LibraryFile{Library: "Basic Set", Path: "Basic Set Equipment.eqp"}
+	eqp.Source = Source{LibraryFile: lib, TID: eqp.TID}
+	return eqp
+}
+
+// TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only equipment tagged as money (see MoneyTag) that isn't a
+// container and that no entry already listed MergeMatches can be sell money, since buying spends only money so tagged,
+// and sell money that buying can't spend would be dead weight. Where the equipment comes from doesn't matter, and what
+// is listed is a copy of it, made as a drop into a list makes one.
+func TestAddSellMoneyRejectsWhatCanNotBeMoney(t *testing.T) {
+	c := check.New(t)
+	var s SheetSettings
+	silver := librarySourced(denomination("Silver Eagle", "20"))
+	carried := silver.Clone(LibraryFile{}, NewEntity(), nil, Reference)
+	carried.Quantity = fxp.Ten
+	carried.Equipped = false
+	preconfigured := denomination("Silver Eagle", "20")
+	preconfigured.Preconfigured = true
+	homebrew := denomination("Homebrew Coin", "5")
+	untagged := librarySourced(newEquipmentItem("Gold Crown", "100", "0"))
+	container := NewEquipment(nil, nil, true)
+	container.Tags = []string{MoneyTag}
+	c.True(s.AddSellMoney(silver, LibraryFile{}))
+	c.False(s.CanAddSellMoney(silver))
+	c.False(s.AddSellMoney(silver, LibraryFile{}), "an item already listed isn't added again")
+	c.False(s.AddSellMoney(carried, LibraryFile{}), "nor a sheet's copy of it, whatever its quantity and equipped state")
+	c.False(s.AddSellMoney(preconfigured, LibraryFile{}), "nor one marked preconfigured, since the copy clears the mark")
+	c.True(s.AddSellMoney(homebrew, LibraryFile{}), "equipment from anywhere can be money")
+	c.False(s.AddSellMoney(untagged, LibraryFile{}), "an item that isn't tagged as money can't be spent and so isn't sell money")
+	c.False(s.AddSellMoney(container, LibraryFile{}))
+	c.False(s.AddSellMoney(nil, LibraryFile{}))
+	c.Equal(2, len(s.SellMoney))
+	c.Equal("Silver Eagle", s.SellMoney[0].Name)
+	c.True(s.SellMoney[0] != silver, "a copy is listed, not the item itself")
+	c.NotEqual(silver.TID, s.SellMoney[0].TID)
+	c.Equal(silver.Source, s.SellMoney[0].Source, "the copy keeps the item's Source")
+	c.Equal("Homebrew Coin", s.SellMoney[1].Name)
+	c.True(s.SellMoney[1].Source.IsZero(), "a copy of an item with no Source, from no library, has none")
+	c.False(s.SellMoney[1].Preconfigured)
+	c.Nil(s.SellMoney[1].DataOwner())
+}
+
+// TestRemoveSellMoney verifies that RemoveSellMoney removes only the entry with the given ID, and reports whether there
+// was one.
+func TestRemoveSellMoney(t *testing.T) {
+	c := check.New(t)
+	var s SheetSettings
+	c.True(s.AddSellMoney(denomination("Silver Eagle", "20"), LibraryFile{}))
+	c.True(s.AddSellMoney(denomination("Copper Penny", "1"), LibraryFile{}))
+	silver, copper := s.SellMoney[0], s.SellMoney[1]
+	c.True(s.RemoveSellMoney(silver.TID))
+	c.False(s.RemoveSellMoney(silver.TID))
+	c.False(s.RemoveSellMoney(""))
+	c.Equal(SellMoneyList{copper}, s.SellMoney)
 }
 
 // TestSheetSettingsCloneTakesTheEntity checks that a clone made for an entity belongs to it, and one made for none to

@@ -13,12 +13,16 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -315,16 +319,6 @@ func TestSelectorOverrideJSONSelectionType(t *testing.T) {
 	data, err := jio.Marshal(Features{bySkill})
 	c.NoError(err)
 	c.Contains(string(data), `"selection_type":"weapons_with_required_skill"`, "the zero-valued selection is written")
-	var restored Features
-	c.NoError(jio.Unmarshal(data, &restored))
-	c.Equal(1, len(restored))
-	if len(restored) == 1 {
-		o, ok := restored[0].(*SelectorOverride)
-		c.True(ok)
-		if ok {
-			c.Equal(wsel.WithRequiredSkill, o.SelectionType, "and read back")
-		}
-	}
 	checkFeaturesJSONRoundTrip(c, Features{
 		bySkill, newDamageTypeOverride(wsel.ThisWeapon, "cut"),
 		newDamageTypeOverride(wsel.WithName, "cut"),
@@ -353,4 +347,186 @@ func TestSelectorOverrideNameableKeysBySelection(t *testing.T) {
 	c.Equal([]string{"Type", "Usage"}, keys(), "selecting this weapon has only a usage and damage type")
 	o.Field = selector.TraitFrequency
 	c.Equal([]string{"Name", "Tag"}, keys(), "a trait-scoped override has a name and tags, whatever its selection")
+}
+
+// TestSelectorFieldDescriptors verifies the field wiring: every selector.Field has a descriptor, and a constrained
+// field's suggested states are all valid stored values with a non-empty picker label, which catches enum-key typos in
+// the descriptor table.
+func TestSelectorFieldDescriptors(t *testing.T) {
+	c := check.New(t)
+	for _, field := range selector.Fields {
+		d := SelectorFieldDescriptorFor(field)
+		c.Equal(field, d.Field, "descriptor is registered for %v", field)
+		if d.FreeForm || d.StateTitle == nil {
+			continue
+		}
+		for _, state := range d.SuggestedStates {
+			c.True(d.StateTitle(state) != "", "state %q of %v has a label", state, field)
+		}
+	}
+
+	// A duplicated or misspelled strength-basis key would collapse two picker entries onto the same stdmg option.
+	d := SelectorFieldDescriptorFor(selector.WeaponDamageStrengthBasis)
+	seen := make(map[stdmg.Option]bool)
+	for _, state := range d.SuggestedStates {
+		opt := stdmg.ExtractOption(state)
+		c.Equal(state, opt.Key(), "state %q round-trips through stdmg", state)
+		c.False(seen[opt], "state %q is not a duplicate", state)
+		seen[opt] = true
+	}
+
+	// The numeric damage fields validate fixed-point input; the dice-spec fields are free-form with no validator.
+	for _, field := range []selector.Field{
+		selector.WeaponArmorDivisor, selector.WeaponFragmentationArmorDivisor,
+		selector.WeaponDamageStrengthMultiplier, selector.WeaponDamagePerDieModifier,
+	} {
+		nd := SelectorFieldDescriptorFor(field)
+		c.True(nd.Validate != nil, "%v has a validator", field)
+		if nd.Validate != nil {
+			c.True(nd.Validate("2"), "%v accepts a number", field)
+			c.False(nd.Validate("abc"), "%v rejects a non-number", field)
+		}
+	}
+	for _, field := range []selector.Field{
+		selector.WeaponBaseDamageDice, selector.WeaponBaseDamageDicePerLevel, selector.WeaponFragmentationDice,
+	} {
+		c.True(SelectorFieldDescriptorFor(field).Validate == nil, "%v is free-form (no validator)", field)
+	}
+
+	c.Equal(SelectorScopeWeapon, SelectorFieldDescriptorFor(selector.WeaponDamageType).Scope, "damage type is weapon-scoped")
+	freq := SelectorFieldDescriptorFor(selector.TraitFrequency)
+	c.Equal(SelectorScopeTrait, freq.Scope, "trait frequency is trait-scoped")
+
+	// A bad frequency key would mislabel or drop a choice.
+	c.Equal(len(frequency.Rolls), len(freq.SuggestedStates), "one state per frequency roll")
+	for _, state := range freq.SuggestedStates {
+		n, err := strconv.Atoi(state)
+		c.True(err == nil, "state %q is numeric", state)
+		roll := frequency.Roll(n)
+		c.Equal(roll, roll.EnsureValid(), "state %q is a valid frequency roll", state)
+		c.Equal(roll.String(), freq.StateTitle(state), "state %q label matches the roll", state)
+	}
+
+	// The self-control fields are trait-scoped constrained enums whose states round-trip through their enums.
+	for _, field := range []selector.Field{selector.TraitSelfControlRoll, selector.TraitSelfControlAdjustment} {
+		c.Equal(SelectorScopeTrait, SelectorFieldDescriptorFor(field).Scope, "%v is trait-scoped", field)
+	}
+	cr := SelectorFieldDescriptorFor(selector.TraitSelfControlRoll)
+	c.Equal(len(selfctrl.Rolls), len(cr.SuggestedStates), "one state per self-control roll")
+	for _, state := range cr.SuggestedStates {
+		n, err := strconv.Atoi(state)
+		c.True(err == nil, "state %q is numeric", state)
+		roll := selfctrl.Roll(n)
+		c.Equal(roll, roll.EnsureValid(), "state %q is a valid self-control roll", state)
+		c.Equal(roll.String(), cr.StateTitle(state), "state %q label matches the roll", state)
+	}
+	adj := SelectorFieldDescriptorFor(selector.TraitSelfControlAdjustment)
+	c.Equal(len(selfctrl.Adjustments), len(adj.SuggestedStates), "one state per adjustment")
+	for _, state := range adj.SuggestedStates {
+		option := selfctrl.ExtractAdjustment(state)
+		c.Equal(state, option.Key(), "state %q round-trips through the adjustment key", state)
+		c.Equal(option.String(), adj.StateTitle(state), "state %q label matches the adjustment", state)
+	}
+}
+
+// TestSelectorOverrideSpecificityScope verifies that only the criteria the override actually matches on count toward
+// specificity. A trait-scoped override never consults the usage criterion (traits have no usage), and a weapon-scoped
+// one consults the specialization and relative skill level only when selecting by required skill, so a leftover
+// criterion -- which the editor hides once the field or the selection no longer uses it -- must not silently win a
+// tie-break it does nothing to constrain. An override selecting the weapons of its own item counts as having pinned
+// their name and tags, since it is at least that narrow.
+func TestSelectorOverrideSpecificityScope(t *testing.T) {
+	c := check.New(t)
+
+	trait := NewSelectorOverride(selector.TraitSelfControlRoll)
+	c.Equal(1, trait.OverrideSpecificity(), "only the name criterion constrains a trait-scoped override")
+	trait.UsageCriteria.Compare = criteria.IsText
+	trait.UsageCriteria.Qualifier = "Swung"
+	c.Equal(1, trait.OverrideSpecificity(), "a usage criterion a trait can't match adds no specificity")
+	trait.TagsCriteria.Compare = criteria.ContainsText
+	trait.TagsCriteria.Qualifier = "Mental"
+	c.Equal(2, trait.OverrideSpecificity(), "the tag criterion does constrain a trait-scoped override")
+
+	weapon := NewSelectorOverride(selector.WeaponDamageType)
+	c.Equal(wsel.WithRequiredSkill, weapon.SelectionType, "precondition: a new weapon-scoped override selects by skill")
+	c.Equal(1, weapon.OverrideSpecificity(), "only the name criterion is set initially")
+	weapon.UsageCriteria.Compare = criteria.IsText
+	weapon.UsageCriteria.Qualifier = "Swung"
+	c.Equal(2, weapon.OverrideSpecificity(), "usage still counts for a weapon-scoped override")
+	weapon.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	c.Equal(3, weapon.OverrideSpecificity(), "the specialization constrains a selection by required skill")
+	weapon.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	c.Equal(4, weapon.OverrideSpecificity(), "as does the relative skill level")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(2, weapon.OverrideSpecificity(), "neither constrains a selection by name")
+	weapon.SelectionType = wsel.ThisWeapon
+	c.Equal(3, weapon.OverrideSpecificity(), "this weapon counts as name and tags, plus the usage")
+	weapon.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	c.Equal(4, weapon.OverrideSpecificity(), "the damage type constrains a selection of this weapon")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(3, weapon.OverrideSpecificity(), "and a selection by name")
+	weapon.SelectionType = wsel.WithRequiredSkill
+	c.Equal(5, weapon.OverrideSpecificity(), "and a selection by required skill")
+	trait.DamageTypeCriteria = weapon.DamageTypeCriteria
+	c.Equal(2, trait.OverrideSpecificity(), "but not a trait-scoped override, which traits can't match")
+	weapon.DamageTypeCriteria = criteria.Text{Compare: criteria.AnyText}
+	weapon.SelectionType = wsel.ThisWeapon
+	weapon.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+	c.Equal(2, weapon.OverrideSpecificity(), "and as name and tags alone without one")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(1, weapon.OverrideSpecificity(), "where a selection by name with the same criteria counts the name alone")
+}
+
+// TestSelectorFieldDescriptorForUnknownField verifies that an unrecognized field falls back to the zero-value free-form
+// descriptor. Normalizing the field first mapped every out-of-range value onto the first enum value, so an unknown
+// field quietly received the trait self-control roll descriptor -- wrong scope, wrong suggested states, and a
+// self-control key seeded into any new override built from it.
+func TestSelectorFieldDescriptorForUnknownField(t *testing.T) {
+	c := check.New(t)
+
+	unknown := selector.LastField + 1
+	d := SelectorFieldDescriptorFor(unknown)
+	c.Equal(unknown, d.Field, "the unknown field is echoed back")
+	c.True(d.FreeForm, "an unknown field is free-form")
+	c.Equal(0, len(d.SuggestedStates), "an unknown field suggests no states")
+	c.True(d.StateTitle == nil, "an unknown field has no state labeler")
+	c.True(d.Validate == nil, "an unknown field has no validator")
+	c.Equal(SelectorScopeWeapon, d.Scope, "an unknown field uses the zero-value scope")
+	c.Equal("", NewSelectorOverride(unknown).Value, "no state is seeded for an unknown field")
+}
+
+// TestSelectorOverrideUsesOwnerSubstitutions verifies that an override's criteria are filled from its owner's
+// substitutions, as with any bonus, not from those of the weapon or trait being matched, since those are the
+// substitutions its markers were filed under.
+func TestSelectorOverrideUsesOwnerSubstitutions(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+
+	weaponOverride := NewSelectorOverride(selector.WeaponDamageType)
+	weaponOverride.SelectionType = wsel.WithName
+	weaponOverride.Value = "cut"
+	weaponOverride.NameCriteria.Qualifier = "@Weapon@"
+	traitOverride := NewSelectorOverride(selector.TraitSelfControlRoll)
+	traitOverride.Value = strconv.Itoa(int(selfctrl.CR6))
+	traitOverride.NameCriteria.Qualifier = "@Target@"
+	master := NewTrait(e, nil, false)
+	master.Name = "Master"
+	master.Features = Features{weaponOverride, traitOverride}
+	master.Replacements = map[string]string{"Weapon": "Gadget", "Target": "Greed"}
+
+	gadget := NewTrait(e, nil, false)
+	gadget.Name = "Gadget"
+	w := NewWeapon(gadget, true)
+	w.Damage.Type = "cr"
+	gadget.Weapons = []*Weapon{w}
+
+	greed := NewTrait(e, nil, false)
+	greed.Name = "Greed"
+	greed.SelfControl = selfctrl.CR12
+
+	e.Traits = append(e.Traits, master, gadget, greed)
+	e.Recalculate()
+	c.Equal("cut", w.ResolveSelector(selector.WeaponDamageType, w.Damage.Type, nil),
+		"the weapon override matches through its owner's substitution")
+	c.Equal(selfctrl.CR6, greed.ResolvedSelfControl(nil), "the trait override matches through its owner's substitution")
 }

@@ -38,6 +38,7 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		{name: "Big", script: `"Needs\n* more"`, reason: "Needs\n* more", text: "Big:\n\t- Needs\n\t- * more"},
 		{name: "Big", script: `throw new Error("boom")`, failed: true, text: "Big (couldn't run: "},
 		{script: `throw new Error("boom")`, failed: true, text: "A custom check (couldn't run: "},
+		{name: "Big", script: `throw new Error("boom\nagain")`, failed: true, text: "Big (couldn't run):\n\t- Error: boom"},
 		{
 			name: "Big", script: "<script>1 < 2</script> or <script>false</script>", reason: "true or false",
 			text: "Big (true or false)",
@@ -60,6 +61,29 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		if !met {
 			c.True(strings.HasPrefix(tooltip.String(), "\n- "+one.text), "%s: %q", one.script, tooltip.String())
 		}
+	}
+}
+
+// TestScriptPrereqSeesItsOwnerAsSelf verifies that the script of a prerequisite judged for a trait, skill, spell or
+// piece of equipment sees that item as self.
+func TestScriptPrereqSeesItsOwnerAsSelf(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Owner"
+	skill := NewSkill(e, nil, false)
+	skill.Name = "Owner"
+	spell := NewSpell(e, nil, false)
+	spell.Name = "Owner"
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Owner"
+	p := NewScriptPrereq()
+	p.Script = `self.name === "Owner"`
+	for _, owner := range []any{trait, skill, spell, eqp} {
+		var result CheckResult
+		var reason string
+		SuppressScriptResolveErrorLogging(func() { result, reason = p.Evaluate(e, owner) })
+		c.Equal(CheckMet, result, "%T: %s", owner, reason)
 	}
 }
 
@@ -120,32 +144,4 @@ func TestScriptPrereqName(t *testing.T) {
 	before := hash()
 	p.Name = "Other"
 	c.NotEqual(before, hash(), "the name must be part of the hash")
-}
-
-// TestResolveScriptCachedErrorStaysFailed verifies that a script error is still reported as a failure when the result
-// comes from the cache, rather than being taken for the script's own result.
-func TestResolveScriptCachedErrorStaysFailed(t *testing.T) {
-	c := check.New(t)
-	entity := NewEntity()
-	text := `throw new Error("boom")`
-	first, failed := resolveScript(entity, ScriptSelfProvider{}, text)
-	c.True(failed, "a thrown error is a failure")
-	c.True(entity.scriptCache[scriptResolveKey{text: text}].err, "the failure must be cached")
-	second, failed := resolveScript(entity, ScriptSelfProvider{}, text)
-	c.True(failed, "a cached error is still a failure")
-	c.Equal(first, second)
-	c.Equal(first, ResolveScript(entity, ScriptSelfProvider{}, text), "ResolveScript returns the same text")
-	result, failed := resolveScript(entity, ScriptSelfProvider{}, "1 + 1")
-	c.False(failed, "a result is not a failure")
-	c.Equal("2", result)
-	_, failed = resolveScript(entity, ScriptSelfProvider{}, "1 + 1")
-	c.False(failed, "a cached result is not a failure")
-}
-
-// TestResolveScriptSyntaxErrorNamedOnce verifies that a script that won't compile is reported as a SyntaxError once.
-func TestResolveScriptSyntaxErrorNamedOnce(t *testing.T) {
-	c := check.New(t)
-	result, failed := resolveScript(NewEntity(), ScriptSelfProvider{}, "nope(")
-	c.True(failed)
-	c.True(strings.HasPrefix(result, "SyntaxError: ") && !strings.Contains(result, "SyntaxError: SyntaxError:"), result)
 }

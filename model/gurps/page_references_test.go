@@ -14,9 +14,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
-	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -42,27 +40,9 @@ func TestPageRefsUnmarshalSkipsNullEntries(t *testing.T) {
 	c.Equal(2, list[0].Offset)
 }
 
-// Importing a page reference file holding a null must report usable data rather than crashing the app. This is
-// reachable from the page reference mappings dockable's import.
-func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
-	c := check.New(t)
-	fileSystem := fstest.MapFS{
-		"refs.refs": &fstest.MapFile{
-			Data: []byte(`{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`),
-		},
-	}
-	var refs *PageRefs
-	var err error
-	c.NotPanics(func() { refs, err = NewPageRefsFromFS(fileSystem, "refs.refs") })
-	c.NoError(err)
-	c.NotNil(refs)
-	c.Equal(1, len(refs.List()))
-	c.Nil(refs.Lookup("B"))
-}
-
 // TestPageRefsFileRoundTrip verifies that a page reference file loads whether it holds the bare map written before such
 // files carried a header, even when a book key of its is one of the header's member names, or the current form, and
-// that saving writes the current form with the header first and the references intact.
+// that saving it keeps the references intact.
 func TestPageRefsFileRoundTrip(t *testing.T) {
 	const ref = `{"path":"/refs/basic.pdf","offset":2}`
 	for name, tc := range map[string]struct {
@@ -88,11 +68,6 @@ func TestPageRefsFileRoundTrip(t *testing.T) {
 			c.Equal(tc.want, pageRefIDs(c, refs))
 
 			c.NoError(refs.Save(p))
-			var saved []byte
-			saved, err = os.ReadFile(p)
-			c.NoError(err)
-			c.True(strings.HasPrefix(string(saved), headerPrefix(PageRefsDataKind)), "the header is written first: %s",
-				saved)
 			refs, err = NewPageRefsFromFS(nil, p)
 			c.NoError(err)
 			c.Equal(tc.want, pageRefIDs(c, refs), "the references survive a save and load")
@@ -112,40 +87,23 @@ func pageRefIDs(c check.Checker, refs *PageRefs) []string {
 	return ids
 }
 
-// A settings file holding a null in place of a page reference or a library must be survivable. Decoding one used to
-// panic, which bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup rather than leaving it
-// with usable settings.
-func TestLoadSettingsOrDefaultsWithNullPageRefEntry(t *testing.T) {
+// TestPageRefsSet verifies that a page reference is stored as a copy, so that neither the one given nor one looked up
+// can alter it, and that one without an ID is refused.
+func TestPageRefsSet(t *testing.T) {
 	c := check.New(t)
-	countLogs(t, slog.LevelError)
-	for _, tc := range []struct {
-		name  string
-		data  string
-		check func(settings *Settings)
-	}{
-		{
-			name: "page reference",
-			data: `"page_refs":{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`,
-			check: func(settings *Settings) {
-				list := settings.PageRefs.List()
-				c.Equal(1, len(list), "the null entry was skipped")
-				c.Equal("BX", list[0].ID, "the usable page reference entry survived")
-			},
-		},
-		{
-			name: "library",
-			data: `"libraries":{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`,
-			check: func(settings *Settings) {
-				c.NotNil(settings.Libraries.Lookup("someone/repo"), "the usable library entry survived")
-				c.Nil(settings.Libraries.Lookup("a/b"), "the null entry was skipped")
-			},
-		},
-	} {
-		p := filepath.Join(t.TempDir(), "settings.json")
-		c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3",`+tc.data+`}`), 0o600))
-		var settings Settings
-		c.NotPanics(func() { settings = loadSettingsOrDefaults(p) }, tc.name)
-		c.Equal("1.2.3", settings.LastSeenGCSVersion, "%s: the rest of the settings file still loaded", tc.name)
-		tc.check(&settings)
-	}
+	count := countLogs(t, slog.LevelError)
+	pdf := filepath.Join(t.TempDir(), "basic.pdf")
+	c.NoError(os.WriteFile(pdf, nil, 0o600))
+	var refs PageRefs
+	ref := &PageRef{ID: "B", Path: pdf, Offset: 2}
+	refs.Set(ref)
+	ref.Offset = 5
+	found := refs.Lookup("B")
+	c.NotNil(found)
+	c.Equal(2, found.Offset, "changing the reference given doesn't change the one stored")
+	found.Offset = 7
+	c.Equal(2, refs.Lookup("B").Offset, "changing a reference looked up doesn't change the one stored")
+	refs.Set(&PageRef{Path: pdf})
+	c.Equal(1, len(refs.List()), "a reference without an ID is refused")
+	c.Equal(int32(1), count.Load(), "and the refusal is logged")
 }

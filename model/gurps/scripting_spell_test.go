@@ -93,6 +93,14 @@ func TestScriptSpellDifficultyMatchesSkill(t *testing.T) {
 		ResolveScript(nil, deferredNewScriptSpell(spell), "self.difficulty"))
 }
 
+// TestScriptSpellKind verifies that a ritual magic spell and a spell tell themselves apart to a script by kind.
+func TestScriptSpellKind(t *testing.T) {
+	c := check.New(t)
+	c.Equal("spell", ResolveScript(nil, deferredNewScriptSpell(NewSpell(nil, nil, false)), "self.kind"))
+	c.Equal("ritual magic spell",
+		ResolveScript(nil, deferredNewScriptSpell(NewRitualMagicSpell(nil, nil, false)), "self.kind"))
+}
+
 // A spell's college list is exposed to scripts with any nameable replacements applied, matching every other text field
 // on the script spell object. It previously handed scripts the raw stored college (containing @placeholders@).
 func TestScriptSpellCollegeUsesReplacements(t *testing.T) {

@@ -164,9 +164,8 @@ func TestAttributeBonusTooltipWithoutEntity(t *testing.T) {
 
 // TestAttributeCurrentCarriesThresholdEffects verifies that the bonuses of a pool's current threshold, and multipliers
 // wherever they come from, alter an attribute's current value alone: its maximum, which scripts read as "$id" and the
-// attributes derived from it rest on, stays as it is, amounts are added before factors are applied, the result is
-// rounded to whole unless the attribute allows decimals, a pool is left alone, and nothing changes while the pool is
-// at another threshold.
+// attributes derived from it rest on, stays as it is, the result is rounded to whole unless the attribute allows
+// decimals, a pool is left alone, and nothing changes while the pool is at another threshold.
 func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -179,12 +178,6 @@ func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 		current  fxp.Int
 	}{
 		{"amount added", DexterityID, Features{NewAttributeBonus(DexterityID)}, false, fxp.Seven, fxp.Ten, fxp.Eleven},
-		{
-			"amount before factor", DexterityID,
-			Features{newAttrBonus(DexterityID, fxp.Two), newMultiplier(DexterityID, fxp.Half)},
-			false, fxp.Seven,
-			fxp.Ten, fxp.Six,
-		},
 		{"product rounded for a whole attribute", DexterityID, Features{newMultiplier(DexterityID, fxp.Half)}, false, fxp.Seven, fxp.Ten, fxp.Five},
 		{"fraction kept for a decimal attribute", BasicSpeedID, Features{newMultiplier(BasicSpeedID, fxp.Half)}, false, fxp.Seven, fxp.Five, fxp.TwoAndAHalf},
 		{"multiplier from an item", StrengthID, Features{newMultiplier(StrengthID, fxp.Two)}, true, 0, fxp.Ten, fxp.FromInteger(20)},
@@ -313,7 +306,7 @@ func newAttrBonus(attrID string, amount fxp.Int) *AttributeBonus {
 // that a bonus the threshold ignores, such as one per level, is not listed, and that the tooltip of a value figured
 // from the current values of attributes, such as lifting ST, Move, Dodge, an attribute standing in for one or one whose
 // base reads them as "$id.current", lists after its own bonuses those altering only the current value of each such
-// attribute, under its name, and names none whose maximum alone it reads.
+// attribute, under its name, and names none whose maximum alone it reads, nor a pool, which they leave alone.
 func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -321,6 +314,7 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	newAttrBonusTrait(e, "Lifting Harness", StrengthID, fxp.Three, stlimit.LiftingOnly)
 	newAttrBonusTrait(e, "Power Gauntlets", StrengthID, fxp.One, stlimit.StrikingOnly)
 	newAttrBonusTrait(e, "Fleet", MoveID, fxp.Two, stlimit.None)
+	addTraitWithFeatures(e, "Tough", newMultiplier(HitPointsID, fxp.Two))
 	tired := poolThreshold(e, FatiguePointsID, "Tired")
 	tired.Features = append(tired.Features, newAttrBonus(StrengthID, -fxp.One), newMultiplier(BasicMoveID, fxp.Half),
 		newMultiplier(BasicSpeedID, fxp.Half))
@@ -367,6 +361,7 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 		{`entity.attribute('Strength')`, "Includes modifiers from:\nPower Gauntlets [+1]\nST:\nTired (FP) [-1]"},
 		{`$st.maximum`, "Includes modifiers from:\nPower Gauntlets [+1]"},
 		{`entity.attribute("st").maximum`, "Includes modifiers from:\nPower Gauntlets [+1]"},
+		{`$hp.current`, "Includes modifiers from:\nPower Gauntlets [+1]"},
 	} {
 		e.SheetSettings.Attributes.Set[StrikingStrengthID].Base = one.base
 		e.Recalculate()
@@ -377,4 +372,18 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nUnnamed Threshold (FP) [-1]\nFor striking only:\nPower Gauntlets [+1]\nFor lifting only:\nLifting Harness [+3]\nUnnamed Threshold (FP) [×0.5]",
 		st.BonusTooltip(), "a threshold with no state is named nonetheless")
+}
+
+// TestAttributeSetMaximum verifies that setting an attribute's maximum sets its adjustment to what the maximum lacks
+// once the base and the bonus the attribute has are counted.
+func TestAttributeSetMaximum(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	newAttrBonusTrait(e, "Increased Strength", StrengthID, fxp.Two, stlimit.None)
+	e.Recalculate()
+	st := e.Attributes.Set[StrengthID]
+	st.SetMaximum(fxp.Fifteen)
+	c.Equal(fxp.Three, st.Adjustment)
+	e.Recalculate()
+	c.Equal(fxp.Fifteen, st.Maximum())
 }

@@ -109,6 +109,8 @@ func TestWeaponMemoMatchesUncached(t *testing.T) {
 	}
 }
 
+// TestEntityWeaponsCached verifies that Entity.Weapons keeps each list until the caches are discarded, hands each
+// caller a slice of its own, and serves no kept list while memos are off.
 func TestEntityWeaponsCached(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()

@@ -13,7 +13,9 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -24,33 +26,9 @@ func newTraitNamed(e *Entity, name string) *Trait {
 	return t
 }
 
-func TestEntityHasTraitNamed(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	e.Traits = append(e.Traits, newTraitNamed(e, "Magery"))
-
-	c.True(e.HasTraitNamed("Magery"), "exact match")
-	c.True(e.HasTraitNamed(" magery "), "case-insensitive and trimmed match")
-	c.False(e.HasTraitNamed("Combat Reflexes"), "absent trait")
-	c.False(e.HasTraitNamed(""), "empty name never matches")
-	c.False((*Entity)(nil).HasTraitNamed("Magery"), "nil entity never matches")
-
-	disabled := newTraitNamed(e, "Sense of Duty")
-	disabled.SetDisabled(true)
-	e.Traits = append(e.Traits, disabled)
-	c.False(e.HasTraitNamed("Sense of Duty"), "disabled traits are ignored")
-
-	// A trait nested under a disabled container is also ignored.
-	container := NewTrait(e, nil, true)
-	container.Name = "Package"
-	container.SetDisabled(true)
-	child := newTraitNamed(e, "Racial Memory")
-	child.parent = container
-	container.Children = append(container.Children, child)
-	e.Traits = append(e.Traits, container)
-	c.False(e.HasTraitNamed("Racial Memory"), "traits under a disabled container are ignored")
-}
-
+// TestAttributeDefEffectivePlacement verifies that a hidden attribute takes its placement for when the trait it names
+// is present once the entity has that trait, and stays hidden without an entity, without the trait or without a name
+// for one, while any other placement ignores the trait.
 func TestAttributeDefEffectivePlacement(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -87,6 +65,8 @@ func TestAttributeDefEffectivePlacement(t *testing.T) {
 	c.Equal(attribute.Primary, def.EffectivePlacement(e), "non-hidden placement ignores override")
 }
 
+// TestAttributeDefPlacementResolution verifies that the kind and relevance of a hidden attribute follow the placement
+// it takes once the trait it names is present, so that the sheet lays it out in that section alone.
 func TestAttributeDefPlacementResolution(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -278,4 +258,56 @@ func TestAttributeDefReservedIDRefusedOnLoad(t *testing.T) {
 	}
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","type":"integer","name":"X","base":"10"}`), &AttributeDef{}),
 		"an ID SetID would turn a reserved one into loads")
+}
+
+// TestAttributeDefComputeCost verifies an attribute's point cost: the value times the cost per point, less the cost
+// reduction and the definition's percentage for each level of a positive size modifier, though not for ST or HP under
+// either Knowing Your Own Strength progression, with the reduction capped at 80% and a fraction of a point rounded up.
+func TestAttributeDefComputeCost(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	defs := FactoryAttributeDefs()
+	st := defs.Set[StrengthID]
+	hp := defs.Set[HitPointsID]
+	other := &AttributeDef{DefID: "x", Type: attribute.Integer, CostPerPoint: fxp.Ten, CostAdjPercentPerSM: fxp.Ten}
+	for _, one := range []struct {
+		name          string
+		def           *AttributeDef
+		progression   progression.Option
+		costReduction fxp.Int
+		value         int
+		sm            int
+		want          int
+	}{
+		{"plain", st, progression.BasicSet, 0, 5, 0, 50},
+		{"size modifier", st, progression.BasicSet, 0, 5, 3, 35},
+		{"cost reduction and size modifier", st, progression.BasicSet, fxp.Twenty, 5, 3, 25},
+		{"negative size modifier", st, progression.BasicSet, fxp.Twenty, 5, -2, 40},
+		{"capped at 80%", st, progression.BasicSet, fxp.Fifty, 5, 5, 10},
+		{"fraction of a point", st, progression.BasicSet, fxp.FromInteger(35), 1, 0, 7},
+		{"ST under Knowing Your Own Strength", st, progression.KnowingYourOwnStrength, 0, 5, 3, 50},
+		{"HP under its variant without lift", hp, progression.KnowingYourOwnStrengthNoLift, 0, 5, 3, 10},
+		{"another attribute under Knowing Your Own Strength", other, progression.KnowingYourOwnStrength, 0, 5, 3, 35},
+	} {
+		e.SheetSettings.DamageProgression = one.progression
+		c.Equal(fxp.FromInteger(one.want),
+			one.def.ComputeCost(e, fxp.FromInteger(one.value), one.costReduction, one.sm), one.name)
+	}
+}
+
+// TestAttributeDefLegacyBase verifies that a definition saved when its base was an expression held in
+// "attribute_base" loads with that expression converted to a script, unless it has a base of its own.
+func TestAttributeDefLegacyBase(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		data string
+		want string
+	}{
+		{`{"id":"x","type":"integer","name":"X","attribute_base":"$st/2"}`, ExprToScript("$st/2")},
+		{`{"id":"x","type":"integer","name":"X","base":"$dx","attribute_base":"$st/2"}`, "$dx"},
+	} {
+		var def AttributeDef
+		c.NoError(jio.Unmarshal([]byte(one.data), &def), one.data)
+		c.Equal(one.want, def.Base, one.data)
+	}
 }

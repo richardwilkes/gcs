@@ -29,9 +29,12 @@ func TestRace(t *testing.T) {
 	t.Run("ScriptResultConversionHonorsTimeout", TestScriptResultConversionHonorsTimeout)
 	t.Run("ScriptTimeoutDoesNotAffectNextRun", TestScriptTimeoutDoesNotAffectNextRun)
 	t.Run("ScriptExecTimeLimitOverride", TestScriptExecTimeLimitOverride)
+	t.Run("ScriptStoppedForPrereqsLeavesSheetResult", TestScriptStoppedForPrereqsLeavesSheetResult)
 	t.Run("ScriptExecTimeLimitSyncIsConcurrencySafe", TestScriptExecTimeLimitSyncIsConcurrencySafe)
 	t.Run("GlobalSheetSettingsSyncIsConcurrencySafe", TestGlobalSheetSettingsSyncIsConcurrencySafe)
 	t.Run("SheetSettingsSellMoneyPathsAvoidTheClosedStateLock", TestSheetSettingsSellMoneyPathsAvoidTheClosedStateLock)
 	t.Run("ClosedStateIsConcurrencySafe", TestClosedStateIsConcurrencySafe)
 	t.Run("ClosedStateDuringSettingsInitialization", TestClosedStateDuringSettingsInitialization)
+	t.Run("PrereqListEvaluate", TestPrereqListEvaluate)
+	t.Run("ScriptPrereqStoppedRunsOncePerRecalculation", TestScriptPrereqStoppedRunsOncePerRecalculation)
 }

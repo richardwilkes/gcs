@@ -17,10 +17,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestAttributeChoicesForMoveAndPools verifies that MoveFlag adds a stand-in for Move only while the definitions list
-// no move attribute, which is listed whatever the flags, and that NoPoolsFlag leaves the pools out, a dodge or move
-// pool included, with a stand-in for Dodge or Move in its place.
-func TestAttributeChoicesForMoveAndPools(t *testing.T) {
+// TestAttributeChoicesForDodgeMoveAndPools verifies that a defined dodge attribute is listed only with DodgeFlag, and
+// then with no stand-in beside it, that MoveFlag adds a stand-in for Move only while the definitions list no move
+// attribute, which is listed whatever the flags, and that NoPoolsFlag leaves the pools out, a dodge or move pool
+// included, with a stand-in for Dodge or Move in its place.
+func TestAttributeChoicesForDodgeMoveAndPools(t *testing.T) {
 	c := check.New(t)
 	keys := func(defs *AttributeDefs, flags AttributeFlags) []string {
 		choices, _ := AttributeChoicesFor(defs, "", flags, StrengthID)
@@ -36,6 +37,11 @@ func TestAttributeChoicesForMoveAndPools(t *testing.T) {
 	c.True(slices.Contains(keys(defs, 0), FatiguePointsID), "the pools are listed")
 	c.False(slices.Contains(keys(defs, NoPoolsFlag), FatiguePointsID), "unless left out")
 	c.True(slices.Contains(keys(defs, NoPoolsFlag), StrengthID), "which leaves the others alone")
+
+	defs.Set[DodgeID] = &AttributeDef{DefID: DodgeID, Type: attribute.Integer, Name: "Dodge", Base: "8", Order: len(defs.Set)}
+	c.False(slices.Contains(keys(defs, 0), DodgeID), "a defined dodge attribute is listed only with DodgeFlag")
+	c.Equal(1, len(slices.DeleteFunc(keys(defs, DodgeFlag), func(k string) bool { return k != DodgeID })),
+		"and then once, with no stand-in beside it")
 
 	defs.Set[MoveID] = &AttributeDef{DefID: MoveID, Type: attribute.Integer, Name: "Move", Base: "$basic_move", Order: len(defs.Set)}
 	list := keys(defs, MoveFlag)

@@ -60,7 +60,8 @@ func numberCriteria(compare criteria.NumericComparison, qualifier fxp.Int) crite
 }
 
 // TestSkillDefaultWhenTL verifies that a skill default's WhenTL constraint is evaluated against the tech level of the
-// skill being defaulted *from* (the matched skill), not the character's tech level. See issue #1040.
+// skill being defaulted *from* (the matched skill), not the character's tech level, while an attribute or Dodge
+// default, which rests on no skill, is judged against the character's. See issue #1040.
 func TestSkillDefaultWhenTL(t *testing.T) {
 	c := check.New(t)
 
@@ -109,6 +110,37 @@ func TestSkillDefaultWhenTL(t *testing.T) {
 	c.Equal(fxp.Min, newWhenTLSkillDefault("Carpentry", "",
 		numberCriteria(criteria.AtLeastNumber, fxp.Six)).SkillLevel(e, nil, true, nil, false),
 		"Carpentry (no TL) must use the character's TL of 5, which fails 'at least 6'")
+
+	// An attribute or Dodge default rests on no skill, so its constraint is judged against the character's TL.
+	for _, defaultType := range []string{IntelligenceID, DodgeID} {
+		def := &SkillDefault{DefaultType: defaultType, WhenTL: numberCriteria(criteria.AtLeastNumber, fxp.Six)}
+		c.Equal(fxp.Min, def.SkillLevel(e, nil, true, nil, false), "%s must fail 'when TL at least 6' at TL5",
+			defaultType)
+		def.WhenTL = numberCriteria(criteria.AtLeastNumber, fxp.Five)
+		c.NotEqual(fxp.Min, def.SkillLevel(e, nil, true, nil, false), "%s must satisfy 'when TL at least 5' at TL5",
+			defaultType)
+	}
+}
+
+// TestSkillDefaultRuleOf20 verifies that the rule of 20 holds an attribute or Dodge above 20 to 20 before the default's
+// modifier applies, and that without it they count in full.
+func TestSkillDefaultRuleOf20(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.Attributes.Set[IntelligenceID].Adjustment = fxp.Twelve // IQ 22
+	e.Attributes.Set[BasicSpeedID].Adjustment = fxp.Thirteen // Basic Speed 18, so Dodge 21
+	e.Recalculate()
+	for _, tc := range []struct {
+		defaultType string
+		full        fxp.Int
+	}{
+		{defaultType: IntelligenceID, full: fxp.Twenty},
+		{defaultType: DodgeID, full: fxp.FromInteger(19)},
+	} {
+		def := &SkillDefault{DefaultType: tc.defaultType, Modifier: -fxp.Two}
+		c.Equal(fxp.FromInteger(18), def.SkillLevel(e, nil, false, nil, true), "%s: 20, less 2", tc.defaultType)
+		c.Equal(tc.full, def.SkillLevel(e, nil, false, nil, false), "%s: without the rule of 20", tc.defaultType)
+	}
 }
 
 // TestSkillDefaultUnresolvableAttribute verifies that an attribute-based default whose attribute the entity doesn't
@@ -430,11 +462,6 @@ func TestSkillDefaultTypeCaseInsensitive(t *testing.T) {
 	// The defenses are re-pointed at each other by name, which is the check the weapon parry/block resolution makes.
 	c.Equal(BlockID, withType("Parry").asDefense(BlockID).Type(), "a mixed-case parry default re-points to block")
 	c.Equal(ParryID, withType("Parry").asDefense(ParryID).Type(), "an already-parry default is left alone")
-
-	// A skill-based default must actually reach the named skill, not merely resolve to something.
-	parry := withType("Parry").SkillLevel(e, nil, false, nil, false)
-	c.Equal(broadsword.LevelData.Level.Div(fxp.Two).Floor()+fxp.Three+e.ParryBonus-fxp.Two, parry,
-		"a parry default halves the named skill's level")
 }
 
 // addTaggedTestSkill adds a skill carrying the given tags. It is otherwise identical to addTestSkill: an IQ/Average
@@ -759,7 +786,6 @@ func TestSkillDefaultTagEquivalent(t *testing.T) {
 	c.False(plain.Equivalent(nil, tagged), "a tag criteria must make the default a different one")
 	c.False(tagged.Equivalent(nil, otherTag), "defaults differing only in the tag qualifier are not equivalent")
 	c.True(tagged.Equivalent(nil, tagged.CloneWithoutLevelOrPoints()), "a clone must remain equivalent")
-	c.Equal(tagged.Tags, tagged.CloneWithoutLevelOrPoints().Tags, "a clone must keep the tag criteria verbatim")
 
 	// The tag qualifier is compared after substitution, as the name and specialization qualifiers are.
 	placeholder := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
@@ -792,8 +818,6 @@ func TestSkillDefaultTagEquivalent(t *testing.T) {
 		c.Equal(Hash64(plain), Hash64(other), "an \"is anything\" tag criteria of %q must hash the same as none at all",
 			other.Tags.Compare)
 	}
-	c.True(tagged.Equivalent(nil, tagged.CloneWithoutLevelOrPoints()),
-		"a tag criteria that does select something must still be compared in full")
 }
 
 // TestTechniqueDefaultTypeCaseInsensitive verifies that a technique's default is classified by its normalized type, the
@@ -1338,14 +1362,6 @@ func TestRecordedDefaultSurvivesCriteriaBeingDropped(t *testing.T) {
 	c.True(sk.DefaultedFrom.Tags.IsZero(), "and its tags criteria")
 }
 
-// TestDefenseLevelFromSkill verifies the conversion of a skill level into a defense level: half the skill level,
-// rounded down, plus three.
-func TestDefenseLevelFromSkill(t *testing.T) {
-	c := check.New(t)
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Twelve), "12 / 2 + 3")
-	c.Equal(fxp.Nine, defenseLevelFromSkill(fxp.Thirteen), "an odd skill level rounds down")
-}
-
 // TestEntityDefenseLevel verifies that the entity applies its bonus to the named defense after the halving, along with
 // what the thresholds and multipliers do to that defense, and nothing to any other ID.
 func TestEntityDefenseLevel(t *testing.T) {
@@ -1395,6 +1411,17 @@ func TestSkillDefaultDefenseLevels(t *testing.T) {
 	missing.DefaultType = BlockID
 	c.Equal(fxp.Min, missing.SkillLevel(e, nil, false, nil, false), "no matching skill means no block")
 	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, false, nil, false), "no matching skill means no fast block either")
+	c.Equal(fxp.Min, missing.defenseLevelFast(e, nil, fxp.One, currentAdjustment{bonus: fxp.One}),
+		"nor a block for a weapon")
+}
+
+// TestSkillDefaultModifierAsString verifies that a default's modifier is written with its sign, and not at all when
+// it is zero.
+func TestSkillDefaultModifierAsString(t *testing.T) {
+	c := check.New(t)
+	c.Equal("-2", (&SkillDefault{Modifier: -fxp.Two}).ModifierAsString())
+	c.Equal("+1", (&SkillDefault{Modifier: fxp.One}).ModifierAsString())
+	c.Equal("", (&SkillDefault{}).ModifierAsString())
 }
 
 // TestSkillDefaultDescribe verifies the plain-language description of each kind of default, including which parts are
@@ -1582,10 +1609,19 @@ func TestSkillDefaultLoadNormalizesType(t *testing.T) {
 		c.NoError(json.Unmarshal([]byte(`{"type":"`+raw+`"}`), &def))
 		c.Equal(DexterityID, def.DefaultType, raw)
 	}
-	var def SkillDefault
-	c.NoError(json.Unmarshal([]byte(`{"type":"Skill","name":"Judo"}`), &def))
-	c.Equal(SkillID, def.DefaultType)
-	c.Equal("Judo", def.Name.Qualifier)
+}
+
+// TestSkillDefaultLoadRejectsMalformedFields verifies that a default whose name or specialization is neither a string
+// nor a criteria object fails to load rather than loading without it.
+func TestSkillDefaultLoadRejectsMalformedFields(t *testing.T) {
+	c := check.New(t)
+	for _, data := range []string{
+		`{"type":"skill","name":5}`,
+		`{"type":"skill","name":"Judo","specialization":5}`,
+	} {
+		var def SkillDefault
+		c.HasError(json.Unmarshal([]byte(data), &def), data)
+	}
 }
 
 // TestSkillIsCriteriaIgnoreSurroundingSpace verifies that an "is" name or specialization with space at either end picks

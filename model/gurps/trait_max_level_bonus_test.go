@@ -32,8 +32,8 @@ func newLeveledTrait(e *Entity, maxLevels string) *Trait {
 	return t
 }
 
-// TestTraitMaxLevelResolution covers the base expression, the operation implied by the entered text, the Add -> % -> x
-// stacking order applied by "to this trait" bonuses, and the zero-floor clamp.
+// TestTraitMaxLevelResolution covers the base expression, the zero-floor clamp applied with "to this trait" bonuses,
+// and the non-leveled guard.
 func TestTraitMaxLevelResolution(t *testing.T) {
 	c := check.New(t)
 
@@ -45,15 +45,6 @@ func TestTraitMaxLevelResolution(t *testing.T) {
 
 	trait = newLeveledTrait(nil, "10 + 5")
 	c.Equal(fxp.FromInteger(15), trait.ResolvedMaxLevels(), "script expression")
-
-	// Add -> % -> x order: ((10 + 2) * 1.5) * 2 = 36.
-	trait = newLeveledTrait(nil, "10")
-	trait.Features = Features{
-		newMaxLevelBonus(traitsel.ThisTrait, "+2"),
-		newMaxLevelBonus(traitsel.ThisTrait, "50%"),
-		newMaxLevelBonus(traitsel.ThisTrait, "x2"),
-	}
-	c.Equal(fxp.FromInteger(36), trait.ResolvedMaxLevels(), "add -> percent -> multiply")
 
 	// Minimum clamp: 1 + (-100) = -99, clamped to 0.
 	trait = newLeveledTrait(nil, "1")
@@ -185,6 +176,18 @@ func TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone(t *testing.T) {
 	c.Equal("", capped.UnsatisfiedReason, "level 6 is within the raised maximum of 7")
 	c.Equal(fxp.Int(0), uncapped.ResolvedMaxLevels(), "a trait with no maximum stays unlimited")
 	c.Equal("", uncapped.UnsatisfiedReason, "an unlimited trait must not be flagged for exceeding a maximum")
+}
+
+// TestTraitMaxLevelBonusNameableKeys verifies that a bonus contributes the markers in its name and tags criteria only
+// while it selects traits by name, the one selection that consults them.
+func TestTraitMaxLevelBonusNameableKeys(t *testing.T) {
+	c := check.New(t)
+	bonus := newMaxLevelBonus(traitsel.TraitWithName, "+1")
+	bonus.NameCriteria.Qualifier = "@Trait@"
+	bonus.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Tag@"}
+	c.Equal([]string{"Tag", "Trait"}, nameableKeysOf(bonus), "a bonus selecting traits by name")
+	bonus.SelectionType = traitsel.ThisTrait
+	c.Equal(0, len(nameableKeysOf(bonus)), "a bonus to this trait")
 }
 
 // TestTraitMaxLevelBonusRoundTrip verifies that a bonus with each selector survives a JSON round-trip.

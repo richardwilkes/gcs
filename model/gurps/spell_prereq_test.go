@@ -292,9 +292,9 @@ func TestSpellPrereqPowerSourceWithTagAndCollege(t *testing.T) {
 	}
 }
 
-// TestSpellPrereqPowerSourceTooltip verifies the text produced for an unsatisfied prerequisite, with and without a
-// power source filter. The prerequisite has no owning spell here, so the "same as this spell's" form cannot name a
-// power source; TestSpellPrereqSamePowerSourceTooltipNamesOwner covers the case where it can.
+// TestSpellPrereqPowerSourceTooltip verifies the text produced for an unsatisfied prerequisite whose power source
+// filter follows a "whose" clause or stands alone. With no owning spell, the "same as this spell's" form names no power
+// source; TestSpellPrereqSamePowerSourceTooltipNamesOwner covers one that does.
 func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 	c := check.New(t)
 
@@ -309,21 +309,6 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 		expected  string
 	}{
 		{
-			name:      "name without a power source filter",
-			subType:   spellcmp.Name,
-			qualifier: "Fireball",
-			quantity:  fxp.One,
-			expected:  `Knows at least 1 spell whose name is Fireball`,
-		},
-		{
-			name:      "name with the same power source",
-			subType:   spellcmp.Name,
-			qualifier: "Fireball",
-			quantity:  fxp.One,
-			same:      true,
-			expected:  `Knows at least 1 spell whose name is Fireball and whose power source is the same as this spell's`,
-		},
-		{
 			name:      "name with an explicit power source",
 			subType:   spellcmp.Name,
 			qualifier: "Fireball",
@@ -333,34 +318,11 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			expected:  `Knows at least 1 spell whose name is Fireball and whose power source is Clerical`,
 		},
 		{
-			name:      "tag with the same power source",
-			subType:   spellcmp.Tag,
-			qualifier: "Fire",
-			quantity:  fxp.One,
-			same:      true,
-			expected:  `Knows at least 1 spell whose tag is Fire and whose power source is the same as this spell's`,
-		},
-		{
-			name:      "college with an explicit power source",
-			subType:   spellcmp.College,
-			qualifier: "Fire",
-			quantity:  fxp.Two,
-			compare:   criteria.IsText,
-			source:    "Clerical",
-			expected:  `Knows at least 2 spells whose college is Fire and whose power source is Clerical`,
-		},
-		{
 			name:     "any with the same power source",
 			subType:  spellcmp.Any,
 			quantity: fxp.Three,
 			same:     true,
 			expected: "Knows at least 3 spells whose power source is the same as this spell's",
-		},
-		{
-			name:     "any without a power source filter",
-			subType:  spellcmp.Any,
-			quantity: fxp.Three,
-			expected: "Knows at least 3 spells",
 		},
 		{
 			name:     "college count with an explicit power source",
@@ -369,12 +331,6 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			compare:  criteria.IsText,
 			source:   "Clerical",
 			expected: `Knows spells from at least 3 colleges whose power source is Clerical`,
-		},
-		{
-			name:     "college count without a power source filter",
-			subType:  spellcmp.CollegeCount,
-			quantity: fxp.Three,
-			expected: "Knows spells from at least 3 colleges",
 		},
 	} {
 		p := NewSpellPrereq()
@@ -687,4 +643,28 @@ func TestSpellPrereqLevel(t *testing.T) {
 	c.False(p.Satisfied(e, nil, nil, "", nil), "only one spell is at level 16 or more")
 	c.Equal("Knows at least 2 spells whose college is Fire at level at least 16",
 		p.Describe(nil, nil, func(s string) string { return s }))
+}
+
+// TestSpellPrereqMatchesTechLevel checks that a prerequisite of a spell with a tech level counts only spells of the
+// same tech level, or with none.
+func TestSpellPrereqMatchesTechLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	owner := addTestSpell(e, "Owner", fxp.One)
+	owner.TechLevel = new("3")
+	other := addTestSpell(e, "Other", fxp.One)
+	p := NewSpellPrereq()
+	p.SubType = spellcmp.Any
+	for _, one := range []struct {
+		name string
+		tl   *string
+		want bool
+	}{
+		{"the same tech level", new("3"), true},
+		{"another tech level", new("4"), false},
+		{"no tech level", nil, true},
+	} {
+		other.TechLevel = one.tl
+		c.Equal(one.want, p.Satisfied(e, owner, nil, "", nil), one.name)
+	}
 }

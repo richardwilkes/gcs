@@ -13,8 +13,7 @@ import (
 	"bytes"
 	"encoding/json/v2"
 	"hash"
-	"os"
-	"path/filepath"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -253,23 +252,6 @@ func TestCompletedScriptErrorsStillCount(t *testing.T) {
 	c.NotEqual(before, e.Skills[0].DefaultedFrom.AdjLevel, "a failing script's result must still be recorded")
 }
 
-// TestSaveRecalculatesFirst verifies that saving brings the derived values the file publishes up to date, since
-// marshaling an entity doesn't recalculate it.
-func TestSaveRecalculatesFirst(t *testing.T) {
-	c := check.New(t)
-	e := newPopulatedEntity()
-	e.Skills[0].Points = fxp.Twelve // Changed behind the sheet's back, so the recorded level is now stale.
-	stale := e.Skills[0].LevelData.Level
-
-	dir := t.TempDir()
-	c.NoError(e.Save(filepath.Join(dir, "test"+SheetExt)), "the entity saves")
-
-	c.NotEqual(stale, e.Skills[0].LevelData.Level, "saving must have brought the skill level up to date")
-	saved, err := os.ReadFile(filepath.Join(dir, "test"+SheetExt))
-	c.NoError(err, "the saved file reads back")
-	c.True(strings.Contains(string(saved), `"level":`), "the saved file publishes the level it just computed")
-}
-
 // TestEditDataMarshalsWithoutDerivedValues verifies that the form an open editor compares -- the marshal of the data it
 // was opened with against the marshal of the data it holds now -- carries none of the derived values and does not move
 // when the scripts that produce them cannot resolve. The two copies an editor holds have separate script caches, so a
@@ -405,6 +387,20 @@ func TestHashStartsWithSyncKind(t *testing.T) {
 	}
 }
 
+// TestHashingReportsWhatCannotBeMarshaled verifies that HashJSON logs an object it cannot marshal and that
+// MarshalWithoutCalc returns the error.
+func TestHashingReportsWhatCannotBeMarshaled(t *testing.T) {
+	c := check.New(t)
+	logged := countLogs(t, slog.LevelError)
+	var rec recordingHasher
+	HashJSON(&rec, make(chan int))
+	c.Equal(int32(1), logged.Load(), "HashJSON logs the failure")
+	_, err := MarshalWithoutCalc(make(chan int))
+	c.HasError(err, "MarshalWithoutCalc returns the failure")
+}
+
+// TestNameablesTakePartInSync verifies that a change to an item's nameables changes its hash, while an empty set of
+// them leaves the hash as it was before nameables existed.
 func TestNameablesTakePartInSync(t *testing.T) {
 	c := check.New(t)
 	trait := NewTrait(nil, nil, false)

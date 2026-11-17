@@ -18,12 +18,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func librarySourced(eqp *Equipment) *Equipment {
-	lib := LibraryFile{Library: "Basic Set", Path: "Basic Set Equipment.eqp"}
-	eqp.Source = Source{LibraryFile: lib, TID: eqp.TID}
-	return eqp
-}
-
 // TestPayoutForIsExact verifies that PayoutFor pays as close to the target as it can without exceeding it, with the
 // fewest items where several combinations reach that total, whatever the denominations, and that it ignores nil items
 // and items without a positive value.
@@ -106,44 +100,6 @@ func TestPayoutForIsExact(t *testing.T) {
 	}
 }
 
-// TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only equipment tagged as money (see MoneyTag) that isn't a
-// container and that no entry already listed MergeMatches can be sell money, since buying spends only money so tagged,
-// and sell money that buying can't spend would be dead weight. Where the equipment comes from doesn't matter, and what
-// is listed is a copy of it, made as a drop into a list makes one.
-func TestAddSellMoneyRejectsWhatCanNotBeMoney(t *testing.T) {
-	c := check.New(t)
-	var s SheetSettings
-	silver := librarySourced(denomination("Silver Eagle", "20"))
-	carried := silver.Clone(LibraryFile{}, NewEntity(), nil, Reference)
-	carried.Quantity = fxp.Ten
-	carried.Equipped = false
-	preconfigured := denomination("Silver Eagle", "20")
-	preconfigured.Preconfigured = true
-	homebrew := denomination("Homebrew Coin", "5")
-	untagged := librarySourced(newEquipmentItem("Gold Crown", "100", "0"))
-	container := NewEquipment(nil, nil, true)
-	container.Tags = []string{MoneyTag}
-	c.True(s.CanAddSellMoney(silver))
-	c.True(s.AddSellMoney(silver, LibraryFile{}))
-	c.False(s.CanAddSellMoney(silver))
-	c.False(s.AddSellMoney(silver, LibraryFile{}), "an item already listed isn't added again")
-	c.False(s.AddSellMoney(carried, LibraryFile{}), "nor a sheet's copy of it, whatever its quantity and equipped state")
-	c.False(s.AddSellMoney(preconfigured, LibraryFile{}), "nor one marked preconfigured, since the copy clears the mark")
-	c.True(s.AddSellMoney(homebrew, LibraryFile{}), "equipment from anywhere can be money")
-	c.False(s.AddSellMoney(untagged, LibraryFile{}), "an item that isn't tagged as money can't be spent and so isn't sell money")
-	c.False(s.AddSellMoney(container, LibraryFile{}))
-	c.False(s.AddSellMoney(nil, LibraryFile{}))
-	c.Equal(2, len(s.SellMoney))
-	c.Equal("Silver Eagle", s.SellMoney[0].Name)
-	c.True(s.SellMoney[0] != silver, "a copy is listed, not the item itself")
-	c.NotEqual(silver.TID, s.SellMoney[0].TID)
-	c.Equal(silver.Source, s.SellMoney[0].Source, "the copy keeps the item's Source")
-	c.Equal("Homebrew Coin", s.SellMoney[1].Name)
-	c.True(s.SellMoney[1].Source.IsZero(), "a copy of an item with no Source, from no library, has none")
-	c.False(s.SellMoney[1].Preconfigured)
-	c.Nil(s.SellMoney[1].DataOwner())
-}
-
 func moneyItem(name, value, quantity string) *Equipment {
 	eqp := newEquipmentItem(name, value, "0")
 	eqp.Quantity = fxp.FromStringForced(quantity)
@@ -151,9 +107,9 @@ func moneyItem(name, value, quantity string) *Equipment {
 }
 
 // TestPaymentFor verifies that PaymentFor pays the smallest total that is at least the target, then with the fewest
-// items, then with the larger items, drawing on equal items in the order listed; that it uses only the whole units of
-// each item's quantity and ignores items without a positive value; and that it pays nothing for a target it can't reach
-// or that isn't positive.
+// items, then with the larger items, drawing on equal items in the order listed, even alongside items worth the target
+// or more, which can only be the whole payment; that it uses only the whole units of each item's quantity and ignores
+// items without a positive value; and that it pays nothing for a target it can't reach or that isn't positive.
 func TestPaymentFor(t *testing.T) {
 	silver := moneyItem("Silver Eagle", "20", "5")
 	copper := moneyItem("Copper Penny", "1", "20")
@@ -165,6 +121,18 @@ func TestPaymentFor(t *testing.T) {
 	fiver := moneyItem("Fiver", "5", "1")
 	sliver := moneyItem("Sliver", "0.5", "0.75")
 	worthless := moneyItem("Trinket", "0", "10")
+	four := moneyItem("Four", "4", "5")
+	five := moneyItem("Five", "5", "5")
+	six := moneyItem("Six", "6", "5")
+	gem := moneyItem("Gem", "1000000", "1")
+	twentyFive := moneyItem("Twenty-Five", "25", "1")
+	tens := moneyItem("Ten", "10", "3")
+	cent := moneyItem("Cent", "0.01", "1")
+	thirtyOne := moneyItem("Thirty-One", "31", "1")
+	thirty := moneyItem("Thirty", "30", "1")
+	purse := moneyItem("Purse Gold", "100", "1")
+	pouch := moneyItem("Pouch Gold", "100", "1")
+	crown := moneyItem("Crown", "500", "1")
 	tests := []struct {
 		name     string
 		money    []*Equipment
@@ -208,10 +176,11 @@ func TestPaymentFor(t *testing.T) {
 			paid:     "19",
 		},
 		{
+			// 6+4 and 5+5 both pay 10 with two items; the one with the larger item wins.
 			name:     "larger items on a tie",
-			money:    []*Equipment{moneyItem("Four", "4", "5"), moneyItem("Five", "5", "5"), moneyItem("Six", "6", "5")},
+			money:    []*Equipment{four, five, six},
 			target:   "10",
-			expected: nil, // filled in below
+			expected: []Payout{{Money: six, Quantity: 1}, {Money: four, Quantity: 1}},
 			paid:     "10",
 		},
 		{
@@ -283,17 +252,54 @@ func TestPaymentFor(t *testing.T) {
 			target: "5",
 			paid:   "0",
 		},
+		{
+			name:     "an item worth far more than the target doesn't keep the rest from being searched exactly",
+			money:    []*Equipment{gem, twentyFive, tens, cent},
+			target:   "30",
+			expected: []Payout{{Money: tens, Quantity: 3}},
+			paid:     "30",
+		},
+		{
+			name:     "an item that overpays by less than the rest is paid",
+			money:    []*Equipment{thirtyOne, twentyFive, twentyFive},
+			target:   "30",
+			expected: []Payout{{Money: thirtyOne, Quantity: 1}},
+			paid:     "31",
+		},
+		{
+			name:     "one item worth the target beats several that pay the same",
+			money:    []*Equipment{tens, thirty},
+			target:   "30",
+			expected: []Payout{{Money: thirty, Quantity: 1}},
+			paid:     "30",
+		},
+		{
+			name:     "an item worth far more pays when the rest can't reach the target",
+			money:    []*Equipment{gem, cent},
+			target:   "30",
+			expected: []Payout{{Money: gem, Quantity: 1}},
+			paid:     "1000000",
+		},
+		{
+			name:     "the first listed of equal items worth the target or more is spent",
+			money:    []*Equipment{purse, pouch},
+			target:   "50",
+			expected: []Payout{{Money: purse, Quantity: 1}},
+			paid:     "100",
+		},
+		{
+			name:     "the least of the items worth the target or more is spent",
+			money:    []*Equipment{crown, purse, pouch},
+			target:   "50",
+			expected: []Payout{{Money: purse, Quantity: 1}},
+			paid:     "100",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tc := check.New(t)
-			expected := tt.expected
-			if tt.name == "larger items on a tie" {
-				// 6+4 and 5+5 both pay 10 with two items; the one with the larger item wins.
-				expected = []Payout{{Money: tt.money[2], Quantity: 1}, {Money: tt.money[0], Quantity: 1}}
-			}
 			payments, paid := PaymentFor(fxp.FromStringForced(tt.target), tt.money)
-			tc.Equal(expected, payments)
+			tc.Equal(tt.expected, payments)
 			tc.Equal(fxp.FromStringForced(tt.paid), paid)
 		})
 	}
@@ -445,45 +451,6 @@ func TestPayoutsHandleHugeAmounts(t *testing.T) {
 	c.Equal(fxp.FromInteger(400_000_000_000), paid)
 }
 
-// TestPaymentForSetsApartCoinsThatPayTheTargetAlone checks that a money item worth the target or more, which can only
-// ever be the whole payment, doesn't force the approximate search on the rest, and that it is still paid when it is the
-// smallest payment or ties the smallest with fewer items. Where several equal-valued coins could pay the target alone,
-// the first listed is spent, as the exact search spends the first listed on a tie.
-func TestPaymentForSetsApartCoinsThatPayTheTargetAlone(t *testing.T) {
-	c := check.New(t)
-	gem := moneyItem("Gem", "1000000", "1")
-	twentyFive := moneyItem("Twenty-Five", "25", "1")
-	tens := moneyItem("Ten", "10", "3")
-	cent := moneyItem("Cent", "0.01", "1")
-	payments, paid := PaymentFor(fxp.FromInteger(30), []*Equipment{gem, twentyFive, tens, cent})
-	c.Equal([]Payout{{Money: tens, Quantity: 3}}, payments, "the gem doesn't keep the rest from being searched exactly")
-	c.Equal(fxp.FromInteger(30), paid)
-
-	thirtyOne := moneyItem("Thirty-One", "31", "1")
-	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{thirtyOne, twentyFive, twentyFive})
-	c.Equal([]Payout{{Money: thirtyOne, Quantity: 1}}, payments, "a coin that overpays by less than the rest is paid")
-	c.Equal(fxp.FromInteger(31), paid)
-
-	thirty := moneyItem("Thirty", "30", "1")
-	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{tens, thirty})
-	c.Equal([]Payout{{Money: thirty, Quantity: 1}}, payments, "one coin beats three that pay the same")
-	c.Equal(fxp.FromInteger(30), paid)
-
-	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{gem, cent})
-	c.Equal([]Payout{{Money: gem, Quantity: 1}}, payments, "the gem pays when the rest can't reach the target")
-	c.Equal(fxp.FromInteger(1_000_000), paid)
-
-	purse := moneyItem("Purse Gold", "100", "1")
-	pouch := moneyItem("Pouch Gold", "100", "1")
-	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{purse, pouch})
-	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the first listed of equal coins is spent")
-	c.Equal(fxp.Hundred, paid)
-	crown := moneyItem("Crown", "500", "1")
-	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{crown, purse, pouch})
-	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the least of the coins that pay the target alone is spent")
-	c.Equal(fxp.Hundred, paid)
-}
-
 // TestPayoutSearchesTakeTheMaximumTarget checks that a target at fxp's maximum, which a saturated total comes to, is
 // searched without the sizes of the tables wrapping around: the payment reports that the money falls short, the payout
 // pays out as far as the money reaches, and so does the change, even when the money's unit is fxp's smallest.
@@ -500,7 +467,7 @@ func TestPayoutSearchesTakeTheMaximumTarget(t *testing.T) {
 	c.Equal(fxp.Int(0), paid)
 	payouts, paid := PayoutFor(fxp.Max, []*Equipment{silver, copper})
 	c.Equal(2, len(payouts))
-	c.True(paid > 0 && paid <= fxp.Max)
+	c.Equal(fxp.Max.Floor(), paid, "every whole unit of the target is paid out")
 	e := NewEntity()
 	change, paid := e.ChangeFor(fxp.Max, []*Equipment{sliver}, []Payout{{Money: copper, Quantity: 3}})
 	c.True(len(change) >= 1, "the slivers are paid out as far as they reach")

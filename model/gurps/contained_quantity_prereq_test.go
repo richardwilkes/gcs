@@ -12,12 +12,15 @@ package gurps
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // TestContainedQuantityCountsWhatGroupsHold verifies that a contained quantity prerequisite counts what a group holds,
-// in nested groups too, rather than the group itself, while a physical container inside counts by its own quantity.
+// in nested groups too, rather than the group itself, while a physical container inside counts by its own quantity,
+// and that an unmet one says what it asks for.
 func TestContainedQuantityCountsWhatGroupsHold(t *testing.T) {
 	c := check.New(t)
 	quiver := NewEquipment(nil, nil, true)
@@ -37,7 +40,21 @@ func TestContainedQuantityCountsWhatGroupsHold(t *testing.T) {
 
 	p := NewContainedQuantityPrereq()
 	p.QualifierCriteria.Qualifier = fxp.FromInteger(20)
-	c.False(p.Satisfied(nil, quiver, nil, "", nil), "37 pieces must not pass a limit of 20")
+	var tooltip xbytes.InsertBuffer
+	c.False(p.Satisfied(nil, quiver, &tooltip, "\n- ", nil), "37 pieces must not pass a limit of 20")
+	c.Equal("\n- Has a contained quantity of at most 20", tooltip.String())
 	p.QualifierCriteria.Qualifier = fxp.FromInteger(40)
 	c.True(p.Satisfied(nil, quiver, nil, "", nil), "37 pieces must pass a limit of 40")
+}
+
+// TestContainedQuantityPrereqNonContainer verifies that equipment that isn't a container meets a contained quantity
+// prerequisite whatever quantity it asks for, and so fails one that is negated.
+func TestContainedQuantityPrereqNonContainer(t *testing.T) {
+	c := check.New(t)
+	arrow := NewEquipment(nil, nil, false)
+	p := NewContainedQuantityPrereq()
+	p.QualifierCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Five}
+	c.True(p.Satisfied(nil, arrow, nil, "", nil), "a non-container meets it")
+	p.Has = false
+	c.False(p.Satisfied(nil, arrow, nil, "", nil), "and fails it negated")
 }

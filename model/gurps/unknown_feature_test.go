@@ -37,11 +37,12 @@ func jsonArrayElement(c check.Checker, in string, index int) string {
 	return compactJSON(c, elements[index].String())
 }
 
-// TestUnknownFeaturePreserved verifies that a feature whose type this build doesn't recognize doesn't prevent the data
-// from loading, isn't silently reinterpreted as some other feature, and is written back out unchanged. The enum's
-// UnmarshalText maps anything it doesn't recognize onto the first value, so before this was addressed such a feature
-// became an AttributeBonus with an empty attribute and was permanently rewritten as "attribute_bonus" on save.
-func TestUnknownFeaturePreserved(t *testing.T) {
+// TestUnknownFeaturePreservedAndHashed verifies that a feature whose type this build doesn't recognize doesn't prevent
+// the data from loading, isn't silently reinterpreted as some other feature, is written back out unchanged, and hashes
+// by its data. The enum's UnmarshalText maps anything it doesn't recognize onto the first value, so before this was
+// addressed such a feature became an AttributeBonus with an empty attribute and was permanently rewritten as
+// "attribute_bonus" on save.
+func TestUnknownFeaturePreservedAndHashed(t *testing.T) {
 	c := check.New(t)
 
 	const data = `[
@@ -82,6 +83,9 @@ func TestUnknownFeaturePreserved(t *testing.T) {
 	c.True(ok, "a cloned UnknownFeature is still an UnknownFeature")
 	c.Equal(unknown.Kind, clone.Kind, "the clone retains the original type")
 	c.Equal(unknown.Data.String(), clone.Data.String(), "the clone retains the original data")
+
+	changed := gurps.NewUnknownFeature(unknown.Kind, []byte(`{"type":"future_bonus_from_a_newer_gcs","amount":4}`))
+	c.NotEqual(gurps.Hash64(unknown), gurps.Hash64(changed), "the data takes part in the hash")
 }
 
 // TestUnknownDataSurvivesFileRoundTrip loads a trait file holding both an unknown feature and an unknown prerequisite,

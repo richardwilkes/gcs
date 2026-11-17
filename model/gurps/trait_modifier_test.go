@@ -10,11 +10,13 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -156,20 +158,61 @@ func TestTraitModifierShowsTheLevelItWouldHaveIfEnabled(t *testing.T) {
 	}
 }
 
-// TestTraitModifierCostDescriptionSimplifiesFraction verifies that a leveled fractional cost adjustment is reduced
-// before display, so that the lists, prompts and notes show the same "x2" the editor's Total field does rather than
-// "x6/3".
-func TestTraitModifierCostDescriptionSimplifiesFraction(t *testing.T) {
+// TestTraitModifierCostDescription verifies that a leveled fractional cost adjustment is reduced before display, so
+// that the lists, prompts and notes show the same "x2" the editor's Total field does rather than "x6/3", that what the
+// adjustment affects follows it, and that one taking its level from a leveled trait at 0 levels counts one level.
+func TestTraitModifierCostDescription(t *testing.T) {
 	c := check.New(t)
-	mod := NewTraitModifier(nil, nil, false)
-	mod.CostAdj = "x2/3"
-	mod.Levels = fxp.Three
-	c.Equal("x2", mod.CostDescription(), "x2/3 at 3 levels reduces to x2")
-	mod.CostAdj = "+5/2"
-	mod.Levels = fxp.Two
-	c.Equal("+5", mod.CostDescription(), "+5/2 at 2 levels reduces to +5")
-	mod.CostAdj = "x2/3"
-	c.Equal("x4/3", mod.CostDescription(), "x2/3 at 2 levels is left as a fraction")
+	for _, tc := range []struct {
+		msg       string
+		costAdj   string
+		levels    fxp.Int
+		affects   affects.Option
+		fromTrait bool
+		expected  string
+	}{
+		{msg: "x2/3 at 3 levels reduces to x2", costAdj: "x2/3", levels: fxp.Three, expected: "x2"},
+		{msg: "+5/2 at 2 levels reduces to +5", costAdj: "+5/2", levels: fxp.Two, expected: "+5"},
+		{msg: "x2/3 at 2 levels is left as a fraction", costAdj: "x2/3", levels: fxp.Two, expected: "x4/3"},
+		{
+			msg:      "what the adjustment affects follows it",
+			costAdj:  "+20%",
+			affects:  affects.LevelsOnly,
+			expected: "+20% " + affects.LevelsOnly.AltString(),
+		},
+		{msg: "a leveled trait at 0 levels counts one level", costAdj: "+10%", fromTrait: true, expected: "+10%"},
+	} {
+		mod := NewTraitModifier(nil, nil, false)
+		mod.CostAdj = tc.costAdj
+		mod.Levels = tc.levels
+		mod.Affects = tc.affects
+		if tc.fromTrait {
+			mod.UseLevelFromTrait = true
+			trait := NewTrait(nil, nil, false)
+			trait.CanLevel = true
+			trait.SetModifiers([]*TraitModifier{mod})
+		}
+		c.Equal(tc.expected, mod.CostDescription(), tc.msg)
+	}
+}
+
+// TestTraitModifierLoadsLegacyCost verifies that loading a modifier written with a numeric cost and a cost type turns
+// them into its cost adjustment, unless it already has one.
+func TestTraitModifierLoadsLegacyCost(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		data     string
+		expected string
+	}{
+		{`{"type":"modifier","cost":5,"cost_type":"points"}`, "5"},
+		{`{"type":"modifier","cost":2,"cost_type":"multiplier"}`, "x2"},
+		{`{"type":"modifier","cost":-10,"cost_type":"percentage"}`, "-10%"},
+		{`{"type":"modifier","cost":5,"cost_type":"points","cost_adj":"+20%"}`, "+20%"},
+	} {
+		var mod TraitModifier
+		c.NoError(json.Unmarshal([]byte(tc.data), &mod), tc.data)
+		c.Equal(tc.expected, mod.CostAdj, tc.data)
+	}
 }
 
 // TestTraitModifierContainerHasNoCost verifies that a container never reports a cost modifier or a level, even if

@@ -319,6 +319,16 @@ func TestLinkedModifierCodeIsAskedAsOwnerCode(t *testing.T) {
 		"nothing is kept under the modifier's own code")
 }
 
+// TestLinkedModifierCodeIgnoresTheOwnersSameNamedCode verifies that what a modifier's features resolve its text with
+// leaves a linked code unanswered while the owner's code it is linked to is, even when the owner answers a code of the
+// same name.
+func TestLinkedModifierCodeIgnoresTheOwnersSameNamedCode(t *testing.T) {
+	c := check.New(t)
+	trait, mod := linkedTrait()
+	trait.Replacements = map[string]string{"focus": "Kicks", "extra": "zeal"}
+	c.Equal(map[string]string{"extra": "zeal"}, mod.NameableReplacements())
+}
+
 func TestCloneRekeysNameableLinks(t *testing.T) {
 	c := check.New(t)
 	trait, mod := linkedTrait()
@@ -427,6 +437,7 @@ func TestCanTakeModifiers(t *testing.T) {
 	c.True(CanTakeModifiers(NewEquipment(nil, nil, true)), "a physical container keeps modifiers of its own")
 	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)), "a group keeps nothing of its own, modifiers included")
 	c.False(CanTakeModifiers(NewEquipmentChoiceContainer(nil, nil)))
+	c.True(CanTakeModifiers(NewTrait(nil, nil, false)))
 	c.True(CanTakeModifiers(NewTrait(nil, nil, true)))
 	c.False(CanTakeModifiers(NewTraitChoiceContainer(nil, nil)))
 }

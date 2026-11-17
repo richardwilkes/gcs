@@ -118,11 +118,11 @@ func TestSetShoppingRecordMakesIndependentCopies(t *testing.T) {
 	c.Equal(1, len(list))
 }
 
-// TestShoppingRecordGetsIDsWhenLoaded checks that each entry of a loaded record ends up with an ID of its own, since
-// the record's viewers identify and remove entries by ID: an entry without one gets one, and of entries sharing an ID,
-// as a hand-edited or merged file may hold, the first keeps it and each later one gets its own. Loading also sorts the
-// record most recent first, keeping ties in order.
-func TestShoppingRecordGetsIDsWhenLoaded(t *testing.T) {
+// TestShoppingRecordIsNormalizedWhenLoaded checks that loading a record drops missing entries, sorts it most recent
+// first, keeping ties in order, and gives each entry an ID of its own, since the record's viewers identify and remove
+// entries by ID: an entry without one gets one, and of entries sharing an ID, as a hand-edited or merged file may hold,
+// the first keeps it and each later one gets its own.
+func TestShoppingRecordIsNormalizedWhenLoaded(t *testing.T) {
 	c := check.New(t)
 	kept := tid.MustNewTID(kinds.ShoppingRecord)
 	e := NewEntity()
@@ -149,4 +149,11 @@ func TestShoppingRecordGetsIDsWhenLoaded(t *testing.T) {
 	c.Equal([]string{"newer", "same time", "older", "second", "third"}, names,
 		"loading sorts most recent first, keeping ties in order")
 	c.Equal(kept, loaded.ShoppingRecord[0].ID, "the first entry with the ID keeps it")
+
+	e.ShoppingRecord = []*ShoppingRecordEntry{nil}
+	data, err = jio.Marshal(e)
+	c.NoError(err)
+	var dropped Entity
+	c.NotPanics(func() { c.NoError(jio.Unmarshal(data, &dropped)) })
+	c.Equal(0, len(dropped.ShoppingRecord), "a missing entry, which a file holds as null, is dropped")
 }

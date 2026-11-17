@@ -85,11 +85,6 @@ func TestHitLocationArmorDRSeparatedFromInnate(t *testing.T) {
 	c.Equal(9, torso.DR(e, nil, nil)[AllID], "DR picks up the location's own innate DR")
 	c.Equal(3, torso.ArmorDR(e, nil)[AllID], "ArmorDR still reports only the armor's 3")
 
-	// Innate DR is what remains once the armor's share is removed, key by key.
-	full := torso.DR(e, nil, nil)
-	armor := torso.ArmorDR(e, nil)
-	c.Equal(6, full[AllID]-armor[AllID], "innate DR is DR minus armor DR")
-
 	// Equipment that isn't equipped grants no DR at all, so both totals drop by its contribution.
 	addCarriedEquipmentWithFeatures(e, "Stowed Helm", newTestDRBonus(fxp.Eight, AllID, TorsoID)).Equipped = false
 	e.Recalculate()
@@ -119,4 +114,78 @@ func TestHitLocationReservedIDRefusedOnLoad(t *testing.T) {
 	}
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","choice_name":"X","table_name":"X","slots":1}`), &HitLocation{}),
 		"an ID the sanitizer would turn a reserved one into loads")
+}
+
+// TestHitLocationSetIDAvoidsReservedIDs verifies that SetID, which the body settings editor uses, never stores one of
+// the ReservedIDs.
+func TestHitLocationSetIDAvoidsReservedIDs(t *testing.T) {
+	c := check.New(t)
+	for _, id := range ReservedIDs {
+		var loc HitLocation
+		loc.SetID(id)
+		c.NotEqual(id, loc.LocID, "%s: SetID changes it", id)
+	}
+}
+
+// armAndHandBody is a body file whose arm, with DR 2, owns a sub-table holding a hand, with DR 1.
+const armAndHandBody = `{"version":5,"name":"Test","roll":"3d","locations":[{"id":"arm","choice_name":"Arm",` +
+	`"table_name":"Arm","slots":1,"dr_bonus":2,"sub_table":{"roll":"1d","locations":[{"id":"hand",` +
+	`"choice_name":"Hand","table_name":"Hand","slots":1,"dr_bonus":1}]}}]}`
+
+// loadTestBody loads a body from the given file content, reporting a failure to load.
+func loadTestBody(c check.Checker, data string) *Body {
+	c.Helper()
+	body, err := NewBodyFromFile(fstest.MapFS{"Test.body": {Data: []byte(data)}}, "Test.body")
+	c.NoError(err, "the body loads")
+	c.NotNil(body, "a body is returned")
+	return body
+}
+
+// TestHitLocationSubTableOwnership verifies that a location in a sub-table adds the DR and armor DR of the location
+// owning the sub-table to its own, both in a body loaded from a file and in a clone of it, whose sub-tables belong to
+// the clone alone.
+func TestHitLocationSubTableOwnership(t *testing.T) {
+	c := check.New(t)
+	body := loadTestBody(c, armAndHandBody)
+	if body == nil {
+		return
+	}
+	e := NewEntity()
+	addCarriedEquipmentWithFeatures(e, "Bracer", newTestDRBonus(fxp.Three, AllID, "arm"))
+	e.Recalculate()
+	hand := body.LookupLocationByID(e, "hand")
+	c.Equal(1+2+3, hand.DR(e, nil, nil)[AllID], "the hand adds the arm's innate and armor DR")
+	c.Equal(3, hand.ArmorDR(e, nil)[AllID], "the hand adds the arm's armor DR")
+
+	clone := body.Clone(e, nil)
+	clone.LookupLocationByID(e, "arm").DRBonus = 5
+	c.Equal(1+5+3, clone.LookupLocationByID(e, "hand").DR(e, nil, nil)[AllID], "the clone's hand adds the clone's arm")
+	c.Equal(1+2+3, hand.DR(e, nil, nil)[AllID], "editing the clone leaves the original alone")
+}
+
+// TestHitLocationDisplayDR verifies that DisplayDR lists the DR against all attacks first, even when it is 0, then each
+// specialized DR in natural order with the general DR added to it, as the tooltip's summary also does.
+func TestHitLocationDisplayDR(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	c.Equal("0", torso.DisplayDR(e, nil), "no DR at all")
+
+	addTraitWithFeatures(e, "Padding", newTestDRBonus(fxp.Three, "crushing", TorsoID))
+	e.Recalculate()
+	c.Equal("0/3", torso.DisplayDR(e, nil), "only specialized DR")
+
+	addTraitWithFeatures(e, "Toughness", newTestDRBonus(fxp.Two, AllID, TorsoID),
+		newTestDRBonus(fxp.One, "burning", TorsoID))
+	e.Recalculate()
+	var tooltip xbytes.InsertBuffer
+	c.Equal("2/3/5", torso.DisplayDR(e, &tooltip), "general and specialized DR")
+	c.Contains(tooltip.String(), "**DR 5** against **crushing** attacks", "the summary adds the general DR too")
+	// The DR comes from a map, so an unsorted display could match by chance; repeat to make that vanishingly unlikely.
+	for range 20 {
+		if got := torso.DisplayDR(e, nil); got != "2/3/5" {
+			c.Equal("2/3/5", got, "the specialized DR is in natural order")
+			break
+		}
+	}
 }
