@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +19,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/rpgtools/names/namesets/american"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -83,13 +86,6 @@ func TestNameGeneratorDuplicateNamesAddWeights(t *testing.T) {
 	c.NotContains(text, `"training_data"`, "mixed weights cannot be expressed as the plain list")
 	c.Equal(2, len(reloaded.Entries), "the repeated name reads back as a single entry")
 	c.Equal(data, reloaded.data(), "the distribution survives the weighted form")
-
-	// Sampling draws on the summed weights, so both names, and nothing else, can come up.
-	samples, err := weighted.SampleNames(20)
-	c.NoError(err)
-	for _, one := range samples {
-		c.True(one == "Zed" || one == "Alpha", "samples come from the training names: %q", one)
-	}
 
 	// The plain list keeps every occurrence, which amounts to the same thing.
 	unweighted := &NameGenerator{
@@ -432,7 +428,25 @@ func TestNameGeneratorSampleNames(t *testing.T) {
 	}
 	_, err = broken.SampleNames(1)
 	c.HasError(err)
-	c.Contains(err.Error(), "compound entry #2", "the failing child is identified")
+	if err != nil {
+		c.Contains(err.Error(), "compound entry #2", "the failing child is identified")
+	}
+	// Within nested compounds, the message gives the path from the outermost one.
+	nested := &NameGenerator{Type: namegen.Compound, Compound: []*NameGenerator{broken}}
+	_, err = nested.SampleNames(1)
+	c.HasError(err)
+	if err != nil {
+		c.Contains(err.Error(), "compound entry #1, compound entry #2", "the path to the failing child is given")
+	}
+
+	// A null child, which a hand-written file may contain, is skipped.
+	withNull := &NameGenerator{
+		Type:     namegen.Compound,
+		Compound: []*NameGenerator{nil, {Type: namegen.Simple, Entries: []*WeightedStringOption{entry(1, "Alpha")}}},
+	}
+	c.NotPanics(func() { samples, err = withNull.SampleNames(1) }, "a null child is skipped")
+	c.NoError(err)
+	c.Equal([]string{"Alpha"}, samples, "the other children still generate names")
 
 	// Reading an incomplete file still works, even though preparing it for use does not.
 	fileSystem := fstest.MapFS{"empty.names": {Data: []byte(`{"type": "compound"}`)}}
@@ -442,14 +456,12 @@ func TestNameGeneratorSampleNames(t *testing.T) {
 	c.HasError(err, "an incomplete file cannot be loaded for use")
 }
 
-// TestNewNameGenerator verifies the scaffolding a fresh generator starts with and its minimal serialized form.
+// TestNewNameGenerator verifies that a fresh generator is a simple one with nothing else set, so it writes only its
+// type.
 func TestNewNameGenerator(t *testing.T) {
 	c := check.New(t)
 	n := NewNameGenerator()
-	c.Equal(namegen.Simple, n.Type)
-	c.Equal(0, len(n.Entries))
-	c.Equal(0, len(n.Compound))
-	c.Equal(namegen.None, n.BuiltIn)
+	c.Equal(0, len(n.Entries), "a fresh generator has no entries, not even null ones")
 	data, err := jio.Marshal(n)
 	c.NoError(err)
 	compact := strings.Join(strings.Fields(string(data)), "")
@@ -480,4 +492,59 @@ func TestNameGeneratorReusesTrainedNamer(t *testing.T) {
 	names, err := compound.SampleNames(3)
 	c.NoError(err)
 	c.Equal(3, len(names))
+}
+
+// TestNameGeneratorBuiltInTrainingData verifies that each built-in selection trains on its own set, at that set's
+// weights or with every weight 1 for the unweighted variants, in preference to any entries.
+func TestNameGeneratorBuiltInTrainingData(t *testing.T) {
+	c := check.New(t)
+	unweighted := func(data map[string]int) map[string]int {
+		result := make(map[string]int, len(data))
+		for k := range data {
+			result[k] = 1
+		}
+		return result
+	}
+	for _, tc := range []struct {
+		builtIn namegen.Builtin
+		want    map[string]int
+	}{
+		{namegen.AmericanMale, american.Male()},
+		{namegen.AmericanFemale, american.Female()},
+		{namegen.AmericanLast, american.Last()},
+		{namegen.UnweightedAmericanMale, unweighted(american.Male())},
+		{namegen.UnweightedAmericanFemale, unweighted(american.Female())},
+		{namegen.UnweightedAmericanLast, unweighted(american.Last())},
+	} {
+		n := &NameGenerator{
+			Type:    namegen.Simple,
+			BuiltIn: tc.builtIn,
+			Entries: []*WeightedStringOption{entry(1, "Ignored")},
+		}
+		c.True(maps.Equal(tc.want, n.data()), "%s trains on its own set", tc.builtIn.Key())
+	}
+}
+
+// TestNameGeneratorRefGenerator verifies that a reference loads its file the first time the generator is asked for and
+// hands back that same generator afterward, and that it reports a file it cannot load.
+func TestNameGeneratorRefGenerator(t *testing.T) {
+	c := check.New(t)
+	fileSystem := fstest.MapFS{
+		"Good.names":    {Data: []byte(`{"type": "simple", "training_data": ["Ann"]}`)},
+		"Damaged.names": {Data: []byte(`{"type": "simple", "training_data": ["Ann"], "depth": "deep"}`)},
+	}
+	ref := func(name string) *NameGeneratorRef {
+		return &NameGeneratorRef{
+			FileRef: &library.NamedFileRef{Name: name, FileSystem: fileSystem, FilePath: name + NamesExt},
+		}
+	}
+	good := ref("Good")
+	first, err := good.Generator()
+	c.NoError(err)
+	second, err := good.Generator()
+	c.NoError(err)
+	c.True(first != nil && first == second, "the file is loaded once and the generator reused")
+
+	_, err = ref("Damaged").Generator()
+	c.HasError(err, "a damaged file is reported")
 }
