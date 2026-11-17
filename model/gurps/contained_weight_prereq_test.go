@@ -31,8 +31,9 @@ func newTestEquipment(parent *gurps.Equipment, container bool, baseWeight string
 	return e
 }
 
-// A container's contained weight is the weight it holds, which is independent of how many copies of the container there
-// are. Deriving it as ExtendedWeight-AdjustedWeight instead yielded (qty-1)*S+qty*C for qty > 0 and -S for qty <= 0.
+// TestContainedWeightIsIndependentOfQuantity verifies that a container's contained weight is the weight it holds,
+// whatever the number of copies of the container. Deriving it as ExtendedWeight-AdjustedWeight instead yielded
+// (qty-1)*S+qty*C for qty > 0 and -S for qty <= 0.
 func TestContainedWeightIsIndependentOfQuantity(t *testing.T) {
 	c := check.New(t)
 	units := fxp.Pound
@@ -45,7 +46,8 @@ func TestContainedWeightIsIndependentOfQuantity(t *testing.T) {
 	}
 }
 
-// The extended weight itself must still scale with the quantity: (self + contents) * qty, and 0 for qty <= 0.
+// TestExtendedWeightStillScalesWithQuantity verifies that the extended weight still scales with the quantity:
+// (self + contents) * qty, and 0 for qty <= 0.
 func TestExtendedWeightStillScalesWithQuantity(t *testing.T) {
 	c := check.New(t)
 	units := fxp.Pound
@@ -58,7 +60,8 @@ func TestExtendedWeightStillScalesWithQuantity(t *testing.T) {
 	c.Equal(fxp.Weight(0), container.ExtendedWeight(false, units))
 }
 
-// Contained weight reductions are applied to the contents, and only once, regardless of the quantity.
+// TestContainedWeightHonorsReductions verifies that contained weight reductions are applied to the contents, and only
+// once, regardless of the quantity.
 func TestContainedWeightHonorsReductions(t *testing.T) {
 	c := check.New(t)
 	units := fxp.Pound
@@ -76,17 +79,21 @@ func TestContainedWeightHonorsReductions(t *testing.T) {
 	c.Equal(fxp.Weight(0), container.ContainedWeight(false, units))
 }
 
-// A non-container carries nothing, so the weight criteria is skipped entirely and the prereq is satisfied.
+// TestContainedWeightPrereqNonContainer verifies that a non-container, which carries nothing, satisfies the
+// prerequisite without its weight criteria being checked, and so fails it negated.
 func TestContainedWeightPrereqNonContainer(t *testing.T) {
 	c := check.New(t)
 	e := newTestEquipment(nil, false, "3 lb", fxp.One)
 	p := gurps.NewContainedWeightPrereq(nil)
-	c.True(p.Satisfied(nil, e, nil, "", nil))
+	p.WeightCriteria.Compare = criteria.AtLeastNumber
+	p.WeightCriteria.Qualifier = fxp.WeightFromInteger(1, fxp.Pound)
+	c.True(p.Satisfied(nil, e, nil, "", nil), "a non-container meets even a weight it doesn't hold")
 	p.Has = false
-	c.False(p.Satisfied(nil, e, nil, "", nil))
+	c.False(p.Satisfied(nil, e, nil, "", nil), "and fails it negated")
 }
 
-// The prereq comparison must not shift as the container's quantity changes.
+// TestContainedWeightPrereqIgnoresQuantity verifies that the prerequisite's comparison doesn't shift as the
+// container's quantity changes.
 func TestContainedWeightPrereqIgnoresQuantity(t *testing.T) {
 	c := check.New(t)
 	container := newTestEquipment(nil, true, "5 lb", fxp.One)
@@ -113,9 +120,9 @@ func TestContainedWeightPrereqIgnoresQuantity(t *testing.T) {
 	}
 }
 
-// The tooltip for an unmet prereq must state the weight it requires with its units, in the units the sheet is set to,
-// just as the editor field for the same value does. Without them, "a contained weight of at most 5" is ambiguous, since
-// that number is a different weight in every unit.
+// TestContainedWeightPrereqTooltipHasUnits verifies that the tooltip for an unmet prerequisite states the weight it
+// requires with its units, in the units the sheet is set to, just as the editor field for the same value does. Without
+// them, "a contained weight of at most 5" is ambiguous, since that number is a different weight in every unit.
 func TestContainedWeightPrereqTooltipHasUnits(t *testing.T) {
 	c := check.New(t)
 	container := newTestEquipment(nil, true, "5 lb", fxp.One)

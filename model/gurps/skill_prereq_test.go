@@ -44,3 +44,30 @@ func TestSkillPrereqCriteria(t *testing.T) {
 		c.Equal(one.want, p.Satisfied(e, nil, nil, "", nil), one.name)
 	}
 }
+
+// TestSkillPrereqMatchesTechLevel checks that a prerequisite of a skill with a tech level is met only by a skill of the
+// same tech level, or with none.
+func TestSkillPrereqMatchesTechLevel(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	guns := gurps.NewSkill(e, nil, false)
+	guns.Name = "Guns"
+	guns.Points = fxp.One
+	e.Skills = []*gurps.Skill{guns}
+	owner := gurps.NewSkill(e, nil, false)
+	owner.TechLevel = new("8")
+	p := gurps.NewSkillPrereq()
+	p.NameCriteria = isText("Guns")
+	for _, one := range []struct {
+		name string
+		tl   *string
+		want bool
+	}{
+		{"the same tech level", new("8"), true},
+		{"another tech level", new("7"), false},
+		{"no tech level", nil, true},
+	} {
+		guns.TechLevel = one.tl
+		c.Equal(one.want, p.Satisfied(e, owner, nil, "", nil), one.name)
+	}
+}

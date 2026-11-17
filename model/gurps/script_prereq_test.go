@@ -38,6 +38,7 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		{name: "Big", script: `"Needs\n* more"`, reason: "Needs\n* more", text: "Big:\n\t- Needs\n\t- * more"},
 		{name: "Big", script: `throw new Error("boom")`, failed: true, text: "Big (couldn't run: "},
 		{script: `throw new Error("boom")`, failed: true, text: "A custom check (couldn't run: "},
+		{name: "Big", script: `throw new Error("boom\nagain")`, failed: true, text: "Big (couldn't run):\n\t- Error: boom"},
 		{
 			name: "Big", script: "<script>1 < 2</script> or <script>false</script>", reason: "true or false",
 			text: "Big (true or false)",
@@ -60,6 +61,29 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		if !met {
 			c.True(strings.HasPrefix(tooltip.String(), "\n- "+one.text), "%s: %q", one.script, tooltip.String())
 		}
+	}
+}
+
+// TestScriptPrereqSeesItsOwnerAsSelf verifies that the script of a prerequisite judged for a trait, skill, spell or
+// piece of equipment sees that item as self.
+func TestScriptPrereqSeesItsOwnerAsSelf(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := NewTrait(e, nil, false)
+	trait.Name = "Owner"
+	skill := NewSkill(e, nil, false)
+	skill.Name = "Owner"
+	spell := NewSpell(e, nil, false)
+	spell.Name = "Owner"
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Owner"
+	p := NewScriptPrereq()
+	p.Script = `self.name === "Owner"`
+	for _, owner := range []any{trait, skill, spell, eqp} {
+		var result CheckResult
+		var reason string
+		SuppressScriptResolveErrorLogging(func() { result, reason = p.Evaluate(e, owner) })
+		c.Equal(CheckMet, result, "%T: %s", owner, reason)
 	}
 }
 

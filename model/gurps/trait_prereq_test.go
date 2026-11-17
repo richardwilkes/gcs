@@ -28,8 +28,8 @@ func atLeast(qualifier int) criteria.Number {
 	return criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(qualifier)}
 }
 
-// TestTraitPrereqCriteria checks the points and tags of a trait prerequisite, and its modifier criteria, which a single
-// enabled modifier has to meet together, containers left out.
+// TestTraitPrereqCriteria checks the points, tags and notes of a trait prerequisite, the notes including those of its
+// modifiers, and its modifier criteria, which a single enabled modifier has to meet together, containers left out.
 func TestTraitPrereqCriteria(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -67,6 +67,12 @@ func TestTraitPrereqCriteria(t *testing.T) {
 		{"points unmet", func(p *gurps.TraitPrereq) { p.PointsCriteria = atLeast(16) }, false},
 		{"tag met", func(p *gurps.TraitPrereq) { p.TagsCriteria = isText("Mental") }, true},
 		{"tag unmet", func(p *gurps.TraitPrereq) { p.TagsCriteria = isText("Physical") }, false},
+		{"notes of a modifier", func(p *gurps.TraitPrereq) {
+			p.NotesCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Fire"}
+		}, true},
+		{"notes unmet", func(p *gurps.TraitPrereq) {
+			p.NotesCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Earth"}
+		}, false},
 		{"modifier name", func(p *gurps.TraitPrereq) { p.ModifierNameCriteria = isText("One College") }, true},
 		{"disabled modifier name", func(p *gurps.TraitPrereq) { p.ModifierNameCriteria = isText("Solar") }, false},
 		{"container modifier name", func(p *gurps.TraitPrereq) { p.ModifierNameCriteria = isText("Group") }, false},

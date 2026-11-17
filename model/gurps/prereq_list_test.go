@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -17,6 +18,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
+
+// namedTrait returns a trait prerequisite for the name.
+func namedTrait(name string) *TraitPrereq {
+	p := NewTraitPrereq()
+	p.NameCriteria.Qualifier = name
+	return p
+}
 
 // TestPrereqListSkipsListsThatDoNotApply verifies that a list whose tech level condition doesn't match the sheet's, or
 // that has nothing in it that applies, is left out of its parent's check, and that one left out at the top is met.
@@ -108,8 +116,9 @@ func TestPrereqListHasNothingToCheck(t *testing.T) {
 
 // TestPrereqListEvaluate verifies the result of a list and of each prerequisite within it: an unmet child decides an
 // "all of" list and a met one an "any of" list, even beside a failed one, a list not decided that way has failed when
-// any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it without running
-// its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each script runs once.
+// any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it, nested lists
+// included, without running its scripts, a list leaves out its skipped children and is skipped when nothing is left,
+// each script runs once, and without an entity a list is met and nothing is visited.
 func TestPrereqListEvaluate(t *testing.T) {
 	negated := func(p *PrereqList) *PrereqList {
 		p.Not = true
@@ -130,7 +139,7 @@ func TestPrereqListEvaluate(t *testing.T) {
 	}
 	broken := script("nope(")
 	stuck := script("for (;;);")
-	later := list(true, broken, stuck)
+	later := list(true, broken, list(true, stuck))
 	later.WhenTL = numberCriteria(criteria.AtLeastNumber, fxp.Ten)
 	for _, one := range []struct {
 		name string
@@ -185,6 +194,11 @@ func TestPrereqListEvaluate(t *testing.T) {
 		})
 	}
 	c := check.New(t)
+	visitedWithoutEntity := false
+	c.Equal(CheckMet, list(true, namedTrait("Magery")).Evaluate(nil, nil, func(Prereq, CheckResult, string) {
+		visitedWithoutEntity = true
+	}), "without an entity, a list is met")
+	c.False(visitedWithoutEntity, "and nothing in it is visited")
 	visited := make(map[Prereq]CheckResult)
 	var reason string
 	root := list(true, later, script("true"), broken.Clone(nil))
@@ -197,8 +211,8 @@ func TestPrereqListEvaluate(t *testing.T) {
 		})
 	})
 	c.Equal(map[Prereq]CheckResult{
-		later: CheckSkipped, broken: CheckSkipped, stuck: CheckSkipped, root.Prereqs[1]: CheckMet,
-		root.Prereqs[2]: CheckFailed, root: CheckFailed,
+		later: CheckSkipped, broken: CheckSkipped, later.Prereqs[1]: CheckSkipped, stuck: CheckSkipped,
+		root.Prereqs[1]: CheckMet, root.Prereqs[2]: CheckFailed, root: CheckFailed,
 	}, visited, "each prerequisite is visited with its own result")
 	c.Contains(reason, "SyntaxError", "a script that couldn't run gives its error")
 
@@ -216,7 +230,8 @@ func TestPrereqListEvaluate(t *testing.T) {
 		root.Evaluate(e, nil, func(node Prereq, result CheckResult, _ string) { visited[node] = result })
 	})
 	c.Equal(map[Prereq]CheckResult{
-		later: CheckSkipped, broken: CheckSkipped, stuck: CheckSkipped, root.Prereqs[1]: CheckFailed, root: CheckFailed,
+		later: CheckSkipped, broken: CheckSkipped, later.Prereqs[1]: CheckSkipped, stuck: CheckSkipped,
+		root.Prereqs[1]: CheckFailed, root: CheckFailed,
 	}, visited, "a script that runs out of time has failed")
 	c.Equal(int64(1), abandonedScripts(e)-stopped, "each script runs once, and none in a skipped list does")
 }
@@ -251,4 +266,322 @@ func TestNewPrereqCriteriaHashAndKeys(t *testing.T) {
 	skill.FillWithNameableKeys(keys, nil)
 	_, found := keys["SkillTag"]
 	c.True(found, "the skill's tag key is found")
+}
+
+// TestPrereqListDescribe verifies that a list joins its children to match its mode, parenthesizes nested lists of more
+// than one child, notes a tech level condition, and hands its entity to its children, so that a weight is given in the
+// entity's units.
+func TestPrereqListDescribe(t *testing.T) {
+	c := check.New(t)
+	root := NewPrereqList()
+	root.Prereqs = append(root.Prereqs, namedTrait("Magery"))
+	anyOf := NewPrereqList()
+	anyOf.All = false
+	anyOf.WhenTL.Compare = criteria.AtLeastNumber
+	anyOf.WhenTL.Qualifier = fxp.Three
+	anyOf.Prereqs = append(anyOf.Prereqs, namedTrait("Luck"), namedTrait("DX"))
+	single := NewPrereqList()
+	single.Prereqs = append(single.Prereqs, namedTrait("Fearlessness"))
+	root.Prereqs = append(root.Prereqs, anyOf, single)
+	c.Equal("Has trait Magery and (has trait Luck or has trait DX) (only when TL at least 3) and has trait Fearlessness",
+		root.Describe(nil, nil, func(s string) string { return s }))
+	c.Equal("", NewPrereqList().Describe(nil, nil, func(s string) string { return s }))
+	noneOf := &PrereqList{Not: true, Prereqs: Prereqs{namedTrait("Luck"), namedTrait("DX")}}
+	c.Equal("None of (has trait Luck or has trait DX)", noneOf.Describe(nil, nil, func(s string) string { return s }))
+	allOf := &PrereqList{All: true, Prereqs: Prereqs{namedTrait("Luck"), namedTrait("DX")}}
+	noneOfAll := &PrereqList{Not: true, Prereqs: Prereqs{allOf}}
+	c.Equal("Not all of (has trait Luck and has trait DX)",
+		noneOfAll.Describe(nil, nil, func(s string) string { return s }),
+		"a negated list holding only an all of group says not all of its items, without parenthesizing them twice")
+	anyOfLuck := &PrereqList{Prereqs: Prereqs{namedTrait("Luck"), namedTrait("DX")}}
+	holdingAnyOf := &PrereqList{All: true, Prereqs: Prereqs{anyOfLuck}}
+	c.Equal("(Has trait Luck or has trait DX)", holdingAnyOf.Describe(nil, nil, func(s string) string { return s }),
+		"a list that isn't negated keeps the parentheses of a lone group")
+	notAllOfAny := &PrereqList{All: true, Not: true, Prereqs: Prereqs{anyOfLuck}}
+	c.Equal("None of (has trait Luck or has trait DX)",
+		notAllOfAny.Describe(nil, nil, func(s string) string { return s }),
+		"and one holding only an any of group says none of its items")
+	allOfAtTL := &PrereqList{
+		All: true, WhenTL: criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three},
+		Prereqs: Prereqs{namedTrait("Luck"), namedTrait("DX")},
+	}
+	noneOfAtTL := &PrereqList{Not: true, Prereqs: Prereqs{allOfAtTL}}
+	c.Equal("None of ((has trait Luck and has trait DX) (only when TL at least 3))",
+		noneOfAtTL.Describe(nil, nil, func(s string) string { return s }),
+		"but keeps the group's own parentheses when its tech level condition follows them")
+
+	named := NewScriptPrereq()
+	named.Name = "Elf ancestry"
+	unnamed := NewScriptPrereq()
+	for _, one := range []struct {
+		name     string
+		prereqs  Prereqs
+		expected string
+	}{
+		{"a named script", Prereqs{namedTrait("Magery"), named}, "Has trait Magery and Elf ancestry"},
+		{"an unnamed script", Prereqs{namedTrait("Magery"), unnamed}, "Has trait Magery and a custom check"},
+		{
+			"a named script leading a group",
+			Prereqs{namedTrait("Magery"), &PrereqList{All: true, Prereqs: Prereqs{named, namedTrait("Luck")}}},
+			"Has trait Magery and (Elf ancestry and has trait Luck)",
+		},
+		{"an empty group", Prereqs{namedTrait("Magery"), &PrereqList{}}, "Has trait Magery"},
+		{"an empty group first", Prereqs{&PrereqList{}, namedTrait("Magery")}, "Has trait Magery"},
+		{
+			"an empty group with a tech level",
+			Prereqs{namedTrait("Magery"), &PrereqList{WhenTL: criteria.Number{Compare: criteria.AtLeastNumber}}},
+			"Has trait Magery",
+		},
+		{
+			"a none of group",
+			Prereqs{namedTrait("Magery"), &PrereqList{Not: true, Prereqs: Prereqs{namedTrait("Luck"), namedTrait("DX")}}},
+			"Has trait Magery and none of (has trait Luck or has trait DX)",
+		},
+		{
+			"a not all of group",
+			Prereqs{namedTrait("Magery"), &PrereqList{All: true, Not: true, Prereqs: Prereqs{namedTrait("Luck")}}},
+			"Has trait Magery and not all of (has trait Luck)",
+		},
+		{
+			"a group holding an empty group",
+			Prereqs{namedTrait("Magery"), &PrereqList{Prereqs: Prereqs{&PrereqList{}, namedTrait("Luck")}}},
+			"Has trait Magery and has trait Luck",
+		},
+	} {
+		list := NewPrereqList()
+		list.Prereqs = one.prereqs
+		c.Equal(one.expected, list.Describe(nil, nil, func(s string) string { return s }), one.name)
+	}
+
+	entity := NewEntity()
+	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
+	weighed := NewPrereqList()
+	weighed.Prereqs = Prereqs{namedTrait("Magery"), NewContainedWeightPrereq(nil)}
+	c.Equal("Has trait Magery and has a contained weight of at most 2.5 kg",
+		weighed.Describe(entity, nil, func(s string) string { return s }), "a weight is given in the entity's units")
+}
+
+// TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,
+// nested lists with their parent's mode are flattened into it, lists that don't apply at the tech level are left out,
+// an "any of" list names every option, and a negated list names what is met as the item judged names it.
+func TestPrereqListFailureText(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	entity.Profile.TechLevel = "3"
+	met := namedTrait("Z")
+	met.Has = false
+	list := func(all bool, children ...Prereq) *PrereqList {
+		p := NewPrereqList()
+		p.All = all
+		p.Prereqs = children
+		return p
+	}
+	not := func(all bool, children ...Prereq) *PrereqList {
+		p := list(all, children...)
+		p.Not = true
+		return p
+	}
+	met2 := namedTrait("Y")
+	met2.Has = false
+	atTL5 := list(true, namedTrait("B"))
+	atTL5.WhenTL.Compare = criteria.AtLeastNumber
+	atTL5.WhenTL.Qualifier = fxp.Five
+	a, b, cc, d := namedTrait("A"), namedTrait("B"), namedTrait("C"), namedTrait("D")
+
+	for _, one := range []struct {
+		name     string
+		list     *PrereqList
+		expected string
+	}{
+		{"all of", list(true, a, b), "\n- Has trait A\n- Has trait B"},
+		{"all of, one unmet", list(true, met, a), "\n- Has trait A"},
+		{"all of, nested all of", list(true, a, list(true, b, cc)), "\n- Has trait A\n- Has trait B\n- Has trait C"},
+		{
+			"all of, nested any of", list(true, a, list(false, b, cc)),
+			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Has trait C",
+		},
+		{"all of, nested any of with one option", list(true, a, list(false, b)), "\n- Has trait A\n- Has trait B"},
+		{
+			"all of, nested three deep", list(true, a, list(false, b, list(true, cc, d))),
+			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Requires all of:\n\t\t- Has trait C" +
+				"\n\t\t- Has trait D",
+		},
+		{"all of, skipped for TL", list(true, a, atTL5), "\n- Has trait A"},
+		{"any of", list(false, a, b), "\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B"},
+		{"any of with one option", list(false, a), "\n- Has trait A"},
+		{
+			"any of, nested any of", list(false, a, list(false, b, cc)),
+			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B\n\t- Has trait C",
+		},
+		{
+			"any of, nested all of with one unmet", list(false, a, list(true, met, b)),
+			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B",
+		},
+		{"none of, one met", not(false, a, met), "\n- Requires none of:\n\t- Does not have trait Z"},
+		{
+			"not all of, all met", not(true, met, met2),
+			"\n- Requires not all of:\n\t- Does not have trait Z\n\t- Does not have trait Y",
+		},
+		{
+			"all of, nested none of", list(true, a, not(false, met)),
+			"\n- Has trait A\n- Requires none of:\n\t- Does not have trait Z",
+		},
+	} {
+		var buffer xbytes.InsertBuffer
+		c.False(one.list.Satisfied(entity, nil, &buffer, "\n- ", nil), one.name)
+		c.Equal(one.expected, buffer.String(), one.name)
+	}
+	c.True(list(false, a, met).Satisfied(entity, nil, nil, "\n- ", nil), "an any of list with a met option is met")
+	c.True(not(false, a, b).Satisfied(entity, nil, nil, "\n- ", nil), "a none of list with nothing met is met")
+	foe := namedTrait("@Foe@")
+	foe.Has = false
+	owner := NewTrait(entity, nil, false)
+	owner.Replacements = map[string]string{"Foe": "Z"}
+	var named xbytes.InsertBuffer
+	c.False(not(false, foe).Satisfied(entity, owner, &named, "\n- ", nil), "a none of list with a met item is unmet")
+	c.Equal("\n- Requires none of:\n\t- Does not have trait Z", named.String(), "the met item takes its owner's names")
+	broken := NewScriptPrereq()
+	broken.Script = "nope("
+	var buffer xbytes.InsertBuffer
+	SuppressScriptResolveErrorLogging(func() {
+		c.False(not(false, a, broken).Satisfied(entity, nil, &buffer, "\n- ", nil), "a none of list that fails is unmet")
+	})
+	heading := "\n- Requires none of:"
+	c.True(strings.HasPrefix(buffer.String(), heading+"\n\t- "), "a failed none of list says why: %q", buffer.String())
+	c.False(strings.Contains(buffer.String(), "Has trait A"), "but not what was unmet")
+	buffer = xbytes.InsertBuffer{}
+	SuppressScriptResolveErrorLogging(func() {
+		c.False(not(false, list(false, broken, a)).Satisfied(entity, nil, &buffer, "\n- ", nil),
+			"a none of list holding a failed any of list is unmet")
+	})
+	c.True(strings.Contains(buffer.String(), "\n\t- Requires at least one of:"),
+		"a failed list of the same mode keeps its own heading: %q", buffer.String())
+	c.False(strings.Contains(buffer.String(), "\n\t- Has trait A"),
+		"so what was unmet in it isn't listed as forbidden: %q", buffer.String())
+
+	future := NewUnknownPrereq("future", []byte(`{"type":"future"}`))
+	buffer = xbytes.InsertBuffer{}
+	c.False(not(false, future).Satisfied(entity, nil, &buffer, "\n- ", nil),
+		"a negated list can't make a prerequisite it doesn't know into a pass")
+	c.True(strings.Contains(buffer.String(), "future"), "and says what it couldn't check: %q", buffer.String())
+	c.Equal(CheckFailed, not(false, future).Evaluate(entity, nil, nil), "it fails rather than being unmet")
+}
+
+// TestPrereqListAppliesAt verifies that a list applies only at the tech levels its condition allows, and always when
+// there is no condition or no entity, and that it applies with its parents only where each of them does as well.
+func TestPrereqListAppliesAt(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	entity.Profile.TechLevel = "3"
+	p := NewPrereqList()
+	c.True(p.AppliesAt(entity), "no condition")
+	p.WhenTL.Compare = criteria.AtLeastNumber
+	p.WhenTL.Qualifier = fxp.Five
+	c.False(p.AppliesAt(entity), "TL 3 is below 5")
+	c.True(p.AppliesAt(nil), "no entity")
+	child := NewPrereqList()
+	child.Parent = p
+	c.True(child.AppliesAt(entity), "a nested list without a condition applies on its own")
+	c.False(child.AppliesWithParentsAt(entity), "but not with a parent that doesn't apply")
+	entity.Profile.TechLevel = "5^"
+	c.True(p.AppliesAt(entity), "TL 5^ is at least 5")
+	c.True(child.AppliesWithParentsAt(entity), "and with its parent once that applies")
+	child.WhenTL = numberCriteria(criteria.AtLeastNumber, fxp.Nine)
+	c.False(child.AppliesWithParentsAt(entity), "but not when its own condition isn't met")
+}
+
+// TestPrereqListCloneResolvingEmpty verifies that a nil list becomes a new, empty one unless it belongs to a container,
+// that an empty list is cloned unless it is to be pruned, and that a list holding something is always cloned.
+func TestPrereqListCloneResolvingEmpty(t *testing.T) {
+	c := check.New(t)
+	empty := NewPrereqList()
+	full := newPrereqListRequiringTrait("Magery")
+	for _, one := range []struct {
+		name        string
+		list        *PrereqList
+		isContainer bool
+		prune       bool
+		wantNil     bool
+		wantItems   int
+	}{
+		{"nil, even when pruning", nil, false, true, false, 0},
+		{"nil, for a container", nil, true, false, true, 0},
+		{"empty", empty, false, false, false, 0},
+		{"empty, pruned", empty, false, true, true, 0},
+		{"not empty, pruned", full, false, true, false, 1},
+	} {
+		got := one.list.CloneResolvingEmpty(one.isContainer, one.prune)
+		c.Equal(one.wantNil, got == nil, one.name)
+		if got != nil {
+			c.True(got != one.list, "%s: a new list", one.name)
+			c.Equal(one.wantItems, len(got.Prereqs), "%s: what it holds", one.name)
+		}
+	}
+}
+
+// TestEquipmentPenaltyThroughNegation checks that equipment a prerequisite list requires to be equipped, through any
+// number of negations, earns the missing equipment penalty when it isn't, even when the list it is in has failed, and
+// that equipment it forbids never does.
+func TestEquipmentPenaltyThroughNegation(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	shield := NewEquipment(e, nil, false)
+	shield.Name = "Shield"
+	shield.Equipped = true
+	e.CarriedEquipment = []*Equipment{shield}
+	c.True(shield.ReallyEquipped(), "precondition: the shield is equipped")
+	equipped := func(name string, not bool) *EquippedEquipmentPrereq {
+		p := NewEquippedEquipmentPrereq()
+		p.NameCriteria = textCriteria(criteria.IsText, name)
+		p.Not = not
+		return p
+	}
+	carried := func(name string, not bool) *EquippedEquipmentPrereq {
+		p := NewCarriedEquipmentPrereq()
+		p.NameCriteria = textCriteria(criteria.IsText, name)
+		p.Not = not
+		return p
+	}
+	list := func(all, not bool, children ...Prereq) *PrereqList {
+		p := NewPrereqList()
+		p.All = all
+		p.Not = not
+		p.Prereqs = children
+		return p
+	}
+	noneOf := func(children ...Prereq) *PrereqList { return list(false, true, children...) }
+	allOf := func(children ...Prereq) *PrereqList { return list(true, false, children...) }
+	anyOf := func(children ...Prereq) *PrereqList { return list(false, false, children...) }
+	met := namedTrait("Z")
+	met.Has = false
+	for _, one := range []struct {
+		name      string
+		list      *PrereqList
+		satisfied bool
+		penalty   bool
+	}{
+		{"none of not having a longarm", noneOf(equipped("Longarm", true)), false, true},
+		{"none of none of having a longarm", noneOf(noneOf(equipped("Longarm", false))), false, true},
+		{"none of having the shield", noneOf(equipped("Shield", false)), false, false},
+		{"none of none of not having the shield", noneOf(noneOf(equipped("Shield", true))), false, false},
+		{"none of not having the shield", noneOf(equipped("Shield", true)), true, false},
+		{"none of not having a kit carried", noneOf(carried("Kit", true)), false, false},
+		{"none of a met item and having a longarm", noneOf(met, equipped("Longarm", false)), false, false},
+		{
+			"none of a failed all of not having a longarm",
+			noneOf(allOf(equipped("Longarm", true), NewUnknownPrereq("future", []byte(`{"type":"future"}`)))),
+			false, true,
+		},
+		{
+			"any of having a longarm and a failure",
+			anyOf(equipped("Longarm", false), NewUnknownPrereq("future", []byte(`{"type":"future"}`))),
+			false, true,
+		},
+	} {
+		root := NewPrereqList()
+		root.Prereqs = Prereqs{one.list}
+		var penalty bool
+		c.Equal(one.satisfied, root.Satisfied(e, nil, nil, "", &penalty), "%s: satisfied", one.name)
+		c.Equal(one.penalty, penalty, "%s: penalty", one.name)
+	}
 }

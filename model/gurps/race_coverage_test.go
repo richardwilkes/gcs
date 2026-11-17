@@ -34,4 +34,6 @@ func TestRace(t *testing.T) {
 	t.Run("SheetSettingsSellMoneyPathsAvoidTheClosedStateLock", TestSheetSettingsSellMoneyPathsAvoidTheClosedStateLock)
 	t.Run("ClosedStateIsConcurrencySafe", TestClosedStateIsConcurrencySafe)
 	t.Run("ClosedStateDuringSettingsInitialization", TestClosedStateDuringSettingsInitialization)
+	t.Run("PrereqListEvaluate", TestPrereqListEvaluate)
+	t.Run("ScriptPrereqStoppedRunsOncePerRecalculation", TestScriptPrereqStoppedRunsOncePerRecalculation)
 }
