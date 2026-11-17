@@ -10,10 +10,13 @@
 package export
 
 import (
+	"errors"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 
@@ -25,11 +28,65 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/uti"
 )
 
+// runTemplateExport runs Export over the given template text, format line included, and returns its output.
+func runTemplateExport(t *testing.T, c check.Checker, entity *gurps.Entity, tmpl string) string {
+	t.Helper()
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	return string(data)
+}
+
+// newGroupedModifiersEntity returns a sheet with the reactions A, B and C and the conditional modifiers D and E, some
+// of them in the "Combat" group, with the "group containers when sorting" setting on for the rest of the test.
+func newGroupedModifiersEntity(t *testing.T) *gurps.Entity {
+	gurpstest.WithGroupContainersOnSort(t, true)
+	entity := gurps.NewEntity()
+	gurpstest.AddReaction(entity, "A", "from everyone", "", fxp.One)
+	gurpstest.AddReaction(entity, "B", "from foes", "Combat", fxp.Two)
+	gurpstest.AddReaction(entity, "C", "from allies", "Combat", fxp.Three)
+	gurpstest.AddGroupedConditionalModifier(entity, "D", "to hit", "Combat", fxp.One)
+	gurpstest.AddGroupedConditionalModifier(entity, "E", "to dodge", "", fxp.Two)
+	return entity
+}
+
+// newAttributeKindsEntity returns a sheet with two extra attributes: "forced", whose base would make it secondary but
+// whose placement makes it primary, and "mana", a hidden pool.
+func newAttributeKindsEntity() *gurps.Entity {
+	entity := gurps.NewEntity()
+	addDef := func(def *gurps.AttributeDef) {
+		def.Order = len(entity.SheetSettings.Attributes.Set)
+		entity.SheetSettings.Attributes.Set[def.DefID] = def
+		entity.Attributes.Set[def.DefID] = gurps.NewAttribute(entity, def.DefID, len(entity.Attributes.Set))
+	}
+	addDef(&gurps.AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
+	addDef(&gurps.AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
+	return entity
+}
+
+// newContainerTypesEntity returns a sheet carrying the physical container Backpack, the group Kit and the item Rope.
+func newContainerTypesEntity() *gurps.Entity {
+	entity := gurps.NewEntity()
+	backpack := gurps.NewEquipment(entity, nil, true)
+	backpack.Name = "Backpack"
+	kit := gurps.NewEquipmentGroup(entity, nil)
+	kit.Name = "Kit"
+	rope := gurps.NewEquipment(entity, nil, false)
+	rope.Name = "Rope"
+	entity.CarriedEquipment = []*gurps.Equipment{backpack, kit, rope}
+	return entity
+}
+
+// TestTemplateFuncs verifies that the number functions and the Number methods templates can call give the documented
+// results.
 func TestTemplateFuncs(t *testing.T) {
 	c := check.New(t)
 	values := struct {
@@ -40,25 +97,29 @@ func TestTemplateFuncs(t *testing.T) {
 		OnePointOne: fxp.OnePointOne,
 	}
 	tmplBase := template.New("").Funcs(createTemplateFuncs())
-	for i, data := range []struct{ in, out string }{
+	for i, data := range []struct {
+		in, out string
+		fails   bool
+	}{
 		{in: `{{numberFrom 22}}`, out: "22"},
 		{in: `{{numberFrom 23.45}}`, out: "23.45"},
-		{in: `{{numberFrom "1"}}`, out: "1"},
 		{in: `{{numberFrom "1.23456"}}`, out: "1.2345"},
-		{in: `{{numberFrom "15U"}}`, out: "15"},
 		{in: `{{numberFrom "15.5U"}}`, out: "15.5"},
-		{in: `{{numberToInt .One}}`, out: "1"},
-		{in: `{{numberToFloat .One}}`, out: "1"},
+		{in: `{{numberFrom true}}`, fails: true},
 		{in: `{{numberToInt .OnePointOne}}`, out: "1"},
 		{in: `{{numberToFloat .OnePointOne}}`, out: "1.1"},
 		{in: `{{.One.Add .OnePointOne}}`, out: "2.1"},
 		{in: `{{.One.Sub .OnePointOne}}`, out: "-0.1"},
-		{in: `{{(numberFrom 22).Add (numberFrom 44.4)}}`, out: "66.4"},
 	} {
 		tmpl, err := tmplBase.Parse(data.in)
 		c.NoError(err, "Test %d", i)
 		var buffer strings.Builder
-		c.NoError(tmpl.Execute(&buffer, values), "Test %d", i)
+		err = tmpl.Execute(&buffer, values)
+		if data.fails {
+			c.HasError(err, "Test %d", i)
+			continue
+		}
+		c.NoError(err, "Test %d", i)
 		c.Equal(data.out, buffer.String(), "Test %d", i)
 	}
 }
@@ -90,22 +151,16 @@ func newGrantedRowsEntity() *gurps.Entity {
 func TestExportGrantedRowsCostNothing(t *testing.T) {
 	c := check.New(t)
 	entity := newGrantedRowsEntity()
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n" +
-		"{{range .Skills}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}" +
-		"{{range .Spells}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
-	c.Equal("<<Brawling|0|12>><<Light|0|10>>", string(data))
+	c.Equal("<<Brawling|0|12>><<Light|0|10>>", runTemplateExport(t, c, entity, "GCS Text Template v1\n"+
+		"{{range .Skills}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}"+
+		"{{range .Spells}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}"))
 	c.Equal("<Brawling|0|12><Light|0|10>", runLegacyExport(t, c, entity,
 		"@SKILLS_LOOP_START<@DESCRIPTION|@POINTS|@SL>@SKILLS_LOOP_END"+
 			"@SPELLS_LOOP_START<@DESCRIPTION_PRIMARY|@POINTS|@SL>@SPELLS_LOOP_END"))
 }
 
+// TestExportTraitSelfControlAndFrequency verifies that the template exporter writes a trait's self-control and
+// frequency rolls as numbers and descriptions, and offers its modifier notes with either or both rolls left out.
 func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -119,19 +174,11 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 	rolls.Frequency = frequency.FR9
 	entity.Traits = append(entity.Traits, plain, rolls)
 
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n" +
-		"{{range .Traits}}" +
-		"<<{{.Description}}|{{.CR}}|{{.CRFull}}|{{.FR}}|{{.FRFull}}|" +
-		"{{.ModifierNotes}}|{{.ModifierNotesNoCR}}|{{.ModifierNotesNoFR}}|{{.ModifierNotesNoRolls}}>>\n" +
-		"{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
-	out := string(data)
+	out := runTemplateExport(t, c, entity, "GCS Text Template v1\n"+
+		"{{range .Traits}}"+
+		"<<{{.Description}}|{{.CR}}|{{.CRFull}}|{{.FR}}|{{.FRFull}}|"+
+		"{{.ModifierNotes}}|{{.ModifierNotesNoCR}}|{{.ModifierNotesNoFR}}|{{.ModifierNotesNoRolls}}>>\n"+
+		"{{end}}")
 
 	// A trait with neither roll emits 0 for the numeric fields and nothing for the rest.
 	c.Contains(out, "<<Plain|0||0|||||>>")
@@ -148,52 +195,118 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 // modifiers out flat -- the group containers are skipped and their members take their place, each naming its group --
 // so that templates written before groups existed keep working.
 func TestExportConditionalModifierGroupsAreFlat(t *testing.T) {
-	gurpstest.WithGroupContainersOnSort(t, true)
 	c := check.New(t)
-	entity := gurps.NewEntity()
-	gurpstest.AddReaction(entity, "A", "from everyone", "", fxp.One)
-	gurpstest.AddReaction(entity, "B", "from foes", "Combat", fxp.Two)
-	gurpstest.AddReaction(entity, "C", "from allies", "Combat", fxp.Three)
-	gurpstest.AddGroupedConditionalModifier(entity, "D", "to hit", "Combat", fxp.One)
-	gurpstest.AddGroupedConditionalModifier(entity, "E", "to dodge", "", fxp.Two)
-	entity.Recalculate()
-
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n" +
-		"{{range .Reactions}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n" +
-		"{{range .ConditionalModifiers}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
 	c.Equal("<<from allies|Combat|3>><<from foes|Combat|2>><<from everyone||1>>\n"+
-		"<<to hit|Combat|1>><<to dodge||2>>\n", string(data))
+		"<<to hit|Combat|1>><<to dodge||2>>\n", runTemplateExport(t, c, newGroupedModifiersEntity(t),
+		"GCS Text Template v1\n"+
+			"{{range .Reactions}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n"+
+			"{{range .ConditionalModifiers}}<<{{.Situation}}|{{.Group}}|{{.Total}}>>{{end}}\n"))
 }
 
-func TestExportSheetsNoExportableFiles(t *testing.T) {
-	c := check.New(t)
+var registerTestFileTypesOnce sync.Once
 
-	// The model tests don't run the ux-layer file-type registration, so register a non-exportable type for the
-	// extension used below.
-	(&gurps.FileInfo{
-		Name:         "Test Non-Exportable",
-		UTI:          &uti.DataType{Extensions: []string{".unsupported"}},
-		IsExportable: false,
-	}).Register()
+// registerTestFileTypes registers the file types TestSheets uses, since the ux package registers the real ones: an
+// exportable type for sheets and one that isn't exportable.
+func registerTestFileTypes() {
+	registerTestFileTypesOnce.Do(func() {
+		(&gurps.FileInfo{
+			Name:         "Test Sheet",
+			UTI:          &uti.DataType{Extensions: []string{gurps.SheetExt}},
+			IsExportable: true,
+		}).Register()
+		(&gurps.FileInfo{
+			Name: "Test Non-Exportable",
+			UTI:  &uti.DataType{Extensions: []string{".unsupported"}},
+		}).Register()
+	})
+}
 
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	c.NoError(os.WriteFile(tmplPath, []byte("GCS Text Template v1\n"), 0o600))
+// TestSheets verifies that Sheets exports each exportable file beside it, named after it with the template's extension,
+// skips the files that aren't exportable, and fails when it exports nothing or can't export a file.
+func TestSheets(t *testing.T) {
+	registerTestFileTypes()
+	for _, tc := range []struct {
+		name            string
+		files           []string
+		missingTemplate bool
+		wantErr         bool
+		errIs           error
+	}{
+		{name: "only non-exportable files", files: []string{"data.unsupported"}, wantErr: true},
+		{name: "no files", wantErr: true},
+		{name: "sheet after a non-exportable file", files: []string{"data.unsupported", "Dai.gcs"}},
+		// The loadable sheet is listed too, so that skipping the unloadable one would not fail for exporting nothing.
+		{name: "unloadable sheet", files: []string{"garbage.gcs", "Dai.gcs"}, wantErr: true},
+		{name: "missing template", files: []string{"Dai.gcs"}, missingTemplate: true, errIs: fs.ErrNotExist},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			entity := gurps.NewEntity()
+			entity.Profile.Name = "Dai"
+			c.NoError(entity.Save(filepath.Join(dir, "Dai.gcs")))
+			c.NoError(os.WriteFile(filepath.Join(dir, "garbage.gcs"), []byte("garbage"), 0o600))
+			c.NoError(os.WriteFile(filepath.Join(dir, "data.unsupported"), []byte("nope"), 0o600))
+			// The template sits apart from the sheets, so that the export is seen to land beside its source.
+			tmplPath := filepath.Join(t.TempDir(), "tmpl.txt")
+			if !tc.missingTemplate {
+				c.NoError(os.WriteFile(tmplPath, []byte("GCS Text Template v1\n{{.Name}}"), 0o600))
+			}
+			files := make([]string, 0, len(tc.files))
+			for _, one := range tc.files {
+				files = append(files, filepath.Join(dir, one))
+			}
+			err := Sheets(tmplPath, files)
+			switch {
+			case tc.errIs != nil:
+				c.True(errors.Is(err, tc.errIs), "got %v", err)
+			case tc.wantErr:
+				c.HasError(err)
+			default:
+				c.NoError(err)
+				data, readErr := os.ReadFile(filepath.Join(dir, "Dai.txt"))
+				c.NoError(readErr)
+				c.Equal("Dai", string(data))
+			}
+		})
+	}
+}
 
-	// A non-exportable file must not be reported as a successful export.
-	notExportable := filepath.Join(dir, "data.unsupported")
-	c.NoError(os.WriteFile(notExportable, []byte("nope"), 0o600))
-	c.HasError(Sheets(tmplPath, []string{notExportable}))
-
-	// An empty file list also exports nothing and must surface an error rather than a silent success.
-	c.HasError(Sheets(tmplPath, nil))
+// TestExportErrors verifies that Export fails when it can't read, parse or execute the template, or can't create the
+// output file.
+func TestExportErrors(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		tmpl    string // When empty, no template file is written.
+		outPath string // Relative to the test's directory.
+		errIs   error
+	}{
+		{name: "missing template", outPath: "out.txt", errIs: fs.ErrNotExist},
+		{name: "text template parse failure", tmpl: "GCS Text Template v1\n{{if}}", outPath: "out.txt"},
+		{name: "HTML template parse failure", tmpl: "GCS HTML Template v1\n{{if}}", outPath: "out.txt"},
+		{name: "execution failure", tmpl: "GCS Text Template v1\n{{.NoSuchField}}", outPath: "out.txt"},
+		{
+			name:    "output path not creatable",
+			tmpl:    "GCS Text Template v1\n{{.Name}}",
+			outPath: filepath.Join("missing", "out.txt"),
+			errIs:   fs.ErrNotExist,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			tmplPath := filepath.Join(dir, "tmpl.txt")
+			if tc.tmpl != "" {
+				c.NoError(os.WriteFile(tmplPath, []byte(tc.tmpl), 0o600))
+			}
+			err := Export(gurps.NewEntity(), tmplPath, filepath.Join(dir, tc.outPath))
+			if tc.errIs != nil {
+				c.True(errors.Is(err, tc.errIs), "got %v", err)
+			} else {
+				c.HasError(err)
+			}
+		})
+	}
 }
 
 // TestExportModifierNotesLineBreaks verifies that a multi-line field such as a trait's modifier notes carries plain
@@ -208,26 +321,11 @@ func TestExportModifierNotesLineBreaks(t *testing.T) {
 	mod := gurps.NewTraitModifier(entity, nil, false)
 	mod.Name = `Mitigator <"&">`
 	trait.AddModifiers(mod)
-	entity.Traits = append(entity.Traits, trait)
-
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.html")
-	const tmpl = "GCS HTML Template v1\n" +
-		"{{range .Traits}}|A|{{.ModifierNotes}}|B|{{htmlLines .ModifierNotes}}|C|{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.html")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
-	out := string(data)
-
-	// The raw field must never emit an escaped <br>; the separator is a plain newline.
-	c.Equal(0, strings.Count(out, "&lt;br&gt;"), "no escaped line-break markup is emitted")
-	c.Contains(out, "|A|Self-Control Roll (CR): 12 or less (Resist quite often)\nMitigator")
-
-	// htmlLines turns that newline into a real line break, while still escaping the text around it.
-	c.Contains(out, "|B|Self-Control Roll (CR): 12 or less (Resist quite often)<br>\nMitigator")
-	c.Contains(out, "&lt;&#34;&amp;&#34;&gt;|C|")
+	entity.Traits = []*gurps.Trait{trait}
+	c.Equal("|A|Self-Control Roll (CR): 12 or less (Resist quite often)\nMitigator &lt;&#34;&amp;&#34;&gt;"+
+		"|B|Self-Control Roll (CR): 12 or less (Resist quite often)<br>\nMitigator &lt;&#34;&amp;&#34;&gt;|C|",
+		runTemplateExport(t, c, entity, "GCS HTML Template v1\n"+
+			"{{range .Traits}}|A|{{.ModifierNotes}}|B|{{htmlLines .ModifierNotes}}|C|{{end}}"))
 }
 
 // TestExportAttributeKinds verifies that the Go-template export sorts attributes into the primary, secondary and pool
@@ -235,37 +333,17 @@ func TestExportModifierNotesLineBreaks(t *testing.T) {
 // omitted.
 func TestExportAttributeKinds(t *testing.T) {
 	c := check.New(t)
-	entity := gurps.NewEntity()
-	addDef := func(def *gurps.AttributeDef) {
-		def.Order = len(entity.SheetSettings.Attributes.Set)
-		entity.SheetSettings.Attributes.Set[def.DefID] = def
-		entity.Attributes.Set[def.DefID] = gurps.NewAttribute(entity, def.DefID, len(entity.Attributes.Set))
-	}
-	addDef(&gurps.AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
-	addDef(&gurps.AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
-	entity.Recalculate()
-
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n" +
-		"{{range .Attributes.Primary}}<{{.ID}}>{{end}}|{{range .Attributes.Secondary}}<{{.ID}}>{{end}}|" +
-		"{{range .Attributes.Pools}}<{{.ID}}:{{.Current}}/{{.Maximum}}>{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
 	c.Equal("<st><dx><iq><ht><forced>|"+
 		"<will><fright_check><per><vision><hearing><taste_smell><touch><basic_speed><basic_move>|"+
-		"<fp:10/10><hp:10/10>", string(data))
+		"<fp:10/10><hp:10/10>", runTemplateExport(t, c, newAttributeKindsEntity(), "GCS Text Template v1\n"+
+		"{{range .Attributes.Primary}}<{{.ID}}>{{end}}|{{range .Attributes.Secondary}}<{{.ID}}>{{end}}|"+
+		"{{range .Attributes.Pools}}<{{.ID}}:{{.Current}}/{{.Maximum}}>{{end}}"))
 }
 
-// TestExportTraitPrereqContradiction verifies that the template export and the "calc" object written to disk carry
-// what the trait table shows for a trait caught in a contradiction among the prerequisites, when the sheet enforces
-// them: a trait whose own prerequisites are unmet has the contradiction explained within its unsatisfied reason, and
-// one whose own prerequisites are met has it explained in a field of its own. The "calc" object is written for every
-// trait, so it alone also covers a trait the sheet disabled, which has that explained within its reason; the export
-// leaves disabled traits out, as it always has.
+// TestExportTraitPrereqContradiction verifies that the template export carries what the trait table shows for traits
+// caught in a contradiction among the prerequisites the sheet enforces: a trait whose own prerequisites are unmet has
+// the contradiction explained within its unsatisfied reason, and one whose own prerequisites are met has it explained
+// in a field of its own. A trait the sheet disabled is left out.
 func TestExportTraitPrereqContradiction(t *testing.T) {
 	c := check.New(t)
 	gurpstest.CountLogs(t, slog.LevelWarn)
@@ -276,102 +354,32 @@ func TestExportTraitPrereqContradiction(t *testing.T) {
 	excludes.Name = "Excludes"
 	excludes.Prereq = gurpstest.NewPrereqListForbiddingTrait("Requires")
 	unrelated := gurpstest.NewTraitNeedingMissingTrait(entity, "Unrelated")
-	entity.Traits = append(entity.Traits, requires, excludes, unrelated)
-	entity.Recalculate()
-	c.True(requires.ContradictedPrereqs(), "precondition: the traits are caught in the contradiction")
-	c.True(unrelated.DisabledByPrereqs(), "precondition: the unrelated trait is disabled")
-
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n" +
-		"{{range .Traits}}<<{{.Description}}|{{.UnsatisfiedReason}}|{{.PrereqContradiction}}>>\n{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
-	out := string(data)
-	requiresReason, requiresContradiction := requires.PrereqStatus()
-	c.Equal("", requiresReason, "the trait whose own prerequisites are met has no unsatisfied reason")
-	c.NotEqual("", requiresContradiction, "but is caught in the contradiction")
-	c.Contains(out, "<<Requires||"+requiresContradiction+">>", "which the export says in a field of its own")
-	excludesReason, excludesContradiction := excludes.PrereqStatus()
-	c.True(strings.HasPrefix(excludesReason, excludes.UnsatisfiedReason) &&
-		len(excludesReason) > len(excludes.UnsatisfiedReason),
-		"the trait whose own prerequisites are unmet has the contradiction explained within its reason")
-	c.Equal("", excludesContradiction, "and not in the field of its own")
-	c.Contains(out, "<<Excludes|"+excludesReason+"|>>", "which the export carries")
-
-	// The "calc" object written to disk says the same for each of them, and alone covers the trait the sheet disabled.
-	c.False(unrelated.ContradictedPrereqs(), "precondition: the trait the sheet disabled is not caught in the contradiction")
-	unrelatedReason, unrelatedContradiction := unrelated.PrereqStatus()
-	c.True(strings.HasPrefix(unrelatedReason, unrelated.UnsatisfiedReason) &&
-		len(unrelatedReason) > len(unrelated.UnsatisfiedReason),
-		"the trait the sheet disabled has that explained within its reason")
-	c.Equal("", unrelatedContradiction, "and nothing in the field of its own")
-	requiresCalc := savedPrereqStatus(c, requires)
-	c.Equal("", requiresCalc.UnsatisfiedReason, "the trait whose own prerequisites are met records no reason")
-	c.Equal(requiresContradiction, requiresCalc.PrereqContradiction, "and records the contradiction")
-	excludesCalc := savedPrereqStatus(c, excludes)
-	c.Equal(excludesReason, excludesCalc.UnsatisfiedReason,
-		"the trait whose own prerequisites are unmet records the reason, with the contradiction within it")
-	c.Equal("", excludesCalc.PrereqContradiction, "rather than alongside it")
-	unrelatedCalc := savedPrereqStatus(c, unrelated)
-	c.Equal(unrelatedReason, unrelatedCalc.UnsatisfiedReason,
-		"the trait the sheet disabled records the reason, with the sheet's disabling of it explained within")
-	c.Equal("", unrelatedCalc.PrereqContradiction, "and nothing in the field of its own")
-}
-
-// traitPrereqCalc is the part of a trait's "calc" object that records what the trait table shows for its prerequisites.
-type traitPrereqCalc struct {
-	UnsatisfiedReason   string `json:"unsatisfied_reason"`
-	PrereqContradiction string `json:"prereq_contradiction"`
-}
-
-// savedPrereqStatus returns the prerequisite status the "calc" object written to disk for the trait records.
-func savedPrereqStatus(c check.Checker, t *gurps.Trait) traitPrereqCalc {
-	c.Helper()
-	saved, err := jio.Marshal(t)
-	c.NoError(err)
-	var data struct {
-		Calc traitPrereqCalc `json:"calc"`
-	}
-	c.NoError(jio.Unmarshal(saved, &data))
-	return data.Calc
+	entity.Traits = []*gurps.Trait{requires, excludes, unrelated}
+	out := runTemplateExport(t, c, entity, "GCS Text Template v1\n"+
+		"{{range .Traits}}<<{{.Description}}|{{.UnsatisfiedReason}}|{{.PrereqContradiction}}>>\n{{end}}")
+	_, contradiction := requires.PrereqStatus()
+	c.NotEqual("", contradiction, "precondition: Requires is caught in the contradiction")
+	excludesReason, _ := excludes.PrereqStatus()
+	c.True(len(excludesReason) > len(excludes.UnsatisfiedReason),
+		"precondition: the reason Excludes is unsatisfied explains the contradiction")
+	c.Equal("<<Requires||"+contradiction+">>\n<<Excludes|"+excludesReason+"|>>\n", out)
 }
 
 // TestExportEquipmentContainerType verifies that the template exporter tells a group from a physical container, as it
 // tells trait containers apart by their type.
 func TestExportEquipmentContainerType(t *testing.T) {
 	c := check.New(t)
-	entity := gurps.NewEntity()
-	backpack := gurps.NewEquipment(entity, nil, true)
-	backpack.Name = "Backpack"
-	group := gurps.NewEquipmentGroup(entity, nil)
-	group.Name = "Kit"
-	rope := gurps.NewEquipment(entity, nil, false)
-	rope.Name = "Rope"
-	entity.CarriedEquipment = []*gurps.Equipment{backpack, group, rope}
-
-	dir := t.TempDir()
-	tmplPath := filepath.Join(dir, "tmpl.txt")
-	const tmpl = "GCS Text Template v1\n{{range .Equipment.Carried}}<<{{.Description}}|{{.Type}}>>{{end}}"
-	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
-	outPath := filepath.Join(dir, "out.txt")
-	c.NoError(Export(entity, tmplPath, outPath))
-	data, err := os.ReadFile(outPath)
-	c.NoError(err)
-	c.Equal("<<Backpack|container>><<Kit|group>><<Rope|item>>", string(data))
+	c.Equal("<<Backpack|container>><<Kit|group>><<Rope|item>>", runTemplateExport(t, c, newContainerTypesEntity(),
+		"GCS Text Template v1\n{{range .Equipment.Carried}}<<{{.Description}}|{{.Type}}>>{{end}}"))
 }
 
-// TestExportFormatLineTolerance verifies that a byte order mark or whitespace around the format line, which some editors
-// add, doesn't keep it from being recognized, while a line that differs in anything else still selects the legacy
-// processor.
+// TestExportFormatLineTolerance verifies that a byte order mark or whitespace around the format line, which some
+// editors add, doesn't keep it from being recognized, while a line that differs in anything else still selects the
+// legacy processor.
 func TestExportFormatLineTolerance(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
 	entity.Profile.Name = "Dai"
-	dir := t.TempDir()
 	for i, data := range []struct {
 		firstLine string
 		expected  string
@@ -382,12 +390,6 @@ func TestExportFormatLineTolerance(t *testing.T) {
 		{firstLine: "\uFEFFGCS HTML Template v1 ", expected: "Dai"},
 		{firstLine: "GCS Text Template v2", expected: "GCS Text Template v2\n{{.Name}}"},
 	} {
-		tmplPath := filepath.Join(dir, "tmpl.txt")
-		c.NoError(os.WriteFile(tmplPath, []byte(data.firstLine+"\n{{.Name}}"), 0o600), "Test %d", i)
-		outPath := filepath.Join(dir, "out.txt")
-		c.NoError(Export(entity, tmplPath, outPath), "Test %d", i)
-		out, err := os.ReadFile(outPath)
-		c.NoError(err, "Test %d", i)
-		c.Equal(data.expected, string(out), "Test %d", i)
+		c.Equal(data.expected, runTemplateExport(t, c, entity, data.firstLine+"\n{{.Name}}"), "Test %d", i)
 	}
 }

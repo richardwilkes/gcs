@@ -839,6 +839,22 @@ func TestEntityEnforceTraitPrereqsFeatureCascadeSettles(t *testing.T) {
 func TestEntityEnforceTraitPrereqsContradictionSettlesConsistently(t *testing.T) {
 	c := check.New(t)
 	warnings := countLogs(t, slog.LevelWarn)
+	checkSavedCalc := func(trait *Trait, data *CellData, reversed bool) {
+		c.Helper()
+		saved, err := jio.Marshal(trait)
+		c.NoError(err)
+		var decoded struct {
+			Calc struct {
+				UnsatisfiedReason   string `json:"unsatisfied_reason"`
+				PrereqContradiction string `json:"prereq_contradiction"`
+			} `json:"calc"`
+		}
+		c.NoError(jio.Unmarshal(saved, &decoded))
+		c.Equal(data.UnsatisfiedReason, decoded.Calc.UnsatisfiedReason,
+			"reversed %t: the \"calc\" object saved for %s records the reason the table shows", reversed, trait.Name)
+		c.Equal(data.PrereqContradiction, decoded.Calc.PrereqContradiction,
+			"reversed %t: and the contradiction the table shows for %s", reversed, trait.Name)
+	}
 	for _, reversed := range []bool{false, true} {
 		warnings.Store(0)
 		e := NewEntity()
@@ -882,6 +898,7 @@ func TestEntityEnforceTraitPrereqsContradictionSettlesConsistently(t *testing.T)
 			reversed)
 		c.Equal("", data.UnsatisfiedReason,
 			"reversed %t: without claiming that its prerequisite is unmet, which is what the table flags", reversed)
+		checkSavedCalc(requires, &data, reversed)
 		data = CellData{}
 		excludes.CellData(TraitDescriptionColumn, &data)
 		c.True(strings.HasPrefix(data.UnsatisfiedReason, excludes.UnsatisfiedReason),
@@ -890,6 +907,7 @@ func TestEntityEnforceTraitPrereqsContradictionSettlesConsistently(t *testing.T)
 			"reversed %t: and that it is caught in the contradiction", reversed)
 		c.Equal("", data.PrereqContradiction,
 			"reversed %t: within the reason its prerequisite is unmet, not alongside it", reversed)
+		checkSavedCalc(excludes, &data, reversed)
 		data = CellData{}
 		unrelated.CellData(TraitDescriptionColumn, &data)
 		c.True(strings.HasPrefix(data.UnsatisfiedReason, unrelated.UnsatisfiedReason),
@@ -898,6 +916,7 @@ func TestEntityEnforceTraitPrereqsContradictionSettlesConsistently(t *testing.T)
 			"reversed %t: and that the sheet disabled it", reversed)
 		c.Equal("", data.PrereqContradiction,
 			"reversed %t: and is not shown as caught in the contradiction", reversed)
+		checkSavedCalc(unrelated, &data, reversed)
 		checkRecalculationConsistency(c, e, fmt.Sprintf("reversed %t, enforced", reversed))
 		c.Equal(int32(1), warnings.Load(),
 			"reversed %t: recalculating again while the data still never settles logs nothing more", reversed)
