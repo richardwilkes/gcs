@@ -15,12 +15,14 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // TestWeaponBonusLegacyPerLevel verifies that a weapon bonus still migrates the legacy "per_level" flag to PerDie
@@ -64,6 +66,28 @@ func TestWeaponBonusNameableKeysBySelection(t *testing.T) {
 		b.SelectionType = one.selection
 		c.Equal(one.keys, nameableKeysOf(b), "selecting %v", one.selection)
 	}
+}
+
+// TestWeaponBonusPerDieAndPerLevel verifies that a bonus that is both per die and per level is multiplied by the dice
+// and the level together, and that its tooltip reports that amount along with the one it gives per die and level.
+func TestWeaponBonusPerDieAndPerLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	bonus := NewWeaponBonus(feature.WeaponAccBonus)
+	bonus.SelectionType = wsel.ThisWeapon
+	bonus.PerDie = true
+	bonus.PerLevel = true
+	owner := addTraitWithFeatures(e, "Gadget", bonus)
+	owner.CanLevel = true
+	owner.Levels = fxp.Three
+	w := NewWeapon(owner, false)
+	w.Damage.Base = "2d"
+	w.Accuracy = attack.ParseAccuracy("3")
+	owner.Weapons = []*Weapon{w}
+	e.Recalculate()
+	var tooltip xbytes.InsertBuffer
+	c.Equal("9", w.ResolvedAccuracy(&tooltip).String(), "+1 per die and level on 2d at level 3 raises Acc 3 to 9")
+	c.Equal("\nGadget 3 [+6 (+1 per die, per level) to accuracy]", tooltip.String())
 }
 
 // damageTypeSelectors holds a damage bonus, a skill bonus and an armor divisor override that select weapons as the

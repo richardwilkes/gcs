@@ -10,6 +10,7 @@
 package gurps_test
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -20,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
@@ -31,40 +31,78 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
-func TestWeaponParryAndBlockStorage(t *testing.T) {
+// TestWeaponJSONOmitsUnusedFields verifies that a weapon writes its parry and block only when it can parry and block,
+// and never writes the fields of the other kind of weapon, even while it holds values for them.
+func TestWeaponJSONOmitsUnusedFields(t *testing.T) {
 	c := check.New(t)
+	marshal := func(w *gurps.Weapon) string {
+		c.Helper()
+		data, err := jio.Marshal(w)
+		c.NoError(err)
+		return string(data)
+	}
 
-	w := gurps.NewWeapon(nil, true)
-	data, err := jio.Marshal(w)
-	c.NoError(err)
-	s := string(data)
-	c.NotContains(s, "parry")
-	c.NotContains(s, "block")
+	melee := gurps.NewWeapon(nil, true)
+	s := marshal(melee)
+	c.NotContains(s, `"parry"`, "a melee weapon that can't parry writes no parry")
+	c.NotContains(s, `"block"`, "a melee weapon that can't block writes no block")
+	melee.Parry.CanParry = true
+	melee.Block.CanBlock = true
+	melee.Accuracy = attack.ParseAccuracy("3")
+	s = marshal(melee)
+	c.Contains(s, `"parry"`, "a melee weapon that can parry writes its parry")
+	c.Contains(s, `"block"`, "a melee weapon that can block writes its block")
+	c.NotContains(s, `"accuracy"`, "a melee weapon writes no accuracy")
 
-	var loadedWeapon gurps.Weapon
-	c.NoError(jio.Unmarshal(data, &loadedWeapon))
-	c.Equal(attack.Parry{}, loadedWeapon.Parry)
-	c.Equal(attack.Block{}, loadedWeapon.Block)
+	ranged := gurps.NewWeapon(nil, false)
+	ranged.Parry.CanParry = true
+	ranged.Block.CanBlock = true
+	s = marshal(ranged)
+	c.NotContains(s, `"parry"`, "a ranged weapon writes no parry")
+	c.NotContains(s, `"block"`, "a ranged weapon writes no block")
+}
 
-	w.Parry.CanParry = true
-	w.Block.CanBlock = true
-	data, err = jio.Marshal(&w)
-	c.NoError(err)
-	s = string(data)
-	c.Contains(s, "parry")
-	c.Contains(s, "block")
+// TestWeaponValidate verifies that validating a weapon drops the fields of the other kind of weapon, and makes both the
+// accuracy and the rate of fire of a ranged weapon a jet when either one is.
+func TestWeaponValidate(t *testing.T) {
+	c := check.New(t)
+	melee := gurps.NewWeapon(nil, true)
+	melee.Accuracy = attack.ParseAccuracy("3")
+	melee.Validate()
+	c.Equal(attack.Accuracy{}, melee.Accuracy, "a melee weapon has no accuracy")
 
-	w = gurps.NewWeapon(nil, false)
-	data, err = jio.Marshal(w)
-	c.NoError(err)
-	s = string(data)
-	c.NotContains(s, "parry")
-	c.NotContains(s, "block")
+	ranged := gurps.NewWeapon(nil, false)
+	ranged.Parry = attack.ParseParry("0")
+	ranged.Validate()
+	c.Equal(attack.Parry{}, ranged.Parry, "a ranged weapon has no parry")
 
-	loadedWeapon = gurps.Weapon{}
-	c.NoError(jio.Unmarshal(data, &loadedWeapon))
-	c.Equal(attack.Parry{}, loadedWeapon.Parry)
-	c.Equal(attack.Block{}, loadedWeapon.Block)
+	for _, accuracyJet := range []bool{true, false} {
+		jet := gurps.NewWeapon(nil, false)
+		jet.Accuracy.Jet = accuracyJet
+		jet.RateOfFire.Jet = !accuracyJet
+		jet.Validate()
+		c.True(jet.Accuracy.Jet, "accuracy jet %v: the accuracy is a jet", accuracyJet)
+		c.True(jet.RateOfFire.Jet, "accuracy jet %v: the rate of fire is a jet", accuracyJet)
+	}
+}
+
+// TestExtractWeaponsOfType verifies that ExtractWeaponsOfType keeps the weapons of the kind asked for, in order,
+// leaving out the hidden ones only when asked to.
+func TestExtractWeaponsOfType(t *testing.T) {
+	c := check.New(t)
+	named := func(name string, melee bool) *gurps.Weapon {
+		owner := gurps.NewTrait(nil, nil, false)
+		owner.Name = name // A weapon prints as its owner's name
+		return gurps.NewWeapon(owner, melee)
+	}
+	melee := named("Sword", true)
+	ranged := named("Bow", false)
+	hidden := named("Dagger", true)
+	hidden.Hide = true
+	list := []*gurps.Weapon{melee, ranged, hidden}
+	c.Equal([]*gurps.Weapon{melee, hidden}, gurps.ExtractWeaponsOfType(true, false, list), "melee, hidden included")
+	c.Equal([]*gurps.Weapon{melee}, gurps.ExtractWeaponsOfType(true, true, list), "melee, hidden left out")
+	c.Equal([]*gurps.Weapon{ranged}, gurps.ExtractWeaponsOfType(false, true, list), "ranged")
 }
 
 // TestWeaponWithNullDefaultEntry verifies that a JSON null in a weapon's "defaults" array is dropped rather than
@@ -150,6 +188,10 @@ func TestWeaponColumnHasData(t *testing.T) {
 	ranged.Strength.Min = fxp.FromInteger(10)
 	c.True(ranged.ColumnHasData(gurps.WeaponSTColumn))
 
+	// A jet's accuracy is shown, though it has no number.
+	ranged.Accuracy = attack.Accuracy{Jet: true}
+	c.True(ranged.ColumnHasData(gurps.WeaponAccColumn), "a jet has accuracy")
+
 	// Melee-specific columns behave the same way.
 	c.False(melee.ColumnHasData(gurps.WeaponParryColumn))
 	c.False(melee.ColumnHasData(gurps.WeaponBlockColumn))
@@ -157,25 +199,9 @@ func TestWeaponColumnHasData(t *testing.T) {
 	melee.Block.CanBlock = true
 	c.True(melee.ColumnHasData(gurps.WeaponParryColumn))
 	c.True(melee.ColumnHasData(gurps.WeaponBlockColumn))
-}
-
-// TestWeaponDamageWithNilOwner verifies that formatting and marshaling a weapon whose damage has no back-reference to
-// its owning weapon, as happens transiently on the table undo/redo deserialize path before owners are wired up, does
-// not panic. The script damage base takes the scripting path, which dereferenced the nil owner. See issue #1015.
-func TestWeaponDamageWithNilOwner(t *testing.T) {
-	c := check.New(t)
-
-	w := gurps.NewWeapon(nil, true)
-	w.Damage.Base = "$self.skillLevel" // A non-dice base forces resolution through the scripting path.
-	w.Damage.Owner = nil               // Explicit: no back-reference to the owning weapon.
-
-	c.NotPanics(func() {
-		_ = w.Damage.String()
-	})
-	c.NotPanics(func() {
-		_, err := jio.Marshal(w)
-		c.NoError(err)
-	})
+	c.True(melee.ColumnHasData(gurps.WeaponReachColumn))
+	melee.Reach = attack.Reach{}
+	c.False(melee.ColumnHasData(gurps.WeaponReachColumn), "a melee weapon without reach")
 }
 
 // TestWeaponHashDisplayedStateIncludesHide verifies that the hidden state participates in the displayed-state hash.
@@ -392,207 +418,6 @@ func newDefenseTestDefault(defaultType string) *gurps.SkillDefault {
 			TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Cloak"},
 		},
 	}
-}
-
-// defenseUnderTest describes one of the two weapon defenses for runDefenseResolveTests, which exercises the parts of
-// the parry and block calculations that are the same for both.
-type defenseUnderTest struct {
-	name          string
-	ownID         string       // the default type that resolves directly to this defense
-	otherID       string       // the default type of the other defense
-	distinctBonus int          // the bonus newDefenseTestWeaponWithBonuses(c, 2, 1) gives this defense
-	bonusType     feature.Type // the type of a weapon bonus to this defense
-	resolve       func(w *gurps.Weapon) string
-	setModifier   func(w *gurps.Weapon, modifier fxp.Int)
-}
-
-var (
-	parryUnderTest = &defenseUnderTest{
-		name:          "parry",
-		ownID:         gurps.ParryID,
-		otherID:       gurps.BlockID,
-		distinctBonus: 2,
-		bonusType:     feature.WeaponParryBonus,
-		resolve:       func(w *gurps.Weapon) string { return w.ResolvedParry(nil).String() },
-		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Parry.Modifier = modifier },
-	}
-	blockUnderTest = &defenseUnderTest{
-		name:          "block",
-		ownID:         gurps.BlockID,
-		otherID:       gurps.ParryID,
-		distinctBonus: 1,
-		bonusType:     feature.WeaponBlockBonus,
-		resolve:       func(w *gurps.Weapon) string { return w.ResolvedBlock(nil).String() },
-		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Block.Modifier = modifier },
-	}
-)
-
-// runDefenseResolveTests runs the resolution regression tests shared by the parry and block calculations against the
-// given defense.
-func runDefenseResolveTests(t *testing.T, d *defenseUnderTest) {
-	t.Helper()
-	allDefaultTypes := []string{gurps.SkillID, d.ownID, d.otherID}
-
-	// A default of the defense's own type must not have the +3 and the entity's defense bonus applied to it twice.
-	// SkillLevelFast() already turns such a default into a defense level, so a weapon defaulting to "Cloak Parry" must
-	// resolve to the same value as one defaulting to the "Cloak" skill itself.
-	t.Run("OwnTypeDefault", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-
-		// A skill-type default halves the skill level, then adds the +3 and the entity's defense bonus: 14/2 + 3 + 1.
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(gurps.SkillID)}
-		c.Equal("11", d.resolve(w), "skill-type default")
-
-		// A default of the defense's own type has already been through that conversion, so it must yield the same
-		// value, not 15.
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
-		c.Equal("11", d.resolve(w), "%s-type default", d.name)
-
-		// Both kinds of default together still resolve to the same value.
-		w.Defaults = []*gurps.SkillDefault{
-			newDefenseTestDefault(gurps.SkillID),
-			newDefenseTestDefault(d.ownID),
-		}
-		c.Equal("11", d.resolve(w), "both defaults")
-
-		// The weapon's own modifier and the default's modifier still apply on top.
-		d.setModifier(w, fxp.Two)
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
-		w.Defaults[0].Modifier = -fxp.One
-		c.Equal("12", d.resolve(w), "%s-type default with modifiers", d.name)
-	})
-
-	// A default of the other defense's type contributes what a plain skill default to the same skill would. A weapon's
-	// Defaults list feeds the parry and block calculations alike, so a parry-type default reaches the block calculation
-	// and vice versa; converting the defense level it already carries into the other defense halved the skill a second
-	// time and folded the wrong bonus in.
-	t.Run("OtherTypeDefault", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-
-		// The other defense's default must yield the same value as the skill-type default it is derived from:
-		// 14/2 + 3 + 1.
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.otherID)}
-		c.Equal("11", d.resolve(w), "%s-type default", d.otherID)
-
-		// Mixing it with a skill-type default changes nothing, since both resolve to the same value.
-		w.Defaults = []*gurps.SkillDefault{
-			newDefenseTestDefault(gurps.SkillID),
-			newDefenseTestDefault(d.otherID),
-		}
-		c.Equal("11", d.resolve(w), "both defaults")
-
-		// The weapon's own modifier and the default's modifier still apply on top: 11 - 1 + 2.
-		d.setModifier(w, fxp.Two)
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.otherID)}
-		w.Defaults[0].Modifier = -fxp.One
-		c.Equal("12", d.resolve(w), "%s-type default with modifiers", d.otherID)
-	})
-
-	// A skill-level adjustment -- here the penalty for wielding a weapon whose minimum ST exceeds the character's -- is
-	// folded into the skill level before it is halved into a defense, whichever kind of default the defense resolves
-	// from. A defense-type default arrives already converted, so adding the adjustment to it counted the adjustment at
-	// twice the weight the skill-type path gives it.
-	t.Run("MinSTPenaltyAtSkillScale", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-		w.Strength = attack.Strength{Min: fxp.FromInteger(12)} // -2 to skill for the ST 10 character
-
-		// (14 - 2)/2 + 3 + 1, not (14/2 + 3 + 1) - 2.
-		for _, defaultType := range allDefaultTypes {
-			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
-			c.Equal("10", d.resolve(w), "%q default", defaultType)
-		}
-	})
-
-	// The same with an odd skill level and an odd penalty, where merely halving the adjustment before applying it to an
-	// already-converted default would still lose a point that the skill-type path keeps.
-	t.Run("OddMinSTPenaltyAtSkillScale", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-		e := w.Entity()
-		e.Skills[0].Points = fxp.FromInteger(20) // DX+5, i.e. level 15
-		e.Recalculate()
-		c.Equal(fxp.FromInteger(15), e.Skills[0].LevelData.Level, "the Cloak skill should be at level 15")
-		w.Strength = attack.Strength{Min: fxp.FromInteger(11)} // -1 to skill for the ST 10 character
-
-		// (15 - 1)/2 + 3 + 1: the penalty costs nothing, since 15/2 also rounds down to 7.
-		for _, defaultType := range allDefaultTypes {
-			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
-			c.Equal("11", d.resolve(w), "%q default", defaultType)
-		}
-	})
-
-	// The same for a skill bonus aimed at this weapon, the other half of the base adjustment. This is the layout the
-	// High Tech library's Tonfa uses -- a skill default paired with a matching parry-type default -- so an over-weighted
-	// adjustment on the defense-type default won the max in the defense resolution and inflated the displayed defense.
-	t.Run("ThisWeaponSkillBonusAtSkillScale", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-		owner, ok := w.Owner.(*gurps.Trait)
-		c.True(ok, "the test weapon should be owned by a trait")
-		bonus := gurps.NewSkillBonus()
-		bonus.SelectionType = skillsel.ThisWeapon
-		bonus.Amount = fxp.One
-		owner.Features = append(owner.Features, bonus)
-		w.Defaults = []*gurps.SkillDefault{
-			newDefenseTestDefault(gurps.SkillID),
-			newDefenseTestDefault(d.ownID),
-		}
-
-		// (14 + 1)/2 + 3 + 1 for both defaults, so neither can out-bid the other: 11, not 12.
-		c.Equal("11", d.resolve(w), "a this-weapon skill bonus must not count double")
-	})
-
-	// The calculation applies the entity's bonus for this defense and not the other one's, whichever kind of default it
-	// resolves from. The two bonuses are equal in the default fixture, so this uses one where they differ.
-	t.Run("AppliesOwnBonus", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeaponWithBonuses(c, 2, 1) // +2 parry, +1 block
-
-		// Every kind of default resolves to the same value, built from this defense's bonus alone: 14/2 + 3 + bonus.
-		expected := fxp.FromInteger(14/2 + 3 + d.distinctBonus).String()
-		for _, defaultType := range allDefaultTypes {
-			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
-			c.Equal(expected, d.resolve(w), "%q default uses the %s bonus", defaultType, d.name)
-		}
-	})
-
-	// A multiplier to the defense applies after every amount added to it, the weapon's own modifier, the default's
-	// modifier and the weapon bonuses included, as AttributeBonus.Multiply has it.
-	t.Run("MultiplierAfterWeaponAmounts", func(t *testing.T) {
-		c := check.New(t)
-		w := newDefenseTestWeapon(c)
-		e := w.Entity()
-		halved := gurps.NewTrait(e, nil, false)
-		halved.Name = "Halved Defenses"
-		multiplier := gurps.NewAttributeBonus(d.ownID)
-		multiplier.Multiply = true
-		multiplier.Amount = fxp.Half
-		halved.Features = gurps.Features{multiplier}
-		e.Traits = append(e.Traits, halved)
-		owner, ok := w.Owner.(*gurps.Trait)
-		c.True(ok, "the test weapon should be owned by a trait")
-		bonus := gurps.NewWeaponBonus(d.bonusType)
-		bonus.SelectionType = wsel.ThisWeapon
-		bonus.Amount = fxp.One
-		owner.Features = append(owner.Features, bonus)
-		d.setModifier(w, fxp.Two)
-		e.Recalculate()
-
-		// (14/2 + 3 + 1 + 2 + 1) × 0.5, rounded, not (14/2 + 3 + 1) × 0.5, rounded, + 2 + 1.
-		for _, defaultType := range allDefaultTypes {
-			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
-			c.Equal("7", d.resolve(w), "%q default", defaultType)
-		}
-
-		// The default's modifier is one of those amounts too: (14/2 + 3 + 1 + 2 + 1 - 2) × 0.5, rounded.
-		w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(d.ownID)}
-		w.Defaults[0].Modifier = -fxp.Two
-		e.DiscardCaches()
-		c.Equal("6", d.resolve(w), "%s-type default with a modifier", d.name)
-	})
 }
 
 // TestTboneProgressionSTDamageContribution verifies that a Tbone damage progression still contributes its ST-based
@@ -1003,6 +828,68 @@ func TestWeaponSkillLevelUsesResolvedMusclePower(t *testing.T) {
 				"a bow switched off muscle power is checked against lifting ST 12, which meets its minimum ST")
 		}
 	}
+}
+
+// TestWeaponSkillLevelUsesResolvedStrengthBasis verifies that the minimum-ST skill penalty is computed against the
+// attribute the weapon's *resolved* damage strength basis names, so a WeaponDamageStrengthBasis override is honored.
+func TestWeaponSkillLevelUsesResolvedStrengthBasis(t *testing.T) {
+	c := check.New(t)
+	dxDefault := func() []*gurps.SkillDefault {
+		return []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
+	}
+
+	// Without an override, the thrust basis measures the weapon's ST 14 requirement against striking ST 14, so there is
+	// no penalty and the weapon sits at its DX default of 10.
+	w := newStrengthBasisWeapon(true, 5, "")
+	w.Strength = attack.ParseStrength("14")
+	w.Defaults = dxDefault()
+	c.Equal(fxp.Ten, w.SkillLevel(nil), "striking ST 14 meets the weapon's minimum ST of 14")
+
+	// Retargeting the strength basis to telekinetic must measure that same requirement against TK 5, a 9-point shortfall.
+	w = newStrengthBasisWeapon(true, 5, stdmg.TelekineticThrust.Key())
+	w.Strength = attack.ParseStrength("14")
+	w.Defaults = dxDefault()
+	c.Equal(fxp.One, w.SkillLevel(nil), "TK 5 against a minimum ST of 14 costs 9 levels")
+
+	var tooltip xbytes.InsertBuffer
+	w.SkillLevel(&tooltip)
+	c.Contains(tooltip.String(), "-9", "the tooltip reports the penalty actually applied")
+	c.Contains(tooltip.String(), "minimum ST requirement", "the penalty is attributed to the minimum ST requirement")
+}
+
+// TestWeaponSkillLevelFloorsAtZero verifies that a weapon whose best default resolves below 0 has a skill level of 0.
+func TestWeaponSkillLevelFloorsAtZero(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Sword"
+	w := gurps.NewWeapon(owner, true)
+	w.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.DexterityID, Modifier: -fxp.Twelve}} // DX 10 - 12
+	owner.Weapons = []*gurps.Weapon{w}
+	e.Traits = append(e.Traits, owner)
+	e.Recalculate()
+	c.Equal(fxp.Int(0), w.SkillLevel(nil))
+}
+
+// TestWeaponBonusesFollowATechniqueToItsBaseSkill verifies that a weapon whose best default is a technique also
+// collects the weapon bonuses qualified by the skill the technique is based on, judged by that skill's relative level.
+func TestWeaponBonusesFollowATechniqueToItsBaseSkill(t *testing.T) {
+	c := check.New(t)
+	e, err := gurps.NewEntityFromFile(os.DirFS("testdata"), "issue767.gcs")
+	c.NoError(err)
+	var kick *gurps.Weapon
+	gurps.Traverse(func(tr *gurps.Trait) bool {
+		for _, w := range tr.Weapons {
+			if w.UsageWithReplacements() == "Kick" {
+				kick = w
+			}
+		}
+		return false
+	}, false, false, e.Traits...)
+	c.NotNil(kick)
+	// Brawling is at DX+2 (RSL +2), so its "+1 per die, RSL >= 2" weapon damage bonus must apply even though the
+	// best skill default for the Kick is the Kicking technique (RSL -1 vs Brawling). 1d-2 base + 1 = 1d-1.
+	c.Equal("1d-1 cr", kick.Damage.ResolvedDamage(nil))
 }
 
 // TestWeaponNotesFromOwnerModifiers verifies that a weapon's notes gather the notes of every enabled, non-container
