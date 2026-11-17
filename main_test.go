@@ -40,12 +40,6 @@ func TestExclusiveModeMsg(t *testing.T) {
 			wantContains: []string{"-convert", "-sync"},
 		},
 		{
-			name:         "four modes",
-			modes:        []string{"convert", "sync", "text", "finish-update"},
-			wantErr:      true,
-			wantContains: []string{"-convert", "-sync", "-text", "-finish-update"},
-		},
-		{
 			name:         "five modes",
 			modes:        []string{"convert", "sync", "text", "finish-update", "headless-api"},
 			wantErr:      true,
@@ -86,7 +80,7 @@ func TestRunModeFactories(t *testing.T) {
 			continue
 		}
 		for _, hidden := range m.HiddenFlagNames {
-			c.NotNil(flagSet.Lookup(hidden), m.Name, hidden)
+			c.NotNil(flagSet.Lookup(hidden), m.Name+": "+hidden)
 		}
 		c.False(m.Requested(), m.Name)
 		c.NoError(flagSet.Parse([]string{"-" + m.Name + "=" + requestValueFor(f)}), m.Name)

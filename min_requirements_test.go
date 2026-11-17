@@ -23,43 +23,53 @@ import (
 
 const minRequirementsPath = "cmd/min_requirements.sh"
 
-// TestExtractArchivesSurvivesUnmountableDMG runs the script's extract_archives function, as committed, against a .dmg
-// that can't be mounted. The function is deliberately tolerant of unusable archives everywhere else, and it runs under
-// `set -euo pipefail`, so a failing mount must not take the entire analysis down with it.
-func TestExtractArchivesSurvivesUnmountableDMG(t *testing.T) {
+// TestExtractArchivesMountsDMG runs the script's extract_archives function, as committed, against a .dmg. The function
+// is deliberately tolerant of unusable archives everywhere else, and it runs under `set -euo pipefail`, so an image
+// that can't be mounted must be skipped with a warning instead of taking the entire analysis down with it. One that
+// does mount has its mount point parsed out of hdiutil's output and handed back to hdiutil to detach, so that no disk
+// image is left attached.
+func TestExtractArchivesMountsDMG(t *testing.T) {
 	c := check.New(t)
 	bash := shellHarnessBash(t)
-	dir := t.TempDir()
-	c.NoError(os.WriteFile(filepath.Join(dir, "corrupt.dmg"), []byte("not a disk image"), 0o600))
-	out, err := runExtractArchives(c, bash, dir, "exit 1")
-	c.NoError(err, "a .dmg that can't be mounted aborted the analysis: "+out)
-	c.Contains(out, "finished", "extract_archives never returned")
-	c.Contains(out, "warning: unable to mount")
+	for _, tc := range []struct {
+		name         string
+		attachScript string
+		wantDetached string
+		wantWarning  bool
+	}{
+		{name: "attach fails", attachScript: "exit 1", wantWarning: true},
+		{name: "attach reports no mount point", attachScript: `printf '/dev/disk4\n'` + "\nexit 0", wantWarning: true},
+		{
+			name:         "mounted",
+			attachScript: `printf '/dev/disk4s1\tApple_HFS\t/Volumes/GCS\n'` + "\nexit 0",
+			wantDetached: "/Volumes/GCS",
+		},
+	} {
+		dir := t.TempDir()
+		c.NoError(os.WriteFile(filepath.Join(dir, "image.dmg"), []byte("disk image"), 0o600), tc.name)
+		out, err := runExtractArchives(c, bash, dir, tc.attachScript)
+		c.NoError(err, tc.name+": the analysis was aborted: "+out)
+		c.Contains(out, "finished", tc.name+": extract_archives never returned")
+		c.Equal(tc.wantWarning, strings.Contains(out, "warning: unable to mount"), tc.name+": "+out)
+		var log []byte
+		log, err = os.ReadFile(filepath.Join(dir, "hdiutil.log"))
+		c.NoError(err, tc.name)
+		// Whatever flags it is given, a detach call ends with what it detaches.
+		var detached string
+		for line := range strings.Lines(string(log)) {
+			if fields := strings.Fields(line); len(fields) > 0 && fields[0] == "detach" {
+				detached = fields[len(fields)-1]
+			}
+		}
+		c.Equal(tc.wantDetached, detached, tc.name)
+	}
 }
 
-// TestExtractArchivesDetachesMountedDMG verifies the other half of the mount handling: when the mount succeeds, the
-// mount point is parsed out of hdiutil's output and handed back to hdiutil to detach, so the test run doesn't leave
-// disk images attached.
-func TestExtractArchivesDetachesMountedDMG(t *testing.T) {
-	c := check.New(t)
-	bash := shellHarnessBash(t)
-	dir := t.TempDir()
-	c.NoError(os.WriteFile(filepath.Join(dir, "good.dmg"), []byte("disk image"), 0o600))
-	out, err := runExtractArchives(c, bash, dir,
-		`printf '/dev/disk4s1\tApple_HFS\t/Volumes/GCS\n'`+"\nexit 0")
-	c.NoError(err, out)
-	c.Contains(out, "finished")
-	var log []byte
-	log, err = os.ReadFile(filepath.Join(dir, "hdiutil.log"))
-	c.NoError(err)
-	c.Contains(string(log), "detach -quiet /Volumes/GCS")
-}
-
-// shellHarnessBash returns the bash to run the shell harness with, skipping the test when there isn't a usable one.
+// shellHarnessBash returns the bash to run a script under test with, skipping the test when there isn't a usable one.
 // Git for Windows has no native ARM64 POSIX runtime: its ARM64 installer ships x64 bash and msys-2.0.dll, which run
 // under Windows' x64 emulator, and Cygwin's fork and signal machinery intermittently crashes there with
-// STATUS_SINGLE_STEP (exit status 0x80000004) before the script prints anything. The script only ever runs on macOS
-// and the other builders still verify the logic, so the emulated runtime is skipped rather than retried.
+// STATUS_SINGLE_STEP (exit status 0x80000004) before the script prints anything. What these tests check doesn't vary
+// by platform and the other builders still verify it, so the emulated runtime is skipped rather than retried.
 func shellHarnessBash(t *testing.T) string {
 	t.Helper()
 	if runtime.GOOS == "windows" && runtime.GOARCH == "arm64" {

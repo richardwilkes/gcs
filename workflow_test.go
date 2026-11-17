@@ -13,10 +13,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
 const (
@@ -59,17 +61,71 @@ func TestWorkflowRunStepsDoNotInterpolateExpressions(t *testing.T) {
 	c.True(found, "no workflow files were scanned")
 }
 
+// TestExtractWorkflowRunSteps verifies that the scan the test above depends on reads each way of writing a script that
+// it supports and rejects the others it recognizes, since an expression in a script it passed over would go unnoticed.
+func TestExtractWorkflowRunSteps(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name     string
+		workflow string
+		want     []string
+		wantErr  bool
+	}{
+		{name: "command", workflow: "- name: A\n  run: echo hi\n", want: []string{"echo hi"}},
+		{
+			name:     "block",
+			workflow: "- name: A\n  run: |\n    echo hi\n\n    echo there\n",
+			want:     []string{"echo hi\n\necho there"},
+		},
+		{name: "block with a chomping indicator", workflow: "- run: |-\n    echo hi\n", want: []string{"echo hi"}},
+		{
+			name:     "block ends at the next key",
+			workflow: "- run: |\n    echo hi\n  env:\n    A: ${{ a }}\n",
+			want:     []string{"echo hi"},
+		},
+		{
+			name:     "quoted keys",
+			workflow: "- \"run\": echo hi\n- 'run': echo there\n",
+			want:     []string{"echo hi", "echo there"},
+		},
+		{name: "extra spacing", workflow: "-   run  :  |\n      echo hi\n", want: []string{"echo hi"}},
+		{
+			name:     "run defaults",
+			workflow: "defaults:\n  run: # A\n    # B\n    shell: bash\n    working-directory: a\nsteps:\n",
+			want:     []string{},
+		},
+		{name: "run defaults in a flow mapping", workflow: "defaults: { run: { shell: bash } }\n", want: []string{}},
+		{name: "folded block", workflow: "- run: >-\n    echo hi\n", wantErr: true},
+		{name: "scalar below the key", workflow: "- run:\n    echo hi\n", wantErr: true},
+		{name: "double-quoted command", workflow: "- run: \"echo hi\"\n", wantErr: true},
+		{name: "single-quoted command", workflow: "- run: 'echo hi'\n", wantErr: true},
+		{name: "alias", workflow: "- run: *script\n", wantErr: true},
+		{name: "flow mapping", workflow: "- { name: A, run : echo hi }\n", wantErr: true},
+		{name: "flow mapping with quoted keys", workflow: "- {\"run\": \"echo hi\"}\n", wantErr: true},
+	} {
+		path := filepath.Join(t.TempDir(), "workflow.yml")
+		c.NoError(os.WriteFile(path, []byte(tc.workflow), 0o600), tc.name)
+		steps, err := extractWorkflowRunSteps(path)
+		if tc.wantErr {
+			c.HasError(err, tc.name)
+			continue
+		}
+		c.NoError(err, tc.name)
+		scripts := make([]string, len(steps))
+		for i, step := range steps {
+			scripts[i] = strings.TrimSpace(step.script)
+		}
+		c.Equal(tc.want, scripts, tc.name)
+	}
+}
+
 // TestReleaseWorkflowVersionStepResistsInjection runs the release workflow's "Determine version" script exactly as it
 // is committed, feeding it a hostile version through the environment. The version has to survive as literal text and
 // must not be able to run commands in the job.
 func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 	c := check.New(t)
-	bash, err := exec.LookPath("bash")
-	if err != nil {
-		t.Skip("bash is not available")
-	}
-	var steps []workflowRunStep
-	steps, err = extractWorkflowRunSteps(releaseWorkflowPath)
+	bash := shellHarnessBash(t)
+	steps, err := extractWorkflowRunSteps(releaseWorkflowPath)
 	c.NoError(err)
 	var script string
 	for _, step := range steps {
@@ -79,9 +135,9 @@ func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 	}
 	c.NotEqual("", script, "the release workflow has no \"Determine version\" step")
 
-	// The payloads below are only meaningful if they would in fact run when spliced into the script, so first confirm
-	// that a version substituted directly into the shell -- what the step used to do -- executes the command it
-	// smuggles in. Without this, the assertions that follow could pass simply because the payload was inert.
+	// The checks below are only meaningful if a command smuggled in by the version leaves a trace this test can see, so
+	// first confirm that one substituted directly into the shell -- what the step used to do -- runs and is noticed.
+	// Without this, the assertions that follow could pass simply because nothing was ever going to be detected.
 	dir := t.TempDir()
 	_, err = runShellScript(bash, dir, `version="x"; touch pwned; echo ""`+"\n"+`echo "version=$version" >> "$GITHUB_OUTPUT"`, nil)
 	c.NoError(err)
@@ -96,33 +152,43 @@ func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{name: "dispatch input wins", input: "5.42.0", ref: "refs/heads/main", want: "5.42.0"},
+		// A dispatch run against a tag has both sources to choose from.
+		{name: "dispatch input wins", input: "5.42.0", ref: "refs/tags/v9.9.9", refName: "v9.9.9", want: "5.42.0"},
 		{name: "tag drives the version", ref: "refs/tags/v5.42.0", refName: "v5.42.0", want: "5.42.0"},
 		// `build.sh -d` has no usable default (see TestBuildScriptRefusesDistWithoutRelease), so a run that can supply
 		// no version has to stop here instead of handing an empty GCS_RELEASE to every build runner.
-		{name: "no input, no tag", ref: "refs/heads/main", wantErr: true},
-		{name: "quote escape", input: `x"; touch pwned; echo "`, ref: "refs/heads/main", want: `x"; touch pwned; echo "`},
+		{name: "no input, no tag", ref: "refs/heads/main", refName: "main", wantErr: true},
+		{
+			name:  "double quote escape",
+			input: `x"; touch pwned; echo "`,
+			ref:   "refs/heads/main",
+			want:  `x"; touch pwned; echo "`,
+		},
+		{
+			name:  "single quote escape",
+			input: `x'; touch pwned; echo '`,
+			ref:   "refs/heads/main",
+			want:  `x'; touch pwned; echo '`,
+		},
 		{name: "command substitution", input: "$(touch pwned)", ref: "refs/heads/main", want: "$(touch pwned)"},
 		{name: "backtick substitution", input: "`touch pwned`", ref: "refs/heads/main", want: "`touch pwned`"},
 		{name: "statement separator", input: "5.42.0; touch pwned", ref: "refs/heads/main", want: "5.42.0; touch pwned"},
 	} {
-		t.Run(tc.name, func(_ *testing.T) {
-			runDir := t.TempDir()
-			var version string
-			version, err = runShellScript(bash, runDir, script, []string{
-				"INPUT_VERSION=" + tc.input,
-				"GITHUB_REF=" + tc.ref,
-				"GITHUB_REF_NAME=" + tc.refName,
-			})
-			if tc.wantErr {
-				c.HasError(err, tc.name)
-			} else {
-				c.NoError(err, tc.name)
-				c.Equal(tc.want, version, tc.name)
-			}
-			_, err = os.Stat(filepath.Join(runDir, "pwned"))
-			c.True(os.IsNotExist(err), tc.name+": the version was executed as shell code")
+		runDir := t.TempDir()
+		var version string
+		version, err = runShellScript(bash, runDir, script, []string{
+			"INPUT_VERSION=" + tc.input,
+			"GITHUB_REF=" + tc.ref,
+			"GITHUB_REF_NAME=" + tc.refName,
 		})
+		if tc.wantErr {
+			c.HasError(err, tc.name)
+		} else {
+			c.NoError(err, tc.name)
+			c.Equal(tc.want, version, tc.name)
+		}
+		_, err = os.Stat(filepath.Join(runDir, "pwned"))
+		c.True(os.IsNotExist(err), tc.name+": the version was executed as shell code")
 	}
 }
 
@@ -132,11 +198,7 @@ func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 // guard were ever dropped, -h prints the usage text and exits before anything is built.
 func TestBuildScriptRefusesDistWithoutRelease(t *testing.T) {
 	c := check.New(t)
-	bash, err := exec.LookPath("bash")
-	if err != nil {
-		t.Skip("bash is not available")
-	}
-	cmd := exec.Command(bash, "build.sh", "-d", "-h")
+	cmd := exec.Command(shellHarnessBash(t), "build.sh", "-d", "-h")
 	cmd.Env = []string{"PATH=" + os.Getenv("PATH"), "HOME=" + os.Getenv("HOME")}
 	out, err := cmd.CombinedOutput()
 	c.HasError(err, "build.sh -d accepted an empty GCS_RELEASE")
@@ -190,10 +252,14 @@ func (e *shellError) Unwrap() error {
 	return e.err
 }
 
+// flowRunKey matches a step written as a flow mapping that has a `run` key, as in `- { name: x, run: y }`.
+var flowRunKey = regexp.MustCompile(`^\{(.*,)?\s*["']?run["']?\s*:`)
+
 // extractWorkflowRunSteps pulls every `run:` script out of a GitHub Actions workflow file, remembering the name of the
 // step each one came from. This is a deliberately small, indentation-based scan rather than a real YAML parse: the
 // workflows use only the plain `run: <command>` and `run: |` block forms, and keeping it dependency-free avoids
-// promoting a YAML package to a direct module requirement for the sake of one test.
+// promoting a YAML package to a direct module requirement for the sake of one test. The other ways of writing a script
+// that it recognizes are errors, since a script the scan passed over would go unchecked.
 func extractWorkflowRunSteps(path string) ([]workflowRunStep, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -205,27 +271,75 @@ func extractWorkflowRunSteps(path string) ([]workflowRunStep, error) {
 	for i := 0; i < len(lines); {
 		line := lines[i]
 		i++
-		key := strings.TrimPrefix(strings.TrimSpace(line), "- ")
+		// The dash of a sequence entry counts toward the indentation of the key that follows it.
+		key := strings.TrimLeft(strings.TrimPrefix(strings.TrimLeft(line, " "), "-"), " ")
+		indent := len(line) - len(key)
+		value, isRun := runValue(key)
 		switch {
-		case strings.HasPrefix(key, "name:"):
-			name = strings.TrimSpace(strings.TrimPrefix(key, "name:"))
-		case strings.HasPrefix(key, "run: |"):
-			indent := indentOf(line)
+		case isRun:
+			lineNumber := i
 			var block []string
 			for i < len(lines) && (strings.TrimSpace(lines[i]) == "" || indentOf(lines[i]) > indent) {
 				block = append(block, lines[i])
 				i++
 			}
-			steps = append(steps, workflowRunStep{file: path, name: name, script: dedent(block)})
-		case strings.HasPrefix(key, "run:") && strings.TrimSpace(strings.TrimPrefix(key, "run:")) != "":
-			steps = append(steps, workflowRunStep{
-				file:   path,
-				name:   name,
-				script: strings.TrimSpace(strings.TrimPrefix(key, "run:")),
-			})
+			script, isScript, ok := runScript(value, block)
+			if !ok {
+				return nil, errs.Newf("%s:%d: unreadable run script; use an unquoted one-line command or a `|` block",
+					path, lineNumber)
+			}
+			if isScript {
+				steps = append(steps, workflowRunStep{file: path, name: name, script: script})
+			}
+		case flowRunKey.MatchString(key):
+			return nil, errs.Newf("%s:%d: unable to read a run script inside a flow mapping", path, i)
+		case strings.HasPrefix(key, "name:"):
+			name = strings.TrimSpace(strings.TrimPrefix(key, "name:"))
 		}
 	}
 	return steps, nil
+}
+
+// runValue returns the value of the `run` entry that key starts, however it is quoted and spaced, and whether key is
+// such an entry at all.
+func runValue(key string) (string, bool) {
+	for _, name := range []string{"run", `"run"`, "'run'"} {
+		if rest, ok := strings.CutPrefix(key, name); ok {
+			if rest, ok = strings.CutPrefix(strings.TrimLeft(rest, " "), ":"); ok {
+				return strings.TrimSpace(rest), true
+			}
+		}
+	}
+	return "", false
+}
+
+// runScript returns the script of a `run` entry, given its value and the more deeply indented lines below it. isScript
+// is false for `defaults.run`, which holds settings rather than a script, and ok is false when the script is written in
+// a way this scan can't read: an alias, a quoted scalar, which may continue on lines at any indentation, or anything
+// but a `|` block with more below it.
+func runScript(value string, block []string) (script string, isScript, ok bool) {
+	if strings.HasPrefix(value, "|") {
+		return dedent(block), true, true
+	}
+	hasContent := false
+	isSettings := true
+	for _, line := range block {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		hasContent = true
+		if !strings.HasPrefix(line, "shell:") && !strings.HasPrefix(line, "working-directory:") {
+			isSettings = false
+		}
+	}
+	if value == "" || value[0] == '#' {
+		return "", false, isSettings
+	}
+	if hasContent || strings.ContainsAny(value[:1], `*"'`) {
+		return "", false, false
+	}
+	return value, true, true
 }
 
 // indentOf returns the number of leading spaces on a line. Tabs are not valid YAML indentation, so spaces are all that
