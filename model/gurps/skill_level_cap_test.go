@@ -687,27 +687,22 @@ func TestSkillLevelCapReferences(t *testing.T) {
 }
 
 // TestSkillLevelCapReferenceSkipsItself verifies that a skill matched by a cap resting on its own level keeps that
-// level, even when the reference also matches a skill with no level, while the other skills the cap matches are held
-// to it.
+// level when the reference also matches a skill with no level, while the other skills the cap matches are held to it.
 func TestSkillLevelCapReferenceSkipsItself(t *testing.T) {
 	c := check.New(t)
-	for _, levelless := range []bool{false, true} {
-		e := NewEntity()
-		thaumatology := addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
-		if levelless {
-			addTestSkill(e, "Thaumatology", "Fire", "", 0)
-		}
-		broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Twenty)
-		e.Recalculate()
-		level := thaumatology.LevelData.Level
-		c.True(broadsword.LevelData.Level > level, "levelless=%t: the other skill starts above the cap", levelless)
-		addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Skill, "Thaumatology", -2))
-		e.Recalculate()
-		c.Equal(level, thaumatology.LevelData.Level, "levelless=%t: the skill the cap rests on keeps its level", levelless)
-		c.False(cappedBy(thaumatology.LevelData), "levelless=%t: the skill the cap rests on is not capped", levelless)
-		c.Equal(level-fxp.Two, broadsword.LevelData.Level, "levelless=%t: the other skill is held to the cap", levelless)
-		checkRecalculationConsistency(c, e, "self reference")
-	}
+	e := NewEntity()
+	thaumatology := addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
+	addTestSkill(e, "Thaumatology", "Fire", "", 0)
+	broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Twenty)
+	e.Recalculate()
+	level := thaumatology.LevelData.Level
+	c.True(broadsword.LevelData.Level > level, "the other skill starts above the cap")
+	addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Skill, "Thaumatology", -2))
+	e.Recalculate()
+	c.Equal(level, thaumatology.LevelData.Level, "the skill the cap rests on keeps its level")
+	c.False(cappedBy(thaumatology.LevelData), "the skill the cap rests on is not capped")
+	c.Equal(level-fxp.Two, broadsword.LevelData.Level, "the other skill is held to the cap")
+	checkRecalculationConsistency(c, e, "self reference")
 }
 
 // TestSkillLevelCapGroups verifies how a group resolves: the lowest of its children, or the highest, a reference to
@@ -1234,7 +1229,8 @@ func newTestSkillLevelCap() *SkillLevelCap {
 
 // TestSkillLevelCapsJSON verifies that sheet settings holding every kind of cap node round trip through JSON, with
 // the nodes decoded to their types and their parents set, and a node of a kind this version doesn't know preserved as
-// it was, as is a target this version doesn't know, which selects nothing.
+// it was, as is a target this version doesn't know, which selects nothing, while a cap without a target applies to
+// skills.
 func TestSkillLevelCapsJSON(t *testing.T) {
 	c := check.New(t)
 	s := FactorySheetSettings()
@@ -1289,6 +1285,80 @@ func TestSkillLevelCapsJSON(t *testing.T) {
 	again, err = jio.Marshal(futureCaps)
 	c.NoError(err)
 	c.Equal(future, string(again), "an unknown target is written back as it was read")
+	var untargeted SkillLevelCaps
+	c.NoError(jio.Unmarshal([]byte(`[{"cap":{"type":"group"}}]`), &untargeted))
+	c.Equal(1, len(untargeted), "the cap without a target is loaded")
+	for _, one := range untargeted {
+		c.Equal(levelcap.Skills, one.Target, "a cap without a target applies to skills")
+	}
+}
+
+// TestSkillLevelCapHash verifies that caps differing in any of their data hash differently, as importing caps relies on
+// to tell a new cap from one already listed.
+func TestSkillLevelCapHash(t *testing.T) {
+	c := check.New(t)
+	base := Hash64(newTestSkillLevelCap())
+	for _, one := range []struct {
+		name   string
+		adjust func(levelCap *SkillLevelCap)
+	}{
+		{name: "target", adjust: func(levelCap *SkillLevelCap) { levelCap.Target = levelcap.Spells }},
+		{name: "name", adjust: func(levelCap *SkillLevelCap) { levelCap.NameCriteria.Qualifier = "Lore" }},
+		{
+			name: "specialization",
+			adjust: func(levelCap *SkillLevelCap) {
+				levelCap.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fire"}
+			},
+		},
+		{name: "tags", adjust: func(levelCap *SkillLevelCap) { levelCap.TagsCriteria.Qualifier = "Mystic" }},
+		{name: "college", adjust: func(levelCap *SkillLevelCap) { levelCap.CollegeCriteria.Qualifier = "Air" }},
+		{
+			name: "power source",
+			adjust: func(levelCap *SkillLevelCap) {
+				levelCap.PowerSourceCriteria.Qualifier = "Divine"
+			},
+		},
+		{
+			name: "cap",
+			adjust: func(levelCap *SkillLevelCap) {
+				nodeAs[*FixedLevelCap](t, levelCap.Cap.Children[0]).Level = fxp.Eleven
+			},
+		},
+	} {
+		levelCap := newTestSkillLevelCap()
+		one.adjust(levelCap)
+		c.NotEqual(base, Hash64(levelCap), one.name)
+	}
+	future := newTestSkillLevelCap()
+	future.Target = levelcap.UnknownTarget
+	future.unknownTarget = "techniques"
+	other := future.Clone()
+	other.unknownTarget = "powers"
+	c.NotEqual(Hash64(future), Hash64(other), "unknown targets")
+}
+
+// TestSkillLevelCapRefsHolding verifies that the references to a skill or spell within the caps that select a skill or
+// spell are found for it, and none of the caps that don't select it.
+func TestSkillLevelCapRefsHolding(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sk := addTestSkill(e, "Broadsword", "", "", fxp.Four)
+	sp := addTestSpell(e, "Fireball", fxp.Four)
+	onSkills := refCap(levelcap.Skill, "Thaumatology", 0)
+	addTestLevelCap(e, levelcap.Skills, onSkills)
+	onSpells := refCap(levelcap.Spell, "Ignite", 0)
+	addTestLevelCap(e, levelcap.Spells, onSpells)
+	for _, one := range []struct {
+		item any
+		ref  *ReferenceLevelCap
+	}{
+		{item: sk, ref: onSkills},
+		{item: sp, ref: onSpells},
+	} {
+		refs := e.levelCapRefsHolding(one.item)
+		c.Equal(1, len(refs), "%v: only the caps selecting it", one.item)
+		c.True(len(refs) == 1 && refs[0] == one.ref, "%v: the reference within the cap selecting it", one.item)
+	}
 }
 
 // TestSkillLevelCapsSkipWhatCanNotBeRead verifies that a cap that can't be read is left out rather than failing the
