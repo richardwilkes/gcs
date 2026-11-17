@@ -1145,6 +1145,16 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 			build: func() *Equipment { return fullBag(weightReduction()) },
 		},
 		{
+			// Only switchable features count: the switch controls the attribute bonus alone.
+			name: "unequipped container whose contained weight reduction isn't switchable",
+			build: func() *Equipment {
+				reduction := NewContainedWeightReduction()
+				reduction.Reduction = "50%"
+				return fullBag(attributeBonus(), reduction)
+			},
+			dim: true,
+		},
+		{
 			name:  "unequipped empty container with a contained weight reduction",
 			build: func() *Equipment { return item(weightReduction()) },
 			dim:   true,

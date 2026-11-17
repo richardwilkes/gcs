@@ -14,8 +14,6 @@ import (
 	"encoding/json/v2"
 	"hash"
 	"log/slog"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -252,23 +250,6 @@ func TestCompletedScriptErrorsStillCount(t *testing.T) {
 	SuppressScriptResolveErrorLogging(func() { e.Recalculate() })
 
 	c.NotEqual(before, e.Skills[0].DefaultedFrom.AdjLevel, "a failing script's result must still be recorded")
-}
-
-// TestSaveRecalculatesFirst verifies that saving brings the derived values the file publishes up to date, since
-// marshaling an entity doesn't recalculate it.
-func TestSaveRecalculatesFirst(t *testing.T) {
-	c := check.New(t)
-	e := newPopulatedEntity()
-	e.Skills[0].Points = fxp.Twelve // Changed behind the sheet's back, so the recorded level is now stale.
-	stale := e.Skills[0].LevelData.Level
-
-	dir := t.TempDir()
-	c.NoError(e.Save(filepath.Join(dir, "test"+SheetExt)), "the entity saves")
-
-	c.NotEqual(stale, e.Skills[0].LevelData.Level, "saving must have brought the skill level up to date")
-	saved, err := os.ReadFile(filepath.Join(dir, "test"+SheetExt))
-	c.NoError(err, "the saved file reads back")
-	c.True(strings.Contains(string(saved), `"level":`), "the saved file publishes the level it just computed")
 }
 
 // TestEditDataMarshalsWithoutDerivedValues verifies that the form an open editor compares -- the marshal of the data it

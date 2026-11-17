@@ -437,6 +437,7 @@ func TestCanTakeModifiers(t *testing.T) {
 	c.True(CanTakeModifiers(NewEquipment(nil, nil, true)), "a physical container keeps modifiers of its own")
 	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)), "a group keeps nothing of its own, modifiers included")
 	c.False(CanTakeModifiers(NewEquipmentChoiceContainer(nil, nil)))
+	c.True(CanTakeModifiers(NewTrait(nil, nil, false)))
 	c.True(CanTakeModifiers(NewTrait(nil, nil, true)))
 	c.False(CanTakeModifiers(NewTraitChoiceContainer(nil, nil)))
 }

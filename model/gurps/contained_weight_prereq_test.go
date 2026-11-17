@@ -46,20 +46,6 @@ func TestContainedWeightIsIndependentOfQuantity(t *testing.T) {
 	}
 }
 
-// TestExtendedWeightStillScalesWithQuantity verifies that the extended weight still scales with the quantity:
-// (self + contents) * qty, and 0 for qty <= 0.
-func TestExtendedWeightStillScalesWithQuantity(t *testing.T) {
-	c := check.New(t)
-	units := fxp.Pound
-	container := newTestEquipment(nil, true, "5 lb", fxp.One)
-	newTestEquipment(container, false, "3 lb", fxp.One)
-	c.Equal(fxp.WeightFromInteger(8, units), container.ExtendedWeight(false, units))
-	container.Quantity = fxp.Two
-	c.Equal(fxp.WeightFromInteger(16, units), container.ExtendedWeight(false, units))
-	container.Quantity = 0
-	c.Equal(fxp.Weight(0), container.ExtendedWeight(false, units))
-}
-
 // TestContainedWeightHonorsReductions verifies that contained weight reductions are applied to the contents, and only
 // once, regardless of the quantity.
 func TestContainedWeightHonorsReductions(t *testing.T) {

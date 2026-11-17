@@ -1093,6 +1093,17 @@ func TestAdjustedPointsCollapsesSettledPickers(t *testing.T) {
 	c.Equal(fxp.FromInteger(10),
 		newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{10, 10}).AdjustedPoints(nil),
 		"a skill container asking for one of several identically priced skills is worth one of them")
+	spells := NewSpell(nil, nil, true)
+	spells.TemplatePicker.Type = picker.Points
+	spells.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	spells.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(20)
+	for _, points := range []int{5, 40} {
+		child := NewSpell(nil, spells, false)
+		child.Points = fxp.FromInteger(points)
+		spells.Children = append(spells.Children, child)
+	}
+	c.Equal(fxp.FromInteger(20), spells.AdjustedPoints(nil),
+		"a spell container asking for an exact number of points is worth that many")
 
 	// An option still presenting a choice of its own adds its own total: 1 + 4 for the inner container, plus 2.
 	inner := newSkillPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{1, 4})

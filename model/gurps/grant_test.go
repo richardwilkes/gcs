@@ -1188,6 +1188,16 @@ func TestGrantSetLevelBelowWhatAPointBuys(t *testing.T) {
 		c.Equal(tc.planted, e.grantSummary(training))
 		c.Equal(tc.unchanged, e.grantSummary(dabbler))
 	}
+
+	// A spell's level rests on its attribute in the same way.
+	e = NewEntity()
+	light := newHardSpell("Light", 0)
+	light.Difficulty.Attribute = "sanity"
+	training = addTraitWithFeatures(e, "Training",
+		newSpellGrantOf(light, grantadjust.SetLevel, fxp.Twelve, grantmerge.Ignore))
+	e.Recalculate()
+	c.Equal("Does not grant Light at skill level 12, since the sheet lacks the attribute its level rests on",
+		e.grantSummary(training))
 }
 
 func TestGrantStateAppliesPointsExcept(t *testing.T) {

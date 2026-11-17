@@ -681,6 +681,32 @@ func TestSpellBonusFromItsOwnSpell(t *testing.T) {
 	c.NotEqual(fxp.Min, spell.LevelData.Level, "the spell's level stays resolvable")
 }
 
+// TestSpellPointBonusesAdjustPoints verifies that a spell's adjusted points include the spell point bonuses that match
+// it, and that a penalty never takes them below zero.
+func TestSpellPointBonusesAdjustPoints(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name   string
+		spell  string
+		amount fxp.Int
+		want   fxp.Int
+	}{
+		{name: "a bonus adds its points", spell: "Light", amount: fxp.Two, want: fxp.Three},
+		{name: "a bonus to another spell adds nothing", spell: "Darkness", amount: fxp.Two, want: fxp.One},
+		{name: "a penalty stops at zero", spell: "Light", amount: -fxp.Three, want: 0},
+	} {
+		e := NewEntity()
+		bonus := NewSpellPointBonus()
+		bonus.SpellMatchType = spellmatch.Name
+		bonus.NameCriteria = textCriteria(criteria.IsText, "Light")
+		bonus.Amount = tc.amount
+		addTraitWithFeatures(e, "Talent", bonus)
+		spell := addTestSpell(e, tc.spell, fxp.One)
+		e.Recalculate()
+		c.Equal(tc.want, spell.AdjustedPoints(nil), tc.name)
+	}
+}
+
 // TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons verifies that the substitution keys used inside a spell's
 // features and weapons are offered to the user along with the ones in the spell's own text, so a spell can carry a
 // feature whose target is filled in when the spell is added to a sheet.

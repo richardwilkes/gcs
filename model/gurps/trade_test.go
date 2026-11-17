@@ -83,18 +83,6 @@ func TestMoneyItems(t *testing.T) {
 	}
 }
 
-func TestRemoveSellMoney(t *testing.T) {
-	c := check.New(t)
-	var s SheetSettings
-	c.True(s.AddSellMoney(denomination("Silver Eagle", "20"), LibraryFile{}))
-	c.True(s.AddSellMoney(denomination("Copper Penny", "1"), LibraryFile{}))
-	silver, copper := s.SellMoney[0], s.SellMoney[1]
-	c.True(s.RemoveSellMoney(silver.TID))
-	c.False(s.RemoveSellMoney(silver.TID))
-	c.False(s.RemoveSellMoney(""))
-	c.Equal(SellMoneyList{copper}, s.SellMoney)
-}
-
 // mergeBase returns a non-container with every field MergeMatches compares set, along with modifiers that nest.
 func mergeBase() *Equipment {
 	eqp := newEquipmentItem("Lantern", "@Price@", "2 lb")

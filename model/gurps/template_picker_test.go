@@ -228,12 +228,17 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.False(CanConvertToTemplateChoiceContainer(NewTrait(nil, nil, false)), "only a container may become one")
 	c.False(CanConvertToTemplateChoiceContainer(NewTraitChoiceContainer(nil, nil)), "a choice container already is one")
 	c.True(CanConvertToTemplateChoiceContainer(NewSkill(nil, nil, true)), "any skill container may become one")
+	c.True(CanConvertToTemplateChoiceContainer(NewSpell(nil, nil, true)), "any spell container may become one")
 	ConvertToTemplateChoiceContainer(meta)
 	c.False(IsTemplateChoiceContainer(meta), "a container that may not become one is left alone")
 	c.Equal(container.MetaTrait, meta.ContainerType)
 
 	group := NewTrait(nil, nil, true)
 	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare group loses nothing")
+	group.VTTNotes = "vtt"
+	group.Tags = []string{"Combat"}
+	group.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	group.SelfControl = selfctrl.CR12
 	group.Frequency = frequency.FR9
 	group.Preconfigured = true
 	group.SetDisabled(true)
@@ -241,7 +246,10 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	group.Prereq = NewPrereqList()
 	group.Prereq.Prereqs = append(group.Prereq.Prereqs, NewTraitPrereq())
 	group.Source = Source{Library: "lib", Path: "group.adq", TID: group.ID()}
-	c.Equal(6, len(TemplateChoiceConversionLosses(group)))
+	c.Equal([]string{
+		"VTT notes", "tags", "modifiers", "self-control roll", "frequency of appearance", "preconfigured mark",
+		"disabled state", "switched on state", "prerequisites", "library source",
+	}, TemplateChoiceConversionLosses(group))
 
 	ConvertToTemplateChoiceContainer(group)
 	c.True(IsTemplateChoiceContainer(group))
@@ -259,8 +267,9 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.Equal(container.Group, group.ContainerType)
 }
 
-// TestSkillChoiceConversionLosses verifies that a skill choice container can't keep VTT notes or tags either.
-func TestSkillChoiceConversionLosses(t *testing.T) {
+// TestSkillAndSpellChoiceConversionLosses verifies that a skill or spell choice container can't keep VTT notes or tags
+// either.
+func TestSkillAndSpellChoiceConversionLosses(t *testing.T) {
 	c := check.New(t)
 	group := NewSkill(nil, nil, true)
 	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare skill container loses nothing")
@@ -271,6 +280,12 @@ func TestSkillChoiceConversionLosses(t *testing.T) {
 	c.True(IsTemplateChoiceContainer(group))
 	c.Equal("", group.VTTNotes)
 	c.Equal(0, len(group.Tags))
+
+	spells := NewSpell(nil, nil, true)
+	c.Equal(0, len(TemplateChoiceConversionLosses(spells)), "a bare spell container loses nothing")
+	spells.VTTNotes = "vtt"
+	spells.Tags = []string{"Fire"}
+	c.Equal(2, len(TemplateChoiceConversionLosses(spells)), "a spell container loses its VTT notes and tags")
 }
 
 // TestLoadingOutsideATemplateClearsPickerData verifies that only a template keeps template picker data when loaded: a
@@ -409,8 +424,6 @@ func TestGroupConversionHelpers(t *testing.T) {
 
 	skillContainer := NewSkill(nil, nil, true)
 	c.False(CanConvertToGroupContainer(skillContainer), "a skill container is already only a group")
-	c.True(CanTakeModifiers(NewTrait(nil, nil, false)))
-	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)))
 }
 
 func TestPickerMeasureRangeWithContents(t *testing.T) {

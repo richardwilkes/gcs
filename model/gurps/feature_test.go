@@ -28,11 +28,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// bracketed is the em func for the feature description tests, so they can see what is emphasized.
-func bracketed(s string) string {
-	return "[" + s + "]"
-}
-
 // TestFeatureDescribe verifies the description of each feature type, including which parts are passed through the
 // emphasis func, which criteria are left out, and that a nameable marker shows its value where one is set and stays
 // as it is where none is.
@@ -392,7 +387,7 @@ func TestFeatureDescribe(t *testing.T) {
 		{"unknown", unknown, `Unknown feature type "x"; it will be preserved, but ignored`},
 	} {
 		before := gurps.Hash64(one.feature)
-		c.Equal(one.expected, one.feature.Describe(nil, replacements, bracketed), one.name)
+		c.Equal(one.expected, one.feature.Describe(nil, replacements, bracket), one.name)
 		c.Equal(before, gurps.Hash64(one.feature), "%s: describing leaves the feature as it was", one.name)
 	}
 }
@@ -411,7 +406,7 @@ func TestFeatureDescribeNamesLocationsByBody(t *testing.T) {
 	c.Nil(body.LookupLocationByID(entity, "skull"), "the body has no skull")
 	f := gurps.NewDRBonus()
 	f.Locations = []string{"foreleg", "skull"}
-	c.Equal("[+1] DR to [2 locations]: Forelegs, skull", f.Describe(entity, nil, bracketed))
+	c.Equal("[+1] DR to [2 locations]: Forelegs, skull", f.Describe(entity, nil, bracket))
 }
 
 // TestFeatureDescribeNamesEveryWeaponBonus verifies that each weapon bonus type names what it changes.
@@ -423,7 +418,7 @@ func TestFeatureDescribeNamesEveryWeaponBonus(t *testing.T) {
 		}
 		f := gurps.NewWeaponBonus(one)
 		f.SelectionType = wsel.ThisWeapon
-		text := f.Describe(nil, nil, bracketed)
+		text := f.Describe(nil, nil, bracket)
 		c.True(strings.HasPrefix(text, "[+1] to this weapon's "), "%s: %s", one.Key(), text)
 		c.False(strings.HasSuffix(text, "'s "), "%s names what it changes", one.Key())
 	}

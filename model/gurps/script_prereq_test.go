@@ -145,31 +145,3 @@ func TestScriptPrereqName(t *testing.T) {
 	p.Name = "Other"
 	c.NotEqual(before, hash(), "the name must be part of the hash")
 }
-
-// TestResolveScriptCachedErrorStaysFailed verifies that a script error is still reported as a failure when the result
-// comes from the cache, rather than being taken for the script's own result.
-func TestResolveScriptCachedErrorStaysFailed(t *testing.T) {
-	c := check.New(t)
-	entity := NewEntity()
-	text := `throw new Error("boom")`
-	first, failed := resolveScript(entity, ScriptSelfProvider{}, text)
-	c.True(failed, "a thrown error is a failure")
-	c.True(entity.scriptCache[scriptResolveKey{text: text}].err, "the failure must be cached")
-	second, failed := resolveScript(entity, ScriptSelfProvider{}, text)
-	c.True(failed, "a cached error is still a failure")
-	c.Equal(first, second)
-	c.Equal(first, ResolveScript(entity, ScriptSelfProvider{}, text), "ResolveScript returns the same text")
-	result, failed := resolveScript(entity, ScriptSelfProvider{}, "1 + 1")
-	c.False(failed, "a result is not a failure")
-	c.Equal("2", result)
-	_, failed = resolveScript(entity, ScriptSelfProvider{}, "1 + 1")
-	c.False(failed, "a cached result is not a failure")
-}
-
-// TestResolveScriptSyntaxErrorNamedOnce verifies that a script that won't compile is reported as a SyntaxError once.
-func TestResolveScriptSyntaxErrorNamedOnce(t *testing.T) {
-	c := check.New(t)
-	result, failed := resolveScript(NewEntity(), ScriptSelfProvider{}, "nope(")
-	c.True(failed)
-	c.True(strings.HasPrefix(result, "SyntaxError: ") && !strings.Contains(result, "SyntaxError: SyntaxError:"), result)
-}

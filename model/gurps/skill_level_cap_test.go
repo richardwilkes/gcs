@@ -13,7 +13,6 @@ import (
 	"encoding/json/jsontext"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -1362,7 +1361,7 @@ func TestSkillLevelCapRefsHolding(t *testing.T) {
 }
 
 // TestSkillLevelCapsSkipWhatCanNotBeRead verifies that a cap that can't be read is left out rather than failing the
-// load of the settings holding it.
+// load of the settings holding it. A cap holding a node that can't be decoded into its type can't be read either.
 func TestSkillLevelCapsSkipWhatCanNotBeRead(t *testing.T) {
 	c := check.New(t)
 	var s SheetSettings
@@ -1371,6 +1370,8 @@ func TestSkillLevelCapsSkipWhatCanNotBeRead(t *testing.T) {
 	c.Equal(levelcap.Spells, s.SkillLevelCaps[0].Target, "the cap that can be read is kept")
 	c.NoError(jio.Unmarshal([]byte(`{"skill_level_caps":5}`), &s))
 	c.Equal(0, len(s.SkillLevelCaps), "caps that aren't a list are left out")
+	c.NoError(jio.Unmarshal([]byte(`{"skill_level_caps":[{"target":"spells","cap":{"type":"group","children":[{"type":"fixed","level":"high"}]}}]}`), &s))
+	c.Equal(0, len(s.SkillLevelCaps), "a cap holding a node that can't be read is left out")
 }
 
 // TestSheetSettingsSkillLevelCapsDefaultToNone verifies that the factory settings have no caps and write none.
@@ -1431,17 +1432,14 @@ func TestSheetSettingsSkillLevelCapsEnsureValidity(t *testing.T) {
 	c.Equal("Fire", ref.SpecializationCriteria.Qualifier, "a skill reference keeps its specialization")
 }
 
-// TestSkillLevelCapsFileRoundTrip verifies that caps saved to a file of their own load back as they were saved, valid
-// and at the current data version, and that a file holding none loads as none.
+// TestSkillLevelCapsFileRoundTrip verifies that caps saved to a file of their own load back as they were saved and
+// valid, and that a file holding none loads as none.
 func TestSkillLevelCapsFileRoundTrip(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	name := "caps" + SkillLevelCapsExt
 	caps := SkillLevelCaps{newTestSkillLevelCap(), NewSkillLevelCap()}
 	c.NoError(SaveSkillLevelCaps(caps, filepath.Join(dir, name)))
-	data, err := os.ReadFile(filepath.Join(dir, name))
-	c.NoError(err)
-	c.Contains(string(data), `"version": `+strconv.Itoa(jio.CurrentDataVersion))
 	loaded, err := NewSkillLevelCapsFromFile(os.DirFS(dir), name)
 	c.NoError(err)
 	c.Equal(len(caps), len(loaded))

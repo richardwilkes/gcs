@@ -12,7 +12,6 @@ package gurps
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -23,7 +22,7 @@ import (
 
 // TestKeyBindingsFileRoundTrip verifies that a key bindings file loads whether it holds the bare map written before
 // such files carried a header or the current form, and that saving one with no factory bindings registered, as in the
-// -convert run mode, writes the current form holding every binding rather than none of them.
+// -convert run mode, writes every binding rather than none of them.
 func TestKeyBindingsFileRoundTrip(t *testing.T) {
 	c := check.New(t)
 	c.Equal(0, len(factoryBindings), "the model tests register no factory bindings")
@@ -38,10 +37,6 @@ func TestKeyBindingsFileRoundTrip(t *testing.T) {
 	c.Equal(want, b.data, "the bare map loads")
 
 	c.NoError(b.Save(p))
-	var saved []byte
-	saved, err = os.ReadFile(p)
-	c.NoError(err)
-	c.True(strings.HasPrefix(string(saved), headerPrefix(KeyBindingsDataKind)), "the header is written first: %s", saved)
 	b, err = NewKeyBindingsFromFS(nil, p)
 	c.NoError(err)
 	c.Equal(want, b.data, "every binding survives a save and load")

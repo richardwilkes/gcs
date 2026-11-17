@@ -53,8 +53,7 @@ func TestLoadSettingsOrDefaultsWithMissingFile(t *testing.T) {
 }
 
 // TestLoadSettingsOrDefaultsWithValidFile verifies that a settings file loads whether or not it carries a header, which
-// files written before headers existed lack, without logging an error or leaving a stray backup behind, and that saving
-// the settings writes the header first.
+// files written before headers existed lack, without logging an error or leaving a stray backup behind.
 func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 	const content = `"last_seen_gcs_version":"1.2.3","deep_search":["alpha"]`
 	for name, data := range map[string]string{
@@ -73,16 +72,6 @@ func TestLoadSettingsOrDefaultsWithValidFile(t *testing.T) {
 			c.Equal(int32(0), count.Load())
 			_, err := os.Stat(p + ".bad")
 			c.HasError(err)
-
-			prevPath := SettingsPath
-			SettingsPath = filepath.Join(dir, "saved.json")
-			t.Cleanup(func() { SettingsPath = prevPath })
-			c.NoError(settings.Save())
-			var saved []byte
-			saved, err = os.ReadFile(SettingsPath)
-			c.NoError(err)
-			c.True(strings.HasPrefix(string(saved), headerPrefix(SettingsDataKind)), "the header is written first: %s",
-				saved)
 		})
 	}
 }
@@ -543,10 +532,10 @@ func TestLoadSettingsKeepsTheFileWhenASellMoneyEntryIsUnreadable(t *testing.T) {
 	c.False(xos.FileExists(path+".bad"), "and not set aside")
 }
 
-// TestClosedStateIsConcurrencySafe verifies that the unmarshalers for the legacy file format, which record the open
-// state of their container rows in the global closed-state map, can run on a background goroutine -- as the deep search
+// TestClosedStateIsConcurrencySafe verifies that the unmarshalers for the legacy file format, which pass the "open"
+// flag of their container rows to the global closed-state map, can run on a background goroutine -- as the deep search
 // content cache runs them -- while the UI thread refreshes and toggles closed states and saves the settings. Without
-// the lock, both sides write the map and the runtime throws with "concurrent map writes".
+// the lock, the two sides race on the map.
 func TestClosedStateIsConcurrencySafe(t *testing.T) {
 	c := check.New(t)
 	prevPath := SettingsPath

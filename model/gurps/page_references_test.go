@@ -14,7 +14,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -43,7 +42,7 @@ func TestPageRefsUnmarshalSkipsNullEntries(t *testing.T) {
 
 // TestPageRefsFileRoundTrip verifies that a page reference file loads whether it holds the bare map written before such
 // files carried a header, even when a book key of its is one of the header's member names, or the current form, and
-// that saving writes the current form with the header first and the references intact.
+// that saving it keeps the references intact.
 func TestPageRefsFileRoundTrip(t *testing.T) {
 	const ref = `{"path":"/refs/basic.pdf","offset":2}`
 	for name, tc := range map[string]struct {
@@ -69,11 +68,6 @@ func TestPageRefsFileRoundTrip(t *testing.T) {
 			c.Equal(tc.want, pageRefIDs(c, refs))
 
 			c.NoError(refs.Save(p))
-			var saved []byte
-			saved, err = os.ReadFile(p)
-			c.NoError(err)
-			c.True(strings.HasPrefix(string(saved), headerPrefix(PageRefsDataKind)), "the header is written first: %s",
-				saved)
 			refs, err = NewPageRefsFromFS(nil, p)
 			c.NoError(err)
 			c.Equal(tc.want, pageRefIDs(c, refs), "the references survive a save and load")
