@@ -184,6 +184,10 @@ func TestFeatureDescribe(t *testing.T) {
 	spellPoint.Amount = fxp.Two
 	skillPoint := gurps.NewSkillPointBonus()
 	skillPoint.NameCriteria.Qualifier = "@Skill@"
+	skillPointPenalty := gurps.NewSkillPointBonus()
+	skillPointPenalty.NameCriteria.Qualifier = "Stealth"
+	skillPointPenalty.Amount = -fxp.One
+	skillPointPenalty.PerLevel = true
 	trait := gurps.NewTraitBonus()
 	trait.NameCriteria.Qualifier = "Magery"
 	traitMaxLevel := gurps.NewTraitMaxLevelBonus()
@@ -335,6 +339,7 @@ func TestFeatureDescribe(t *testing.T) {
 		{"spell name not matching", spellNotNamed, `[+1] to spells whose name does not contain "[Fire]"`},
 		{"spell points", spellPoint, "[+2] points to spell [Fireball]"},
 		{"skill point", skillPoint, "[+1] point to skill [Streetwise]"},
+		{"skill point penalty per level", skillPointPenalty, "[-1] point per level to skill [Stealth]"},
 		{"trait", trait, "[+1] to the level of trait [Magery]"},
 		{"trait maximum level", traitMaxLevel, "[+1] to the maximum level of this trait"},
 		{"trait maximum level named", traitMaxLevelNamed, "[+10%] to the maximum level of trait [Magery]"},
