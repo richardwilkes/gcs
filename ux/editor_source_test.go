@@ -409,7 +409,7 @@ func TestEditorSyncThatOnlyRevertsPendingEdits(t *testing.T) {
 }
 
 // TestEditorSyncOfAGrantsItemLeavesOutGrants verifies that syncing the editor of a grant's item leaves out the grants
-// the library's copy has, since a granted item grants nothing.
+// the library's copy has, since a granted item grants nothing, and that the item then matches that copy.
 func TestEditorSyncOfAGrantsItemLeavesOutGrants(t *testing.T) {
 	c := check.New(t)
 	lib := newGrantTestTrait("Night Vision", 0)
@@ -431,6 +431,10 @@ func TestEditorSyncOfAGrantsItemLeavesOutGrants(t *testing.T) {
 	requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source", "the item differs from its library copy")()
 	c.Equal("Night Vision", e.editorData.Name, "the sync brings the library's name across")
 	c.Equal(0, len(e.editorData.Features), "but not the library's grant")
+	entries := e.sourceMenuEntries()
+	c.True(slices.Contains(sourceMenuSummary(entries), "# "+srcstate.Matched.String()),
+		"the item now matches its library copy, whose grant it leaves out; the menu shows %v", sourceMenuSummary(entries))
+	c.Nil(sourceMenuAction(entries, "Sync with Source"), "so there is nothing left to sync")
 }
 
 // TestEditorSyncFollowsEquipmentKinds verifies that the editor syncs plain equipment and a physical container with each

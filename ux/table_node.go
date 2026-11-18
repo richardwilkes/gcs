@@ -122,17 +122,6 @@ func NewNode[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T], da
 	}
 }
 
-// NewNodeLike creates a new node for a table based on the characteristics of an existing node in that table.
-func NewNodeLike[T gurps.Node[T]](like *Node[T], data T) *Node[T] {
-	return &Node[T]{
-		table:   like.table,
-		parent:  like.parent,
-		data:    data,
-		reuse:   like.reuse,
-		forPage: like.forPage,
-	}
-}
-
 // nodesFor returns a node under the parent for each of the data items, in their order: the one among the previous
 // nodes that holds the same item, when there is one, or else a new one sharing the given reuse, which may be nil. Only
 // nodes that were under the same parent may be passed as the previous ones, so that a row moved elsewhere gets a new
@@ -246,12 +235,6 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 		n.data.SetChildren(ExtractNodeDataFromList(children))
 		n.children = nil
 	}
-}
-
-// RefreshChildren discards the cached child nodes so that the next call to Children rebuilds them from the underlying
-// data, without keeping any of them. Call it after altering the data's children directly.
-func (n *Node[T]) RefreshChildren() {
-	n.children = nil
 }
 
 // currentCellStamp returns the stamp that marks what the row derives for its cells as current; see cellStamp.
@@ -1286,27 +1269,6 @@ func (n *Node[T]) secondaryFieldFont() unison.Font {
 		return fonts.PageFieldSecondary
 	}
 	return fonts.FieldSecondary
-}
-
-// FindRowIndexByID returns the row index of the row with the given ID in the given table.
-func FindRowIndexByID[T gurps.Node[T]](table *unison.Table[*Node[T]], id tid.TID) int {
-	_, i := rowIndex(id, 0, table.RootRows())
-	return i
-}
-
-func rowIndex[T gurps.Node[T]](id tid.TID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
-	for _, row := range rows {
-		if id == row.data.ID() {
-			return 0, startIndex
-		}
-		startIndex++
-		if row.IsOpen() {
-			if startIndex, result = rowIndex(id, startIndex, row.Children()); result != -1 {
-				return 0, result
-			}
-		}
-	}
-	return startIndex, -1
 }
 
 // InsertItems into a table. A new modifier that goes into a modifier choice arrives turned off, since nothing makes it

@@ -36,9 +36,7 @@ You can also create your own custom weapons.
 
 ## Melee Attacks list
 
-The **Melee Attacks list** on your character sheet includes the following columns. Select a column heading to sort
-ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
-descending](images/icons/sortDescending.svg).
+The **Melee Attacks list** on your character sheet includes the following columns.
 
 | Column           | Description                                                                                |
 |------------------|--------------------------------------------------------------------------------------------|
@@ -53,9 +51,7 @@ descending](images/icons/sortDescending.svg).
 
 ## Ranged Attacks list
 
-The **Ranged Attacks list** on your character sheet includes the following columns. Select a column heading to sort
-ascending ![sort ascending](images/icons/sortAscending.svg) or descending ![sort
-descending](images/icons/sortDescending.svg).
+The **Ranged Attacks list** on your character sheet includes the following columns.
 
 | Column            | Description                                                            |
 |-------------------|------------------------------------------------------------------------|

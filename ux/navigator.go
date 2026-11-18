@@ -495,16 +495,20 @@ func (n *Navigator) renameSelection() {
 			Workspace.ErrorHandler(i18n.Text("Unable to rename:\n%s", oldPath), err)
 			return
 		}
-		n.fixupFavoritePath(row, oldPath, newPath)
+		n.fixupFavoritePath(row, newPath)
 		n.adjustBackingFilePath(row, oldPath, newPath)
 		n.reloadAndSelect(newPath, row.Parent())
 	}
 }
 
-func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath string) {
+func (n *Navigator) fixupFavoritePath(row *NavigatorNode, newPath string) {
 	if row.IsFile() || row.IsDirectory() {
-		prefix := row.library.Data().PathOnDisk + string([]rune{filepath.Separator})
-		row.library.RenameFavorite(strings.TrimPrefix(oldPath, prefix), strings.TrimPrefix(newPath, prefix))
+		// Favorites are library-relative and slash-separated, as row.path is, and a rename keeps the parent.
+		newRelPath := filepath.Base(newPath)
+		if i := strings.LastIndexByte(row.path, '/'); i != -1 {
+			newRelPath = row.path[:i+1] + newRelPath
+		}
+		row.library.RenameFavorite(row.path, newRelPath)
 	}
 }
 

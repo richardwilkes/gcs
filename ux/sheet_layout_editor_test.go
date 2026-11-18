@@ -1123,12 +1123,25 @@ func TestEscapeAbandonsTheGestureThenLeavesEditing(t *testing.T) {
 	c.False(sheet.layoutEditing(), "an Escape with no gesture under way must leave editing mode")
 }
 
-// newTestSheetWithLayout returns a sheet in block layout editing mode whose layout is the given bands, with every block
-// they don't hold hidden and every block they do an inch tall, so that a test points at a page whose shape it knows and
-// every band is deep enough to have an inside as well as an edge.
+// newTestSheetWithLayout returns a sheet in block layout editing mode whose layout is the given bands, as
+// setTestSheetLayout sets them.
 func newTestSheetWithLayout(t *testing.T, bands ...*gurps.SheetLayoutNode) (*Sheet, *sheetLayoutEditor) {
 	t.Helper()
 	sheet := newTestSheetForTemplate(t)
+	setTestSheetLayout(sheet, bands...)
+	sheet.toggleLayoutEditing()
+	t.Cleanup(func() {
+		if sheet.layoutEditing() {
+			sheet.toggleLayoutEditing()
+		}
+	})
+	return sheet, sheet.layoutEditor
+}
+
+// setTestSheetLayout gives the sheet a layout of the given bands, with every block they don't hold hidden and every
+// block they do an inch tall, so that a test points at a page whose shape it knows and every band is deep enough to
+// have an inside as well as an edge.
+func setTestSheetLayout(sheet *Sheet, bands ...*gurps.SheetLayoutNode) {
 	layout := &gurps.SheetLayout{Root: testContainerNode(layoutnode.Column, fxp.One, bands...)}
 	keys := layout.VisibleKeys()
 	for _, key := range gurps.AllBlockKeys {
@@ -1142,13 +1155,6 @@ func newTestSheetWithLayout(t *testing.T, bands ...*gurps.SheetLayoutNode) (*She
 	}
 	sheet.Entity().SheetSettings.Layout = layout
 	sheet.Rebuild(true)
-	sheet.toggleLayoutEditing()
-	t.Cleanup(func() {
-		if sheet.layoutEditing() {
-			sheet.toggleLayoutEditing()
-		}
-	})
-	return sheet, sheet.layoutEditor
 }
 
 // newTestSheetWithLeafBands returns a sheet in block layout editing mode whose layout holds nothing but the given
@@ -1782,4 +1788,59 @@ func TestSheetLayoutEditorMenuDuringADragHeadless(t *testing.T) {
 	c.Equal(dragged, traitsWeight(), "and must leave the layout alone")
 	screen.Do(func() { edits = undoEditCount(sheet.UndoManager()) })
 	c.Equal(1, edits, "and record nothing")
+}
+
+// TestSheetLayoutEditorDragMovesABlockHeadless verifies that pressing on a block, dragging it at once and letting go
+// near the left edge of another block moves it there, beside that block: the distance moved, not just the time held,
+// must make the press a drag.
+func TestSheetLayoutEditorDragMovesABlockHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var from, to geom.Point
+	var editing, visible bool
+	screen.Do(func() {
+		setTestSheetLayout(sheet, testBlockNode(gurps.BlockTraitsKey, fxp.One),
+			testBlockNode(gurps.BlockSkillsKey, fxp.One))
+		sheet.toggleLayoutEditing()
+		editing = sheet.layoutEditing()
+		if !editing {
+			return
+		}
+		overlay := sheet.layoutEditor.overlay
+		regions := sheet.layoutEditor.ensureRegions()
+		traits := regions.leafFor(gurps.BlockTraitsKey)
+		skills := regions.leafFor(gurps.BlockSkillsKey)
+		if traits == nil || skills == nil {
+			return
+		}
+		fromRoot := overlay.PointToRoot(traits.rect.Center())
+		toRoot := overlay.PointToRoot(geom.NewPoint(skills.rect.X+layoutEdgeLadderStep, skills.rect.CenterY()))
+		visible = fromRoot.In(visibleRect(overlay)) && toRoot.In(visibleRect(overlay))
+		from = screenPoint(wnd, fromRoot)
+		to = screenPoint(wnd, toRoot)
+	})
+	t.Cleanup(func() {
+		screen.Do(func() {
+			if sheet.layoutEditing() {
+				sheet.toggleLayoutEditing()
+			}
+		})
+	})
+	if !editing {
+		t.Fatal("the sheet must be in layout editing mode")
+	}
+	if !visible {
+		t.Fatal("the traits and skills blocks must be in view to drag one onto the other")
+	}
+
+	screen.MouseDown(from, unison.ButtonLeft, mod.None)
+	screen.MouseMove(to, mod.None)
+	screen.MouseUp(to, unison.ButtonLeft, mod.None)
+	var tree string
+	screen.Do(func() { tree = layoutTreeOf(sheet) })
+	c.Equal("column[row[traits skills]]", tree, "the block must have moved beside the one it was let go over")
 }

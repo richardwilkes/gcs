@@ -788,6 +788,40 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c.Equal([]string{relPath}, lib1.Favorites())
 }
 
+// TestRenamingAFavoriteFileKeepsItAFavorite verifies that renaming a favorite file renames its favorite to match, both
+// within a folder, where the favorite is slash-separated while the path on disk is separated for the OS, and at the top
+// of a library kept at the root of a volume, whose path on disk already ends in a separator.
+func TestRenamingAFavoriteFileKeepsItAFavorite(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	for _, one := range []struct {
+		name    string
+		libPath string
+		row     string
+		renamed string
+	}{
+		{
+			name:    "within a folder",
+			libPath: dir,
+			row:     "sub/a" + gurps.SheetExt,
+			renamed: "sub/b" + gurps.SheetExt,
+		},
+		{
+			name:    "library at the root of a volume",
+			libPath: filepath.VolumeName(dir) + string(filepath.Separator),
+			row:     "a" + gurps.SheetExt,
+			renamed: "b" + gurps.SheetExt,
+		},
+	} {
+		lib := library.NewLibrary("Test", "acct", "", "repo", one.libPath)
+		lib.ToggleFavorite(one.row)
+		row := NewFileNode(lib, one.row, nil)
+		n := &Navigator{}
+		n.fixupFavoritePath(row, renamedPath(row.Path(), "b"))
+		c.Equal([]string{one.renamed}, lib.Favorites(), one.name)
+	}
+}
+
 // TestRowsForLeavesOutARemovedLibrary verifies that the rows built from a walk leave out a library, and its favorites,
 // that was removed from the settings while the walk ran, since the reload its removal asked for is still to come and
 // the library would otherwise show again until then.

@@ -371,14 +371,17 @@ func (l *Library) ToggleFavorite(relativePath string) {
 	}
 }
 
-// RenameFavorite replaces the favorite with the old path with one using the new path. Does nothing if the old path
-// isn't a favorite. Both paths are relative to the library's path on disk.
+// RenameFavorite moves the favorite at the old path, and every favorite within it, to the new path. Both paths are
+// relative to the library's path on disk and, like the favorites, slash-separated.
 func (l *Library) RenameFavorite(oldRelativePath, newRelativePath string) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	if i := slices.Index(l.data.Favorites, oldRelativePath); i != -1 {
-		l.data.Favorites = slices.Delete(l.data.Favorites, i, i+1)
-		l.data.Favorites = append(l.data.Favorites, newRelativePath)
+	for i, one := range l.data.Favorites {
+		if one == oldRelativePath {
+			l.data.Favorites[i] = newRelativePath
+		} else if after, ok := strings.CutPrefix(one, oldRelativePath+"/"); ok {
+			l.data.Favorites[i] = newRelativePath + "/" + after
+		}
 	}
 }
 

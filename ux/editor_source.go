@@ -50,7 +50,7 @@ func (e *editor[N, D]) sourceMenuEntries() []menuEntry {
 			entries = append(entries, copyEntry(part.label, part.value))
 		}
 	}
-	state, data := gurps.MatchSource(edited)
+	state, data := e.matchSource(edited)
 	return append(
 		entries,
 		menuEntry{Label: state.String()},
@@ -66,6 +66,21 @@ func (e *editor[N, D]) sourceMenuEntries() []menuEntry {
 			Disabled: e.readOnly || src == gurps.Source{},
 		},
 	)
+}
+
+// matchSource returns the source state of the edited data and the library's copy of it, as gurps.MatchSource does,
+// except that in the editor of a grant's item the data is compared with the library's copy less its grants, which a
+// granted item leaves out (see gurps.Grant.SetItem).
+func (e *editor[N, D]) matchSource(edited N) (state srcstate.Value, data any) {
+	state, data = gurps.MatchSource(edited)
+	if lib, ok := data.(N); ok && state == srcstate.Mismatched && inGrantItemEditor(e) {
+		bare := lib.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+		gurps.DropGrants(bare)
+		if gurps.Hash64(bare) == gurps.Hash64(edited) {
+			state = srcstate.Matched
+		}
+	}
+	return state, data
 }
 
 func copyEntry(label, value string) menuEntry {
@@ -112,7 +127,7 @@ func (e *editor[N, D]) syncWithSource() {
 		// editor and before the data is replaced.
 		e.releaseContentFocus()
 		edited := e.editedClone()
-		if state, data := gurps.MatchSource(edited); state == srcstate.Mismatched && !syncChangesContainerType(edited, data) {
+		if state, data := e.matchSource(edited); state == srcstate.Mismatched && !syncChangesContainerType(edited, data) {
 			before := modifierChoicePicker(edited)
 			edited.SyncWithSource()
 			if inGrantItemEditor(e) {

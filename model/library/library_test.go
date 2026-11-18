@@ -149,6 +149,14 @@ func TestLibraryFavorites(t *testing.T) {
 	// Renaming something that isn't a favorite must not add it.
 	lib.RenameFavorite("missing.gcs", "d.gcs")
 	c.Equal([]string{"c.gcs"}, lib.Favorites())
+
+	// Renaming a folder must carry along the favorites within it, but not those within a folder whose name merely begins
+	// with the same text.
+	lib.ToggleFavorite("sub/a.gcs")
+	lib.ToggleFavorite("sub/inner/b.gcs")
+	lib.ToggleFavorite("sub2/c.gcs")
+	lib.RenameFavorite("sub", "renamed")
+	c.Equal([]string{"c.gcs", "renamed/a.gcs", "renamed/inner/b.gcs", "sub2/c.gcs"}, lib.Favorites())
 }
 
 // TestCleanupFavoritesChecksTheDiskWithoutTheLock verifies that CleanupFavorites drops the favorites that can no longer

@@ -942,7 +942,7 @@ func (e *sheetLayoutEditor) mouseDown(where geom.Point, button int) {
 func (e *sheetLayoutEditor) mouseDrag(where geom.Point) {
 	switch e.mode {
 	case layoutPressed:
-		if e.pressKey != "" && e.overlay != nil && e.overlay.IsDragGesture(e.pressPt) {
+		if e.pressKey != "" && e.overlay != nil && e.overlay.IsDragGesture(where) {
 			e.beginBlockDrag(e.pressKey, e.pressPt)
 			e.updateBlockDrag(where)
 		}
