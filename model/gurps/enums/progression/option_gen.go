@@ -143,13 +143,13 @@ func (enum Option) AltString() string {
 	case SwingEqualsThrustPlus2:
 		return i18n.Text(`*From a [house rule](https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/) originating with Kevin Smyth*`)
 	case Tbone1:
-		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
+		return i18n.Text(`*Thrust is 1d per 10 ST and swing is 3d per 20 ST (1d and 1d+2 at ST 10), the Medium and Large columns from [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone1Clean:
-		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
+		return i18n.Text(`*Option 1 with 2d-2 replaced by 1d+1 and 1d+3 by 2d-1, and likewise for more dice. From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone2:
-		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
+		return i18n.Text(`*Thrust is 1d per 15 ST and swing is 1d per 10 ST (1d-2 and 1d at ST 10), the Small and Medium columns from [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case Tbone2Clean:
-		return i18n.Text(`*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
+		return i18n.Text(`*Option 2 with 2d-2 replaced by 1d+1 and 1d+3 by 2d-1, and likewise for more dice. From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*`)
 	case PhoenixFlameD3:
 		return i18n.Text(`*From a [house rule](https://github.com/richardwilkes/gcs/pull/393) that uses d3s instead of d6s for damage*`)
 	default:

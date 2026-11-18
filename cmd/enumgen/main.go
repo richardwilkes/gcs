@@ -1469,22 +1469,22 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "tbone_1",
 				String: "T Bone's New Damage for ST (option 1)",
-				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+				Alt:    "*Thrust is 1d per 10 ST and swing is 3d per 20 ST (1d and 1d+2 at ST 10), the Medium and Large columns from [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
 			},
 			{
 				Key:    "tbone_1_clean",
 				String: "T Bone's New Damage for ST (option 1, cleaned)",
-				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+				Alt:    "*Option 1 with 2d-2 replaced by 1d+1 and 1d+3 by 2d-1, and likewise for more dice. From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
 			},
 			{
 				Key:    "tbone_2",
 				String: "T Bone's New Damage for ST (option 2)",
-				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+				Alt:    "*Thrust is 1d per 15 ST and swing is 1d per 10 ST (1d-2 and 1d at ST 10), the Small and Medium columns from [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
 			},
 			{
 				Key:    "tbone_2_clean",
 				String: "T Bone's New Damage for ST (option 2, cleaned)",
-				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+				Alt:    "*Option 2 with 2d-2 replaced by 1d+1 and 1d+3 by 2d-1, and likewise for more dice. From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
 			},
 			{
 				Key: "phoenix_flame_d3",
