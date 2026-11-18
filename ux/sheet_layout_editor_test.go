@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-	"path/filepath"
 	"slices"
 	"testing"
 	"time"
@@ -29,7 +27,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
-	"github.com/richardwilkes/unison/enums/side"
 )
 
 // newTestLayoutRegions returns a hand-built set of regions describing a page holding a two-block row above a full-width
@@ -830,61 +827,6 @@ func TestSeamBelongsToTheContainerItLiesIn(t *testing.T) {
 	c.Equal(row, target.parent, "in the container the model holds them in")
 }
 
-// TestHideAndShowBlock checks that taking a block off the sheet and putting it back are each one undoable edit that
-// updates the sheet exactly once, and that both can still be undone once editing mode has been left.
-func TestHideAndShowBlock(t *testing.T) {
-	c := check.New(t)
-	sheet, editor := newTestSheetForLayoutEditing(t)
-	layout := sheet.Entity().SheetSettings.Layout
-	counter := installSyncCounter(sheet)
-	mgr := sheet.UndoManager()
-	before := layout.VisibleKeys()
-
-	counter.count = 0
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	c.Equal(1, counter.count, "hiding a block must sync the sheet exactly once")
-	c.False(layout.Contains(gurps.BlockNotesKey), "the hidden block must be out of the tree")
-	c.Equal([]string{gurps.BlockNotesKey}, layout.HiddenKeys(), "the hidden block must be recorded as hidden")
-	c.Nil(sheet.blockPanel(gurps.BlockNotesKey).AsPanel().Parent(), "the hidden block must be off the page")
-	c.Nil(editor.ensureRegions().leafFor(gurps.BlockNotesKey), "the hidden block must have no region")
-
-	counter.count = 0
-	sheet.showLayoutBlock(gurps.BlockNotesKey)
-	c.Equal(1, counter.count, "showing a block must sync the sheet exactly once")
-	c.True(layout.Contains(gurps.BlockNotesKey), "the shown block must be back in the tree")
-	c.Equal(0, len(layout.HiddenKeys()), "nothing must be left hidden")
-	c.Equal(2, undoEditCount(mgr), "hiding and showing a block must be two undoable edits")
-
-	// An undo can be asked for from the Edit menu long after editing mode was left, so it has to work from there.
-	sheet.toggleLayoutEditing()
-	c.False(sheet.layoutEditing(), "editing mode must have been left")
-
-	mgr.Undo()
-	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
-		"undoing the show must take the block back off the sheet")
-	mgr.Undo()
-	c.Equal(before, sheet.Entity().SheetSettings.Layout.VisibleKeys(),
-		"undoing the hide must put the sheet back the way it was")
-	mgr.Redo()
-	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
-		"redoing the hide must take the block off the sheet again")
-	mgr.Redo()
-	c.Equal(before, sheet.Entity().SheetSettings.Layout.VisibleKeys(), "redoing the show must put the block back")
-}
-
-// TestHideBlockThatIsAlreadyHiddenDoesNothing checks that an edit changing nothing is neither recorded nor shown.
-func TestHideBlockThatIsAlreadyHiddenDoesNothing(t *testing.T) {
-	c := check.New(t)
-	sheet, _ := newTestSheetForLayoutEditing(t)
-	counter := installSyncCounter(sheet)
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-
-	counter.count = 0
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	c.Equal(0, counter.count, "hiding a block that is already hidden must not sync the sheet")
-	c.Equal(1, undoEditCount(sheet.UndoManager()), "hiding a block that is already hidden must not be recorded")
-}
-
 // TestCloseButtonHidesTheBlock checks that a press and release on a block's close button takes that block off the
 // sheet, and that a press on it let go of somewhere else leaves the block where it is.
 func TestCloseButtonHidesTheBlock(t *testing.T) {
@@ -1117,31 +1059,6 @@ func TestBottomEdgeDragSetsMinimumHeight(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "setting a block's height must be one undoable edit")
 }
 
-// TestResetLayoutRestoresTheDefault checks that resetting returns the sheet to the layout new sheets are given, as one
-// undoable edit that updates the sheet exactly once.
-func TestResetLayoutRestoresTheDefault(t *testing.T) {
-	c := check.New(t)
-	sheet, _ := newTestSheetForLayoutEditing(t)
-	counter := installSyncCounter(sheet)
-	mgr := sheet.UndoManager()
-	original := gurps.Hash64(sheet.Entity().SheetSettings.Layout)
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	c.NotEqual(original, gurps.Hash64(sheet.Entity().SheetSettings.Layout), "the layout must have been altered")
-
-	counter.count = 0
-	sheet.resetLayout()
-	c.Equal(1, counter.count, "resetting the layout must sync the sheet exactly once")
-	c.Equal(gurps.Hash64(gurps.GlobalSettings().Sheet.Layout), gurps.Hash64(sheet.Entity().SheetSettings.Layout),
-		"resetting must give the sheet the layout new sheets are given")
-
-	mgr.Undo()
-	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
-		"undoing the reset must take the block back off the sheet")
-	mgr.Redo()
-	c.Equal(original, gurps.Hash64(sheet.Entity().SheetSettings.Layout), "redoing the reset must restore the default")
-	c.Equal(2, undoEditCount(mgr), "resetting the layout must be one more undoable edit")
-}
-
 // TestEditingModeSurvivesARebuild checks that a rebuild leaves the overlay on top of the page and the size of it, since
 // everything on the page is replaced by one and the page's own size can change along with it.
 func TestEditingModeSurvivesARebuild(t *testing.T) {
@@ -1173,96 +1090,6 @@ func TestLeavingEditingModeTakesTheOverlayAway(t *testing.T) {
 	c.False(sheet.layoutEditing(), "editing mode must have been left")
 	c.Nil(overlay.Parent(), "the overlay must have been taken off the content")
 	c.Equal(1, len(sheet.grid.Children()), "only the page must be left")
-}
-
-// sheetLayoutGivenToNewEntity returns the block layout an entity with no embedded sheet settings is given when it is
-// unmarshaled. It comes from the published snapshot of the global sheet settings rather than the live settings, so it
-// is what shows whether a change to the default layout was published.
-func sheetLayoutGivenToNewEntity(t *testing.T) *gurps.SheetLayout {
-	t.Helper()
-	var e gurps.Entity
-	e.DiscardCaches()
-	check.New(t).NoError(jio.Unmarshal(fmt.Appendf(nil, `{"version":%d}`, jio.CurrentDataVersion), &e))
-	return e.SheetSettings.Layout
-}
-
-// restoreDefaultSheetLayout puts the given layout back as the default for new sheets when the test finishes,
-// republishing it, since the default the test installed was published as well.
-func restoreDefaultSheetLayout(t *testing.T, layout *gurps.SheetLayout) {
-	t.Helper()
-	t.Cleanup(func() {
-		gurps.GlobalSettings().Sheet.Layout = layout
-		gurps.SyncGlobalSheetSettings()
-	})
-}
-
-// TestUseLayoutAsDefaultStoresACopy checks that making a sheet's layout the default for new sheets stores a copy of it
-// rather than the sheet's own, publishes it for the sheets opened from then on, and tells everything that lays itself
-// out from the defaults about the change.
-func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
-	c := check.New(t)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-
-	sheet, _ := newTestSheetForLayoutEditing(t)
-	recorder := &sheetSettingsRecorder{}
-	recorder.Self = recorder
-	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	recorder.entities = nil
-	recorder.updates = nil
-	c.True(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
-		"the published default must start out showing the block the sheet hides, or the test proves nothing")
-
-	sheet.useLayoutAsDefault()
-
-	layout := sheet.Entity().SheetSettings.Layout
-	c.Equal(gurps.Hash64(layout), gurps.Hash64(global.Sheet.Layout), "the default must match the sheet's layout")
-	c.True(layout != global.Sheet.Layout, "the default must be a copy, not the sheet's own layout")
-	c.Equal(gurps.Hash64(layout), gurps.Hash64(sheetLayoutGivenToNewEntity(t)),
-		"a sheet without embedded settings opened from now on must be given the new default")
-	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
-	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
-	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
-	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
-
-	// Neither of the two can be changed by way of the other.
-	global.Sheet.Layout.Hide(gurps.BlockSpellsKey)
-	c.True(layout.Contains(gurps.BlockSpellsKey), "changing the default must not change the sheet")
-}
-
-// TestResetDefaultLayoutRestoresTheFactoryLayout checks that resetting the default layout puts the factory layout in
-// place for new sheets and publishes it for the sheets opened from then on, leaves the sheet's own layout alone, and
-// tells everything that lays itself out from the defaults about the change.
-func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
-	c := check.New(t)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-
-	sheet, _ := newTestSheetForLayoutEditing(t)
-	recorder := &sheetSettingsRecorder{}
-	recorder.Self = recorder
-	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)
-	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	sheet.useLayoutAsDefault()
-	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must start out altered")
-	c.False(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
-		"the published default must start out altered too, or the test proves nothing")
-	recorder.entities = nil
-	recorder.updates = nil
-
-	sheet.resetDefaultLayout()
-
-	c.Equal(gurps.Hash64(gurps.FactorySheetLayout()), gurps.Hash64(global.Sheet.Layout),
-		"the default must be the factory layout again")
-	c.Equal(gurps.Hash64(gurps.FactorySheetLayout()), gurps.Hash64(sheetLayoutGivenToNewEntity(t)),
-		"a sheet without embedded settings opened from now on must be given the factory layout again")
-	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
-		"the sheet's own layout must be left alone")
-	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
-	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
-	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
-	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 }
 
 // TestEscapeAbandonsTheGestureThenLeavesEditing checks that the Escape key abandons a gesture partway through,
@@ -1807,104 +1634,6 @@ func TestSquarePortraitButton(t *testing.T) {
 	c.Equal(layoutIdle, editor.mode, "the gesture must be over")
 	c.True(nearlySquare(portraitContentSize(t, editor)), "pressing the square button must square the picture area")
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "pressing the square button must be one undoable edit")
-}
-
-// TestHiddenListsOfferNoCommands checks that the commands that add to a list, or move equipment into it, are disabled
-// while the layout leaves the list off the page, since they would otherwise change a list the user can't see without
-// recording an undo edit, and are enabled again once the list is shown.
-func TestHiddenListsOfferNoCommands(t *testing.T) {
-	c := check.New(t)
-	sheet, _ := newTestSheetForLayoutEditing(t)
-	entity := sheet.Entity()
-	carried := gurps.NewEquipment(entity, nil, false)
-	carried.Name = "Rope"
-	entity.CarriedEquipment = append(entity.CarriedEquipment, carried)
-	other := gurps.NewEquipment(entity, nil, false)
-	other.Name = "Tent"
-	entity.OtherEquipment = append(entity.OtherEquipment, other)
-	entity.Recalculate()
-	sheet.Rebuild(true)
-	sheet.CarriedEquipment.Table.SelectByIndex(0)
-	sheet.OtherEquipment.Table.SelectByIndex(0)
-	type gates struct {
-		newOther, newOtherContainer, newOtherGroup, moveToOther         bool
-		newCarried, newCarriedContainer, newCarriedGroup, moveToCarried bool
-		newTrait                                                        bool
-	}
-	readGates := func() gates {
-		return gates{
-			newOther:            sheet.CanPerformCmd(nil, NewOtherEquipmentItemID),
-			newOtherContainer:   sheet.CanPerformCmd(nil, NewOtherEquipmentContainerItemID),
-			newOtherGroup:       sheet.CanPerformCmd(nil, NewOtherEquipmentGroupItemID),
-			moveToOther:         sheet.CarriedEquipment.CanPerformCmd(nil, MoveToOtherEquipmentItemID),
-			newCarried:          sheet.CanPerformCmd(nil, NewCarriedEquipmentItemID),
-			newCarriedContainer: sheet.CanPerformCmd(nil, NewCarriedEquipmentContainerItemID),
-			newCarriedGroup:     sheet.CanPerformCmd(nil, NewCarriedEquipmentGroupItemID),
-			moveToCarried:       sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID),
-			newTrait:            sheet.CanPerformCmd(nil, NewTraitItemID),
-		}
-	}
-	all := gates{true, true, true, true, true, true, true, true, true}
-	c.Equal(all, readGates(), "every command is enabled while every list is shown")
-
-	sheet.hideLayoutBlock(gurps.BlockOtherEquipmentKey)
-	c.Equal(gates{false, false, false, false, true, true, true, true, true}, readGates(),
-		"hiding the other equipment disables adding to it and moving equipment into it")
-	sheet.showLayoutBlock(gurps.BlockOtherEquipmentKey)
-	c.Equal(all, readGates(), "showing it enables them again")
-
-	sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
-	c.Equal(gates{true, true, true, true, false, false, false, false, true}, readGates(),
-		"hiding the carried equipment disables adding to it and moving equipment into it")
-	sheet.showLayoutBlock(gurps.BlockEquipmentKey)
-	c.Equal(all, readGates())
-
-	sheet.hideLayoutBlock(gurps.BlockTraitsKey)
-	c.False(readGates().newTrait, "hiding the traits disables adding to them")
-}
-
-// TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt checks that setting the default block layout rebuilds the open
-// templates, which lay themselves out from it, and nothing else: a library list and a loot sheet have no layout, and
-// used to be fully rebuilt all the same.
-func TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-
-	var sheet *Sheet
-	var template *Template
-	var loot *LootSheet
-	var list *TableDockable[*gurps.Trait]
-	screen.Do(func() {
-		sheet = NewSheet("test"+gurps.SheetExt, gurps.NewEntity())
-		DisplayNewDockable(sheet)
-		sheet.markUnmodified() // So that closing it asks nothing.
-		template = newTestTemplateDockable("Template", gurps.NewTemplate())
-		DisplayNewDockable(template)
-		template.markUnmodified()
-		loot = NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
-		DisplayNewDockable(loot)
-		loot.markUnmodified()
-		list = NewTraitTableDockable(filepath.Join(t.TempDir(), "test"+gurps.TraitsExt),
-			[]*gurps.Trait{newFilterTestTrait("Acute Vision", "Physical")})
-		DisplayNewDockable(list)
-	})
-	row := list.table.RowFromIndex(0)
-	c.NotNil(row, "the library list must show its trait")
-	lootStamp := loot.Equipment.syncedAtStamp()
-	before := currentDisplayStamp()
-
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.Layout.Hide(gurps.BlockNotesKey)
-		sheet.useLayoutAsDefault()
-	})
-
-	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must be the sheet's layout")
-	c.True(template.Traits.syncedAtStamp() > before,
-		"a template lays itself out from the default layout, so it must be rebuilt")
-	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "a loot sheet has no layout, so it must be left alone")
-	c.True(list.table.RowFromIndex(0) == row, "a library list has no layout, so it must be left alone")
 }
 
 // TestSheetLayoutEditorContextMenuHeadless verifies that the block layout editor's menu opens for a right-click on a

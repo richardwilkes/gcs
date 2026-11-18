@@ -506,3 +506,20 @@ func TestPaginateBandsFinishesABandWithNothingLeft(t *testing.T) {
 		}
 	}
 }
+
+// TestPaginatedSheetKeepsAnEmptyListBesideTheStartOfALongOne verifies that an empty list sharing a band with a list
+// going on over several pages is shown once, on the page the band starts on, rather than handed out afresh for each
+// page the band goes on to. Taking a list with no rows for one not yet placed fails it.
+func TestPaginatedSheetKeepsAnEmptyListBesideTheStartOfALongOne(t *testing.T) {
+	c := check.New(t)
+	sheet := newPaginatedTestSheetWithTraits(t, 150)
+	pages := sheet.grid.pages
+	c.True(len(drawnRowRanges(pages, gurps.BlockTraitsKey)) > 1, "the traits must go on over several pages")
+	c.Equal(0, sheet.Skills.RowCount(), "the skills list must be empty")
+	c.True(unison.AncestorIs(sheet.Skills.Table, pages[0]), "the skills list must be on the first page")
+	count := 0
+	for _, page := range pages {
+		count += len(blockPanels(page.AsPanel(), gurps.BlockSkillsKey))
+	}
+	c.Equal(1, count, "the skills list must be shown once")
+}

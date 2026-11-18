@@ -189,3 +189,19 @@ func TestSheetGroupedReactionsDiscloseAndPersist(t *testing.T) {
 	c.False(gurps.IsClosed(closedKey), "opening the group clears the recorded state")
 	c.Equal(4, sheet.Reactions.RowCount())
 }
+
+func TestCondModProviderIsReadOnly(t *testing.T) {
+	c := check.New(t)
+	lists := &condModListsForTest{conditional: []*gurps.ConditionalModifier{gurps.NewConditionalModifier("one", "", 0)}}
+	p := NewConditionalModifiersProvider(lists)
+	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.ConditionalModifier]]{}))
+	p.SetRootData(nil)
+	p.SetRootRows(nil)
+	c.Equal(1, len(lists.conditional), "the computed rows must not be replaceable")
+	_, err := p.Serialize()
+	c.HasError(err)
+	c.HasError(p.Deserialize(nil))
+	for i, header := range p.Headers() {
+		c.False(header.SortState().Sortable, "conditional modifier header %d must not be sortable", i)
+	}
+}

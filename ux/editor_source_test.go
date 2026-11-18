@@ -16,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
@@ -1966,4 +1967,133 @@ func TestEditorSyncKeepsSectionsAsTheyWere(t *testing.T) {
 		c.NotNil(features.FindRefKey(sectionSummaryKey), "showing their paragraph")
 	})
 	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestSkillEditorSyncKeepsDefaultsAsTheyWere checks that syncing a skill editor with its source shows the defaults
+// section as it was before, expanded with the same row open, and gives the focus back to the field in that row that
+// held it.
+func TestSkillEditorSyncKeepsDefaultsAsTheyWere(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	user := gurps.GlobalSettings().Libraries.User()
+	lib := gurps.NewSkill(nil, nil, false)
+	lib.Name = "Broadsword"
+	lib.Defaults = newTestDefaults()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Skills/Test" + gurps.SkillsExt}
+	c.NoError(gurps.SaveSkills([]*gurps.Skill{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	sections := func() *defaultsPanel {
+		if panels := uxtest.PanelsOfType[*defaultsPanel](e.content); len(panels) == 1 {
+			return panels[0]
+		}
+		return nil
+	}
+	var old *defaultsPanel
+	screen.Do(func() {
+		entity := sheet.Entity()
+		local := lib.Clone(libFile, entity, nil, gurps.Reference)
+		local.Name = "Broadsword (old)"
+		entity.Skills = append(entity.Skills, local)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, local)
+		old = sections()
+	})
+	if old == nil {
+		t.Fatal("the skill editor must have a defaults section")
+	}
+	screen.Do(func() {
+		c.True(old.collapse.collapsed, "precondition: the defaults start out collapsed")
+		old.collapse.toggle()
+	})
+	screen.Do(func() { old.toggle("1") })
+	var field *unison.Panel
+	screen.Do(func() {
+		if field = old.FindRefKey("1:name"); field != nil {
+			field.RequestFocus()
+		}
+	})
+	if field == nil {
+		t.Fatal("the open default must have a name field")
+	}
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		c.Equal("Broadsword", e.editorData.Name, "the skill is synced")
+		synced := sections()
+		if synced == nil || synced == old {
+			t.Error("the sync must rebuild the defaults section")
+			return
+		}
+		c.False(synced.collapse.collapsed, "the defaults stay expanded")
+		c.Equal("1", synced.open, "with the same row open")
+		rebuilt := synced.FindRefKey("1:name")
+		c.True(rebuilt != nil && rebuilt != field && wnd.CurrentFocus() == rebuilt,
+			"and the focus on its rebuilt name field")
+	})
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestSkillEditorSyncKeepsSubstitutions checks that substitutions set in a skill editor but not yet applied still show
+// in its features and defaults once Sync with Source has made them again.
+func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	user := gurps.GlobalSettings().Libraries.User()
+	lib := gurps.NewSkill(nil, nil, false)
+	lib.Name = "Fast-Draw (@Weapon@)"
+	lib.Defaults = []*gurps.SkillDefault{
+		{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
+	}
+	bonus := gurps.NewSkillBonus()
+	bonus.NameCriteria.Qualifier = "@Weapon@"
+	lib.Features = gurps.Features{bonus}
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Skills/Test" + gurps.SkillsExt}
+	c.NoError(gurps.SaveSkills([]*gurps.Skill{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	screen.Do(func() {
+		entity := sheet.Entity()
+		local := lib.Clone(libFile, entity, nil, gurps.Reference)
+		local.Replacements = map[string]string{"Weapon": "Spear"}
+		// Different from its source, so that the sync has something to do.
+		local.Name = "Fast-Draw (old)"
+		entity.Skills = append(entity.Skills, local)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, local)
+	})
+	uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+		for _, section := range sections {
+			for k := range section.Nameables {
+				section.Nameables[k] = "Rapier"
+			}
+		}
+		return true
+	})
+	screen.Do(e.nameablesButton.ClickCallback)
+	var old *featuresPanel
+	screen.Do(func() {
+		if panels := uxtest.PanelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+			old = panels[0]
+		}
+	})
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		c.Equal("Fast-Draw (@Weapon@)", e.editorData.Name, "precondition: the skill is synced")
+		c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the sync keeps the substitutions")
+		c.False(slices.Contains(uxtest.PanelsOfType[*featuresPanel](e.content), old), "precondition: the features are made again")
+		for _, p := range uxtest.PanelsOfType[*defaultsPanel](e.content) {
+			c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the defaults show them")
+		}
+		for _, p := range uxtest.PanelsOfType[*featuresPanel](e.content) {
+			summary := collapsedSummary(p.AsPanel())
+			c.True(strings.Contains(summary, "Rapier"), "as do the features: %s", summary)
+		}
+	})
 }

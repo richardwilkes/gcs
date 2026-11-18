@@ -806,61 +806,6 @@ func TestSheetButtonsJoinTheTabOrderForReading(t *testing.T) {
 	c.False(focusable(randomize), "a button the focus has left is no tab stop once the screen reader has gone")
 }
 
-// The hit locations' notes header is only an icon, so it is a label named Notes, described by its tooltip, and a tab
-// stop with static text in the Tab order, as the Roll, Location and DR headers are.
-func TestBodyNotesHeaderIsReadAsTheOtherHeadersAre(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
-	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	var headers []*unison.Label
-	screen.Do(func() {
-		body, found := uxtest.FirstPanelOfType[*BodyPanel](sheet.AsPanel())
-		if !found {
-			return
-		}
-		// The first seven rows are the four headers and the empty panels in the separator columns between them.
-		if rows := blockRows(body.AsPanel()); len(rows) > 7 {
-			for _, child := range rows[:7] {
-				if label, isLabel := child.Self.(*unison.Label); isLabel {
-					headers = append(headers, label)
-				}
-			}
-		}
-	})
-	if len(headers) != 4 {
-		t.Fatalf("the body table must have four headers, but has %d", len(headers))
-	}
-	focusable := func(p unison.Paneler) (result bool) {
-		screen.Do(func() { result = p.AsPanel().Focusable() })
-		return result
-	}
-	setFocusForReading(true)
-	names := make([]string, 0, len(headers))
-	for _, one := range headers {
-		node := screen.AccessibilityNodeFor(one)
-		if node == nil {
-			t.Fatalf("the %q header must be described", one.String())
-		}
-		names = append(names, node.Name)
-		c.Equal(role.Label, node.Role, "the %q header is a label", node.Name)
-		c.False(node.Ignored, "the %q header must be described", node.Name)
-		c.True(node.Focusable, "the %q header is described as a tab stop", node.Name)
-		c.True(focusable(one), "the %q header is a tab stop with static text in the Tab order", node.Name)
-	}
-	c.Equal([]string{"Roll", "Location", "DR", "Notes"}, names)
-	notes := screen.AccessibilityNodeFor(headers[3])
-	c.Equal("Notes for the hit location", notes.Description, "the tooltip says the rest")
-
-	setFocusForReading(false)
-	for _, one := range headers {
-		c.False(focusable(one), "the %q header is no tab stop while the setting is off", one.String())
-	}
-}
-
 // TestDescribeWithHint verifies that a hint is put at the front of a control's description, trimmed, unless it is empty
 // or already says what the control's name or description does, and that the control's own callback still runs.
 func TestDescribeWithHint(t *testing.T) {

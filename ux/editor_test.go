@@ -12,16 +12,19 @@ package ux
 import (
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
@@ -110,162 +113,6 @@ func clickCheckBox(box *CheckBox, on bool) {
 	box.ClickCallback()
 }
 
-// Both container and non-container traits offer the "Switched On" checkbox, since a container's modifiers can hold
-// switchable features even though the container itself has none of its own.
-func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
-	for _, isContainer := range []bool{false, true} {
-		name := "trait"
-		if isContainer {
-			name = "trait container"
-		}
-		t.Run(name, func(t *testing.T) {
-			c := check.New(t)
-			sheet := newTestSheetForTemplate(t)
-			trait := gurps.NewTrait(sheet.Entity(), nil, isContainer)
-			e, content := buildEditorContent(sheet, trait, initTraitEditor)
-			box := findCheckBoxTitled(content, i18n.Text("Switched On"))
-			c.NotNil(box, "expected a Switched On checkbox in the editor")
-			c.False(e.editorData.SwitchedOn, "the switch starts out off")
-
-			clickCheckBox(box, true)
-			c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
-			c.False(trait.SwitchedOn, "the target must not be touched until the edit is applied")
-
-			clickCheckBox(box, false)
-			c.False(e.editorData.SwitchedOn, "clearing the box must turn the switch back off")
-		})
-	}
-}
-
-// TestTraitEditorOffersUserDescOnlyWhereItIsKept verifies that the trait editor offers the user description field for
-// a trait on a character sheet and for the copy of a trait a grant holds, which goes to the sheet with it, and leaves
-// it out for a trait anywhere else, which has none.
-func TestTraitEditorOffersUserDescOnlyWhereItIsKept(t *testing.T) {
-	c := check.New(t)
-	offers := func(owner Rebuildable, trait *gurps.Trait) bool {
-		_, content := buildEditorContent(owner, trait, initTraitEditor)
-		return slices.Contains(labelTitles(content), "User Description")
-	}
-	sheet := newTestSheetForTemplate(t)
-	c.True(offers(sheet, gurps.NewTrait(sheet.Entity(), nil, false)), "a trait on a sheet has one")
-	c.False(offers(nil, gurps.NewTrait(nil, nil, false)), "a trait in a library has none")
-	c.False(offers(nil, gurps.NewTrait(gurps.NewTemplate(), nil, false)), "nor does one in a template")
-	g := gurps.NewGrant(feature.GrantTrait)
-	g.SetItem(newGrantTestTrait("Night Vision", fxp.One), gurps.LibraryFile{})
-	features := gurps.Features{g}
-	owner := &grantItemOwner{
-		Rebuildable: sheet,
-		panel:       &featuresPanel{features: &features},
-		key:         g.Key(),
-		item:        g.Trait,
-	}
-	c.True(offers(owner, g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)),
-		"the copy of a trait a grant holds has one")
-}
-
-// findIntegerFieldLabeled returns the integer field that follows the label bearing the given text among the panel's
-// direct children.
-func findIntegerFieldLabeled(p *unison.Panel, labelText string) *IntegerField {
-	children := p.Children()
-	for i, child := range children {
-		if label, ok := child.Self.(*unison.Label); ok && label.String() == labelText && i+1 < len(children) {
-			if field, ok2 := children[i+1].Self.(*IntegerField); ok2 {
-				return field
-			}
-		}
-	}
-	return nil
-}
-
-// A new trait container holds zero alternative slots, since only an alternative abilities container uses them, so the
-// slots field's minimum must follow the container type. A fixed minimum of one showed the invalid zero's error color
-// through the blanked field's border insets, and its clamping bumped the editor's copy to one, so the editor opened
-// already modified.
-func TestTraitEditorAlternativeSlotsFollowContainerType(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	trait := gurps.NewTrait(sheet.Entity(), nil, true)
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	field := findIntegerFieldLabeled(content, i18n.Text("Alternative Slots"))
-	c.NotNil(field, "expected an Alternative Slots field in the trait container editor")
-	c.Equal(0, e.editorData.AlternativeSlots, "a new container holds no slots")
-	c.False(field.Invalid(), "zero slots is valid for a container that is not an alternative abilities one")
-	c.False(field.Enabled(), "the field is blanked for a container that is not an alternative abilities one")
-	c.Equal("", e.editorData.Ancestry, "a container that is not an ancestry one holds no ancestry")
-	c.False(e.isModified(), "opening the editor must not modify the data")
-
-	e.editorData.ContainerType = container.AlternativeAbilities
-	e.MarkModified(nil)
-	c.Equal(1, e.editorData.AlternativeSlots, "an alternative abilities container needs at least one slot")
-	c.Equal("1", field.Text(), "the field must show the slot it was given")
-	c.False(field.Invalid(), "one slot is valid")
-	c.True(field.Enabled(), "the field is usable for an alternative abilities container")
-	c.Equal(1, field.Min(), "an alternative abilities container may not have fewer than one slot")
-
-	field.SetText("0")
-	c.True(field.Invalid(), "zero slots is invalid for an alternative abilities container")
-	field.SetText("3")
-	c.False(field.Invalid(), "three slots is valid")
-	c.Equal(3, e.editorData.AlternativeSlots, "the slot count must reach the editor's data")
-
-	e.editorData.ContainerType = container.Group
-	e.MarkModified(nil)
-	c.False(field.Invalid(), "the slots are ignored for a group, so nothing in the field is invalid")
-	c.False(field.Enabled(), "the field is blanked again for a group")
-	c.Equal(0, field.Min(), "a group holds zero slots")
-}
-
-// Switching a container to an ancestry one gives it the default ancestry, since the empty ancestry it held until then
-// is not something the popup can show.
-func TestTraitEditorAncestryFollowsContainerType(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	trait := gurps.NewTrait(sheet.Entity(), nil, true)
-	e, _ := buildEditorContent(sheet, trait, initTraitEditor)
-	c.Equal("", e.editorData.Ancestry, "a group holds no ancestry")
-
-	e.editorData.ContainerType = container.Ancestry
-	e.MarkModified(nil)
-	c.Equal(gurps.DefaultAncestry, e.editorData.Ancestry, "an ancestry container starts with the default ancestry")
-}
-
-// Both container and non-container equipment offer the "Switched On" checkbox -- a container holds features of its own
-// as well as modifiers that can contribute switchable ones -- and it must sit with the editor's other checkbox rather
-// than being stranded in the middle of the numeric fields.
-func TestEquipmentEditorHasSwitchedOnCheckBox(t *testing.T) {
-	for _, isContainer := range []bool{false, true} {
-		name := "equipment"
-		if isContainer {
-			name = "equipment container"
-		}
-		t.Run(name, func(t *testing.T) {
-			c := check.New(t)
-			sheet := newTestSheetForTemplate(t)
-			equipment := gurps.NewEquipment(sheet.Entity(), nil, isContainer)
-			e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-			box := findCheckBoxTitled(content, i18n.Text("Switched On"))
-			c.NotNil(box, "expected a Switched On checkbox in the editor")
-			c.False(e.editorData.SwitchedOn, "the switch starts out off")
-
-			clickCheckBox(box, true)
-			c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
-			c.False(equipment.SwitchedOn, "the target must not be touched until the edit is applied")
-
-			clickCheckBox(box, false)
-			c.False(e.editorData.SwitchedOn, "clearing the box must turn the switch back off")
-
-			// The checkbox and the empty panel that keeps it in the field column are added as a pair, so the widget two
-			// places ahead of it is the editor's other checkbox.
-			weightBox := findCheckBoxTitled(content, i18n.Text("Ignore weight for skills"))
-			c.NotNil(weightBox, "expected an Ignore weight for skills checkbox in the editor")
-			children := content.Children()
-			i := slices.Index(children, box.AsPanel())
-			c.True(i >= 2 && children[i-2] == weightBox.AsPanel(),
-				"the Switched On checkbox must sit with the editor's other checkbox")
-		})
-	}
-}
-
 // scrollRecordingPanel stands in for a scroll area above a table, recording the rects it is asked to bring into view.
 type scrollRecordingPanel struct {
 	unison.Panel
@@ -280,30 +127,6 @@ func newScrollRecordingPanel() *scrollRecordingPanel {
 		return true
 	}
 	return p
-}
-
-// focusRecordingPanel records whether it was asked to take the focus without scrolling.
-type focusRecordingPanel struct {
-	unison.Panel
-	withoutScroll int
-}
-
-func (p *focusRecordingPanel) RequestFocusWithoutScroll() { p.withoutScroll++ }
-
-// Giving the focus back to a table after an editor closes must not go through the table's default focus handling, which
-// scrolls the whole table into view and so moved the sheet even when the edited row was already on screen.
-func TestRestoreFocusSkipsTableScrolling(t *testing.T) {
-	c := check.New(t)
-	var _ focusWithoutScroller = (*unison.Table[*Node[*gurps.Trait]])(nil)
-
-	p := &focusRecordingPanel{}
-	p.Self = p
-	restoreFocus(p.AsPanel())
-	c.Equal(1, p.withoutScroll, "a panel that can take the focus without scrolling must be asked to do so")
-
-	plain := unison.NewPanel()
-	plain.SetFocusable(true)
-	restoreFocus(plain) // No window, so this must simply do nothing rather than panic.
 }
 
 func TestRevealRowForDataScrollsOnlyTheEditedRow(t *testing.T) {
@@ -727,4 +550,491 @@ func TestEditorPageRefHighlightFallsBackToTheName(t *testing.T) {
 	c.Equal("Acute Vision", e.pageRefHighlight(), "the name as edited, not as saved")
 	e.editorData.PageRefHighlight = "Vision"
 	c.Equal("Vision", e.pageRefHighlight(), "a highlight is looked for as given")
+}
+
+// TestSkillEditorRowsFollowSubstitutions checks that the prerequisites, defaults and features of a skill editor read
+// their nameable markers with the values the editor's data holds, and show the new ones once Set Substitutions changes
+// them, but not when it is canceled.
+func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	bonus := gurps.NewSkillBonus()
+	bonus.NameCriteria.Qualifier = "@Weapon@"
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	screen.Do(func() {
+		entity := sheet.Entity()
+		skill := gurps.NewSkill(entity, nil, false)
+		skill.Replacements = map[string]string{"Weapon": "Spear"}
+		skill.Defaults = []*gurps.SkillDefault{
+			{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
+		}
+		skill.Features = gurps.Features{bonus}
+		trait := gurps.NewTraitPrereq()
+		trait.NameCriteria.Qualifier = "@Weapon@ Mastery"
+		skill.Prereq = gurps.NewPrereqList()
+		skill.Prereq.Prereqs = gurps.Prereqs{trait}
+		entity.Skills = append(entity.Skills, skill)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, skill)
+	})
+	prereqs := func() string {
+		var text string
+		screen.Do(func() {
+			for _, p := range uxtest.PanelsOfType[*prereqPanel](e.content) {
+				text = collapsedSummary(p.AsPanel())
+			}
+		})
+		return text
+	}
+	summaries := func() (defaults, features string) {
+		screen.Do(func() {
+			for _, p := range uxtest.PanelsOfType[*defaultsPanel](e.content) {
+				defaults = collapsedSummary(p.AsPanel())
+			}
+			for _, p := range uxtest.PanelsOfType[*featuresPanel](e.content) {
+				features = collapsedSummary(p.AsPanel())
+			}
+		})
+		return defaults, features
+	}
+	defaults, features := summaries()
+	c.Equal("Skill Spear at +0.", defaults, "the defaults take the skill's values")
+	c.True(strings.Contains(features, "Spear"), "as do the features: %s", features)
+	c.Equal("Has trait Spear Mastery.", prereqs(), "and the prerequisites")
+
+	answer := func(value string, accept bool) {
+		uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+			for _, section := range sections {
+				for k := range section.Nameables {
+					section.Nameables[k] = value
+				}
+			}
+			return accept
+		})
+	}
+	answer("Rapier", false)
+	screen.Do(e.nameablesButton.ClickCallback)
+	c.Equal("Spear", e.editorData.Replacements["Weapon"], "Cancel leaves the editor's data alone")
+	screen.Do(func() { c.False(e.isModified(), "and the editor unmodified") })
+	defaults, features = summaries()
+	c.Equal("Skill Spear at +0.", defaults, "and the rows as they were")
+	c.True(strings.Contains(features, "Spear"), "features included: %s", features)
+
+	answer("Rapier", true)
+	screen.Do(e.nameablesButton.ClickCallback)
+	c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the editor's data takes the new value")
+	defaults, features = summaries()
+	c.Equal("Skill Rapier at +0.", defaults, "Set Substitutions shows the new value in the defaults")
+	c.True(strings.Contains(features, "Rapier"), "and in the features: %s", features)
+	c.Equal("Has trait Rapier Mastery.", prereqs(), "and in the prerequisites")
+}
+
+// TestWeaponEditorTakesItemSubstitutions checks that the defaults of a weapon edited from its item's editor, or from
+// the editor of the item editor's copy of the modifier holding it, show the substitutions the item's editor holds,
+// including those Set Substitutions makes while the weapon's editor is open.
+func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// edit puts an item on the sheet whose substitutions give the weapon's @Blade@ the value Spear, with the weapon
+		// as one of the item's own or one its modifier holds, opens the weapon's editor from the item's editor or the
+		// modifier's, and returns the item editor's Set Substitutions button.
+		edit func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button
+	}{
+		{
+			name: "skill",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				skill := gurps.NewSkill(entity, nil, false)
+				skill.Replacements = map[string]string{"Blade": "Spear"}
+				weapon.SetOwner(skill)
+				skill.Weapons = []*gurps.Weapon{weapon}
+				entity.Skills = append(entity.Skills, skill)
+				sheet.Rebuild(true)
+				e := EditSkill(sheet, skill)
+				EditWeapon(e, e.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+		{
+			// The modifier's code is linked to one of the trait's, which answers it.
+			name: "trait modifier",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				modifier := gurps.NewTraitModifier(entity, nil, false)
+				modifier.Weapons = []*gurps.Weapon{weapon}
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.SetModifiers([]*gurps.TraitModifier{modifier})
+				trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"Blade": "Weapon"}}
+				trait.Replacements = map[string]string{"Weapon": "Spear"}
+				entity.Traits = append(entity.Traits, trait)
+				sheet.Rebuild(true)
+				e := EditTrait(sheet, trait)
+				modEditor := EditTraitModifier(e, e.editorData.Modifiers[0])
+				EditWeapon(modEditor, modEditor.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+		{
+			name: "equipment modifier",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				modifier := gurps.NewEquipmentModifier(entity, nil, false)
+				modifier.Weapons = []*gurps.Weapon{weapon}
+				eqp := gurps.NewEquipment(entity, nil, false)
+				eqp.SetModifiers([]*gurps.EquipmentModifier{modifier})
+				eqp.Replacements = map[string]string{"Blade": "Spear"}
+				entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+				sheet.Rebuild(true)
+				e := EditEquipment(sheet, eqp, true)
+				modEditor := EditEquipmentModifier(e, e.editorData.Modifiers[0])
+				EditWeapon(modEditor, modEditor.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			var button *unison.Button
+			screen.Do(func() {
+				weapon := gurps.NewWeapon(nil, true)
+				weapon.Defaults = []*gurps.SkillDefault{
+					{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Blade@"}},
+				}
+				button = tc.edit(sheet, weapon)
+			})
+			weaponEditor := soleEditorOfType[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen)
+			var p *defaultsPanel
+			screen.Do(func() {
+				if panels := uxtest.PanelsOfType[*defaultsPanel](weaponEditor.content); len(panels) == 1 {
+					p = panels[0]
+				}
+			})
+			if p == nil {
+				t.Fatal("the weapon editor must have a defaults panel")
+			}
+			screen.Do(func() { c.Equal("Skill Spear at +0.", collapsedSummary(p.AsPanel())) })
+			uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+				for _, section := range sections {
+					for k := range section.Nameables {
+						section.Nameables[k] = "Rapier"
+					}
+				}
+				return true
+			})
+			screen.Do(button.ClickCallback)
+			screen.Do(func() {
+				c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the open weapon editor shows the new value")
+			})
+		})
+	}
+}
+
+// TestModifierEditorFollowsItemEditor checks that the editor of a modifier edited from its item's editor follows what
+// the item's editor holds: the modifier's features show the substitutions it holds, both those Set Substitutions made
+// before the modifier's editor opened and those it makes while it is open, and follow its link for the modifier's code,
+// and the modifier's nameables what defines its codes, as the item's nameables or its other modifiers change, or that
+// is undone, and as a grant is added to the item's features, while the modifier's editor is open.
+func TestModifierEditorFollowsItemEditor(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// edit puts an item on the sheet whose substitutions give the modifier's @Blade@ the value Spear, with the
+		// modifier holding the features, the item using and defining @Arm@ and both using @Grip@, which neither
+		// defines, and a second modifier, Pommel, which defines @Grip@ but is turned off, opens the item's editor, and
+		// returns its Set Substitutions button, its content and a function that opens the editor of the item editor's
+		// copy of the modifier, returning its content.
+		edit func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel)
+		// toggle turns Pommel on or off from the modifiers list of the item's editor, given its content.
+		toggle func(content *unison.Panel)
+	}{
+		{
+			// The modifier's code is linked to one of the trait's, which answers it.
+			name: "trait modifier",
+			edit: func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel) {
+				entity := sheet.Entity()
+				modifier := gurps.NewTraitModifier(entity, nil, false)
+				modifier.Name = "@Grip@ Hilt"
+				modifier.Features = features
+				pommel := gurps.NewTraitModifier(entity, nil, false)
+				pommel.Name = "Pommel"
+				pommel.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				pommel.SetDisabled(true)
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.Name = "@Arm@ @Grip@ Training"
+				trait.Nameables = map[string]nameable.Detail{"Arm": {FreeForm: true}, "Weapon": {FreeForm: true}}
+				trait.SetModifiers([]*gurps.TraitModifier{modifier, pommel})
+				trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"Blade": "Weapon"}}
+				trait.Replacements = map[string]string{"Weapon": "Spear"}
+				entity.Traits = append(entity.Traits, trait)
+				sheet.Rebuild(true)
+				e := EditTrait(sheet, trait)
+				return e.nameablesButton, e.content, func() *unison.Panel {
+					return EditTraitModifier(e, e.editorData.Modifiers[0]).content
+				}
+			},
+			toggle: func(content *unison.Panel) {
+				if p, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content); ok {
+					p.table.SetSelectionMap(map[tid.TID]bool{(*p.list)[1].ID(): true})
+					p.table.PerformCmd(nil, ToggleStateItemID)
+				}
+			},
+		},
+		{
+			name: "equipment modifier",
+			edit: func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel) {
+				entity := sheet.Entity()
+				modifier := gurps.NewEquipmentModifier(entity, nil, false)
+				modifier.Name = "@Grip@ Hilt"
+				modifier.Features = features
+				pommel := gurps.NewEquipmentModifier(entity, nil, false)
+				pommel.Name = "Pommel"
+				pommel.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				pommel.SetDisabled(true)
+				eqp := gurps.NewEquipment(entity, nil, false)
+				eqp.Name = "@Arm@ @Grip@ Kit"
+				eqp.Nameables = map[string]nameable.Detail{"Arm": {FreeForm: true}}
+				eqp.SetModifiers([]*gurps.EquipmentModifier{modifier, pommel})
+				eqp.Replacements = map[string]string{"Blade": "Spear"}
+				entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+				sheet.Rebuild(true)
+				e := EditEquipment(sheet, eqp, true)
+				return e.nameablesButton, e.content, func() *unison.Panel {
+					return EditEquipmentModifier(e, e.editorData.Modifiers[0]).content
+				}
+			},
+			toggle: func(content *unison.Panel) {
+				if p, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content); ok {
+					p.table.SetSelectionMap(map[tid.TID]bool{(*p.list)[1].ID(): true})
+					p.table.PerformCmd(nil, ToggleStateItemID)
+				}
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			var button *unison.Button
+			var itemContent *unison.Panel
+			var editModifier func() *unison.Panel
+			screen.Do(func() {
+				bonus := gurps.NewSkillBonus()
+				bonus.NameCriteria.Qualifier = "@Blade@"
+				button, itemContent, editModifier = tc.edit(sheet, gurps.Features{bonus})
+			})
+			// Each code is given its own answer, so that the one a link leads to can be told from the others.
+			answer := func(value string) {
+				uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+					for _, section := range sections {
+						for k := range section.Nameables {
+							section.Nameables[k] = value + " " + k
+						}
+					}
+					return true
+				})
+				screen.Do(button.ClickCallback)
+			}
+			answer("Rapier")
+			var p *featuresPanel
+			var modifierNameables *nameablesPanel
+			screen.Do(func() {
+				content := editModifier()
+				if panels := uxtest.PanelsOfType[*featuresPanel](content); len(panels) == 1 {
+					p = panels[0]
+				}
+				modifierNameables, _ = uxtest.FirstPanelOfType[*nameablesPanel](content)
+			})
+			if p == nil || modifierNameables == nil {
+				t.Fatal("the modifier editor must have a features panel and a nameables panel")
+			}
+			summary := func() string {
+				var text string
+				screen.Do(func() { text = collapsedSummary(p.AsPanel()) })
+				return text
+			}
+			text := summary()
+			c.True(strings.Contains(text, "Rapier"), "the features show the value set before the editor opened: %s", text)
+			answer("Sabre")
+			before := summary()
+			c.True(strings.Contains(before, "Sabre"), "and the one set while it is open: %s", before)
+
+			var nameables *nameablesPanel
+			var path string
+			screen.Do(func() {
+				nameables, ok = uxtest.FirstPanelOfType[*nameablesPanel](itemContent)
+				if !ok {
+					return
+				}
+				if mods := nameables.modifiers(); len(mods) == 2 {
+					path = "m:" + string(mods[0].id) + ":Blade"
+				}
+				if nameables.collapse.collapsed {
+					nameables.collapse.toggle()
+				}
+			})
+			if nameables == nil || path == "" {
+				t.Fatal("the item editor must have a nameables panel with a row for the modifier's code")
+			}
+			screen.Do(func() { nameables.toggle(path) })
+			screen.Do(func() {
+				popup, isPopup := nameables.FindRefKey(path + ":link").Self.(*unison.PopupMenu[string])
+				c.True(isPopup, "the modifier's code can be linked")
+				if isPopup {
+					popup.Select("Arm")
+				}
+			})
+			text = summary()
+			c.True(strings.Contains(text, "Sabre Arm"), "the features follow the new link: %s", text)
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(before, summary(), "and the undo of the new link")
+
+			grip := func() string {
+				var sentence string
+				screen.Do(func() { sentence, _ = nameableRowSentence(modifierNameables, "u:Grip") })
+				return sentence
+			}
+			undefined := grip()
+			c.Equal("@Grip@ isn't defined; used once", undefined)
+			screen.Do(func() { clickNameablesButton(c, nameables, "u:Grip:define") })
+			c.Equal("@Grip@ is defined by the item the modifier belongs to; used once", grip(),
+				"the modifier's nameables follow the item's new definition")
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(undefined, grip(), "and the undo of the definition")
+
+			screen.Do(func() { tc.toggle(itemContent) })
+			c.Equal("@Grip@ is defined by the modifier Pommel; used once", grip(),
+				"the modifier's nameables follow another modifier being turned on")
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(undefined, grip(), "and the undo of turning it on")
+
+			screen.Do(func() {
+				features, found := uxtest.FirstPanelOfType[*featuresPanel](itemContent)
+				c.True(found, "the item editor has a features panel")
+				if !found {
+					return
+				}
+				granted := gurps.NewTrait(nil, nil, false)
+				granted.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				grant := gurps.NewGrant(feature.GrantTrait)
+				grant.SetItem(granted, gurps.LibraryFile{})
+				features.edit("Add Feature", "", "", func() { *features.features = append(*features.features, grant) })
+			})
+			c.Equal("@Grip@ is defined by an item granted by the item the modifier belongs to; used once", grip(),
+				"the modifier's nameables follow a grant added to the item")
+		})
+	}
+}
+
+// TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that applying an edit to a choice container that still
+// holds a source clears the source, and that undo and redo put it back and take it away again along with everything
+// else. A choice is stripped of its source whenever it is created, converted, loaded or transferred, so this is only a
+// backstop, but the editor must not be the way one keeps it. An edit to a plain group must leave its source alone when
+// applied, undone and redone.
+func TestEditorUndoRestoresSourceClearedByTemplatePicker(t *testing.T) {
+	c := check.New(t)
+	choice := gurps.NewTraitChoiceContainer(nil, nil)
+	choice.Name = "Pick One"
+	choiceSource := gurps.Source{Library: "lib", Path: "choice.adq", TID: choice.ID()}
+	choice.Source = choiceSource
+	group := gurps.NewTrait(nil, nil, true)
+	group.Name = "Advantages"
+	groupSource := gurps.Source{Library: "lib", Path: "group.adq", TID: group.ID()}
+	group.Source = groupSource
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{choice, group}
+	template := newTestTemplateDockable("Source", data)
+	mgr := unison.UndoManagerFor(template)
+	c.NotNil(mgr, "the template must have an undo manager")
+
+	e, _ := buildEditorContent(template, choice, initTraitEditor)
+	e.editorData.Name = "Pick Another"
+	e.applyEdits()
+	c.Equal("Pick Another", choice.Name)
+	c.True(choice.Source.IsZero(), "a choice container must not keep a source through an edit")
+
+	mgr.Undo()
+	c.Equal("Pick One", choice.Name)
+	c.Equal(choiceSource, choice.Source, "undo must give the source back")
+
+	mgr.Redo()
+	c.True(choice.Source.IsZero(), "redo must take the source away again")
+
+	e, _ = buildEditorContent(template, group, initTraitEditor)
+	e.editorData.Name = "Renamed"
+	e.applyEdits()
+	c.Equal(groupSource, group.Source, "an edit to a plain group must leave its source alone")
+	mgr.Undo()
+	c.Equal("Advantages", group.Name)
+	c.Equal(groupSource, group.Source, "undoing an edit that left the source alone must leave it alone")
+	mgr.Redo()
+	c.Equal(groupSource, group.Source, "redoing an edit that left the source alone must leave it alone")
+}
+
+// TestGrantedItemEditorIsReadOnly checks that a granted item's editor only shows it.
+func TestGrantedItemEditorIsReadOnly(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen.Do(func() {
+		sheet, _, granted, stealth := newTestSheetWithGrant(t)
+		DisplayNewDockable(sheet)
+		c.True(EditSkill(sheet, granted).readOnly)
+		c.False(EditSkill(sheet, stealth).readOnly)
+	})
+}
+
+// TestNestedEditorTitle checks that an editor opened from a document is named for the document, while one opened from
+// another editor, for a grant's item or for one of the item's modifiers, is named for its item.
+func TestNestedEditorTitle(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	outer := newGrantTestTrait("Training", 0)
+	inner := newGrantTestTrait("Night Vision", 0)
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Mod"
+	inner.Modifiers = []*gurps.TraitModifier{modifier}
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(inner, gurps.LibraryFile{})
+	outer.Features = gurps.Features{g}
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{outer}
+	isTraitEditor := func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+		return ok
+	}
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	var outerTitle string
+	screen.Do(func() {
+		template := newTestTemplateDockable("Template", data)
+		DisplayNewDockable(template)
+		e = EditTrait(template, outer)
+		outerTitle = e.Title()
+		p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
+		p.editGrantedItem(grantAt(t, p, 0))
+	})
+	nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
+	var innerTitle, modTitle string
+	screen.Do(func() {
+		innerTitle = nested.Title()
+		EditTraitModifier(nested, nested.editorData.Modifiers[0])
+	})
+	modEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		func(d unison.Dockable) bool {
+			_, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+			return ok
+		})
+	screen.Do(func() { modTitle = modEditor.Title() })
+	c.Equal("Trait Editor for Template", outerTitle)
+	c.Equal("Trait Editor for Night Vision", innerTitle)
+	c.Equal("Trait Modifier Editor for Mod", modTitle)
 }

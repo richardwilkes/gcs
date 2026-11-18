@@ -135,3 +135,26 @@ func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 		})
 	}
 }
+
+// Adjusting a value from a panel that isn't part of a window's panel tree -- so there is no undo manager and no owner
+// to mark as modified -- must still apply the change and recalculate the entity rather than panicking. Editors build
+// such detached widgets while they are being assembled.
+func TestAdjustTargetsWithUnparentedSource(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	trait := newSwitchableTrait(entity, "Claws")
+	entity.Traits = []*gurps.Trait{trait}
+	entity.Recalculate()
+	c.Equal(fxp.Int(0), stBonusFor(entity), "the switchable bonus starts out of play")
+
+	source := unison.NewPanel()
+	c.Nil(unison.UndoManagerFor(source), "the test requires a source with no undo manager")
+	adjustTargets("Toggle Switch", nil, source, entity, []gurps.FeatureSwitcher{trait},
+		func(s gurps.FeatureSwitcher) bool { return s.IsSwitchedOn() },
+		func(s gurps.FeatureSwitcher, v bool) { s.SetSwitchedOn(v) },
+		func(s gurps.FeatureSwitcher) { s.SetSwitchedOn(true) },
+		false)
+
+	c.True(trait.SwitchedOn, "the mutation must have been applied")
+	c.Equal(fxp.One, stBonusFor(entity), "the entity must have been recalculated")
+}

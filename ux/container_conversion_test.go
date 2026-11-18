@@ -273,54 +273,6 @@ func TestEquipmentConversionCommandsFollowTheSelection(t *testing.T) {
 	c.True(toContainer, "a sheet may hold physical containers")
 }
 
-// TestEquipmentGroupConversionWarnsAndIsUndoable verifies that converting a physical container to a group asks before
-// removing what a group can't hold, that converting back asks nothing, and that undo restores each step.
-func TestEquipmentGroupConversionWarnsAndIsUndoable(t *testing.T) {
-	c := check.New(t)
-	backpack := gurps.NewEquipment(nil, nil, true)
-	backpack.BaseValue = "60"
-	backpack.BaseWeight = "3 lb"
-	sheet := newTestSheetWithEquipment(t, backpack)
-	table := sheet.CarriedEquipment.Table
-	table.SetSelectionMap(map[tid.TID]bool{backpack.ID(): true})
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr)
-
-	var asked int
-	answer := false
-	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
-		asked++
-		return answer
-	})
-
-	table.PerformCmd(table, ConvertToGroupContainerItemID)
-	c.Equal(1, asked, "removing data must be confirmed first")
-	c.True(backpack.IsPhysicalContainer(), "declining must leave the container alone")
-	c.False(mgr.CanUndo(), "declining must not record an edit")
-
-	answer = true
-	table.PerformCmd(table, ConvertToGroupContainerItemID)
-	c.True(backpack.IsGroup(), "the container must have become a group")
-	c.Equal("", backpack.BaseValue, "the value must be removed")
-	c.Equal("", backpack.BaseWeight, "the weight must be removed")
-
-	mgr.Undo()
-	c.True(backpack.IsPhysicalContainer(), "undo must turn it back into a physical container")
-	c.Equal("60", backpack.BaseValue, "undo must restore the value")
-	c.Equal("3 lb", backpack.BaseWeight, "undo must restore the weight")
-
-	mgr.Redo()
-	c.True(backpack.IsGroup(), "redo must convert it again")
-
-	asked = 0
-	table.SetSelectionMap(map[tid.TID]bool{backpack.ID(): true})
-	table.PerformCmd(table, ConvertToContainerItemID)
-	c.Equal(0, asked, "nothing is lost, so nothing may be asked")
-	c.True(backpack.IsPhysicalContainer(), "the group must have become a physical container")
-	mgr.Undo()
-	c.True(backpack.IsGroup(), "undo must turn it back into a group")
-}
-
 // TestConvertToContainerTakesItemsAndGroupsTogether verifies that "Convert to Container" turns the selected items into
 // containers and the selected groups into physical containers at once, as a single undoable edit, both on a sheet and
 // in an equipment library, where the library's own command performs the shared conversion.

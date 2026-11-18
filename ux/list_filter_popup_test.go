@@ -412,10 +412,6 @@ const (
 	deleteFilterItemTitle = "Delete Filter…"
 )
 
-// listFilterHeadlessTraitNames are the names of the fixture's traits, in the order the list holds them, which is what
-// the table shows whenever nothing is filtering it.
-var listFilterHeadlessTraitNames = []string{"Acute Vision", "Combat Reflexes", "Fur"}
-
 // newListFilterHeadlessTraits returns the three traits the tests filter: each bears a name, a tag and a point cost of
 // its own, so that every filter below can be told apart row by row. Only one of them is tagged "Physical", which is
 // what lets the quick filter be seen searching the tags column rather than the name.
@@ -499,69 +495,6 @@ func popupItemIndexOf(t *testing.T, screen *unison.HeadlessScreen, popup *unison
 		t.Fatalf("the popup has no item %q", title)
 	}
 	return index
-}
-
-// TestListFilterPopupAppliesSavedFilterHeadless drives the saved filter popup of a trait list inside a headless
-// workspace: choosing a saved filter narrows the list and leaves the quick filter's field usable, what is typed there
-// narrows the list further while the saved filter is in force, choosing No Filter drops the saved filter alone, and the
-// quick filter searches the tags column as well as the name.
-func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
-	mental := seedListFilter("Mental", "tags", "Mental")
-	d := openListFilterTraitDockable(t, screen)
-
-	var inWorkspace bool
-	var titles []string
-	screen.Do(func() {
-		inWorkspace = d.Window() == wnd
-		titles = popupItemTitles(d.savedFilters.popup)
-	})
-	c.True(inWorkspace, "the trait list opens in the workspace window")
-	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
-		"Mental",
-	}, titles, "the commands lead, and the separator after No Filter puts the saved filter at index 6")
-
-	state := readListFilterState(screen, d)
-	c.Equal(listFilterHeadlessTraitNames, state.names, "every trait is shown before any filtering")
-	c.Equal("No Filter", state.popupText, "no saved filter is in force to start with")
-	c.True(state.fieldEnabled, "and the quick filter's field is usable")
-	c.False(state.filtered, "and nothing is filtering the table")
-
-	// Choose the saved filter. The item ahead of it is the separator, which occupies an index of its own.
-	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
-	state = readListFilterState(screen, d)
-	c.Equal([]string{"Combat Reflexes"}, state.names, "only the traits the saved filter accepts may be shown")
-	c.True(mental == state.selected, "the saved filter itself must be the one in force")
-	c.Equal("Mental", state.popupText, "and the popup must show it")
-	c.True(state.fieldEnabled, "the quick filter's field must stay usable while a saved filter is in force")
-	c.True(state.filtered, "the saved filter must filter the table")
-	uxtest.CaptureScreen(t, c, screen, "list_filter_applied")
-
-	// Type into the quick filter while the saved filter is in force. The one trait the saved filter keeps is not
-	// tagged "Physical", so nothing passes both, which shows the two being applied together rather than the typed
-	// text taking over.
-	screen.Click(screen.PanelCenter(d.filterField))
-	screen.Type("physical")
-	state = readListFilterState(screen, d)
-	c.Equal("physical", state.fieldText, "the typed text reaches the quick filter's field")
-	c.True(mental == state.selected, "typing in the quick filter must leave the saved filter in force")
-	c.True(state.filtered, "the two together must filter the table")
-	c.Equal(0, len(state.names), "no trait passes both the saved filter and the quick filter")
-	uxtest.CaptureScreen(t, c, screen, "list_filter_combined")
-
-	// Choose No Filter, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
-	// Only one trait is tagged "Physical" and no trait's name holds the word, so keeping exactly that one shows the
-	// quick filter searching the tags column.
-	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupNoneIndex)
-	state = readListFilterState(screen, d)
-	c.Nil(state.selected, "the saved filter must have been dropped")
-	c.Equal("physical", state.fieldText, "dropping the saved filter must leave the quick filter's text alone")
-	c.True(state.fieldEnabled, "and its field usable")
-	c.True(state.filtered, "the quick filter must filter the table on its own")
-	c.Equal([]string{"Acute Vision"}, state.names, "the quick filter searches the tags column, not just the name")
 }
 
 // TestListFilterDeleteAsksAndFallsBackHeadless drives the Delete Filter… command inside a headless workspace: it asks
@@ -767,4 +700,37 @@ func TestListFilterPopupCutsNameHeadless(t *testing.T) {
 
 	screen.Click(screen.PanelCenter(d.savedFilters.popup))
 	chooseOpenMenuItem(t, screen, wnd, long) // Fails unless the menu lists the long name in full.
+}
+
+// TestTableDockableFilterPopupsTurnCompact verifies that the filter popups turn into icons while the toolbar is too
+// narrow to show them in full, that the saved filter's name then leads its tooltip, that the quick filter shrinks no
+// further than the room for toolbarSearchWidthSample rather than out of sight, and that the popups turn back once the
+// toolbar is wide enough again.
+func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	toolbar := d.filterField.Parent()
+	minSize, _, _ := toolbar.Sizes(geom.Size{})
+	layOut := func(width float32) {
+		toolbar.SetFrameRect(geom.NewRect(0, 0, width, 30))
+		toolbar.ValidateLayout()
+	}
+
+	layOut(minSize.Width - 1)
+	for _, b := range []*filterPopupButton{d.tagFilter.button, d.savedFilters.button} {
+		c.True(b.compact, "%s must turn compact in a toolbar too narrow for it", b.popup.Accessibility.Name)
+		size := b.popup.FrameRect().Size
+		c.Equal(size.Height, size.Width, "%s must be a square icon", b.popup.Accessibility.Name)
+	}
+	c.Contains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "the icon's tooltip names the saved filter")
+
+	layOut(100)
+	sample := unison.NewText(toolbarSearchWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
+	width := d.filterField.FrameRect().Width
+	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
+
+	layOut(minSize.Width)
+	c.False(d.tagFilter.button.compact, "the tag filter must turn back once the toolbar is wide enough")
+	c.False(d.savedFilters.button.compact, "and so must the saved filters")
+	c.NotContains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "a name shown whole is kept out of the tooltip")
 }

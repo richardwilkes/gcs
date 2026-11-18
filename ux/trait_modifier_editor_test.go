@@ -21,27 +21,6 @@ import (
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
-// TestLockedPickHasItsEnabledBoxDisabled verifies that the editor of the pick of a mandatory choice on a sheet doesn't
-// let its Enabled box be unchecked, and that the editor of an option that isn't the pick does.
-func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
-	options := traitEditor.editorData.Modifiers[0].Children
-	_, content := buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
-	box := findCheckBoxTitled(content, "Enabled")
-	c.NotNil(box)
-	c.False(box.Enabled(), "the pick can't be turned off")
-	c.NotNil(box.Tooltip, "and the box says why")
-	_, content = buildEditorContent(traitEditor, options[1], initTraitModifierEditor)
-	c.True(findCheckBoxTitled(content, "Enabled").Enabled(), "another option can be turned on")
-
-	pick := newEquipmentModifierChoiceFor(entity, []string{"A"}, "A").Children[0]
-	_, content = buildEditorContent(nil, pick, initEquipmentModifierEditor)
-	c.False(findCheckBoxTitled(content, "Enabled").Enabled(), "the same goes for equipment modifiers")
-}
-
 // TestTraitModifierEditorMultiplierCostAffectsTheTotal verifies that a cost entered as a multiplier, which can only
 // apply to the whole cost, has the cost affect the total and locks that choice, while any other cost leaves it open.
 func TestTraitModifierEditorMultiplierCostAffectsTheTotal(t *testing.T) {

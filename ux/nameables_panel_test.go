@@ -756,35 +756,6 @@ func TestNameablesPanelCollapses(t *testing.T) {
 	})
 }
 
-// The trait editor's section edits the editor's copy, so the trait only gets its nameables and the links for its
-// modifiers' codes when the edit is applied.
-func TestTraitEditorAppliesNameablesAndLinks(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	trait := gurps.NewTrait(sheet.Entity(), nil, false)
-	trait.Name = "Trained in @style@"
-	mod := gurps.NewTraitModifier(sheet.Entity(), nil, false)
-	mod.Name = "@art@ focus"
-	trait.SetModifiers([]*gurps.TraitModifier{mod})
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	p, ok := uxtest.FirstPanelOfType[*nameablesPanel](content)
-	c.True(ok, "expected a nameables panel in the trait editor")
-	if !ok {
-		return
-	}
-	style := map[string]nameable.Detail{"style": {Label: "Style", FreeForm: true}}
-	*p.defs = maps.Clone(style)
-	p.setLink(mod.TID, "art", "style")
-	c.Nil(trait.Nameables, "the trait is untouched until the edit is applied")
-	c.Nil(trait.NameableLinks)
-
-	e.editorData.ApplyTo(trait)
-	c.Equal(style, trait.Nameables)
-	c.Equal(map[tid.TID]map[string]string{mod.TID: {"art": "style"}}, trait.NameableLinks)
-	trait.Replacements = map[string]string{"style": "Judo"}
-	c.Equal("Judo focus", trait.Modifiers[0].NameWithReplacements(), "the applied link resolves")
-}
-
 func TestNameablesPanelNameFieldFillsItsRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)

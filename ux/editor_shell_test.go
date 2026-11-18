@@ -477,3 +477,27 @@ func TestDiscardEditorsForClosesWithoutAsking(t *testing.T) {
 	c.Equal("Claws", name, "without applying the trait's changes")
 	c.Equal("Long", modifierName, "or the modifier's")
 }
+
+// focusRecordingPanel records whether it was asked to take the focus without scrolling.
+type focusRecordingPanel struct {
+	unison.Panel
+	withoutScroll int
+}
+
+func (p *focusRecordingPanel) RequestFocusWithoutScroll() { p.withoutScroll++ }
+
+// Giving the focus back to a table after an editor closes must not go through the table's default focus handling, which
+// scrolls the whole table into view and so moved the sheet even when the edited row was already on screen.
+func TestRestoreFocusSkipsTableScrolling(t *testing.T) {
+	c := check.New(t)
+	var _ focusWithoutScroller = (*unison.Table[*Node[*gurps.Trait]])(nil)
+
+	p := &focusRecordingPanel{}
+	p.Self = p
+	restoreFocus(p.AsPanel())
+	c.Equal(1, p.withoutScroll, "a panel that can take the focus without scrolling must be asked to do so")
+
+	plain := unison.NewPanel()
+	plain.SetFocusable(true)
+	restoreFocus(plain) // No window, so this must simply do nothing rather than panic.
+}

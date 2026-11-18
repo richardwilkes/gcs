@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
@@ -307,4 +308,41 @@ func TestEquipmentEditorOnALootSheet(t *testing.T) {
 	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the loot as their owner")
 	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
 	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
+}
+
+// Both container and non-container equipment offer the "Switched On" checkbox -- a container holds features of its own
+// as well as modifiers that can contribute switchable ones -- and it must sit with the editor's other checkbox rather
+// than being stranded in the middle of the numeric fields.
+func TestEquipmentEditorHasSwitchedOnCheckBox(t *testing.T) {
+	for _, isContainer := range []bool{false, true} {
+		name := "equipment"
+		if isContainer {
+			name = "equipment container"
+		}
+		t.Run(name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			equipment := gurps.NewEquipment(sheet.Entity(), nil, isContainer)
+			e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
+			box := findCheckBoxTitled(content, i18n.Text("Switched On"))
+			c.NotNil(box, "expected a Switched On checkbox in the editor")
+			c.False(e.editorData.SwitchedOn, "the switch starts out off")
+
+			clickCheckBox(box, true)
+			c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
+			c.False(equipment.SwitchedOn, "the target must not be touched until the edit is applied")
+
+			clickCheckBox(box, false)
+			c.False(e.editorData.SwitchedOn, "clearing the box must turn the switch back off")
+
+			// The checkbox and the empty panel that keeps it in the field column are added as a pair, so the widget two
+			// places ahead of it is the editor's other checkbox.
+			weightBox := findCheckBoxTitled(content, i18n.Text("Ignore weight for skills"))
+			c.NotNil(weightBox, "expected an Ignore weight for skills checkbox in the editor")
+			children := content.Children()
+			i := slices.Index(children, box.AsPanel())
+			c.True(i >= 2 && children[i-2] == weightBox.AsPanel(),
+				"the Switched On checkbox must sit with the editor's other checkbox")
+		})
+	}
 }

@@ -260,77 +260,6 @@ func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
 	})
 }
 
-// TestAltDropOnAMissingTraitRowIsANoOp verifies that the trait and equipment drop handlers skip a row index which
-// resolves to nothing, and that a drop none of whose indexes resolve reports that it changed nothing, so that no edit
-// is recorded.
-func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
-	t.Run("traits", func(t *testing.T) {
-		c := check.New(t)
-		forbidModifierPrompts(t)
-		entity, traits := entityWithNamedTraits("Trait")
-		trait := traits[0]
-		provider := tabledProvider(NewTraitsProvider(entity, false))
-		dropped := gurps.NewTraitModifier(entity, nil, false)
-		dropped.Name = "Dropped"
-
-		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
-			"a drop with no resolvable target changes nothing, so it must say so")
-		c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
-
-		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
-		c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
-	})
-
-	t.Run("equipment", func(t *testing.T) {
-		c := check.New(t)
-		forbidModifierPrompts(t)
-		entity, equipment := entityWithNamedEquipment("Item")
-		item := equipment[0]
-		provider := tabledProvider(NewEquipmentProvider(entity, true, false))
-		dropped := gurps.NewEquipmentModifier(entity, nil, false)
-		dropped.Name = "Dropped"
-
-		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
-			"a drop with no resolvable target changes nothing, so it must say so")
-		c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
-
-		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
-		c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
-	})
-}
-
-// TestAltDropOfTheWrongKindOfModifierIsIgnored verifies that each provider's alternate drop handler only acts on drag
-// data holding its own kind of modifier, reporting that nothing changed otherwise.
-func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity := gurps.NewEntity()
-	trait := namedTraits(entity, "Trait")[0]
-	item := namedEquipment(entity, "Item")[0]
-
-	traitsProv := tabledProvider(NewTraitsProvider(entity, false))
-	equipmentProv := tabledProvider(NewEquipmentProvider(entity, true, false))
-
-	traitMod := gurps.NewTraitModifier(entity, nil, false)
-	traitMod.Name = "Trait Modifier"
-	traitModData := newDragData(traitMod)
-	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
-	equipmentMod.Name = "Equipment Modifier"
-	equipmentModData := newDragData(equipmentMod)
-
-	c.False(traitsProv.AltDropSupport().Drop([]int{0}, equipmentModData),
-		"a drop of the wrong kind of modifier changes nothing, so it must say so, or an empty edit would be recorded")
-	c.False(equipmentProv.AltDropSupport().Drop([]int{0}, traitModData),
-		"a drop of the wrong kind of modifier changes nothing, so it must say so, or an empty edit would be recorded")
-	c.Equal(0, len(trait.Modifiers), "equipment modifiers must not be attached to a trait")
-	c.Equal(0, len(item.Modifiers), "trait modifiers must not be attached to equipment")
-
-	c.True(traitsProv.AltDropSupport().Drop([]int{0}, traitModData))
-	c.True(equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData))
-	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
-	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
-}
-
 // The modifier prompt's list has the same least room as the picker's, however few modifiers it holds, and the prompt
 // can't be made too small to give it that.
 func TestModifierPromptListHoldsTenRows(t *testing.T) {
@@ -547,57 +476,6 @@ func TestModifierSelectionClearsAndPreviews(t *testing.T) {
 	c.False(s.complete())
 	c.Equal("", s.preview(enabled))
 	c.False(newModifierSelection(mods, true, false).italics)
-}
-
-// TestApplyingAChoiceToLootAsksForItsPick verifies that applying a container of modifiers to equipment on a loot sheet
-// asks which of its modifiers to enable, a pick required, just as on a character sheet, since both are sheets.
-func TestApplyingAChoiceToLootAsksForItsPick(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestLootSheet(t)
-	eqp := gurps.NewEquipment(sheet.loot, nil, false)
-	eqp.Name = "Sword"
-	sheet.loot.Equipment = []*gurps.Equipment{eqp}
-	sheet.Rebuild(true)
-	var asked []bool
-	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
-		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
-			asked = append(asked, info.requirePicks)
-			return false, false
-		})
-	choice := newEquipmentModifierChoiceFor(nil, []string{"A"}, "A")
-	attachModifierClones("", []*unison.Table[*Node[*gurps.Equipment]]{sheet.Equipment.Table}, sheet.loot,
-		[]*gurps.Equipment{eqp}, []*gurps.EquipmentModifier{choice}, gurps.LibraryFile{})
-	c.Equal([]bool{true}, asked, "the loot sheet asks, requiring the pick")
-}
-
-// TestPromptRequiresPicksOnlyForSheets verifies that rows headed for a template are asked about their modifiers
-// without a pick being required, and rows headed for a loot sheet with one.
-func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
-	c := check.New(t)
-	var traitAsked, equipmentAsked []bool
-	uxtest.SwapForTest(t, &promptForTraitModifiers,
-		func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
-			traitAsked = append(traitAsked, info.requirePicks)
-			return false, false
-		})
-	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
-		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
-			equipmentAsked = append(equipmentAsked, info.requirePicks)
-			return false, false
-		})
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"A"})}
-	template := newTestTemplateWithTraits()
-	toTemplate := &applyPart[*gurps.Trait]{table: template.Traits.Table, rows: []*gurps.Trait{trait}}
-	c.True(toTemplate.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
-	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
-
-	loot := newTestLootSheet(t)
-	equipment := gurps.NewEquipment(nil, nil, false)
-	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
-	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
-	c.True(toLoot.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
-	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
 }
 
 // newPickTestModifiers returns a mandatory choice between Low and High with no pick made, and a modifier that is off.

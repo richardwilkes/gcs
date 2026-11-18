@@ -818,22 +818,6 @@ func TestModifierTargetCellFactoryIndentsNestedTargets(t *testing.T) {
 	c.Equal(base+2*level, leftInset(2), "a target two containers deep is indented two levels")
 }
 
-// TestPromptForSingleDestinationSkipsTheDialogForOneChoice verifies that promptForSingleDestination and
-// promptForDestinations hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
-// can put up a dialog here, since there is no window.
-func TestPromptForSingleDestinationSkipsTheDialogForOneChoice(t *testing.T) {
-	c := check.New(t)
-	sheet := newApplyModifierTestSheet(t)
-	dest, ok := promptForSingleDestination(promptOperation{}, []FileBackedDockable{sheet})
-	c.True(ok, "a lone choice must be taken without asking")
-	c.Equal(any(sheet), any(dest), "the lone choice must be the one handed back")
-	_, ok = promptForSingleDestination[FileBackedDockable](promptOperation{}, nil)
-	c.False(ok, "no choice at all must be reported as nothing chosen")
-	c.Equal([]FileBackedDockable{sheet}, promptForDestinations(promptOperation{}, []FileBackedDockable{sheet}),
-		"a lone choice must come back as it is")
-	c.Equal(0, len(promptForDestinations[FileBackedDockable](promptOperation{}, nil)), "no choice at all must come back empty")
-}
-
 // TestApplyModifierCommandNeedsASelectionAndADestination verifies that the command needs both a selection and an open
 // destination, stays available from the library's filter field and on a filtered library, and is never offered by a
 // modifier list inside an editor (see NewTableDockable).
@@ -1561,4 +1545,131 @@ func TestRevealModifierTargetsScrollsToATargetBelowTheOldEndOfTheList(t *testing
 	c.Equal(70, row, "the last item in the container must be the row selected")
 	c.True(inView, "the selected target must have been scrolled into view")
 	screen.Do(func() { sheet.undoMgr.Undo() })
+}
+
+// TestApplyModifierSkipsChoiceContainers verifies that the Apply Modifier command never gives a template choice
+// container or an equipment group modifiers either: its target prompt leaves them out while still offering what they
+// hold, and the shared attach step skips one handed to it anyway.
+func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		choice := gurps.NewTraitChoiceContainer(nil, nil)
+		option := gurps.NewTrait(nil, choice, false)
+		option.Name = "Option"
+		choice.Children = []*gurps.Trait{option}
+		plain := gurps.NewTrait(nil, nil, false)
+		plain.Name = "Plain"
+		template := newTestTemplateWithTraits(choice, plain)
+
+		lists := traitModifierTargetKind().lists(template)
+		c.Equal(1, len(lists))
+		labels := make([]string, 0, 2)
+		for _, one := range modifierTargetChoices(lists) {
+			labels = append(labels, one.String())
+		}
+		c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
+			"the choice must be left out of the prompt, but its option must still be offered")
+
+		ranged := gurps.NewTraitModifier(nil, nil, false)
+		ranged.Name = "Ranged"
+		tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
+		c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain},
+			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}))
+		c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
+		c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
+		c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice},
+			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}), "a choice alone leaves nothing to do")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		group := gurps.NewEquipmentGroup(nil, nil)
+		group.Name = "Kit"
+		rope := gurps.NewEquipment(nil, group, false)
+		rope.Name = "Rope"
+		group.Children = []*gurps.Equipment{rope}
+		backpack := gurps.NewEquipment(nil, nil, true)
+		backpack.Name = "Backpack"
+		template := newTestTemplateWithEquipment(group, backpack)
+
+		lists := equipmentModifierTargetKind().lists(template)
+		c.Equal(1, len(lists))
+		labels := make([]string, 0, 2)
+		for _, one := range modifierTargetChoices(lists) {
+			labels = append(labels, one.String())
+		}
+		c.Equal([]string{"Rope (in Kit)", "Backpack"}, labels,
+			"the group must be left out of the prompt, but what it holds must still be offered")
+
+		sturdy := gurps.NewEquipmentModifier(nil, nil, false)
+		sturdy.Name = "Sturdy"
+		tables := []*unison.Table[*Node[*gurps.Equipment]]{template.Equipment.Table}
+		c.True(attachModifierClones("", tables, template.template, []*gurps.Equipment{group, backpack},
+			[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
+		c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
+		c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
+	})
+}
+
+// TestApplyingAChoiceToLootAsksForItsPick verifies that applying a container of modifiers to equipment on a loot sheet
+// asks which of its modifiers to enable, a pick required, just as on a character sheet, since both are sheets.
+func TestApplyingAChoiceToLootAsksForItsPick(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	eqp := gurps.NewEquipment(sheet.loot, nil, false)
+	eqp.Name = "Sword"
+	sheet.loot.Equipment = []*gurps.Equipment{eqp}
+	sheet.Rebuild(true)
+	var asked []bool
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+			asked = append(asked, info.requirePicks)
+			return false, false
+		})
+	choice := newEquipmentModifierChoiceFor(nil, []string{"A"}, "A")
+	attachModifierClones("", []*unison.Table[*Node[*gurps.Equipment]]{sheet.Equipment.Table}, sheet.loot,
+		[]*gurps.Equipment{eqp}, []*gurps.EquipmentModifier{choice}, gurps.LibraryFile{})
+	c.Equal([]bool{true}, asked, "the loot sheet asks, requiring the pick")
+}
+
+// TestAltDropOnTraitAppliesNameablesToTheLiveList verifies that dropping a trait modifier onto a trait, or an equipment
+// modifier onto an equipment row, prompts for its nameable keys before anything is shown, and that the rebuild which
+// follows replaces the list when the modifier brings switchable features.
+func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	sheet, targets := sheetWithNamedTraits(t, c, "Claws")
+	stale := sheet.Traits.Table
+
+	// Its switchable feature is what brings the switch column in, and its name needs a substitution.
+	dropped := newSwitchableTraitModifier("@Material@ Coating")
+	_, counter := altDropNameableModifier(t, c, sheet, sheet.Traits.provider, []int{0}, dropped, "Steel")
+
+	c.Equal(1, len(targets[0].Modifiers), "the dropped modifier must be added to the target trait")
+	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+		"the substitution must be applied to the dropped modifier")
+	live := sheet.Traits.Table
+	c.NotEqual(stale, live, "gaining the switch column must replace the traits table")
+	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
+		"the dropped modifier's switchable feature must bring the switch column into view")
+	c.True(counter.count > 0,
+		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
+
+	sheet, items := sheetWithNamedEquipment(t, c, "Sword")
+	staleEquipment := sheet.CarriedEquipment.Table
+	droppedEquipment := newSwitchableEquipmentModifier("@Material@ Coating")
+	_, counter = altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0}, droppedEquipment,
+		"Steel")
+
+	c.Equal(1, len(items[0].Modifiers), "the dropped modifier must be added to the target equipment")
+	c.Equal("Steel Coating", items[0].Modifiers[0].NameWithReplacements(),
+		"the substitution must be applied to the dropped modifier")
+	liveEquipment := sheet.CarriedEquipment.Table
+	c.NotEqual(staleEquipment, liveEquipment, "gaining the switch column must replace the carried equipment table")
+	c.NotEqual(-1, switchColumnIndex(liveEquipment.Columns, gurps.EquipmentSwitchColumn),
+		"the dropped modifier's switchable feature must bring the switch column into view")
+	c.True(counter.count > 0,
+		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
 }

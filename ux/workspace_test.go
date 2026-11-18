@@ -592,3 +592,19 @@ func checkWindowFitsTooltips(t *testing.T, c check.Checker, screen *unison.Headl
 	c.True(contentWidth >= tooltipWidth, "%s's window content (%v wide) fits its widest tooltip (%v wide)",
 		d.Title(), contentWidth, tooltipWidth)
 }
+
+// TestPromptForSingleDestinationSkipsTheDialogForOneChoice verifies that promptForSingleDestination and
+// promptForDestinations hand a lone choice back without a dialog and report no choice at all as nothing chosen. Neither
+// can put up a dialog here, since there is no window.
+func TestPromptForSingleDestinationSkipsTheDialogForOneChoice(t *testing.T) {
+	c := check.New(t)
+	sheet := newApplyModifierTestSheet(t)
+	dest, ok := promptForSingleDestination(promptOperation{}, []FileBackedDockable{sheet})
+	c.True(ok, "a lone choice must be taken without asking")
+	c.Equal(any(sheet), any(dest), "the lone choice must be the one handed back")
+	_, ok = promptForSingleDestination[FileBackedDockable](promptOperation{}, nil)
+	c.False(ok, "no choice at all must be reported as nothing chosen")
+	c.Equal([]FileBackedDockable{sheet}, promptForDestinations(promptOperation{}, []FileBackedDockable{sheet}),
+		"a lone choice must come back as it is")
+	c.Equal(0, len(promptForDestinations[FileBackedDockable](promptOperation{}, nil)), "no choice at all must come back empty")
+}

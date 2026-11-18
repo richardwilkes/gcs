@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -167,6 +168,70 @@ func TestInstallDropReroutingWithoutATarget(t *testing.T) {
 	c.Equal(drag.Copy, root.DragEnteredCallback(skillDrag, where, mod.None), "re-enter the bare target")
 	root.DragExitedCallback()
 	c.False(root.DropCallback(skillDrag, where, mod.None), "exit cleared the bare target")
+}
+
+// rerouteHighlightDrawn reports whether the sheet's drop rerouting draws its highlight (see installDropRerouting): the
+// sheet's DrawOverCallback is run on a canvas of its own, which starts out clear, and the result is searched for any
+// pixel it painted.
+func rerouteHighlightDrawn(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) bool {
+	t.Helper()
+	var drawn bool
+	screen.Do(func() {
+		root := sheet.AsPanel()
+		size := root.ContentRect(true).Size
+		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 72, func(gc *unison.Canvas) {
+			root.DrawOverCallback(gc, geom.Rect{Size: size})
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer img.Dispose()
+		pixels, err := img.ToNRGBA()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for i := 3; i < len(pixels.Pix); i += 4 {
+			if pixels.Pix[i] != 0 {
+				drawn = true
+				return
+			}
+		}
+	})
+	return drawn
+}
+
+// TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights itself, as the whole of it stands
+// for the buy dockable it reroutes a drag to, only while the dockable will take the drop: for equipment it would buy, not
+// for an equipment drag with no rows behind it, which it declines, and not once the drag has left.
+func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	screen.Do(func() { showBuyDockable(sheet) })
+	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Shortsword", "100", 1))
+	var fromLibrary *unison.TableDragData[*Node[*gurps.Equipment]]
+	screen.Do(func() {
+		fromLibrary = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: library, Rows: library.RootRows()}
+	})
+	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
+	enter := func(data *unison.TableDragData[*Node[*gurps.Equipment]]) drag.Op {
+		uxtest.SwapForTest(t, &draggedTableData, any(data))
+		var op drag.Op
+		screen.Do(func() { op = sheet.DragEnteredCallback(di, geom.NewPoint(10, 10), 0) })
+		return op
+	}
+
+	c.Equal(drag.Copy, enter(fromLibrary), "the buy dockable takes library equipment")
+	c.True(rerouteHighlightDrawn(t, screen, sheet), "the sheet is highlighted for equipment the buy dockable will take")
+	screen.Do(sheet.DragExitedCallback)
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "nothing is highlighted once the drag has left")
+
+	c.Equal(drag.None, enter(nil), "the buy dockable declines an equipment drag with no rows behind it")
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "the sheet is not highlighted for a drag the buy dockable declines")
+	screen.Do(sheet.DragExitedCallback)
 }
 
 // TestWindowTakesAnImageFileDroppedFromOutside verifies that a window is registered for the file paths other

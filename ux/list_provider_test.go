@@ -118,68 +118,6 @@ func TestListProviderSerializationRoundTrips(t *testing.T) {
 	c.HasError(NewTraitsProvider(target, false).Deserialize([]byte("not compressed json")))
 }
 
-func TestEquipmentProviderUsesTheCarriedOrOtherList(t *testing.T) {
-	c := check.New(t)
-	lists := &listsForTest{
-		carried: []*gurps.Equipment{gurps.NewEquipment(nil, nil, false), gurps.NewEquipment(nil, nil, false)},
-		other:   []*gurps.Equipment{gurps.NewEquipment(nil, nil, false)},
-	}
-	carried := NewEquipmentProvider(lists, true, true)
-	other := NewEquipmentProvider(lists, false, true)
-	c.Equal(lists.carried, carried.RootData())
-	c.Equal(lists.other, other.RootData())
-	c.Equal(gurps.BlockEquipmentKey, carried.RefKey())
-	c.Equal(gurps.BlockOtherEquipmentKey, other.RefKey())
-	other.SetRootData(nil)
-	c.Equal(0, len(lists.other), "the other provider must write to the other list")
-	c.Equal(2, len(lists.carried), "the other provider must leave the carried list alone")
-	carried.SetRootData(nil)
-	c.Equal(0, len(lists.carried), "the carried provider must write to the carried list")
-}
-
-func TestWeaponsProviderOnlyEditsOffThePage(t *testing.T) {
-	c := check.New(t)
-	lists := &listsForTest{
-		melee:  []*gurps.Weapon{gurps.NewWeapon(nil, true)},
-		ranged: []*gurps.Weapon{gurps.NewWeapon(nil, false), gurps.NewWeapon(nil, false)},
-	}
-	c.Equal(lists.melee, NewWeaponsProvider(lists, true, false).RootData())
-	c.Equal(lists.ranged, NewWeaponsProvider(lists, false, false).RootData())
-
-	onPage := NewWeaponsProvider(lists, false, true)
-	onPage.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Weapon]]{}))
-	_, err := onPage.Serialize()
-	c.HasError(err, "the weapons on a page are not the list's own, so they must not be copied")
-	c.HasError(onPage.Deserialize(nil), "the weapons on a page are not the list's own, so they must not be pasted")
-	for i, header := range onPage.Headers() {
-		c.False(header.SortState().Sortable, "weapon header %d must not be sortable", i)
-	}
-
-	inEditor := NewWeaponsProvider(lists, false, false)
-	data, err := inEditor.Serialize()
-	c.NoError(err)
-	target := &listsForTest{}
-	c.NoError(NewWeaponsProvider(target, false, false).Deserialize(data))
-	c.Equal(2, len(target.ranged), "the ranged weapons must be pasted into the ranged list")
-	c.Equal(0, len(target.melee), "the melee list must be left alone")
-}
-
-func TestCondModProviderIsReadOnly(t *testing.T) {
-	c := check.New(t)
-	lists := &condModListsForTest{conditional: []*gurps.ConditionalModifier{gurps.NewConditionalModifier("one", "", 0)}}
-	p := NewConditionalModifiersProvider(lists)
-	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.ConditionalModifier]]{}))
-	p.SetRootData(nil)
-	p.SetRootRows(nil)
-	c.Equal(1, len(lists.conditional), "the computed rows must not be replaceable")
-	_, err := p.Serialize()
-	c.HasError(err)
-	c.HasError(p.Deserialize(nil))
-	for i, header := range p.Headers() {
-		c.False(header.SortState().Sortable, "conditional modifier header %d must not be sortable", i)
-	}
-}
-
 // referenceColumnsForTest names a provider's column list along with the reference and library source columns it may
 // show, so that the same checks can run over every kind of list.
 type referenceColumnsForTest struct {
@@ -239,25 +177,6 @@ func TestProvidersFollowReferenceColumnSettings(t *testing.T) {
 	}
 }
 
-// TestEquipmentProviderFollowsTLAndLCColumnSettings verifies that the equipment list's tech level and legality class
-// columns follow the sheet's settings on a page and are always present off one.
-func TestEquipmentProviderFollowsTLAndLCColumnSettings(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	onPage := NewEquipmentProvider(entity, true, true)
-	offPage := NewEquipmentProvider(entity, true, false)
-	for _, hide := range []bool{false, true} {
-		entity.SheetSettings.HideTLColumn = hide
-		entity.SheetSettings.HideLCColumn = !hide
-		c.Equal(!hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentTLColumn),
-			"on a page the TL column must follow the sheet's setting (hide=%v)", hide)
-		c.Equal(hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentLCColumn),
-			"on a page the LC column must follow the sheet's setting (hide=%v)", !hide)
-		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentTLColumn), "off a page the TL column must be present")
-		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentLCColumn), "off a page the LC column must be present")
-	}
-}
-
 // TestRootRowsReturnsTheTablesOwnRows verifies that a page list's provider hands out the rows the table already shows
 // rather than new ones, while a provider without reuse, as off a page, builds new rows on every call.
 func TestRootRowsReturnsTheTablesOwnRows(t *testing.T) {
@@ -282,5 +201,117 @@ func TestRootRowsReturnsTheTablesOwnRows(t *testing.T) {
 			c.True(first[i].Data() == traits[i] && second[i].Data() == traits[i], "row %d must hold its trait", i)
 			c.True(first[i] != second[i], "without reuse, row %d must be built anew on each call", i)
 		}
+	}
+}
+
+// TestFileListProvidersDetachDataOwners verifies that every list a list file's dockable is built on detaches the nodes
+// it is handed from the data owner they came with, since a list file has none. The two modifier lists used to keep
+// whatever owner a modifier arrived with.
+func TestFileListProvidersDetachDataOwners(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+
+	notes := &noteListProvider{}
+	notes.SetNoteList([]*gurps.Note{gurps.NewNote(entity, nil, false)})
+	c.Nil(notes.DataOwner())
+	c.Nil(notes.NoteList()[0].DataOwner(), "a note must be detached from its entity")
+
+	skills := &skillListProvider{}
+	skills.SetSkillList([]*gurps.Skill{gurps.NewSkill(entity, nil, false)})
+	c.Nil(skills.DataOwner())
+	c.Nil(skills.SkillList()[0].DataOwner(), "a skill must be detached from its entity")
+
+	spells := &spellListProvider{}
+	spells.SetSpellList([]*gurps.Spell{gurps.NewSpell(entity, nil, false)})
+	c.Nil(spells.DataOwner())
+	c.Nil(spells.SpellList()[0].DataOwner(), "a spell must be detached from its entity")
+
+	traits := &traitListProvider{}
+	traits.SetTraitList([]*gurps.Trait{gurps.NewTrait(entity, nil, false)})
+	c.Nil(traits.DataOwner())
+	c.Nil(traits.TraitList()[0].DataOwner(), "a trait must be detached from its entity")
+
+	traitMods := &traitModifierListProvider{}
+	traitMods.SetTraitModifierList([]*gurps.TraitModifier{gurps.NewTraitModifier(entity, nil, false)})
+	c.Nil(traitMods.DataOwner())
+	c.Nil(traitMods.TraitModifierList()[0].DataOwner(), "a trait modifier must be detached from its entity")
+
+	eqpMods := &equipmentModifierListProvider{}
+	eqpMods.SetEquipmentModifierList([]*gurps.EquipmentModifier{gurps.NewEquipmentModifier(entity, nil, false)})
+	c.Nil(eqpMods.DataOwner())
+	c.Nil(eqpMods.EquipmentModifierList()[0].DataOwner(), "an equipment modifier must be detached from its entity")
+
+	equipment := &equipmentListProvider{}
+	equipment.SetCarriedEquipmentList([]*gurps.Equipment{gurps.NewEquipment(entity, nil, false)})
+	equipment.SetOtherEquipmentList([]*gurps.Equipment{gurps.NewEquipment(entity, nil, false)})
+	c.True(equipment.DataOwner() == gurps.DataOwner(equipment), "an equipment list file is its own data owner")
+	c.Nil(equipment.CarriedEquipmentList()[0].DataOwner(), "carried equipment must be detached from its entity")
+	c.Nil(equipment.OtherEquipmentList()[0].DataOwner(), "other equipment must be detached from its entity")
+}
+
+// createItemForTest runs the provider's CreateItem against a table of its own with the editor callback replaced by one
+// that records the item it was handed, and returns that item.
+func createItemForTest[T gurps.Node[T]](c check.Checker, provider TableProvider[T], p *listProvider[T], variant ItemVariant, kind string) T {
+	var edited, zero T
+	p.edit = func(_ Rebuildable, item T) { edited = item }
+	_, table := NewNodeTable(provider, nil)
+	provider.CreateItem(nil, table, variant)
+	c.True(edited != zero, "%s: the new item must be handed to the editor", kind)
+	return edited
+}
+
+// TestCreateItemVariants verifies the shared CreateItem: the item its variant asks for is created for the provider's
+// data owner, added to the end of the list and handed to the editor, and the providers with an alternate variant
+// create their own kind of item for it while going through the same tail.
+func TestCreateItemVariants(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+
+	notes, ok := NewNotesProvider(entity, false).(*notesProvider)
+	c.True(ok, "the notes provider must be the expected type")
+	for i, variant := range []ItemVariant{NoItemVariant, ContainerItemVariant} {
+		item := createItemForTest(c, notes, &notes.listProvider, variant, "note")
+		c.Equal(i+1, len(entity.Notes), "each note must be added to the list")
+		c.True(entity.Notes[i] == item, "note %d must be the one handed to the editor", i)
+		c.True(entity.DataOwner() == item.DataOwner(), "note %d must belong to the provider's owner", i)
+		c.Equal(variant == ContainerItemVariant, item.Container(), "note %d", i)
+	}
+
+	skills, ok := NewSkillsProvider(entity, false).(*skillsProvider)
+	c.True(ok, "the skills provider must be the expected type")
+	for i, variant := range []ItemVariant{NoItemVariant, ContainerItemVariant, AlternateItemVariant} {
+		item := createItemForTest(c, skills, &skills.listProvider, variant, "skill")
+		c.Equal(i+1, len(entity.Skills), "each skill must be added to the list")
+		c.True(entity.Skills[i] == item, "skill %d must be the one handed to the editor", i)
+		c.True(entity.DataOwner() == item.DataOwner(), "skill %d must belong to the provider's owner", i)
+		c.Equal(variant == ContainerItemVariant, item.Container(), "skill %d", i)
+		c.Equal(variant == AlternateItemVariant, item.IsTechnique(), "skill %d", i)
+	}
+
+	spells, ok := NewSpellsProvider(entity, false).(*spellsProvider)
+	c.True(ok, "the spells provider must be the expected type")
+	for i, variant := range []ItemVariant{NoItemVariant, ContainerItemVariant, AlternateItemVariant} {
+		item := createItemForTest(c, spells, &spells.listProvider, variant, "spell")
+		c.Equal(i+1, len(entity.Spells), "each spell must be added to the list")
+		c.True(entity.Spells[i] == item, "spell %d must be the one handed to the editor", i)
+		c.Equal(variant == ContainerItemVariant, item.Container(), "spell %d", i)
+		c.Equal(variant == AlternateItemVariant, item.IsRitualMagic(), "spell %d", i)
+	}
+
+	equipment, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
+	c.True(ok, "the equipment provider must be the expected type")
+	group := createItemForTest(c, equipment, &equipment.listProvider, GroupContainerItemVariant, "equipment")
+	c.Equal([]*gurps.Equipment{group}, entity.CarriedEquipment, "the group must be added to the list")
+	c.True(group != nil && group.IsGroup() && !gurps.IsTemplateChoiceContainer(group),
+		"the group variant must create a group container, not a physical container or a choice")
+
+	mods := &traitModifierListProvider{}
+	traitMods, ok := NewTraitModifiersProvider(mods, false).(*modifiersProvider[*gurps.TraitModifier])
+	c.True(ok, "the traitMods provider must be the expected type")
+	for i, variant := range []ItemVariant{NoItemVariant, ContainerItemVariant} {
+		item := createItemForTest(c, traitMods, &traitMods.listProvider, variant, "trait modifier")
+		c.Equal(i+1, len(mods.TraitModifierList()), "each trait modifier must be added to the list")
+		c.True(mods.TraitModifierList()[i] == item, "trait modifier %d must be the one handed to the editor", i)
+		c.Equal(variant == ContainerItemVariant, item.Container(), "trait modifier %d", i)
 	}
 }

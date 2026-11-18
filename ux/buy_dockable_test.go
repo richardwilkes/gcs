@@ -179,13 +179,6 @@ func buyTestSetQuantity(screen *unison.HeadlessScreen, sheet *Sheet, index int, 
 	screen.Do(func() { buyDockableFor(sheet).items[index].field.SetText(text) })
 }
 
-// closeBuyDockable closes the sheet's buy dockable, if it has one, abandoning the purchase.
-func closeBuyDockable(sheet *Sheet) {
-	if d := buyDockableFor(sheet); d != nil {
-		d.discardAndClose()
-	}
-}
-
 // TestBuyDockableDropAndAutomaticPayment checks that equipment dropped on the sheet while buying lands in the buy dockable
 // with a quantity of one and its price, that the carried money pays for it automatically, that the payment follows the
 // quantities and the percentage, that a purchase the money can't cover can't be finalized, that a group's quantity
@@ -819,70 +812,6 @@ func TestBuyDockableKeepsTheFocusWhenRowsChange(t *testing.T) {
 		}
 		return p.percentField
 	})
-}
-
-// rerouteHighlightDrawn reports whether the sheet's drop rerouting draws its highlight (see installDropRerouting): the
-// sheet's DrawOverCallback is run on a canvas of its own, which starts out clear, and the result is searched for any
-// pixel it painted.
-func rerouteHighlightDrawn(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) bool {
-	t.Helper()
-	var drawn bool
-	screen.Do(func() {
-		root := sheet.AsPanel()
-		size := root.ContentRect(true).Size
-		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 72, func(gc *unison.Canvas) {
-			root.DrawOverCallback(gc, geom.Rect{Size: size})
-		})
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		defer img.Dispose()
-		pixels, err := img.ToNRGBA()
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		for i := 3; i < len(pixels.Pix); i += 4 {
-			if pixels.Pix[i] != 0 {
-				drawn = true
-				return
-			}
-		}
-	})
-	return drawn
-}
-
-// TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights itself, as the whole of it stands
-// for the buy dockable it reroutes a drag to, only while the dockable will take the drop: for equipment it would buy, not
-// for an equipment drag with no rows behind it, which it declines, and not once the drag has left.
-func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
-	c := check.New(t)
-	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		return buyTestCoins(entity, 7, 11)
-	})
-	screen.Do(func() { showBuyDockable(sheet) })
-	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Shortsword", "100", 1))
-	var fromLibrary *unison.TableDragData[*Node[*gurps.Equipment]]
-	screen.Do(func() {
-		fromLibrary = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: library, Rows: library.RootRows()}
-	})
-	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
-	enter := func(data *unison.TableDragData[*Node[*gurps.Equipment]]) drag.Op {
-		uxtest.SwapForTest(t, &draggedTableData, any(data))
-		var op drag.Op
-		screen.Do(func() { op = sheet.DragEnteredCallback(di, geom.NewPoint(10, 10), 0) })
-		return op
-	}
-
-	c.Equal(drag.Copy, enter(fromLibrary), "the buy dockable takes library equipment")
-	c.True(rerouteHighlightDrawn(t, screen, sheet), "the sheet is highlighted for equipment the buy dockable will take")
-	screen.Do(sheet.DragExitedCallback)
-	c.False(rerouteHighlightDrawn(t, screen, sheet), "nothing is highlighted once the drag has left")
-
-	c.Equal(drag.None, enter(nil), "the buy dockable declines an equipment drag with no rows behind it")
-	c.False(rerouteHighlightDrawn(t, screen, sheet), "the sheet is not highlighted for a drag the buy dockable declines")
-	screen.Do(sheet.DragExitedCallback)
 }
 
 // TestBuyDockableOpensOncePerSheet checks that opening the buy dockable puts the keyboard focus on its first field, that
@@ -1643,73 +1572,4 @@ func TestBuySellMoneyStateFollowsTheValue(t *testing.T) {
 	entity.Recalculate()
 	c.Equal(fxp.FromInteger(12), coin.AdjustedValue())
 	c.False(state.matches(coin), "a denomination whose value changed no longer matches")
-}
-
-// TestBuyingLeavesTheSheetEditable verifies that a sheet stays editable while its buy dockable is open: the commands that
-// add to the carried equipment list stay enabled, the list stays the carried equipment block's panel for the layout
-// editor, equipment dropped on the sheet goes to the dockable, and hiding the block neither ends buying nor takes the
-// dockable out of the sheet's drop rerouting.
-func TestBuyingLeavesTheSheetEditable(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	newCarriedIDs := []int{
-		NewCarriedEquipmentItemID,
-		NewCarriedEquipmentContainerItemID,
-		NewCarriedEquipmentGroupItemID,
-	}
-	type gates struct {
-		moveToCarried bool
-		newCarried    []bool
-	}
-	readGates := func() gates {
-		var g gates
-		g.moveToCarried = sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID)
-		for _, id := range newCarriedIDs {
-			g.newCarried = append(g.newCarried, sheet.CanPerformCmd(nil, id))
-		}
-		return g
-	}
-	var before, during, after gates
-	var buyEnabled, blockPanelIsList, dropTargetIsDockable, editorFindsList, buyingAfterHide, dropTargetAfterHide bool
-	screen.Do(func() {
-		entity := sheet.Entity()
-		eqp := gurps.NewEquipment(entity, nil, false)
-		eqp.Name = "Rope"
-		entity.OtherEquipment = append(entity.OtherEquipment, eqp)
-		entity.Recalculate()
-		sheet.Rebuild(true)
-		sheet.OtherEquipment.Table.SelectByIndex(0)
-		before = readGates()
-		buyEnabled = buyEquipmentAction.EnabledCallback(buyEquipmentAction, nil)
-
-		d := showBuyDockable(sheet)
-		during = readGates()
-		blockPanelIsList = sheet.blockPanel(gurps.BlockEquipmentKey) == unison.Paneler(sheet.CarriedEquipment)
-		dropTargetIsDockable = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
-		sheet.toggleLayoutEditing()
-		if sheet.layoutEditing() {
-			editorFindsList = sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockEquipmentKey) != nil
-			sheet.toggleLayoutEditing()
-		}
-		sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
-		buyingAfterHide = buyDockableFor(sheet) == d
-		dropTargetAfterHide = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
-		sheet.UndoManager().Undo()
-		closeBuyDockable(sheet)
-		after = readGates()
-	})
-	c.True(buyEnabled, "Buy Equipment must be enabled for a new sheet")
-	c.True(before.moveToCarried, "moving the selected other equipment to the carried list must be enabled")
-	c.Equal([]bool{true, true, true}, before.newCarried, "the New Carried Equipment commands must be enabled")
-	c.Equal(before, during, "buying must leave the commands that add to the carried equipment list enabled")
-	c.True(blockPanelIsList, "the carried equipment list must stay the block's panel while buying")
-	c.True(dropTargetIsDockable, "equipment dropped on the sheet must go to the buy dockable")
-	c.True(editorFindsList, "the layout editor must find the carried equipment block while buying")
-	c.True(buyingAfterHide, "hiding the carried equipment block must not end buying")
-	c.True(dropTargetAfterHide, "equipment dropped on the sheet must still go to the buy dockable with the list hidden")
-	c.Equal(before, after, "closing the dockable must leave everything as it was")
 }

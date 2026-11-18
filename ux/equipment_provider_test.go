@@ -99,3 +99,41 @@ func TestEquipmentPageHeaderSyncRefreshesTotalsTooltip(t *testing.T) {
 	c.Equal("", header.TooltipText(), "syncing must remove the tooltip once there is nothing to add")
 	c.Nil(header.Tooltip)
 }
+
+func TestEquipmentProviderUsesTheCarriedOrOtherList(t *testing.T) {
+	c := check.New(t)
+	lists := &listsForTest{
+		carried: []*gurps.Equipment{gurps.NewEquipment(nil, nil, false), gurps.NewEquipment(nil, nil, false)},
+		other:   []*gurps.Equipment{gurps.NewEquipment(nil, nil, false)},
+	}
+	carried := NewEquipmentProvider(lists, true, true)
+	other := NewEquipmentProvider(lists, false, true)
+	c.Equal(lists.carried, carried.RootData())
+	c.Equal(lists.other, other.RootData())
+	c.Equal(gurps.BlockEquipmentKey, carried.RefKey())
+	c.Equal(gurps.BlockOtherEquipmentKey, other.RefKey())
+	other.SetRootData(nil)
+	c.Equal(0, len(lists.other), "the other provider must write to the other list")
+	c.Equal(2, len(lists.carried), "the other provider must leave the carried list alone")
+	carried.SetRootData(nil)
+	c.Equal(0, len(lists.carried), "the carried provider must write to the carried list")
+}
+
+// TestEquipmentProviderFollowsTLAndLCColumnSettings verifies that the equipment list's tech level and legality class
+// columns follow the sheet's settings on a page and are always present off one.
+func TestEquipmentProviderFollowsTLAndLCColumnSettings(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	onPage := NewEquipmentProvider(entity, true, true)
+	offPage := NewEquipmentProvider(entity, true, false)
+	for _, hide := range []bool{false, true} {
+		entity.SheetSettings.HideTLColumn = hide
+		entity.SheetSettings.HideLCColumn = !hide
+		c.Equal(!hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentTLColumn),
+			"on a page the TL column must follow the sheet's setting (hide=%v)", hide)
+		c.Equal(hide, slices.Contains(onPage.ColumnIDs(), gurps.EquipmentLCColumn),
+			"on a page the LC column must follow the sheet's setting (hide=%v)", !hide)
+		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentTLColumn), "off a page the TL column must be present")
+		c.True(slices.Contains(offPage.ColumnIDs(), gurps.EquipmentLCColumn), "off a page the LC column must be present")
+	}
+}

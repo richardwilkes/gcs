@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -534,51 +535,6 @@ func TestCopyOffASheetClearsUserDesc(t *testing.T) {
 	c.Equal([]string{"Mine", "Also mine"}, descs(group), "the trait copied from is left alone")
 }
 
-// TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that applying an edit to a choice container that still
-// holds a source clears the source, and that undo and redo put it back and take it away again along with everything
-// else. A choice is stripped of its source whenever it is created, converted, loaded or transferred, so this is only a
-// backstop, but the editor must not be the way one keeps it. An edit to a plain group must leave its source alone when
-// applied, undone and redone.
-func TestEditorUndoRestoresSourceClearedByTemplatePicker(t *testing.T) {
-	c := check.New(t)
-	choice := gurps.NewTraitChoiceContainer(nil, nil)
-	choice.Name = "Pick One"
-	choiceSource := gurps.Source{Library: "lib", Path: "choice.adq", TID: choice.ID()}
-	choice.Source = choiceSource
-	group := gurps.NewTrait(nil, nil, true)
-	group.Name = "Advantages"
-	groupSource := gurps.Source{Library: "lib", Path: "group.adq", TID: group.ID()}
-	group.Source = groupSource
-	data := gurps.NewTemplate()
-	data.Traits = []*gurps.Trait{choice, group}
-	template := newTestTemplateDockable("Source", data)
-	mgr := unison.UndoManagerFor(template)
-	c.NotNil(mgr, "the template must have an undo manager")
-
-	e, _ := buildEditorContent(template, choice, initTraitEditor)
-	e.editorData.Name = "Pick Another"
-	e.applyEdits()
-	c.Equal("Pick Another", choice.Name)
-	c.True(choice.Source.IsZero(), "a choice container must not keep a source through an edit")
-
-	mgr.Undo()
-	c.Equal("Pick One", choice.Name)
-	c.Equal(choiceSource, choice.Source, "undo must give the source back")
-
-	mgr.Redo()
-	c.True(choice.Source.IsZero(), "redo must take the source away again")
-
-	e, _ = buildEditorContent(template, group, initTraitEditor)
-	e.editorData.Name = "Renamed"
-	e.applyEdits()
-	c.Equal(groupSource, group.Source, "an edit to a plain group must leave its source alone")
-	mgr.Undo()
-	c.Equal("Advantages", group.Name)
-	c.Equal(groupSource, group.Source, "undoing an edit that left the source alone must leave it alone")
-	mgr.Redo()
-	c.Equal(groupSource, group.Source, "redoing an edit that left the source alone must leave it alone")
-}
-
 // transferPrompt records one prompt a transfer put up: which prompt it was, the operation it was told it is part of
 // and, for a modifier prompt, the row it asked about and its place in the count.
 type transferPrompt struct {
@@ -886,4 +842,173 @@ func TestAllRemainingCarriesAcrossPartsAndIntoModifierPrompts(t *testing.T) {
 		c.True(gurps.ModifierChoiceIsResolved(row.Modifiers[0]), "%s has its pick", row.Name)
 	}
 	c.Equal(1, len(parts.skills.rows), "the skill choice was made too")
+}
+
+// TestApplyOptionsFor verifies what rows arriving in each kind of document go through, depending on where they came
+// from. A template counts as a source of rows to be applied, just as a library does; a prior refactor once collapsed the
+// source and destination checks into a single predicate that answered true for a template on either side, so a copy
+// from a template onto a sheet was mistaken for one arriving from a sheet and silently skipped its prompts.
+func TestApplyOptionsFor(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	loot := newTestLootSheet(t)
+	template := newTestTemplateWithBodyType("")
+	library := newLibraryStyleTraitsTable()
+
+	c.Equal(transferSheet, transferKindOf(sheet.Traits.Table))
+	c.Equal(transferSheet, transferKindOf(loot.Equipment.Table), "a loot sheet is a sheet")
+	c.Equal(transferTemplate, transferKindOf(template.Traits.Table))
+	c.Equal(transferLibrary, transferKindOf(library))
+	sheet.Skills.AsPanel().RemoveFromParent()
+	c.Equal(transferSheet, transferKindOf(sheet.Skills.Table), "a list the layout leaves off the page is still the sheet's")
+
+	full := applyOptions{
+		resolvePickers:     true,
+		askAncestry:        true,
+		promptForChoices:   true,
+		randomize:          true,
+		clearPreconfigured: true,
+		clearTemplateOnly:  true,
+		merge:              true,
+	}
+	c.Equal(full, applyOptionsFor(library, sheet.Traits.Table), "a library to a sheet")
+	c.Equal(full, applyOptionsFor(template.Traits.Table, sheet.Traits.Table), "a template to a sheet")
+	c.Equal(full, applyOptionsFor(library, loot.Equipment.Table), "a library to a loot sheet")
+	sheetToSheet := full
+	sheetToSheet.promptForChoices = false
+	c.Equal(sheetToSheet, applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
+		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
+	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, clearSheetOnly: true},
+		applyOptionsFor(library, template.Traits.Table),
+		"a library to a template normalizes choice containers, clears what only a sheet holds and prompts for "+
+			"modifiers and nameables only")
+	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
+		applyOptionsFor(template.Traits.Table, template.Traits.Table),
+		"a template to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
+			"sheet holds")
+	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
+		applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
+		"a sheet to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
+			"sheet holds")
+	c.Equal(applyOptions{clearTemplateOnly: true, clearSheetOnly: true},
+		applyOptionsFor(template.Traits.Table, library),
+		"anything to a library is a plain copy, Preconfigured flag included, save for what only a sheet holds and the "+
+			"choices only a template can hold")
+}
+
+// TestCopyOffASheetDropsStudy verifies that a row copied from a character sheet into a template or a library loses its
+// study, which only a character sheet can show or edit, while a copy onto another sheet keeps it.
+func TestCopyOffASheetDropsStudy(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Language"
+	trait.Study = []*gurps.Study{{Type: study.Teacher, Hours: fxp.Ten}}
+	trait.StudyHoursNeeded = study.Level2
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	source := sheet.Traits.Table
+	source.SelectAll()
+
+	templateData := gurps.NewTemplate()
+	copySelectionTo(source, []*Template{newTestTemplateDockable("Destination", templateData)})
+	c.Equal(1, len(templateData.TraitList()), "the trait must have been copied onto the template")
+	c.Equal(0, len(templateData.TraitList()[0].Study), "a copy onto a template must lose its study")
+	c.Equal(study.Standard, templateData.TraitList()[0].StudyHoursNeeded,
+		"a copy onto a template must lose its study hours needed")
+
+	library := newLibraryStyleTraitsTable()
+	c.True(applyTransfer(library, newApplyParts(newAppendPart(library, source.SelectedRows(true))),
+		applyOptionsFor(source, library), promptOperation{}, "Copy"))
+	c.Equal(1, len(library.RootRows()), "the trait must have been copied into the library")
+	c.Equal(0, len(library.RootRows()[0].Data().Study), "a copy into a library must lose its study")
+	c.Equal(study.Standard, library.RootRows()[0].Data().StudyHoursNeeded,
+		"a copy into a library must lose its study hours needed")
+
+	other := newTestSheetForTemplate(t)
+	copySelectionTo(source, []*Sheet{other})
+	copied := other.Entity().Traits[len(other.Entity().Traits)-1]
+	c.Equal("Language", copied.Name, "the trait must have been copied onto the other sheet")
+	c.Equal(1, len(copied.Study), "a copy onto another sheet must keep its study")
+	c.Equal(study.Level2, copied.StudyHoursNeeded, "a copy onto another sheet must keep its study hours needed")
+	c.Equal(1, len(trait.Study), "the source row must keep its study")
+}
+
+// The organizing groups kept with what was picked from them reach the table, where one goes only once all of that
+// merged into rows already there.
+func TestPickerGroupsReachTheTable(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	brawling, karate := newTestSkill("Brawling", fxp.Four, nil), newTestSkill("Karate", fxp.Four, nil)
+	group := func(name string, children ...*gurps.Skill) *gurps.Skill {
+		one := gurps.NewSkill(nil, nil, true)
+		one.Name = name
+		one.PickSeparately = true
+		one.Children = children
+		SetParents(children, one)
+		return one
+	}
+	unarmed := group("Unarmed", newTestSkill("Brawling", fxp.Two, nil), newTestSkill("Judo", fxp.Two, nil))
+	striking := group("Striking", newTestSkill("Karate", fxp.Two, nil))
+	choice := gurps.NewSkillChoiceContainer(nil, nil)
+	choice.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.Three
+	choice.Children = []*gurps.Skill{unarmed, striking}
+	SetParents(choice.Children, choice)
+	var sheet *Sheet
+	screen.Do(func() {
+		sheet = newTestSheetForTemplate(t)
+		sheet.Entity().Skills = []*gurps.Skill{brawling, karate}
+		sheet.Rebuild(true)
+	})
+	part := &applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: []*gurps.Skill{choice}, index: -1}
+	resolved := false
+	c.True(screen.Post(func() { resolved = part.resolvePickers(promptOperation{}, false, nil) }))
+	screen.Sync()
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var boxes []*unison.CheckBox
+	screen.Do(func() { boxes = uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content()) })
+	for _, box := range boxes {
+		screen.Click(screen.PanelCenter(box))
+	}
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	c.True(resolved, "every option is picked")
+	c.Equal([]*gurps.Skill{unarmed, striking}, part.groups, "the groups kept are handed on")
+	screen.Do(func() { part.place(true) })
+	c.Equal(fxp.FromInteger(6), brawling.Points)
+	c.Equal(fxp.FromInteger(6), karate.Points)
+	c.Equal([]*gurps.Skill{brawling, karate, unarmed}, sheet.Entity().Skills,
+		"a group with a pick left is kept, one with none left goes")
+	c.Equal("Judo", unarmed.Children[0].Name)
+}
+
+// TestPromptRequiresPicksOnlyForSheets verifies that rows headed for a template are asked about their modifiers
+// without a pick being required, and rows headed for a loot sheet with one.
+func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
+	c := check.New(t)
+	var traitAsked, equipmentAsked []bool
+	uxtest.SwapForTest(t, &promptForTraitModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+			traitAsked = append(traitAsked, info.requirePicks)
+			return false, false
+		})
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
+		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+			equipmentAsked = append(equipmentAsked, info.requirePicks)
+			return false, false
+		})
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"A"})}
+	template := newTestTemplateWithTraits()
+	toTemplate := &applyPart[*gurps.Trait]{table: template.Traits.Table, rows: []*gurps.Trait{trait}}
+	c.True(toTemplate.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
+	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
+
+	loot := newTestLootSheet(t)
+	equipment := gurps.NewEquipment(nil, nil, false)
+	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
+	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
+	c.True(toLoot.promptForModifiers(promptOperation{}, &modifierPromptCount{total: 1}, nil))
+	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
 }

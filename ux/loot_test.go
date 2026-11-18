@@ -321,3 +321,13 @@ func TestTreasureGenDialogGatesOKOnValidFields(t *testing.T) {
 	c.Equal(1, windows, "the dialog has been dismissed")
 	c.True(done, "the treasure generator has finished")
 }
+
+// TestLootSheetMarkModifiedBumpsTheTimestamp verifies that a loot sheet's MarkModified bumps its modification
+// timestamp, the one thing it does beyond what the other page dockables do.
+func TestLootSheetMarkModifiedBumpsTheTimestamp(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	sheet.loot.ModifiedOn = jio.Time{}
+	sheet.MarkModified(nil)
+	c.NotEqual(jio.Time{}, sheet.loot.ModifiedOn, "marking the loot sheet as modified must bump the timestamp")
+}

@@ -10,19 +10,14 @@
 package ux
 
 import (
-	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
 	"github.com/richardwilkes/gcs/v5/model/paper"
-	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/toolbox/v2/tid"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -222,96 +217,6 @@ func TestBuildLayoutNodeSquareFlags(t *testing.T) {
 	c.Nil(squareLayoutNodeOf(panels[gurps.BlockPortraitKey]))
 }
 
-// TestFactoryPortraitPictureAreaIsSquare checks that the portrait of a sheet laid out the factory way has a square
-// picture area whatever the page and the rest of the layout come to, since its width is taken from the height of the
-// band it is in rather than from a share of the page width, and that the blocks beside it still fill the rest of the
-// band.
-func TestFactoryPortraitPictureAreaIsSquare(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	node, _, _ := entity.SheetSettings.Layout.Find(gurps.BlockPortraitKey)
-	c.NotNil(node, "the portrait must be in the layout")
-	c.True(node.Square, "the factory portrait takes its width from the height of the band it is in")
-	portrait := sheet.blocks[gurps.BlockPortraitKey].AsPanel()
-
-	measure := func(what string) geom.Size {
-		band := sheet.page.Children()[0]
-		children := band.Children()
-		c.Equal(0, band.IndexOfChild(portrait), "the portrait must be the first block of the first band (%s)", what)
-		used := float32(len(children) - 1) // The single pixel between each pair of blocks
-		for _, child := range children {
-			used += child.FrameRect().Width
-		}
-		c.True(xmath.Abs(used-band.FrameRect().Width) < 0.01,
-			"the blocks of the first band must fill it (%s), but %v of %v was used", what, used, band.FrameRect().Width)
-		size := portrait.ContentRect(false).Size
-		c.True(xmath.Abs(size.Width-size.Height) < 0.5, "the picture area must be square (%s), but was %v", what, size)
-		return size
-	}
-
-	letter := measure("letter")
-
-	_, _, valid := gurps.ParsePageSize("a4")
-	c.True(valid, "a4 must be a page size the sheet can be laid out on")
-	wasSize := entity.SheetSettings.Page.Size
-	entity.SheetSettings.Page.Size = "a4"
-	sheet.Rebuild(true)
-	a4 := measure("a4")
-	c.True(xmath.Abs(a4.Width-letter.Width) < 0.5,
-		"a narrower page must leave the picture area alone, but %v became %v", letter.Width, a4.Width)
-
-	entity.SheetSettings.Page.Size = wasSize
-	c.True(entity.SheetSettings.Layout.SetMinHeight(gurps.BlockIdentityKey,
-		paper.Length{Length: 2, Units: paper.Inch}))
-	sheet.Rebuild(true)
-	taller := measure("a two inch tall identity block")
-	c.True(taller.Width > letter.Width+50,
-		"a taller band must make the picture area wider, but %v became %v", letter.Width, taller.Width)
-}
-
-// TestSheetPageMatchesTheLayout checks that the sheet's page holds one panel per band of the layout that has anything
-// to show, and that the blocks that aren't lists are the panels the sheet keeps rather than new ones.
-func TestSheetPageMatchesTheLayout(t *testing.T) {
-	c := check.New(t)
-	sheet := newContinuousTestSheet(t)
-	layout := sheet.Entity().SheetSettings.Layout
-
-	c.Equal(nonEmptyBandCount(sheet, layout), len(sheet.page.Children()),
-		"every band that has something to show, and only those, must be on the page")
-	c.True(len(sheet.page.Children()) < len(layout.Root.Children),
-		"a character with no content has bands with nothing to show")
-	c.Equal(12, len(sheet.blocks), "every block that isn't a list is built and kept")
-	for key, block := range sheet.blocks {
-		c.NotNil(block.AsPanel().Parent(), "the %s block must be on the page", key)
-	}
-	c.Nil(sheet.Reactions.AsPanel().Parent(), "an empty reactions list must not be placed")
-	c.NotNil(sheet.MeleeWeapons.AsPanel().Parent(), "a list with rows must be placed")
-}
-
-// nonEmptyBandCount returns how many of the layout's bands have something to show for the given sheet.
-func nonEmptyBandCount(sheet *Sheet, layout *gurps.SheetLayout) int {
-	count := 0
-	for _, band := range layout.Root.Children {
-		if bandHasContent(sheet, band) {
-			count++
-		}
-	}
-	return count
-}
-
-func bandHasContent(sheet *Sheet, node *gurps.SheetLayoutNode) bool {
-	if node.Type == layoutnode.Block {
-		return !isEmptyDerivedList(sheet, node.Key)
-	}
-	for _, child := range node.Children {
-		if bandHasContent(sheet, child) {
-			return true
-		}
-	}
-	return false
-}
-
 func isEmptyDerivedList(sheet *Sheet, key string) bool {
 	switch key {
 	case gurps.BlockReactionsKey:
@@ -325,68 +230,6 @@ func isEmptyDerivedList(sheet *Sheet, key string) bool {
 	default:
 		return false
 	}
-}
-
-// TestSheetHidingAndShowingABlock checks that hiding a block takes it off the page without taking it away from the
-// sheet, that nothing reaching for it afterwards is handed something nobody can see, and that showing it brings it
-// back.
-func TestSheetHidingAndShowingABlock(t *testing.T) {
-	c := check.New(t)
-	sheet := newContinuousTestSheet(t)
-	layout := sheet.Entity().SheetSettings.Layout
-	notes := sheet.Notes
-	c.NotNil(notes.AsPanel().Parent(), "the notes list starts out on the page")
-	c.NotNil(sheet.keyToPanel(noteDragKey), "a note can be dropped onto the sheet")
-
-	c.True(layout.Hide(gurps.BlockNotesKey))
-	sheet.Rebuild(true)
-	c.NotNil(sheet.Notes, "the sheet keeps its notes list even when the layout doesn't show it")
-	c.Nil(sheet.Notes.AsPanel().Parent(), "a list that isn't on the page has no parent")
-	c.Nil(sheet.keyToPanel(noteDragKey), "a list that isn't on the page is not a drop target")
-	c.NotNil(sheet.keyToPanel(traitDragKey), "the lists that are still on the page remain drop targets")
-	for _, child := range sheet.page.Children() {
-		c.NotEqual(sheet.Notes.AsPanel(), child, "the notes list must not be on the page")
-	}
-
-	c.True(layout.Show(gurps.BlockNotesKey))
-	sheet.Rebuild(true)
-	c.NotNil(sheet.Notes.AsPanel().Parent(), "showing the block puts the list back on the page")
-	c.NotNil(sheet.keyToPanel(noteDragKey), "and makes it a drop target again")
-}
-
-// TestSheetHidingABlockThatIsNotAList checks that a block the sheet keeps a panel for is taken off the page when it is
-// hidden, and that the panel itself survives to be put back.
-func TestSheetHidingABlockThatIsNotAList(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	layout := sheet.Entity().SheetSettings.Layout
-	portrait := sheet.blocks[gurps.BlockPortraitKey]
-	c.NotNil(portrait)
-
-	c.True(layout.Hide(gurps.BlockPortraitKey))
-	sheet.Rebuild(true)
-	c.Equal(portrait, sheet.blocks[gurps.BlockPortraitKey], "the panel is kept")
-	c.Nil(portrait.AsPanel().Parent(), "but it isn't on the page")
-
-	c.True(layout.Show(gurps.BlockPortraitKey))
-	sheet.Rebuild(true)
-	c.NotNil(portrait.AsPanel().Parent(), "showing it puts the very same panel back")
-	c.Equal(portrait, sheet.blocks[gurps.BlockPortraitKey])
-}
-
-// TestTemplateBuildsFromTheDefaultLayout checks that a template lays its content out from the default layout, showing
-// exactly the five blocks a template can have.
-func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
-	c := check.New(t)
-	template := newTestTemplateWithBodyType("Humanoid")
-	lists := []unison.Paneler{template.Traits, template.Skills, template.Spells, template.Equipment, template.Notes}
-	for i, list := range lists {
-		c.NotNil(list.AsPanel().Parent(), "list %d must be placed", i)
-	}
-	placed := uxtest.PanelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
-		return slices.ContainsFunc(lists, func(list unison.Paneler) bool { return list.AsPanel() == p })
-	})
-	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")
 }
 
 // TestBuildLayoutNodeRecordsTheContainerItWasBuiltFrom checks that a container panel records the Row or Column node its
@@ -448,63 +291,4 @@ func TestBuildLayoutSquareBlockInAStretchedRowStaysSquare(t *testing.T) {
 	c.Equal(inner.FrameRect().Height, portraitPanel.FrameRect().Height, "the portrait is given the full height of its row")
 	content := portraitPanel.ContentRect(false).Size
 	c.True(nearlySquare(content), "the portrait's content must be square at that height, but is %v", content)
-}
-
-// TestSwapDefaultsFollowsTheLayout checks that Swap Defaults is disabled while the layout leaves the skill list off the
-// page, where the list keeps its selection but has no undo manager, so the command would swap the hidden skills'
-// defaults where the user can't see and can't undo.
-func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	newSkill := func(name, defaultsTo string, points fxp.Int) *gurps.Skill {
-		sk := gurps.NewSkill(entity, nil, false)
-		sk.Name = name
-		sk.Points = points
-		sk.Defaults = []*gurps.SkillDefault{{
-			DefaultType: gurps.SkillID,
-			Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: defaultsTo}},
-			Modifier:    -fxp.Four,
-		}}
-		return sk
-	}
-	broadsword := newSkill("Broadsword", "Rapier", fxp.Four)
-	rapier := newSkill("Rapier", "Broadsword", fxp.Eight)
-	entity.Skills = []*gurps.Skill{broadsword, rapier}
-	entity.Recalculate()
-	sheet.Rebuild(true)
-	c.NotNil(broadsword.DefaultedFrom, "precondition: Broadsword defaults to Rapier")
-	sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{broadsword.TID: true})
-	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the defaults can be swapped while the list is on the page")
-
-	layout := entity.SheetSettings.Layout
-	c.True(layout.Hide(gurps.BlockSkillsKey))
-	sheet.Rebuild(true)
-	c.True(sheet.Skills.Table.HasSelection(), "precondition: the hidden list keeps its selection")
-	c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is disabled while the list is off the page")
-	c.True(layout.Show(gurps.BlockSkillsKey))
-	sheet.Rebuild(true)
-	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is enabled again once the list is back")
-}
-
-// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page
-// is not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
-func TestTemplateHidingABlockTakesItOffTheDropTargets(t *testing.T) {
-	c := check.New(t)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-	layout := global.Sheet.Layout.Clone()
-	global.Sheet.Layout = layout
-	template := newTestTemplateDockable("Source", gurps.NewTemplate())
-	c.NotNil(template.keyToPanel(spellDragKey), "a spell can be dropped onto the template")
-
-	c.True(layout.Hide(gurps.BlockSpellsKey))
-	template.Rebuild(true)
-	c.Nil(template.Spells.AsPanel().Parent(), "a list that isn't on the page has no parent")
-	c.Nil(template.keyToPanel(spellDragKey), "a list that isn't on the page is not a drop target")
-	c.NotNil(template.keyToPanel(traitDragKey), "the lists that are still on the page remain drop targets")
-
-	c.True(layout.Show(gurps.BlockSpellsKey))
-	template.Rebuild(true)
-	c.NotNil(template.keyToPanel(spellDragKey), "showing the block makes it a drop target again")
 }

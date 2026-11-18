@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/mod"
 )
 
 func stBonusFor(entity *gurps.Entity) fxp.Int {
@@ -257,29 +256,6 @@ func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing
 		"only the container's modifier and the always-on bonus may be contributing")
 }
 
-// Adjusting a value from a panel that isn't part of a window's panel tree -- so there is no undo manager and no owner
-// to mark as modified -- must still apply the change and recalculate the entity rather than panicking. Editors build
-// such detached widgets while they are being assembled.
-func TestAdjustTargetsWithUnparentedSource(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	trait := newSwitchableTrait(entity, "Claws")
-	entity.Traits = []*gurps.Trait{trait}
-	entity.Recalculate()
-	c.Equal(fxp.Int(0), stBonusFor(entity), "the switchable bonus starts out of play")
-
-	source := unison.NewPanel()
-	c.Nil(unison.UndoManagerFor(source), "the test requires a source with no undo manager")
-	adjustTargets("Toggle Switch", nil, source, entity, []gurps.FeatureSwitcher{trait},
-		func(s gurps.FeatureSwitcher) bool { return s.IsSwitchedOn() },
-		func(s gurps.FeatureSwitcher, v bool) { s.SetSwitchedOn(v) },
-		func(s gurps.FeatureSwitcher) { s.SetSwitchedOn(true) },
-		false)
-
-	c.True(trait.SwitchedOn, "the mutation must have been applied")
-	c.Equal(fxp.One, stBonusFor(entity), "the entity must have been recalculated")
-}
-
 // switchColumnIndex returns the index of the switch column within the given columns, or -1 if it isn't present.
 func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
 	for i, one := range columns {
@@ -288,117 +264,6 @@ func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
 		}
 	}
 	return -1
-}
-
-// clickSwitchCellThroughTable clicks the center of the given cell's frame with the modifiers through the table's own
-// mouse callbacks, which locate the cell under the pointer and hand it the event, as a real click arrives. The table
-// must already be sized, since the frames come from its column widths and row heights.
-func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]], row, col int,
-	mods mod.Modifiers,
-) (down, up bool) {
-	where := table.CellFrame(row, col).Center()
-	down = table.MouseDownCallback(where, unison.ButtonLeft, 1, mods)
-	up = table.MouseUpCallback(where, unison.ButtonLeft, mods)
-	return down, up
-}
-
-// A dimmed switch cell can be a disabled panel because the table, not the window, hands it the press
-// (Table.DefaultMouseDown and friends) without consulting its enabled state; a cell is attached to the table only for
-// the duration of an event. This drives that path as a user would, for a trait that is turned off and for equipment
-// that isn't equipped, against undimmed baselines, checking what the click draws and that undo and redo follow it, and
-// ends each case with a press on an ordinary column that reaches the table's own row selection, showing the dispatch
-// really happens.
-func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
-	for _, tc := range []struct {
-		name      string
-		dim       bool
-		equipment bool
-	}{
-		{name: "dimmed trait", dim: true},
-		{name: "undimmed trait", dim: false},
-		{name: "dimmed equipment", dim: true, equipment: true},
-		{name: "undimmed equipment", dim: false, equipment: true},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			c := check.New(t)
-			sheet := newTestSheetForTemplate(t)
-			entity := sheet.Entity()
-			if tc.equipment {
-				equipment := gurps.NewEquipment(entity, nil, false)
-				equipment.Name = "Powered Armor"
-				// Equipment that isn't equipped contributes nothing, which dims its switch cell the same way.
-				equipment.Equipped = !tc.dim
-				equipment.Features = gurps.Features{switchableSTBonus(nil)}
-				entity.CarriedEquipment = []*gurps.Equipment{equipment}
-				sheet.Rebuild(true)
-				checkSwitchCellClickableThroughTable(c, sheet.CarriedEquipment.Table, gurps.EquipmentSwitchColumn,
-					gurps.EquipmentDescriptionColumn, equipment, tc.dim)
-				return
-			}
-			trait := newSwitchableTrait(entity, "Claws")
-			// A trait that is turned off contributes nothing, which is what dims its switch cell; whether it has a
-			// switch to throw at all doesn't depend on that.
-			trait.SetDisabled(tc.dim)
-			entity.Traits = []*gurps.Trait{trait}
-			sheet.Rebuild(true)
-			checkSwitchCellClickableThroughTable(c, sheet.Traits.Table, gurps.TraitSwitchColumn,
-				gurps.TraitDescriptionColumn, trait, tc.dim)
-		})
-	}
-}
-
-// checkSwitchCellClickableThroughTable clicks the switch cell of the table's only row, which holds the switcher and
-// starts out switched off, through the table and checks that it turns the cell's dash into a checkmark and throws the
-// switch as a single edit that undo and redo take back and forth, then presses the cell of the other column and checks
-// that the press reaches the table's own row selection.
-func checkSwitchCellClickableThroughTable[T gurps.Node[T]](c check.Checker, table *unison.Table[*Node[T]],
-	switchColumnID, otherColumnID int, switcher gurps.FeatureSwitcher, dim bool,
-) {
-	col := switchColumnIndex(table.Columns, switchColumnID)
-	c.NotEqual(-1, col, "the switch column must be present")
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	c.False(mgr.CanUndo(), "nothing has been done yet")
-
-	// Hit testing needs column widths and row heights, which the sheet's rebuild set without a window: page list
-	// syncing sizes the columns (see sizePageTableColumns) and model syncing measures every row. Checking the frame
-	// makes a change there fail here, not as presses that quietly land nowhere.
-	c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
-	label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).(*unison.Label)
-	c.True(ok, "the switch cell must be a label")
-	if dim {
-		c.False(label.Enabled(), "a dimmed switch cell is disabled, which is what draws it dimmed")
-	} else {
-		c.True(label.Enabled(), "an undimmed switch cell is drawn normally")
-	}
-	drawable, ok := label.Drawable.(*unison.DrawableSVG)
-	c.True(ok, "the switch cell must draw an SVG")
-	if ok {
-		c.Equal(unison.DashSVG, drawable.SVG, "an off switch is drawn as a dash")
-	}
-
-	down, up := clickSwitchCellThroughTable(table, 0, col, mod.None)
-	c.True(down, "the table must let the cell consume the press")
-	c.True(up, "the table must let the cell consume the release")
-	c.True(switcher.IsSwitchedOn(), "a click delivered by the table must throw the switch")
-	drawable, ok = label.Drawable.(*unison.DrawableSVG)
-	c.True(ok, "the switch cell must draw an SVG")
-	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the cell must show the switch it just threw as on")
-	c.False(table.HasSelection(), "the cell must have taken the press before the table's own row selection could run")
-	c.True(mgr.CanUndo(), "the click must have registered an undo edit")
-	mgr.Undo()
-	c.False(switcher.IsSwitchedOn(), "undo must turn the switch back off")
-	c.False(mgr.CanUndo(), "the click must have registered exactly one edit")
-	c.True(mgr.CanRedo(), "throwing the switch must be redoable")
-	mgr.Redo()
-	c.True(switcher.IsSwitchedOn(), "redo must turn the switch back on")
-
-	otherCol := table.ColumnIndexForID(otherColumnID)
-	c.NotEqual(-1, otherCol, "the other column must be present")
-	down, _ = clickSwitchCellThroughTable(table, 0, otherCol, mod.None)
-	c.True(down, "the press must be consumed")
-	c.True(table.HasSelection(),
-		"a press that no cell takes must reach the table's own row selection, or nothing was dispatched")
 }
 
 // newSheetWithSwitchableReaction returns a sheet whose entity holds one trait carrying a switchable reaction bonus that

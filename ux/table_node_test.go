@@ -324,6 +324,117 @@ func TestSwitchCellOptionClickThrowsTheDescendantsToo(t *testing.T) {
 	}
 }
 
+// clickSwitchCellThroughTable clicks the center of the given cell's frame with the modifiers through the table's own
+// mouse callbacks, which locate the cell under the pointer and hand it the event, as a real click arrives. The table
+// must already be sized, since the frames come from its column widths and row heights.
+func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]], row, col int,
+	mods mod.Modifiers,
+) (down, up bool) {
+	where := table.CellFrame(row, col).Center()
+	down = table.MouseDownCallback(where, unison.ButtonLeft, 1, mods)
+	up = table.MouseUpCallback(where, unison.ButtonLeft, mods)
+	return down, up
+}
+
+// A dimmed switch cell can be a disabled panel because the table, not the window, hands it the press
+// (Table.DefaultMouseDown and friends) without consulting its enabled state; a cell is attached to the table only for
+// the duration of an event. This drives that path as a user would, for a trait that is turned off and for equipment
+// that isn't equipped, against undimmed baselines, checking what the click draws and that undo and redo follow it, and
+// ends each case with a press on an ordinary column that reaches the table's own row selection, showing the dispatch
+// really happens.
+func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		dim       bool
+		equipment bool
+	}{
+		{name: "dimmed trait", dim: true},
+		{name: "undimmed trait", dim: false},
+		{name: "dimmed equipment", dim: true, equipment: true},
+		{name: "undimmed equipment", dim: false, equipment: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			if tc.equipment {
+				equipment := gurps.NewEquipment(entity, nil, false)
+				equipment.Name = "Powered Armor"
+				// Equipment that isn't equipped contributes nothing, which dims its switch cell the same way.
+				equipment.Equipped = !tc.dim
+				equipment.Features = gurps.Features{switchableSTBonus(nil)}
+				entity.CarriedEquipment = []*gurps.Equipment{equipment}
+				sheet.Rebuild(true)
+				checkSwitchCellClickableThroughTable(c, sheet.CarriedEquipment.Table, gurps.EquipmentSwitchColumn,
+					gurps.EquipmentDescriptionColumn, equipment, tc.dim)
+				return
+			}
+			trait := newSwitchableTrait(entity, "Claws")
+			// A trait that is turned off contributes nothing, which is what dims its switch cell; whether it has a
+			// switch to throw at all doesn't depend on that.
+			trait.SetDisabled(tc.dim)
+			entity.Traits = []*gurps.Trait{trait}
+			sheet.Rebuild(true)
+			checkSwitchCellClickableThroughTable(c, sheet.Traits.Table, gurps.TraitSwitchColumn,
+				gurps.TraitDescriptionColumn, trait, tc.dim)
+		})
+	}
+}
+
+// checkSwitchCellClickableThroughTable clicks the switch cell of the table's only row, which holds the switcher and
+// starts out switched off, through the table and checks that it turns the cell's dash into a checkmark and throws the
+// switch as a single edit that undo and redo take back and forth, then presses the cell of the other column and checks
+// that the press reaches the table's own row selection.
+func checkSwitchCellClickableThroughTable[T gurps.Node[T]](c check.Checker, table *unison.Table[*Node[T]],
+	switchColumnID, otherColumnID int, switcher gurps.FeatureSwitcher, dim bool,
+) {
+	col := switchColumnIndex(table.Columns, switchColumnID)
+	c.NotEqual(-1, col, "the switch column must be present")
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.False(mgr.CanUndo(), "nothing has been done yet")
+
+	// Hit testing needs column widths and row heights, which the sheet's rebuild set without a window: page list
+	// syncing sizes the columns (see sizePageTableColumns) and model syncing measures every row. Checking the frame
+	// makes a change there fail here, not as presses that quietly land nowhere.
+	c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
+	label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the switch cell must be a label")
+	if dim {
+		c.False(label.Enabled(), "a dimmed switch cell is disabled, which is what draws it dimmed")
+	} else {
+		c.True(label.Enabled(), "an undimmed switch cell is drawn normally")
+	}
+	drawable, ok := label.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the switch cell must draw an SVG")
+	if ok {
+		c.Equal(unison.DashSVG, drawable.SVG, "an off switch is drawn as a dash")
+	}
+
+	down, up := clickSwitchCellThroughTable(table, 0, col, mod.None)
+	c.True(down, "the table must let the cell consume the press")
+	c.True(up, "the table must let the cell consume the release")
+	c.True(switcher.IsSwitchedOn(), "a click delivered by the table must throw the switch")
+	drawable, ok = label.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the switch cell must draw an SVG")
+	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the cell must show the switch it just threw as on")
+	c.False(table.HasSelection(), "the cell must have taken the press before the table's own row selection could run")
+	c.True(mgr.CanUndo(), "the click must have registered an undo edit")
+	mgr.Undo()
+	c.False(switcher.IsSwitchedOn(), "undo must turn the switch back off")
+	c.False(mgr.CanUndo(), "the click must have registered exactly one edit")
+	c.True(mgr.CanRedo(), "throwing the switch must be redoable")
+	mgr.Redo()
+	c.True(switcher.IsSwitchedOn(), "redo must turn the switch back on")
+
+	otherCol := table.ColumnIndexForID(otherColumnID)
+	c.NotEqual(-1, otherCol, "the other column must be present")
+	down, _ = clickSwitchCellThroughTable(table, 0, otherCol, mod.None)
+	c.True(down, "the press must be consumed")
+	c.True(table.HasSelection(),
+		"a press that no cell takes must reach the table's own row selection, or nothing was dispatched")
+}
+
 // TestCheckCellRevertsADeclinedClick verifies that a check cell whose click isn't taken -- the report answers false --
 // puts its checked state and drawable back, since it flips both before reporting and would otherwise go on showing a
 // state the model never took on.
@@ -1409,4 +1520,34 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 	c.Equal(!closed, gurps.IsClosed(noteKey), "space on the name cell of a granted row with notes toggles the notes")
 	c.Equal([]*gurps.Trait{granted}, selected, "rather than selecting the item granting it")
 	c.Equal(before, dockables(), "and opens no editor")
+}
+
+// TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem verifies that a modifier copied by a drop into a group of
+// modifiers in a trait's editor is pointed at the trait, as is the weapon it holds, just as one dropped at the top level
+// of the list is. unison puts a copy dropped into a group among the group's children, which doesn't replace the list.
+func TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	sheet := newTestSheetForTemplate(t)
+	group := gurps.NewTraitModifier(sheet.Entity(), nil, true)
+	e, _, table := traitEditorOnSheet(t, sheet, group)
+
+	dropped := gurps.NewTraitModifier(nil, nil, false)
+	dropped.Name = "Strike"
+	dropped.Weapons = []*gurps.Weapon{gurps.NewWeapon(nil, true)}
+	from := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	simulateCopyDrop(from, table, []*Node[*gurps.TraitModifier]{NewNode(from, nil, dropped, false)},
+		e.editorData.Modifiers[0].ID())
+
+	if len(e.editorData.Modifiers) != 1 || len(e.editorData.Modifiers[0].Children) != 1 {
+		t.Fatal("the group must hold the copy")
+	}
+	copied := e.editorData.Modifiers[0].Children[0]
+	c.True(copied != dropped, "the drop must copy the modifier")
+	c.True(copied.Target() == e.target, "the copy must belong to the editor's trait")
+	if len(copied.Weapons) != 1 {
+		t.Fatal("the copy must hold a copy of the weapon")
+	}
+	c.True(copied.Weapons[0].Owner == gurps.WeaponOwner(e.target), "and its weapon to the trait")
+	c.True(copied.Weapons[0].HoldingModifier() == gurps.WeaponHoldingModifier(copied), "held by the copy")
 }

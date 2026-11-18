@@ -324,3 +324,40 @@ func TestApplyLibraryTemplateSourcesItsItems(t *testing.T) {
 	state, _ := gurps.MatchSource(applied)
 	c.Equal(srcstate.Matched, state)
 }
+
+// TestTemplateBuildsFromTheDefaultLayout checks that a template lays its content out from the default layout, showing
+// exactly the five blocks a template can have.
+func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
+	c := check.New(t)
+	template := newTestTemplateWithBodyType("Humanoid")
+	lists := []unison.Paneler{template.Traits, template.Skills, template.Spells, template.Equipment, template.Notes}
+	for i, list := range lists {
+		c.NotNil(list.AsPanel().Parent(), "list %d must be placed", i)
+	}
+	placed := uxtest.PanelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
+		return slices.ContainsFunc(lists, func(list unison.Paneler) bool { return list.AsPanel() == p })
+	})
+	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")
+}
+
+// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page
+// is not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
+func TestTemplateHidingABlockTakesItOffTheDropTargets(t *testing.T) {
+	c := check.New(t)
+	global := gurps.GlobalSettings()
+	restoreDefaultSheetLayout(t, global.Sheet.Layout)
+	layout := global.Sheet.Layout.Clone()
+	global.Sheet.Layout = layout
+	template := newTestTemplateDockable("Source", gurps.NewTemplate())
+	c.NotNil(template.keyToPanel(spellDragKey), "a spell can be dropped onto the template")
+
+	c.True(layout.Hide(gurps.BlockSpellsKey))
+	template.Rebuild(true)
+	c.Nil(template.Spells.AsPanel().Parent(), "a list that isn't on the page has no parent")
+	c.Nil(template.keyToPanel(spellDragKey), "a list that isn't on the page is not a drop target")
+	c.NotNil(template.keyToPanel(traitDragKey), "the lists that are still on the page remain drop targets")
+
+	c.True(layout.Show(gurps.BlockSpellsKey))
+	template.Rebuild(true)
+	c.NotNil(template.keyToPanel(spellDragKey), "showing the block makes it a drop target again")
+}

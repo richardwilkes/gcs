@@ -529,3 +529,48 @@ func TestFlexibleLess(t *testing.T) {
 		c.Equal(one.less, flexibleLess(one.s1, one.s2), "whether %q sorts before %q", one.s1, one.s2)
 	}
 }
+
+// TestDeletingContainerKeepsGrantedRows checks that deleting a container the user moved a granted row into leaves that
+// row on the sheet, since a granted row goes only with its grant.
+func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var sheet *Sheet
+	var granted *gurps.Skill
+	var group *gurps.Skill
+	isSkillEditor := func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*editor[*gurps.Skill, *gurps.SkillEditData])
+		return ok
+	}
+	screen.Do(func() {
+		sheet, _, granted, _ = newTestSheetWithGrant(t)
+		entity := sheet.Entity()
+		group = gurps.NewSkill(entity, nil, true)
+		group.Name = "Group"
+		entity.Skills = slices.DeleteFunc(entity.Skills, func(s *gurps.Skill) bool { return s == granted })
+		granted.SetParent(group)
+		group.Children = []*gurps.Skill{granted}
+		entity.Skills = append(entity.Skills, group)
+		sheet.Rebuild(true)
+		DisplayNewDockable(sheet)
+		EditSkill(sheet, granted)
+		sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
+		DeleteSelection(sheet.Skills.Table, true)
+	})
+	var kept bool
+	var groups, editors int
+	screen.Do(func() {
+		for _, s := range sheet.Entity().Skills {
+			if s == granted {
+				kept = true
+			}
+			if s.Container() {
+				groups++
+			}
+		}
+		editors = len(AllMatchingDockables(isSkillEditor))
+	})
+	c.Equal(0, groups, "the container goes")
+	c.True(kept, "the granted row within it stays, as the row it was")
+	c.Equal(1, editors, "and so does its editor")
+}

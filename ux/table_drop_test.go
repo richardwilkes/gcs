@@ -397,56 +397,75 @@ func TestAltDropWithACanceledPromptLeavesNothingBehind(t *testing.T) {
 	c.Equal(table, sheet.Traits.Table, "a canceled drop must not rebuild the sheet")
 }
 
-// TestApplyOptionsFor verifies what rows arriving in each kind of document go through, depending on where they came
-// from. A template counts as a source of rows to be applied, just as a library does; a prior refactor once collapsed the
-// source and destination checks into a single predicate that answered true for a template on either side, so a copy
-// from a template onto a sheet was mistaken for one arriving from a sheet and silently skipped its prompts.
-func TestApplyOptionsFor(t *testing.T) {
+// TestAltDropOnAMissingTraitRowIsANoOp verifies that the trait and equipment drop handlers skip a row index which
+// resolves to nothing, and that a drop none of whose indexes resolve reports that it changed nothing, so that no edit
+// is recorded.
+func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, traits := entityWithNamedTraits("Trait")
+		trait := traits[0]
+		provider := tabledProvider(NewTraitsProvider(entity, false))
+		dropped := gurps.NewTraitModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+
+		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
+			"a drop with no resolvable target changes nothing, so it must say so")
+		c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
+
+		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
+		c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, equipment := entityWithNamedEquipment("Item")
+		item := equipment[0]
+		provider := tabledProvider(NewEquipmentProvider(entity, true, false))
+		dropped := gurps.NewEquipmentModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+
+		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
+			"a drop with no resolvable target changes nothing, so it must say so")
+		c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
+
+		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
+		c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	})
+}
+
+// TestAltDropOfTheWrongKindOfModifierIsIgnored verifies that each provider's alternate drop handler only acts on drag
+// data holding its own kind of modifier, reporting that nothing changed otherwise.
+func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	loot := newTestLootSheet(t)
-	template := newTestTemplateWithBodyType("")
-	library := newLibraryStyleTraitsTable()
+	forbidModifierPrompts(t)
+	entity := gurps.NewEntity()
+	trait := namedTraits(entity, "Trait")[0]
+	item := namedEquipment(entity, "Item")[0]
 
-	c.Equal(transferSheet, transferKindOf(sheet.Traits.Table))
-	c.Equal(transferSheet, transferKindOf(loot.Equipment.Table), "a loot sheet is a sheet")
-	c.Equal(transferTemplate, transferKindOf(template.Traits.Table))
-	c.Equal(transferLibrary, transferKindOf(library))
-	sheet.Skills.AsPanel().RemoveFromParent()
-	c.Equal(transferSheet, transferKindOf(sheet.Skills.Table), "a list the layout leaves off the page is still the sheet's")
+	traitsProv := tabledProvider(NewTraitsProvider(entity, false))
+	equipmentProv := tabledProvider(NewEquipmentProvider(entity, true, false))
 
-	full := applyOptions{
-		resolvePickers:     true,
-		askAncestry:        true,
-		promptForChoices:   true,
-		randomize:          true,
-		clearPreconfigured: true,
-		clearTemplateOnly:  true,
-		merge:              true,
-	}
-	c.Equal(full, applyOptionsFor(library, sheet.Traits.Table), "a library to a sheet")
-	c.Equal(full, applyOptionsFor(template.Traits.Table, sheet.Traits.Table), "a template to a sheet")
-	c.Equal(full, applyOptionsFor(library, loot.Equipment.Table), "a library to a loot sheet")
-	sheetToSheet := full
-	sheetToSheet.promptForChoices = false
-	c.Equal(sheetToSheet, applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
-		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
-	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, clearSheetOnly: true},
-		applyOptionsFor(library, template.Traits.Table),
-		"a library to a template normalizes choice containers, clears what only a sheet holds and prompts for "+
-			"modifiers and nameables only")
-	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
-		applyOptionsFor(template.Traits.Table, template.Traits.Table),
-		"a template to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
-			"sheet holds")
-	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
-		applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
-		"a sheet to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
-			"sheet holds")
-	c.Equal(applyOptions{clearTemplateOnly: true, clearSheetOnly: true},
-		applyOptionsFor(template.Traits.Table, library),
-		"anything to a library is a plain copy, Preconfigured flag included, save for what only a sheet holds and the "+
-			"choices only a template can hold")
+	traitMod := gurps.NewTraitModifier(entity, nil, false)
+	traitMod.Name = "Trait Modifier"
+	traitModData := newDragData(traitMod)
+	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
+	equipmentMod.Name = "Equipment Modifier"
+	equipmentModData := newDragData(equipmentMod)
+
+	c.False(traitsProv.AltDropSupport().Drop([]int{0}, equipmentModData),
+		"a drop of the wrong kind of modifier changes nothing, so it must say so, or an empty edit would be recorded")
+	c.False(equipmentProv.AltDropSupport().Drop([]int{0}, traitModData),
+		"a drop of the wrong kind of modifier changes nothing, so it must say so, or an empty edit would be recorded")
+	c.Equal(0, len(trait.Modifiers), "equipment modifiers must not be attached to a trait")
+	c.Equal(0, len(item.Modifiers), "trait modifiers must not be attached to equipment")
+
+	c.True(traitsProv.AltDropSupport().Drop([]int{0}, traitModData))
+	c.True(equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData))
+	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
+	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is
@@ -669,102 +688,6 @@ func TestAltDropSkipsChoiceContainers(t *testing.T) {
 		table.SelectByIndex(0, 1, 2, 3)
 		c.Equal([]int{0, 3}, altDropTargets(table, 0), "selected groups must be left out of the batch")
 	})
-}
-
-// TestApplyModifierSkipsChoiceContainers verifies that the Apply Modifier command never gives a template choice
-// container or an equipment group modifiers either: its target prompt leaves them out while still offering what they
-// hold, and the shared attach step skips one handed to it anyway.
-func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
-	t.Run("traits", func(t *testing.T) {
-		c := check.New(t)
-		forbidModifierPrompts(t)
-		choice := gurps.NewTraitChoiceContainer(nil, nil)
-		option := gurps.NewTrait(nil, choice, false)
-		option.Name = "Option"
-		choice.Children = []*gurps.Trait{option}
-		plain := gurps.NewTrait(nil, nil, false)
-		plain.Name = "Plain"
-		template := newTestTemplateWithTraits(choice, plain)
-
-		lists := traitModifierTargetKind().lists(template)
-		c.Equal(1, len(lists))
-		labels := make([]string, 0, 2)
-		for _, one := range modifierTargetChoices(lists) {
-			labels = append(labels, one.String())
-		}
-		c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
-			"the choice must be left out of the prompt, but its option must still be offered")
-
-		ranged := gurps.NewTraitModifier(nil, nil, false)
-		ranged.Name = "Ranged"
-		tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
-		c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain},
-			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}))
-		c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
-		c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
-		c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice},
-			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}), "a choice alone leaves nothing to do")
-	})
-
-	t.Run("equipment", func(t *testing.T) {
-		c := check.New(t)
-		forbidModifierPrompts(t)
-		group := gurps.NewEquipmentGroup(nil, nil)
-		group.Name = "Kit"
-		rope := gurps.NewEquipment(nil, group, false)
-		rope.Name = "Rope"
-		group.Children = []*gurps.Equipment{rope}
-		backpack := gurps.NewEquipment(nil, nil, true)
-		backpack.Name = "Backpack"
-		template := newTestTemplateWithEquipment(group, backpack)
-
-		lists := equipmentModifierTargetKind().lists(template)
-		c.Equal(1, len(lists))
-		labels := make([]string, 0, 2)
-		for _, one := range modifierTargetChoices(lists) {
-			labels = append(labels, one.String())
-		}
-		c.Equal([]string{"Rope (in Kit)", "Backpack"}, labels,
-			"the group must be left out of the prompt, but what it holds must still be offered")
-
-		sturdy := gurps.NewEquipmentModifier(nil, nil, false)
-		sturdy.Name = "Sturdy"
-		tables := []*unison.Table[*Node[*gurps.Equipment]]{template.Equipment.Table}
-		c.True(attachModifierClones("", tables, template.template, []*gurps.Equipment{group, backpack},
-			[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
-		c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
-		c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
-	})
-}
-
-// TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem verifies that a modifier copied by a drop into a group of
-// modifiers in a trait's editor is pointed at the trait, as is the weapon it holds, just as one dropped at the top level
-// of the list is. unison puts a copy dropped into a group among the group's children, which doesn't replace the list.
-func TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	sheet := newTestSheetForTemplate(t)
-	group := gurps.NewTraitModifier(sheet.Entity(), nil, true)
-	e, _, table := traitEditorOnSheet(t, sheet, group)
-
-	dropped := gurps.NewTraitModifier(nil, nil, false)
-	dropped.Name = "Strike"
-	dropped.Weapons = []*gurps.Weapon{gurps.NewWeapon(nil, true)}
-	from := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
-	simulateCopyDrop(from, table, []*Node[*gurps.TraitModifier]{NewNode(from, nil, dropped, false)},
-		e.editorData.Modifiers[0].ID())
-
-	if len(e.editorData.Modifiers) != 1 || len(e.editorData.Modifiers[0].Children) != 1 {
-		t.Fatal("the group must hold the copy")
-	}
-	copied := e.editorData.Modifiers[0].Children[0]
-	c.True(copied != dropped, "the drop must copy the modifier")
-	c.True(copied.Target() == e.target, "the copy must belong to the editor's trait")
-	if len(copied.Weapons) != 1 {
-		t.Fatal("the copy must hold a copy of the weapon")
-	}
-	c.True(copied.Weapons[0].Owner == gurps.WeaponOwner(e.target), "and its weapon to the trait")
-	c.True(copied.Weapons[0].HoldingModifier() == gurps.WeaponHoldingModifier(copied), "held by the copy")
 }
 
 // simulateCopyDrop drops copies of the rows of another table into the container row of the table with the given ID,

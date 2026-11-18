@@ -185,3 +185,30 @@ func soleEditorOfType[T unison.Dockable](t *testing.T, screen *unison.HeadlessSc
 		return ok
 	})
 }
+
+func TestWeaponsProviderOnlyEditsOffThePage(t *testing.T) {
+	c := check.New(t)
+	lists := &listsForTest{
+		melee:  []*gurps.Weapon{gurps.NewWeapon(nil, true)},
+		ranged: []*gurps.Weapon{gurps.NewWeapon(nil, false), gurps.NewWeapon(nil, false)},
+	}
+	c.Equal(lists.melee, NewWeaponsProvider(lists, true, false).RootData())
+	c.Equal(lists.ranged, NewWeaponsProvider(lists, false, false).RootData())
+
+	onPage := NewWeaponsProvider(lists, false, true)
+	onPage.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.Weapon]]{}))
+	_, err := onPage.Serialize()
+	c.HasError(err, "the weapons on a page are not the list's own, so they must not be copied")
+	c.HasError(onPage.Deserialize(nil), "the weapons on a page are not the list's own, so they must not be pasted")
+	for i, header := range onPage.Headers() {
+		c.False(header.SortState().Sortable, "weapon header %d must not be sortable", i)
+	}
+
+	inEditor := NewWeaponsProvider(lists, false, false)
+	data, err := inEditor.Serialize()
+	c.NoError(err)
+	target := &listsForTest{}
+	c.NoError(NewWeaponsProvider(target, false, false).Deserialize(data))
+	c.Equal(2, len(target.ranged), "the ranged weapons must be pasted into the ranged list")
+	c.Equal(0, len(target.melee), "the melee list must be left alone")
+}

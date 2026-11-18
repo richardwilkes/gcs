@@ -13,8 +13,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -349,4 +352,52 @@ func TestWeightedRowLayoutNeverReportsLessThanItsChildrenNeed(t *testing.T) {
 	c.Equal(widths[1], wrapping.FrameRect().Width)
 	_, wrappingPref, _ := wrapping.Sizes(geom.Size{Width: wrapping.FrameRect().Width})
 	c.True(wrappingPref.Height <= wrapping.FrameRect().Height, "nothing may be clipped")
+}
+
+// TestFactoryPortraitPictureAreaIsSquare checks that the portrait of a sheet laid out the factory way has a square
+// picture area whatever the page and the rest of the layout come to, since its width is taken from the height of the
+// band it is in rather than from a share of the page width, and that the blocks beside it still fill the rest of the
+// band.
+func TestFactoryPortraitPictureAreaIsSquare(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	node, _, _ := entity.SheetSettings.Layout.Find(gurps.BlockPortraitKey)
+	c.NotNil(node, "the portrait must be in the layout")
+	c.True(node.Square, "the factory portrait takes its width from the height of the band it is in")
+	portrait := sheet.blocks[gurps.BlockPortraitKey].AsPanel()
+
+	measure := func(what string) geom.Size {
+		band := sheet.page.Children()[0]
+		children := band.Children()
+		c.Equal(0, band.IndexOfChild(portrait), "the portrait must be the first block of the first band (%s)", what)
+		used := float32(len(children) - 1) // The single pixel between each pair of blocks
+		for _, child := range children {
+			used += child.FrameRect().Width
+		}
+		c.True(xmath.Abs(used-band.FrameRect().Width) < 0.01,
+			"the blocks of the first band must fill it (%s), but %v of %v was used", what, used, band.FrameRect().Width)
+		size := portrait.ContentRect(false).Size
+		c.True(xmath.Abs(size.Width-size.Height) < 0.5, "the picture area must be square (%s), but was %v", what, size)
+		return size
+	}
+
+	letter := measure("letter")
+
+	_, _, valid := gurps.ParsePageSize("a4")
+	c.True(valid, "a4 must be a page size the sheet can be laid out on")
+	wasSize := entity.SheetSettings.Page.Size
+	entity.SheetSettings.Page.Size = "a4"
+	sheet.Rebuild(true)
+	a4 := measure("a4")
+	c.True(xmath.Abs(a4.Width-letter.Width) < 0.5,
+		"a narrower page must leave the picture area alone, but %v became %v", letter.Width, a4.Width)
+
+	entity.SheetSettings.Page.Size = wasSize
+	c.True(entity.SheetSettings.Layout.SetMinHeight(gurps.BlockIdentityKey,
+		paper.Length{Length: 2, Units: paper.Inch}))
+	sheet.Rebuild(true)
+	taller := measure("a two inch tall identity block")
+	c.True(taller.Width > letter.Width+50,
+		"a taller band must make the picture area wider, but %v became %v", letter.Width, taller.Width)
 }

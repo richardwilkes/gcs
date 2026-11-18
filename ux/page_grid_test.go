@@ -178,23 +178,6 @@ func TestPaginatedSheetShowsARowAddedAtTheEndOfAList(t *testing.T) {
 	c.Equal(len(entity.Traits), ranges[len(ranges)-1][1], "the added row must be drawn")
 }
 
-// TestPaginatedSheetKeepsAnEmptyListBesideTheStartOfALongOne verifies that an empty list sharing a band with a list
-// going on over several pages is shown once, on the page the band starts on, rather than handed out afresh for each
-// page the band goes on to. Taking a list with no rows for one not yet placed fails it.
-func TestPaginatedSheetKeepsAnEmptyListBesideTheStartOfALongOne(t *testing.T) {
-	c := check.New(t)
-	sheet := newPaginatedTestSheetWithTraits(t, 150)
-	pages := sheet.grid.pages
-	c.True(len(drawnRowRanges(pages, gurps.BlockTraitsKey)) > 1, "the traits must go on over several pages")
-	c.Equal(0, sheet.Skills.RowCount(), "the skills list must be empty")
-	c.True(unison.AncestorIs(sheet.Skills.Table, pages[0]), "the skills list must be on the first page")
-	count := 0
-	for _, page := range pages {
-		count += len(blockPanels(page.AsPanel(), gurps.BlockSkillsKey))
-	}
-	c.Equal(1, count, "the skills list must be shown once")
-}
-
 // TestPaginatedSheetSetsOutAsManyPagesAcrossAsFit verifies that a sheet shown as pages sets them out in rows of as many
 // as fit the width of the view at the sheet's scale, following a change of scale and a narrower view alike, without
 // filling the pages again for either. Setting out a fixed number across, or filling the pages whenever they are laid
@@ -422,23 +405,6 @@ func TestDisclosingARowOnALaterPageFillsThePagesAgain(t *testing.T) {
 	c.True(onSheet, "the focus must stay on the sheet")
 }
 
-// TestDropOnAPaginatedSheetGoesToTheEndOfTheList verifies that an item dropped anywhere on a sheet whose list goes on
-// over several pages is rerouted to the view of the list showing its last row, so that it lands at the end of the
-// list. Rerouting it to the list's first view, which ends on an earlier page, would insert it there instead.
-func TestDropOnAPaginatedSheetGoesToTheEndOfTheList(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := openPaginatedSheet(t, screen, func(entity *gurps.Entity) []*gurps.Trait { return plainTraits(entity, 150) })
-	table := sheet.Traits.Table
-	var target, last *unison.Panel
-	screen.Do(func() {
-		target = sheet.keyToPanel(traitDragKey)
-		last = table.ViewForRow(table.LastRowIndex()).AsPanel()
-	})
-	c.True(last != table.AsPanel(), "the list's last row must be on a later page than its first")
-	c.True(target == last, "the drop must go to the view showing the list's last row")
-}
-
 // TestEditingTheLayoutShowsAPaginatedSheetContinuously verifies that editing the block layout of a sheet shown as pages
 // shows it as one continuous page, which the editor's overlay covers, for as long as the editing lasts, and that the
 // pages come back once it is over, all without changing the user's choice of pages. Leaving the pages up while the
@@ -468,79 +434,6 @@ func TestEditingTheLayoutShowsAPaginatedSheetContinuously(t *testing.T) {
 	c.True(sheet.paginated, "leaving the editor must leave the choice of pages alone")
 	c.Equal(before, len(sheet.grid.pages), "leaving the editor must show the pages again")
 	c.True(sheet.page.Force, "a page must be the size of the paper again")
-}
-
-// TestTogglingPagesKeepsTheFocus verifies that switching a sheet between pages and one continuous page leaves the
-// keyboard focus where it was, whether on a field or on a list going on over several pages, where it stays on the view
-// showing the selected row, and that the continuous page is the only one, with no list going on past it. Rebuilding
-// without putting the focus back, putting it on another view of the list, or leaving pages or continuations behind,
-// fails it.
-func TestTogglingPagesKeepsTheFocus(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := openPaginatedSheet(t, screen, func(entity *gurps.Entity) []*gurps.Trait { return plainTraits(entity, 150) })
-	field := func() *unison.Panel { return sheet.AsPanel().FindRefKey(identityPanelNameFieldRefKey) }
-	for _, one := range []struct {
-		name   string
-		focus  func() *unison.Panel
-		holder func() *unison.Panel
-	}{
-		{name: "field", focus: field, holder: field},
-		{
-			name: "list",
-			focus: func() *unison.Panel {
-				table := sheet.Traits.Table
-				views := table.Views()
-				view := views[len(views)-1]
-				start, _ := view.CurrentDrawRowRange()
-				table.SelectByIndex(start)
-				return view.AsPanel()
-			},
-			holder: func() *unison.Panel {
-				table := sheet.Traits.Table
-				return table.ViewForRow(table.FirstSelectedRowIndex()).AsPanel()
-			},
-		},
-	} {
-		var ref *FocusRef
-		screen.Do(func() {
-			if !sheet.paginated {
-				sheet.togglePaginated()
-			}
-			if target := one.focus(); target != nil {
-				target.RequestFocus()
-			}
-			ref = sheet.targetMgr.CurrentFocusRef()
-		})
-		if ref == nil || ref.Key == "" {
-			t.Fatalf("%s: the focus must be on the sheet, on a panel with a reference key", one.name)
-		}
-		for _, paginated := range []bool{false, true} {
-			var after *FocusRef
-			var pages, views int
-			var onHolder bool
-			screen.Do(func() {
-				sheet.togglePaginated()
-				after = sheet.targetMgr.CurrentFocusRef()
-				pages = len(sheet.grid.pages)
-				views = len(sheet.Traits.Table.Views())
-				onHolder = wnd.Focus() == one.holder()
-			})
-			c.Equal(paginated, sheet.paginated, "%s: the mode must have switched", one.name)
-			c.NotNil(after, "%s: the focus must stay on the sheet (paginated %v)", one.name, paginated)
-			if after != nil {
-				c.Equal(ref.Key, after.Key, "%s: the focus must stay where it was (paginated %v)", one.name, paginated)
-			}
-			c.True(onHolder, "%s: the focus must be on the panel showing what it was on (paginated %v)", one.name,
-				paginated)
-			if paginated {
-				c.True(pages > 1, "%s: the pages must come back", one.name)
-			} else {
-				c.Equal(1, pages, "%s: the sheet must show one continuous page", one.name)
-				c.Equal(1, views, "%s: no list may go on past the continuous page", one.name)
-			}
-		}
-	}
 }
 
 // TestFocusReturningToAListGoesToTheViewShowingTheRow verifies that the focus held by a view of a list on a page later
@@ -587,21 +480,4 @@ func TestFocusReturningToAListGoesToTheViewShowingTheRow(t *testing.T) {
 		c.True(focus == want, "%s: the focus must go back to the view showing the row", one.name)
 		c.True(focus != table.AsPanel(), "%s: which is not the primary view", one.name)
 	}
-}
-
-// TestLeavingTheLayoutEditorKeepsThePlaceOnTheSheet verifies that a sheet shown as pages and scrolled well down is left
-// about as far down once its layout has been edited, rather than scrolled to wherever the editor hands the focus back.
-// Bringing the focus into view as the pages come back fails it.
-func TestLeavingTheLayoutEditorKeepsThePlaceOnTheSheet(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := openPaginatedSheet(t, screen, func(entity *gurps.Entity) []*gurps.Trait { return plainTraits(entity, 300) })
-	var fraction float32
-	screen.Do(func() {
-		sheet.scroll.SetPosition(0, sheet.scroll.Bar(false).MaxValue())
-		sheet.toggleLayoutEditing()
-		sheet.toggleLayoutEditing()
-		fraction = sheet.scrollFraction()
-	})
-	c.True(fraction > 0.5, "the sheet must still be scrolled well down, not %v of the way", fraction)
 }

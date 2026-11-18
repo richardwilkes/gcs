@@ -115,46 +115,6 @@ func altDropNameableModifier[T gurps.Node[T], M gurps.Node[M]](t *testing.T, c c
 	return headings, counter
 }
 
-// TestAltDropOnTraitAppliesNameablesToTheLiveList verifies that dropping a trait modifier onto a trait, or an equipment
-// modifier onto an equipment row, prompts for its nameable keys before anything is shown, and that the rebuild which
-// follows replaces the list when the modifier brings switchable features.
-func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	sheet, targets := sheetWithNamedTraits(t, c, "Claws")
-	stale := sheet.Traits.Table
-
-	// Its switchable feature is what brings the switch column in, and its name needs a substitution.
-	dropped := newSwitchableTraitModifier("@Material@ Coating")
-	_, counter := altDropNameableModifier(t, c, sheet, sheet.Traits.provider, []int{0}, dropped, "Steel")
-
-	c.Equal(1, len(targets[0].Modifiers), "the dropped modifier must be added to the target trait")
-	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
-		"the substitution must be applied to the dropped modifier")
-	live := sheet.Traits.Table
-	c.NotEqual(stale, live, "gaining the switch column must replace the traits table")
-	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
-		"the dropped modifier's switchable feature must bring the switch column into view")
-	c.True(counter.count > 0,
-		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
-
-	sheet, items := sheetWithNamedEquipment(t, c, "Sword")
-	staleEquipment := sheet.CarriedEquipment.Table
-	droppedEquipment := newSwitchableEquipmentModifier("@Material@ Coating")
-	_, counter = altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0}, droppedEquipment,
-		"Steel")
-
-	c.Equal(1, len(items[0].Modifiers), "the dropped modifier must be added to the target equipment")
-	c.Equal("Steel Coating", items[0].Modifiers[0].NameWithReplacements(),
-		"the substitution must be applied to the dropped modifier")
-	liveEquipment := sheet.CarriedEquipment.Table
-	c.NotEqual(staleEquipment, liveEquipment, "gaining the switch column must replace the carried equipment table")
-	c.NotEqual(-1, switchColumnIndex(liveEquipment.Columns, gurps.EquipmentSwitchColumn),
-		"the dropped modifier's switchable feature must bring the switch column into view")
-	c.True(counter.count > 0,
-		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
-}
-
 // TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in onto
 // several selected traits, or equipment items, asks about each target's copy separately, in one prompt, so that each
 // can be named differently. The copies are otherwise identical, so each entry has to be headed by the target it belongs

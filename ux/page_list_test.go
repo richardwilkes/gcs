@@ -425,3 +425,69 @@ func TestSyncKeepsThePanelsOfUnchangedRows(t *testing.T) {
 		})
 	}
 }
+
+// TestPageDockablesOfferTheCommandsForTheirLists verifies that each page dockable installs the "New ..." commands for
+// the lists it has and none for the lists it lacks -- a loot sheet never offers to add a trait, a template never to
+// add other equipment -- and that the commands acting on the trait list go only to the dockables with one.
+func TestPageDockablesOfferTheCommandsForTheirLists(t *testing.T) {
+	c := check.New(t)
+	fixtures := newPageDockableFixtures(t)
+	for _, cmd := range []struct {
+		name                  string
+		id                    int
+		sheet, template, loot bool
+	}{
+		{"New Trait", NewTraitItemID, true, true, false},
+		{"New Trait Container", NewTraitContainerItemID, true, true, false},
+		{"New Skill", NewSkillItemID, true, true, false},
+		{"New Skill Container", NewSkillContainerItemID, true, true, false},
+		{"New Technique", NewTechniqueItemID, true, true, false},
+		{"New Spell", NewSpellItemID, true, true, false},
+		{"New Spell Container", NewSpellContainerItemID, true, true, false},
+		{"New Ritual Magic Spell", NewRitualMagicSpellItemID, true, true, false},
+		{"New Carried Equipment", NewCarriedEquipmentItemID, true, true, false},
+		{"New Carried Equipment Container", NewCarriedEquipmentContainerItemID, true, true, false},
+		{"New Carried Equipment Group", NewCarriedEquipmentGroupItemID, true, true, false},
+		{"New Equipment Choice", NewEquipmentChoiceContainerItemID, false, true, false},
+		{"New Other Equipment", NewOtherEquipmentItemID, true, false, true},
+		{"New Other Equipment Container", NewOtherEquipmentContainerItemID, true, false, true},
+		{"New Other Equipment Group", NewOtherEquipmentGroupItemID, true, false, true},
+		{"New Note", NewNoteItemID, true, true, true},
+		{"New Note Container", NewNoteContainerItemID, true, true, true},
+		{"Add Natural Attacks", AddNaturalAttacksItemID, true, true, false},
+		{"Organize Traits", OrganizeTraitsItemID, true, true, false},
+	} {
+		for i, wanted := range []bool{cmd.sheet, cmd.template, cmd.loot} {
+			f := fixtures[i]
+			c.Equal(wanted, f.dockable.AsPanel().CanPerformCmd(nil, cmd.id), "%s: %s", f.name, cmd.name)
+		}
+	}
+}
+
+// TestAddNaturalAttacksGoesToTheTraitListOfTheDockable verifies that the Add Natural Attacks command adds the trait to
+// the trait list of the dockable it was invoked on, and that on a sheet the trait is made for the sheet's entity,
+// while on a template, whose traits have no entity until it is applied, it is made for none. A new entity may already
+// hold such a trait (see gurps.GeneralSettings.AutoAddNaturalAttacks), so only the growth of the lists is looked at.
+func TestAddNaturalAttacksGoesToTheTraitListOfTheDockable(t *testing.T) {
+	c := check.New(t)
+	fixtures := newPageDockableFixtures(t)
+	sheet, ok := fixtures[0].dockable.(*Sheet)
+	c.True(ok, "the first fixture must be the sheet")
+	template, ok := fixtures[1].dockable.(*Template)
+	c.True(ok, "the second fixture must be the template")
+	sheetTraits := len(sheet.entity.Traits)
+	templateTraits := len(template.template.Traits)
+
+	sheet.AsPanel().PerformCmd(nil, AddNaturalAttacksItemID)
+	c.Equal(sheetTraits+1, len(sheet.entity.Traits), "the sheet must gain the trait")
+	added := sheet.entity.Traits[len(sheet.entity.Traits)-1]
+	c.Equal("Natural Attacks", added.Name)
+	c.True(added.DataOwner() == sheet.entity, "the sheet's trait must be made for its entity")
+	c.Equal(templateTraits, len(template.template.Traits), "the template must be left alone")
+
+	template.AsPanel().PerformCmd(nil, AddNaturalAttacksItemID)
+	c.Equal(templateTraits+1, len(template.template.Traits), "the template must gain the trait")
+	added = template.template.Traits[len(template.template.Traits)-1]
+	c.Equal("Natural Attacks", added.Name)
+	c.Equal(sheetTraits+1, len(sheet.entity.Traits), "the sheet must be left alone")
+}
