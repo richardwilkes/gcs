@@ -193,7 +193,7 @@ func TestSheetSettingsEnsureValidityRepairsNumberFormats(t *testing.T) {
 }
 
 // TestSheetSettingsEnsureValidityBoundsTradePercents verifies that EnsureValidity brings the buy and sell percentages
-// into the range the sheet offers for them, as a file may hold any value, while a missing or non-positive one takes the
+// into the range the sheet offers for them, as a file may hold any value, while a missing or negative one takes the
 // default, so that nothing showing them has to clamp, and record, a value nobody edited.
 func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
 	c := check.New(t)
@@ -201,20 +201,25 @@ func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
 	data := fmt.Appendf(nil, `{
 	"version": %d,
 	"profile": {"name": "Plain"},
-	"settings": {"sell_percent": 2000, "buy_percent": 1}
+	"settings": {"sell_percent": 2000, "buy_percent": 0}
 }`, jio.CurrentDataVersion)
 	c.NoError(os.WriteFile(filepath.Join(dir, "plain.gcs"), data, 0o600))
 	e, err := NewEntityFromFile(os.DirFS(dir), "plain.gcs")
 	c.NoError(err)
 	c.Equal(MaxTradePercent, e.SheetSettings.SellPercent, "a sell percent above the range is brought down to it")
-	c.Equal(MinTradePercent, e.SheetSettings.BuyPercent, "a positive buy percent below the range is brought up to it")
+	c.Equal(0, e.SheetSettings.BuyPercent, "a buy percent of zero is kept")
+
+	var loaded SheetSettings
+	c.NoError(jio.Unmarshal([]byte(`{}`), &loaded))
+	c.Equal(DefaultBuyPercent, loaded.BuyPercent, "a missing buy percent takes the default")
+	c.Equal(DefaultSellPercent, loaded.SellPercent, "a missing sell percent takes the default")
 
 	s := FactorySheetSettings()
 	s.BuyPercent = -5
-	s.SellPercent = 0
+	s.SellPercent = -5
 	s.EnsureValidity()
-	c.Equal(100, s.BuyPercent, "a buy percent that isn't positive takes the default")
-	c.Equal(50, s.SellPercent, "a sell percent that isn't positive takes the default")
+	c.Equal(DefaultBuyPercent, s.BuyPercent, "a negative buy percent takes the default")
+	c.Equal(DefaultSellPercent, s.SellPercent, "a negative sell percent takes the default")
 	s.BuyPercent = 250
 	s.SellPercent = 35
 	s.EnsureValidity()

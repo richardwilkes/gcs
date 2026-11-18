@@ -194,7 +194,8 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	s := openSellTestDialog(t, screen, wnd, sheet, sword, knife)
 	screen.Do(func() {
 		c.Equal("Sell Equipment", s.wnd.Title(), "the dialog is titled for what it does")
-		c.Equal("50%", s.percent.Text(), "the percentage starts at the sheet's sell percent")
+		c.Equal(fmt.Sprintf("%d%%", gurps.DefaultSellPercent), s.percent.Text(),
+			"the percentage starts at the sheet's sell percent")
 		c.Equal("1", s.quantities[0].Text(), "all of the sword is to be sold")
 		c.True(s.quantities[0].Enabled(), "a quantity of one can be changed, to leave the item out")
 		c.Equal("2", s.quantities[1].Text(), "all of the knives are to be sold")
@@ -336,19 +337,18 @@ func TestSellDialogClampsTheSheetsSellPercent(t *testing.T) {
 			return []*gurps.Equipment{knife}
 		})
 	for _, tt := range []struct {
-		percent  string
-		expected string
+		percent  int
+		expected int
 	}{
-		{percent: "2000", expected: "1000%"},
-		{percent: "0.5", expected: "1%"},
+		{percent: gurps.MaxTradePercent + 1, expected: gurps.MaxTradePercent},
+		{percent: gurps.MinTradePercent - 1, expected: gurps.MinTradePercent},
 	} {
-		screen.Do(func() {
-			sheet.Entity().SheetSettings.SellPercent = fxp.FromStringForced(tt.percent).AsInteger[int]()
-		})
+		screen.Do(func() { sheet.Entity().SheetSettings.SellPercent = tt.percent })
 		s := openSellTestDialog(t, screen, wnd, sheet, knife)
 		var text string
 		screen.Do(func() { text = s.percent.Text() })
-		c.Equal(tt.expected, text, "a sell percent of %s opens the dialog at %s", tt.percent, tt.expected)
+		c.Equal(fmt.Sprintf("%d%%", tt.expected), text, "a sell percent of %d opens the dialog at %d%%", tt.percent,
+			tt.expected)
 		s.dismiss(c, s.cancel)
 	}
 }
@@ -790,15 +790,16 @@ func TestSellDialogLinesUpTheList(t *testing.T) {
 		hidden := s.quantities[maxTradeRowsShown].RectToRoot(s.quantities[maxTradeRowsShown].ContentRect(true))
 		c.True(shown.Bottom() <= view.Bottom(), "the last row shown is shown whole: %v within %v", shown, view)
 		c.True(hidden.Y >= view.Bottom(), "the first row past those shown is hidden whole: %v below %v", hidden, view)
+		header := fmt.Sprintf("You Get (%d%%)", gurps.DefaultSellPercent)
 		rights := make(map[string]float32)
 		for _, label := range uxtest.PanelsOfType[*unison.Label](content) {
-			if text := label.String(); text == "You Get (50%)" || text == "$5.00" || strings.HasPrefix(text, "Total: ") {
+			if text := label.String(); text == header || text == "$5.00" || strings.HasPrefix(text, "Total: ") {
 				rights[text] = label.RectToRoot(label.ContentRect(true)).Right()
 			}
 		}
 		c.Equal(3, len(rights), "the header, a row and the footer are found: %v", rights)
-		c.Equal(rights["You Get (50%)"], rights["$5.00"], "the header lines up with the rows")
-		c.Equal(rights["You Get (50%)"], rights["Total: $75.00"], "the total lines up with the rows")
+		c.Equal(rights[header], rights["$5.00"], "the header lines up with the rows")
+		c.Equal(rights[header], rights["Total: $75.00"], "the total lines up with the rows")
 		c.Equal(1, len(uxtest.PanelsOfType[*TextLabel](content)), "with nothing to warn of, only the payout is shown")
 	})
 	s.dismiss(c, s.cancel)

@@ -44,6 +44,17 @@ const (
 		SheetSettingsBodyTypePart
 )
 
+const (
+	// DefaultBuyPercent is the default percentages of an equipment's full price that it is bought at.
+	DefaultBuyPercent = 100
+	// DefaultSellPercent is the default percentages of an equipment's full price that it is sold at.
+	DefaultSellPercent = 50
+	// MinTradePercent is the lower bound the percentage of its full price that equipment is bought or sold at.
+	MinTradePercent = 0
+	// MaxTradePercent is the upper bound the percentage of its full price that equipment is bought or sold at.
+	MaxTradePercent = 1000
+)
+
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
 type SheetSettingsResponder interface {
 	// SheetSettingsUpdated will be called when the SheetSettings have been updated. The provided Entity will be nil if
@@ -88,8 +99,8 @@ type SheetSettingsData struct {
 	BodyWeightFormat              fxp.NumberFormat   `json:"body_weight_format,omitzero"`
 	EquipmentWeightFormat         fxp.NumberFormat   `json:"equipment_weight_format,omitzero"`
 	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
-	BuyPercent                    int                `json:"buy_percent,omitzero"`
-	SellPercent                   int                `json:"sell_percent,omitzero"`
+	BuyPercent                    int                `json:"buy_percent"`
+	SellPercent                   int                `json:"sell_percent"`
 	// SellMoney holds the equipment selling pays out in: copies, each tagged as money (see MoneyTag), that are never
 	// containers and have no data owner or parent. Clones of the settings share the copies, which are never edited,
 	// though writing them out and working out their values write back what they already hold, so, like the settings
@@ -173,8 +184,8 @@ func FactorySheetSettings() *SheetSettings {
 		SkillLevelAdjDisplay:    display.Tooltip,
 		ShowSpellAdj:            true,
 		HideUnusedWeaponColumns: false,
-		BuyPercent:              100,
-		SellPercent:             50,
+		BuyPercent:              DefaultBuyPercent,
+		SellPercent:             DefaultSellPercent,
 	}
 }
 
@@ -235,11 +246,11 @@ func (s *SheetSettings) EnsureValidity() {
 	s.BodyWeightFormat = s.BodyWeightFormat.EnsureValid()
 	s.EquipmentWeightFormat = s.EquipmentWeightFormat.EnsureValid()
 	s.EquipmentValueFormat = s.EquipmentValueFormat.EnsureValid()
-	if s.BuyPercent <= 0 {
-		s.BuyPercent = 100
+	if s.BuyPercent < 0 {
+		s.BuyPercent = DefaultBuyPercent
 	}
-	if s.SellPercent <= 0 {
-		s.SellPercent = 50
+	if s.SellPercent < 0 {
+		s.SellPercent = DefaultSellPercent
 	}
 	s.BuyPercent = min(max(s.BuyPercent, MinTradePercent), MaxTradePercent)
 	s.SellPercent = min(max(s.SellPercent, MinTradePercent), MaxTradePercent)
@@ -256,12 +267,6 @@ func (s *SheetSettings) EnsureValidity() {
 	})
 	s.SkillLevelCaps.EnsureValidity()
 }
-
-// MinTradePercent and MaxTradePercent bound the percentage of its full price that equipment is bought or sold at.
-var (
-	MinTradePercent = 1
-	MaxTradePercent = 1000
-)
 
 // CanAddSellMoney returns true if a copy of the equipment can be added to the sell money list (see AddSellMoney): it
 // isn't a container, it is tagged as money (see MoneyTag), since buying spends only money so tagged, and no entry
@@ -364,6 +369,10 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		OldBlockLayout          []string `json:"block_layout"`
 		OldShowTraitModifierAdj bool     `json:"show_advantage_modifier_adj"`
 	}
+	// Files written before the trade percentages existed leave these negative, which EnsureValidity replaces with the
+	// defaults. Zero can't mark them as missing, since it is a valid percentage.
+	content.BuyPercent = -1
+	content.SellPercent = -1
 	if err := json.UnmarshalDecode(dec, &content); err != nil {
 		return err
 	}
