@@ -72,7 +72,8 @@ func expectRender(t *testing.T, started chan string, want string) {
 
 // TestPDFQueueUserSignalBeatsContinuations verifies that a document which is still catching up doesn't starve one the
 // user just opened. The busy renderer resubmits itself after every page it finishes, which is what used to keep it
-// perpetually at the head of the queue.
+// perpetually at the head of the queue. That holds too when the busy document was scrolled while it rendered, so that
+// it already has an entry when its continuation arrives.
 func TestPDFQueueUserSignalBeatsContinuations(t *testing.T) {
 	q := newPDFQueue()
 	started := make(chan string)
@@ -92,6 +93,16 @@ func TestPDFQueueUserSignalBeatsContinuations(t *testing.T) {
 	expectRender(t, started, "newcomer")
 
 	// The busy document's continuation is still queued, so it resumes as soon as the newcomer is done.
+	newcomer.releaseRender(t, false)
+	expectRender(t, started, "busy")
+
+	// Now the busy document is scrolled while it renders, which gives it an entry, and then the newcomer is scrolled too.
+	// The busy document's continuation leaves its entry where it is, behind the newcomer's, rather than bringing it back
+	// to the front.
+	q.submitUserSignal(busy)
+	q.submitUserSignal(newcomer)
+	busy.releaseRender(t, true)
+	expectRender(t, started, "newcomer")
 	newcomer.releaseRender(t, false)
 	expectRender(t, started, "busy")
 	busy.releaseRender(t, false)

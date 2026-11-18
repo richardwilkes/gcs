@@ -45,9 +45,10 @@ func dialogNameField(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *uni
 }
 
 // TestListFilterNewFilterDialogHeadless drives the editor for a new filter inside a headless workspace: OK is held
-// back until the name is one no other saved filter bears and the filter has a condition, groups alone not counting,
-// the editor opens with room for a few levels of nesting, a condition can be added to the root group, and accepting
-// saves the filter and puts it in force.
+// back, with a message saying why, until the name is one no other saved filter bears and the filter has a condition,
+// groups alone not counting, the editor opens with room for a few levels of nesting, a condition can be added to the
+// root group, and accepting saves the filter and puts it in force, after which editing it doesn't count its own name as
+// taken.
 func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -79,6 +80,16 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		screen.Do(func() { invalid = nameField.Invalid() })
 		return invalid
 	}
+	// The notice is the first thing in the row that holds the buttons.
+	notice := func() string {
+		var text string
+		screen.Do(func() {
+			if label, ok := okButton.Parent().Parent().Children()[0].Self.(*TextLabel); ok {
+				text = label.Title()
+			}
+		})
+		return text
+	}
 	var contentWidth, contentHeight float32
 	screen.Do(func() {
 		rect := dialogWnd.ContentRect()
@@ -87,6 +98,8 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	})
 	c.False(okEnabled(), "a filter with no name cannot be accepted")
 	c.True(nameInvalid(), "a blank name is marked")
+	c.Equal("Add at least one filter before saving.", notice(),
+		"a blank name gets no message of its own, leaving the one for a filter that tests nothing")
 	c.True(contentWidth >= listFilterDialogMinWidth,
 		"the editor opens at least %d wide, but is %v", listFilterDialogMinWidth, contentWidth)
 	c.True(contentHeight >= listFilterDialogMinHeight,
@@ -97,6 +110,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	screen.Type("melee")
 	c.False(okEnabled(), "a name a saved filter already bears cannot be accepted, whatever its case")
 	c.True(nameInvalid(), "a name a saved filter already bears is marked")
+	c.Equal("Another saved filter already has this name.", notice(), "and its message comes first")
 
 	// Replace it with a name of its own, which is accepted.
 	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
@@ -106,6 +120,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c.Equal("Ranged", name, "select-all followed by typing replaces the name")
 	c.False(nameInvalid(), "a name of its own is not marked")
 	c.False(okEnabled(), "a name no other saved filter bears is not enough while the filter tests nothing")
+	c.Equal("Add at least one filter before saving.", notice(), "which the message says")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_dialog")
 
 	// Groups holding nothing but other groups still test nothing. The first group chosen for the bare root sets the
@@ -150,6 +165,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		}
 	})
 	c.True(okEnabled(), "with a condition to test, the filter can be accepted")
+	c.Equal("", notice(), "and no message is shown")
 
 	screen.Click(screen.PanelCenter(okButton))
 	var windows int
@@ -184,6 +200,16 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	})
 	c.True(editEnabled, "Edit Filter… must be available with a filter in force")
 	c.True(deleteEnabled, "Delete Filter… must be available with a filter in force")
+
+	// While the filter is edited, its own name is not taken for another's.
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, editIndex)
+	dialogWnd, dialog = modalDialog(t, screen, wnd)
+	okButton = dialogButton(t, screen, dialog, unison.ModalResponseOK)
+	nameField = dialogNameField(t, screen, dialogWnd)
+	c.True(okEnabled(), "the edited filter's own name does not stop it being accepted")
+	c.False(nameInvalid(), "nor is the name marked")
+	c.Equal("", notice(), "nor is there a message")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
 }
 
 // TestListFilterEditorKeysHeadless drives the filter editor's keys inside a headless workspace: the key bindings of

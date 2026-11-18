@@ -143,6 +143,34 @@ func TestOrganizeTraitsUndoIsASingleStep(t *testing.T) {
 		"redo must put the category containers back on screen, but it shows %v", rootRowNames(sheet.Traits.Table))
 }
 
+// TestOrganizeTraitsUndoTakesTraitsBackOutOfExistingContainers verifies that undoing the filing of a trait into a
+// category container the list already held leaves the container as it was, rather than holding a copy of the trait
+// that undo also put back at the top level.
+func TestOrganizeTraitsUndoTakesTraitsBackOutOfExistingContainers(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	advantages := gurps.NewTrait(entity, nil, true)
+	advantages.Name = "Advantages"
+	reflexes := gurps.NewTrait(entity, nil, false)
+	reflexes.Name = "Combat Reflexes"
+	reflexes.BasePoints = fxp.FromInteger(15)
+	entity.Traits = []*gurps.Trait{advantages, reflexes}
+	sheet.Rebuild(true)
+
+	sheet.AsPanel().PerformCmd(nil, OrganizeTraitsItemID)
+	c.Equal([]string{"Advantages"}, traitNames(entity.Traits), "precondition: the existing container is kept")
+	c.Equal([]string{"Combat Reflexes"}, traitNames(entity.Traits[0].Children),
+		"precondition: the trait is filed into the existing container")
+
+	sheet.undoMgr.Undo()
+	c.Equal([]string{"Advantages", "Combat Reflexes"}, traitNames(entity.Traits),
+		"undo must put the trait back at the top level")
+	c.Equal(0, len(entity.Traits[0].Children), "and leave the container as empty as it was, but it holds %v",
+		traitNames(entity.Traits[0].Children))
+	c.Equal(2, sheet.Traits.RowCount(), "the list on screen must show only the original rows")
+}
+
 // TestOrganizeTraitsOnTemplate verifies that the command works on a template, whose traits have no entity behind them.
 func TestOrganizeTraitsOnTemplate(t *testing.T) {
 	c := check.New(t)

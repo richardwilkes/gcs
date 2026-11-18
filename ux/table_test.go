@@ -218,6 +218,24 @@ func TestSyncWithSourceForSelectionLoadsEachFileOnce(t *testing.T) {
 	c.Equal(srcstate.Missing, state, "the file is checked again for a row matched once the sync is done")
 }
 
+// TestClearSourceFromSelectionClearsOnlyTheSelectedRows verifies that Clear Source takes the library source away from
+// the selected rows of a list and leaves it on the others.
+func TestClearSourceFromSelectionClearsOnlyTheSelectedRows(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	libFile := gurps.LibraryFile{Library: "test", Path: "Test" + gurps.NotesExt}
+	notes := make([]*gurps.Note, 2)
+	for i := range notes {
+		notes[i] = gurps.NewNote(nil, nil, false).Clone(libFile, nil, nil, gurps.Reference)
+	}
+	dockable := NewNoteTableDockable("test"+gurps.NotesExt, notes)
+	dockable.table.SelectByIndex(0)
+
+	ClearSourceFromSelection(dockable.table)
+	c.Equal(gurps.Source{}, notes[0].Source, "the selected row must lose its source")
+	c.Equal(libFile, notes[1].Source.LibraryFile, "the row that isn't selected must keep its source")
+}
+
 // TestSheetListContextMenuHeadless verifies that a list on a character sheet offers its context menu every way a user
 // can ask for it. A right-click on one of several selected rows keeps them all selected for the menu's commands to act
 // on, while a right-click or a screen reader's request on a row that is not selected makes it the selection alone, and
@@ -473,4 +491,41 @@ func TestRowEditsReportThemselvesOnce(t *testing.T) {
 	c.Equal(before, len(entity.Traits), "deleting must remove the row")
 	c.Equal(1, counter.count, "deleting must sync the sheet exactly once")
 	c.NotEqual(jio.Time{}, entity.ModifiedOn, "deleting must bump the modification timestamp")
+}
+
+// TestDeleteKeysDeleteTheSelection verifies that Delete or Backspace pressed in a list deletes its selected rows, and
+// that either one pressed with a modifier key down is left to the table.
+func TestDeleteKeysDeleteTheSelection(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	for _, key := range []unison.KeyCode{unison.KeyDelete, unison.KeyBackspace} {
+		keep := newTraitForTest("Keep", nil)
+		dockable := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{keep, newTraitForTest("Delete", nil)})
+		dockable.table.SelectByIndex(1)
+		dockable.table.KeyDownCallback(key, mod.Shift, false)
+		c.Equal(2, len(dockable.provider.RootData()), "%s with Shift down must not delete anything", key)
+		c.True(dockable.table.KeyDownCallback(key, mod.None, false), "%s must be consumed", key)
+		c.Equal([]*gurps.Trait{keep}, dockable.provider.RootData(), "%s must delete the selected row", key)
+	}
+}
+
+// TestFlexibleLess verifies the order a list sorts its rows in: containers, whose sort text a list grouping them marks,
+// ahead of the other rows and in order among themselves, numbers by value whatever their thousands separators, and
+// text without regard to case.
+func TestFlexibleLess(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		s1, s2 string
+		less   bool
+	}{
+		{s1: containerMarker + "B", s2: "A", less: true},
+		{s1: "A", s2: containerMarker + "B", less: false},
+		{s1: containerMarker + "A", s2: containerMarker + "B", less: true},
+		{s1: containerMarker + "B", s2: containerMarker + "A", less: false},
+		{s1: "999", s2: "1,000", less: true},
+		{s1: "1,000", s2: "999", less: false},
+		{s1: "apple", s2: "Banana", less: true},
+	} {
+		c.Equal(one.less, flexibleLess(one.s1, one.s2), "whether %q sorts before %q", one.s1, one.s2)
+	}
 }

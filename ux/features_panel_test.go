@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
@@ -203,7 +204,6 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
-	c.Equal(3, len(features), "precondition: three features")
 	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	hash := featuresHash(features)
 	expanded := func() bool {
@@ -280,8 +280,6 @@ func TestFeaturesPanelStartingState(t *testing.T) {
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
 	var empty gurps.Features
-	c.Equal(3, len(features), "precondition: three features")
-	c.Equal(0, len(empty), "precondition: the list has no features")
 	var full, open *featuresPanel
 	var field *unison.Field
 	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
@@ -328,7 +326,6 @@ func TestFeaturesPanelCollapseEmpty(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	var features gurps.Features
-	c.Equal(0, len(features), "precondition: the list has no features")
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	screen.Do(p.collapse.toggle)
 	screen.Do(func() {
@@ -452,14 +449,11 @@ func TestFeaturesPanelLayout(t *testing.T) {
 	reaction := gurps.NewReactionBonus()
 	reaction.SetOwner(owner)
 	dr := gurps.NewDRBonus()
+	// The body has no tail, so the row ends with the note saying so.
 	dr.Locations = []string{testSkullID, "tail"}
 	dr.SetOwner(owner)
 	features := gurps.Features{skill, reaction, dr}
 	var empty gurps.Features
-	c.NotEqual(criteria.AnyText, skill.TagsCriteria.Compare, "precondition: the skill bonus has a chip")
-	c.Equal([]string{testSkullID, "tail"}, dr.Locations,
-		"precondition: the DR bonus has a list of locations, one of which the body doesn't have")
-	c.Equal(0, len(empty), "precondition: the empty list has no features")
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	emptyPanel, _ := showFeaturesPanel(t, screen, entity, owner, &empty, false)
 	rect := func(panel *featuresPanel, key string) geom.Rect {
@@ -968,7 +962,6 @@ func TestFeaturesPanelEmpty(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	var features gurps.Features
-	c.Equal(0, len(features), "precondition: the list has no features")
 	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	defer func(last feature.Type) { lastFeatureTypeUsed = last }(lastFeatureTypeUsed)
 	lastFeatureTypeUsed = feature.ReactionBonus
@@ -1864,6 +1857,154 @@ func TestFeaturesPanelCheckBoxUndo(t *testing.T) {
 	screen.Do(host.mgr.Undo)
 	c.False(perLevel())
 	c.False(host.mgr.CanUndo())
+}
+
+// TestFeaturesPanelFieldsSetTheirFeature checks that what is entered in each kind of field of an open row is an edit of
+// its feature: the amount of a bonus, a situation, a maximum uses adjustment, which is normalized, and the priority of
+// a selector override.
+func TestFeaturesPanelFieldsSetTheirFeature(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	skill := gurps.NewSkillBonus()
+	skill.SetOwner(owner)
+	reaction := gurps.NewReactionBonus()
+	reaction.SetOwner(owner)
+	maxUses := gurps.NewEquipmentMaxUsesBonus()
+	maxUses.SetOwner(owner)
+	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.SetOwner(owner)
+	features := gurps.Features{skill, reaction, maxUses, override}
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	for i, one := range []struct {
+		key   string
+		text  string
+		title string
+		value func() any
+		want  any
+	}{
+		{key: "amount", text: "3", title: "Amount", value: func() any { return skill.Amount }, want: fxp.Three},
+		{
+			key: "situation", text: "from elves", title: "Situation",
+			value: func() any { return reaction.Situation }, want: "from elves",
+		},
+		{
+			key: "amount", text: "3", title: "Maximum Uses Adjustment",
+			value: func() any { return maxUses.Amount }, want: "+3",
+		},
+		{key: "priority", text: "5", title: "Priority", value: func() any { return override.Priority }, want: 5},
+	} {
+		path := strconv.Itoa(i)
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() {
+			field, ok := refKeySelf(p.AsPanel(), path+":"+one.key).(interface{ SetText(string) })
+			c.True(ok, "row %s has a %s field", path, one.key)
+			if ok {
+				field.SetText(one.text)
+			}
+		})
+		c.Equal(one.want, one.value(), "row %s: the %s field sets the feature", path, one.key)
+		c.Equal("Undo "+one.title, host.mgr.UndoTitle(), "row %s: as an edit", path)
+	}
+}
+
+// TestFeaturesPanelAttributeChoice checks that choosing another attribute for an attribute bonus sets it and makes it
+// the one a new bonus takes, clearing the limitation only ST has along with its chip, and that a bonus to ST adds a
+// limitation, striking only to start with, which its popup changes.
+func TestFeaturesPanelAttributeChoice(t *testing.T) {
+	uxtest.SwapForTest(t, &lastAttributeIDUsed, gurps.StrengthID)
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	limited := gurps.NewAttributeBonus(gurps.StrengthID)
+	limited.Limitation = stlimit.LiftingOnly
+	limited.SetOwner(owner)
+	plain := gurps.NewAttributeBonus(gurps.StrengthID)
+	plain.SetOwner(owner)
+	features := gurps.Features{limited, plain}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("0:limitation"+keyChip), "precondition: the bonus to ST shows its limitation")
+		popup := featuresPopup[*gurps.AttributeChoice](c, p, "0:attribute")
+		if popup == nil {
+			return
+		}
+		for i := range popup.ItemCount() {
+			if item, ok := popup.ItemAt(i); ok && item.Key == gurps.DexterityID {
+				popup.SelectIndex(i)
+				return
+			}
+		}
+		c.True(false, "DX is offered")
+	})
+	c.Equal(gurps.DexterityID, limited.Attribute, "choosing an attribute sets it")
+	c.Equal(gurps.DexterityID, lastAttributeIDUsed, "and makes it the one a new bonus takes")
+	c.Equal(stlimit.None, limited.Limitation, "clearing the limitation only ST has")
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("0:limitation"+keyChip), "along with its chip")
+		c.Nil(p.FindRefKey("0:add limitation"), "which isn't offered")
+		p.toggle("1")
+	})
+	screen.Do(func() {
+		add, ok := p.FindRefKey("1:add limitation").Self.(*unison.Button)
+		c.True(ok, "a bonus to ST offers a limitation")
+		if ok {
+			add.ClickCallback()
+		}
+	})
+	c.Equal(stlimit.StrikingOnly, plain.Limitation, "adding it starts with striking only")
+	screen.Do(func() { featuresPopup[stlimit.Option](c, p, "1:limitation").Select(stlimit.ThrowingOnly) })
+	c.Equal(stlimit.ThrowingOnly, plain.Limitation, "which the popup changes")
+}
+
+// TestFeaturesPanelWeaponBonusSelection checks that choosing how a weapon bonus selects its weapons clears the criteria
+// the new selection doesn't consult, so that a file doesn't keep what no chip shows, and keeps the rest, the
+// specialization among them, since every selection consults it.
+func TestFeaturesPanelWeaponBonusSelection(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+	bonus.SetOwner(owner)
+	features := gurps.Features{bonus}
+	usage := criteria.Text{Compare: criteria.IsText, Qualifier: "Swung"}
+	tags := criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
+	level := criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	owners := gurps.WeaponOwnerCriteria{OwnerTechLevelCriteria: criteria.Text{Compare: criteria.IsText, Qualifier: "3"}}
+	specialization := criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	anyText := criteria.Text{Compare: criteria.AnyText}
+	anyNumber := criteria.Number{Compare: criteria.AnyNumber}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	for _, one := range []struct {
+		selection wsel.Type
+		usage     criteria.Text
+		tags      criteria.Text
+		level     criteria.Number
+		owners    gurps.WeaponOwnerCriteria
+	}{
+		{selection: wsel.WithName, usage: anyText, tags: tags, level: anyNumber, owners: owners},
+		{selection: wsel.ThisWeapon, usage: anyText, tags: anyText, level: anyNumber},
+		{selection: wsel.WithRequiredSkill, usage: usage, tags: tags, level: level},
+	} {
+		// Every criterion is set, as a file can hold them whatever the selection.
+		bonus.UsageCriteria = usage
+		bonus.TagsCriteria = tags
+		bonus.RelativeLevelCriteria = level
+		bonus.WeaponOwnerCriteria = owners
+		bonus.SpecializationCriteria = specialization
+		screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(one.selection) })
+		c.Equal(one.selection, bonus.SelectionType, "precondition: the popup chose %v", one.selection)
+		c.Equal(one.usage, bonus.UsageCriteria, "%v: the usage", one.selection)
+		c.Equal(one.tags, bonus.TagsCriteria, "%v: the tags", one.selection)
+		c.Equal(one.level, bonus.RelativeLevelCriteria, "%v: the relative skill level", one.selection)
+		c.Equal(one.owners, bonus.WeaponOwnerCriteria, "%v: the owner criteria", one.selection)
+		c.Equal(specialization, bonus.SpecializationCriteria, "%v: the specialization", one.selection)
+	}
 }
 
 // TestFeaturesPanelCreatesEverySelectableType checks that the editor creates a feature for every type the user can

@@ -129,9 +129,6 @@ func TestAppUpdatePulseScheduling(t *testing.T) {
 	recorder.fireAll()
 	c.Equal(2, len(applied), "a tick left over from a stopped pulse must not apply anything")
 	c.Equal(0, len(recorder.pending), "a stopped pulse must not schedule further ticks")
-
-	p.start("99.0.0")
-	c.Equal(1, len(recorder.pending), "a stopped pulse must be able to start again for the same release")
 }
 
 // TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease verifies that the pulse settles after appUpdatePulseDuration

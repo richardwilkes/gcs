@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -244,6 +245,66 @@ func TestUndoAndRedoActionsDriveTheActiveWindowUndoManager(t *testing.T) {
 	c.Equal(1, redone, "Redo must redo the edit")
 	c.Equal(state{undoEnabled: true, undoTitle: "Undo Probe", redoTitle: unison.CannotRedoTitle()}, current(),
 		"redoing must make Undo available again")
+}
+
+// The Close action closes the tab that holds the focus in the workspace, and is disabled while the focus is in one that
+// cannot be closed, such as the navigator. With a window of a dockable's own in front, it closes that window instead.
+func TestCloseActionClosesTheFocusedTabOrWindow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The first dockable must land in the dock.
+	isOpen := func(d unison.Dockable) bool {
+		return slices.ContainsFunc(AllDockables(), func(one unison.Dockable) bool { return one.AsPanel() == d.AsPanel() })
+	}
+
+	var docked, windowed *MarkdownDockable
+	var enabled, open bool
+	var windows int
+	screen.Do(func() {
+		Workspace.Navigator.InitialFocus()
+		enabled = closeTabAction.Enabled(nil)
+	})
+	c.False(enabled, "Close must be disabled while the navigator has the focus")
+	screen.Do(func() {
+		docked = newMarkdownDockable(markdownContentOnlyPrefix+"Docked", "# Docked\n", false, false)
+		DisplayNewDockable(docked)
+		enabled = closeTabAction.Enabled(nil)
+	})
+	c.True(enabled, "Close must be enabled while a tab that can be closed has the focus")
+	screen.Do(func() {
+		closeTabAction.Execute(nil)
+		open = isOpen(docked)
+	})
+	c.False(open, "Close must close the tab that has the focus")
+
+	var own *unison.Window
+	screen.Do(func() {
+		windowed = newMarkdownDockable(markdownContentOnlyPrefix+"Windowed", "# Windowed\n", false, false)
+		var err error
+		if own, err = NewWindowForDockable(windowed, dgroup.Markdown); err != nil {
+			t.Errorf("unable to give the dockable a window: %v", err)
+		}
+	})
+	if own == nil {
+		t.FailNow()
+	}
+	screen.Do(own.ToFront)
+	screen.Sync()
+	screen.Do(func() {
+		if unison.ActiveWindow() != own {
+			t.Error("the dockable's window must be in front")
+		}
+		enabled = closeTabAction.Enabled(nil)
+	})
+	c.True(enabled, "Close must be enabled while a dockable's own window is in front")
+	screen.Do(func() { closeTabAction.Execute(nil) })
+	screen.Sync()
+	screen.Do(func() {
+		windows = len(unison.Windows())
+		open = isOpen(windowed)
+	})
+	c.Equal(1, windows, "Close must close the window in front, leaving only the workspace")
+	c.False(open, "closing the window must close its dockable")
 }
 
 // isTableDockable reports whether d is a library table holding rows of type T.

@@ -314,6 +314,31 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 	})
 }
 
+// TestProcessNameablesAsksAPreconfiguredRowOnlyWhatItLacks verifies that a preconfigured row, whose substitutions were
+// settled where it came from, is asked only about the keys it has no replacement for, and is left out of the prompt
+// when it has none.
+func TestProcessNameablesAsksAPreconfiguredRowOnlyWhatItLacks(t *testing.T) {
+	c := check.New(t)
+	sword := gurps.NewTrait(nil, nil, false)
+	sword.Name = "@Color@ @Material@ Sword"
+	sword.Replacements = map[string]string{"Material": "Iron"}
+	sword.Preconfigured = true
+	shield := gurps.NewTrait(nil, nil, false)
+	shield.Name = "@Material@ Shield"
+	shield.Replacements = map[string]string{"Material": "Oak"}
+	shield.Preconfigured = true
+	var headings []string
+	var visible [][]string
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, visibleKeys [][]string) bool {
+		headings = titles
+		visible = visibleKeys
+		return true
+	}))
+	c.True(processNameables(promptOperation{}, []*gurps.Trait{sword, shield}))
+	c.Equal([]string{"@Color@ Iron Sword"}, headings, "a row with every key settled is left out")
+	c.Equal([][]string{{"Color"}}, visible, "only the key with no replacement is asked about")
+}
+
 // TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce verifies the same for a container and a modifier within it
 // that use the same key: the child is asked only about the keys of its own that the container doesn't use, and is left
 // out of the prompt entirely when it has none.
@@ -512,6 +537,76 @@ func TestNameableFieldFollowsItsDefinition(t *testing.T) {
 	_, ok = createNameableField("hand", &nameable.Detail{Options: []string{"Left"}, FreeForm: true},
 		answers).(*unison.Field)
 	c.True(ok, "options that allow any text are a combo field")
+}
+
+// TestNameableFieldPopupShowsAndSetsTheAnswer checks that the popup of a closed list of options starts on the answer
+// already given, adding one its options no longer hold rather than showing «not set» over it, starts on «not set» for
+// the unset marker, and that choosing an entry sets the answer, or clears it for «not set».
+func TestNameableFieldPopupShowsAndSetsTheAnswer(t *testing.T) {
+	const notSet = "«not set»"
+	for _, tc := range []struct {
+		name   string
+		stored map[string]string
+		items  []string
+		shows  string
+		choose int // The index of the entry chosen, or -1 for none.
+		after  map[string]string
+	}{
+		{
+			name:   "an option",
+			stored: map[string]string{"hand": "Right"},
+			items:  []string{notSet, "Left", "Right"},
+			shows:  "Right",
+			choose: 1,
+			after:  map[string]string{"hand": "Left"},
+		},
+		{
+			name:   "an answer the options no longer hold",
+			stored: map[string]string{"hand": "Center"},
+			items:  []string{notSet, "Left", "Right", "Center"},
+			shows:  "Center",
+			choose: -1,
+			after:  map[string]string{"hand": "Center"},
+		},
+		{
+			name:   "the unset marker",
+			stored: map[string]string{"hand": nameable.Unset},
+			items:  []string{notSet, "Left", "Right"},
+			shows:  notSet,
+			choose: 2,
+			after:  map[string]string{"hand": "Right"},
+		},
+		{
+			name:   "cleared",
+			stored: map[string]string{"hand": "Right"},
+			items:  []string{notSet, "Left", "Right"},
+			shows:  "Right",
+			choose: 0,
+			after:  map[string]string{},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			answers := maps.Clone(tc.stored)
+			popup, ok := createNameableField("hand", &nameable.Detail{Options: []string{"Left", "Right"}, NotBlank: true},
+				answers).(*unison.PopupMenu[*string])
+			if !ok {
+				t.Fatal("a closed list of options must get a popup")
+			}
+			items := make([]string, 0, popup.ItemCount())
+			for i := range popup.ItemCount() {
+				item, _ := popup.ItemAt(i)
+				items = append(items, popup.ItemRendererCallback(item))
+			}
+			c.Equal(tc.items, items, "the entries offered")
+			selected, _ := popup.Selected()
+			c.Equal(tc.shows, popup.ItemRendererCallback(selected), "the entry it starts on")
+			if tc.choose >= 0 {
+				popup.SelectIndex(tc.choose)
+			}
+			c.Equal(tc.after, answers)
+		})
+	}
 }
 
 // TestNameableFieldSuggestsOptions checks that the combo field of a free-form marker offers the options containing

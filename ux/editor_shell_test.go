@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -374,8 +375,9 @@ func traitEditorsState(screen *unison.HeadlessScreen, trait *gurps.Trait,
 }
 
 // TestEditorApplyClosesItsSubEditorsFirst verifies that Apply closes the editors open on the editor's modifiers and
-// weapons before it applies its data, since they edit objects within that data: a modifier's change saved at the prompt
-// reaches the trait along with the trait's own changes.
+// weapons before it applies its data, since they edit objects within that data: canceling the prompt of one keeps both
+// editors open with nothing applied, and a modifier's change saved at the prompt reaches the trait along with the
+// trait's own changes.
 func TestEditorApplyClosesItsSubEditorsFirst(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -386,8 +388,20 @@ func TestEditorApplyClosesItsSubEditorsFirst(t *testing.T) {
 	trait, e, _ := openTraitEditorWithModifierEditor(t, screen, sheet)
 	screen.Click(screen.PanelCenter(e.applyButton))
 	_, dialog := modalDialog(t, screen, wnd)
-	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var promptForSave bool
+	screen.Do(func() { promptForSave = e.promptForSave })
 	name, modifierName, modifierEditors, traitEditorOpen := traitEditorsState(screen, trait, e)
+	c.Equal(1, modifierEditors, "canceling at the prompt keeps the modifier's editor open")
+	c.True(traitEditorOpen, "and the trait's")
+	c.True(promptForSave, "which still prompts when closed")
+	c.Equal("Claws", name, "nothing has been applied to the trait")
+	c.Equal("Long", modifierName, "or to its modifier")
+
+	screen.Click(screen.PanelCenter(e.applyButton))
+	_, dialog = modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	name, modifierName, modifierEditors, traitEditorOpen = traitEditorsState(screen, trait, e)
 	c.Equal(0, modifierEditors, "saving at the prompt closes the modifier's editor")
 	c.False(traitEditorOpen, "and applying closes the trait's")
 	c.Equal("Sharp Claws", name, "the trait's changes are applied")
@@ -429,4 +443,37 @@ func TestEditorDiscardAsksItsSubEditorsToDiscard(t *testing.T) {
 	c.False(traitEditorOpen, "and Discard then closes the trait's")
 	c.Equal("Claws", name, "leaving the trait as it was")
 	c.Equal("Long", modifierName, "along with its modifier")
+}
+
+// TestDiscardEditorsForClosesWithoutAsking verifies that discardEditorsFor closes an editor and the editors opened from
+// it without asking about their pending changes, which it drops.
+func TestDiscardEditorsForClosesWithoutAsking(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	trait, e, _ := openTraitEditorWithModifierEditor(t, screen, sheet)
+	// Posted rather than run through Do, since a prompt, which there must not be, would run a modal loop that Do would
+	// wait on. Any prompt is answered so that the test goes on to fail rather than wait.
+	screen.Post(func() { discardEditorsFor(map[tid.TID]bool{trait.ID(): true}) })
+	screen.Sync()
+	prompts := 0
+	for range 2 {
+		var windows int
+		screen.Do(func() { windows = len(unison.Windows()) })
+		if windows == 1 {
+			break
+		}
+		prompts++
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseDiscard)))
+	}
+	c.Equal(0, prompts, "no prompt may ask about the pending changes")
+	name, modifierName, modifierEditors, traitEditorOpen := traitEditorsState(screen, trait, e)
+	c.Equal(0, modifierEditors, "the modifier's editor is closed")
+	c.False(traitEditorOpen, "and so is the trait's")
+	c.Equal("Claws", name, "without applying the trait's changes")
+	c.Equal("Long", modifierName, "or the modifier's")
 }

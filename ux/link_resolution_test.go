@@ -63,9 +63,10 @@ func TestLinkedFile(t *testing.T) {
 
 // TestLinksOpenWhatTheyName verifies that following a link, in a markdown file or the User Guide, opens what its target
 // names rather than asking for a PDF to map a key to: an md: reference is unescaped once, as a page reference holding
-// it is, so that an escaped '#' or '%' is part of the file's name, a mailto: link is handed to the system through
-// unison, an empty link or an anchor, which the markdown hands over only when it has no heading of that name, opens
-// nothing, and a link to a file that does not exist says so, whether or not its name ends in a page number.
+// it is, so that an escaped '#' or '%' is part of the file's name, a relative link opens the markdown file it names in
+// the folder of the panel holding it, a mailto: link is handed to the system through unison, an empty link or an
+// anchor, which the markdown hands over only when it has no heading of that name, opens nothing, and a link to a file
+// that does not exist says so, whether or not its name ends in a page number.
 func TestLinksOpenWhatTheyName(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -79,12 +80,14 @@ func TestLinksOpenWhatTheyName(t *testing.T) {
 		name      string
 		target    string
 		inGuide   bool
+		inDir     bool // the link is in a panel whose working directory is dir
 		wantFile  string
 		wantURLs  []string
 		wantAsked string // the text of the dialog the link opens, if any
 	}{
 		{name: "md: reference with an escaped '#'", target: "md:Notes%231", wantFile: "Notes#1.md"},
 		{name: "md: reference with an escaped '%'", target: "md:A%2520B", wantFile: "A%20B.md"},
+		{name: "relative link to a heading", target: "Notes#title", inDir: true, wantFile: "Notes.md"},
 		{name: "mailto: link", target: "mailto:x@y.com", wantURLs: []string{"mailto:x@y.com"}},
 		{name: "mailto: link in the User Guide", target: "mailto:x@y.com", inGuide: true, wantURLs: []string{"mailto:x@y.com"}},
 		{name: "anchor with no heading", target: "#step-1"},
@@ -102,9 +105,14 @@ func TestLinksOpenWhatTheyName(t *testing.T) {
 	} {
 		// A prompt runs a nested modal loop, so the link is followed through Post and any dialog it opens is canceled.
 		c.True(screen.Post(func() {
-			if tc.inGuide {
+			switch {
+			case tc.inGuide:
 				newUserGuideDockable().handleLink(nil, tc.target)
-			} else {
+			case tc.inDir:
+				panel := unison.NewPanel()
+				panel.ClientData()[WorkingDirKey] = dir
+				HandleLink(panel, tc.target)
+			default:
 				HandleLink(nil, tc.target)
 			}
 		}), tc.name)

@@ -418,7 +418,8 @@ func TestSheetSettingsSkillLevelCapLowersASheetSkill(t *testing.T) {
 
 // TestSheetSettingsSkillLevelCapsImport checks that importing a caps file through the list's menu adds its caps after
 // those already listed, in the file's order, leaving out each that is the same as one already listed or one earlier in
-// the file, and tells the sheets once; and that an import that adds nothing tells them nothing.
+// the file, and tells the sheets once; that an import that adds nothing tells them nothing; and that a file that can't
+// be read is reported as a failure, adding nothing.
 func TestSheetSettingsSkillLevelCapsImport(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -445,6 +446,11 @@ func TestSheetSettingsSkillLevelCapsImport(t *testing.T) {
 	c.Equal(skillLevelCapHashes(want), skillLevelCapHashes(owner.entity.SheetSettings.SkillLevelCaps),
 		"importing the file again adds nothing")
 	c.Equal(1, len(recorder.updates), "an import that adds nothing is not reported")
+
+	c.HasError(d.skillLevelCapsMenu.load(diskFileRef(filepath.Join(t.TempDir(), "Missing"+gurps.SkillLevelCapsExt))),
+		"a file that can't be read is reported")
+	c.Equal(skillLevelCapHashes(want), skillLevelCapHashes(owner.entity.SheetSettings.SkillLevelCaps),
+		"and adds nothing")
 }
 
 // TestSheetSettingsSkillLevelCapsExport checks that the list's menu offers to export only when there are caps, and

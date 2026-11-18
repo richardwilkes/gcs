@@ -260,8 +260,9 @@ func TestPrereqPanelOpenRowFollowsRestructures(t *testing.T) {
 }
 
 // TestPrereqPanelShowsAnyNumberItCantOffer checks that a numeric comparison of "anything", which only a file edited by
-// hand can hold where it isn't offered, is shown rather than left blank, that a contained weight of "anything" shows
-// its comparison without a weight field, and that showing either changes nothing.
+// hand can hold where it isn't offered, is shown rather than left blank, as is the type of a contained weight
+// prerequisite, which isn't offered here either, that a contained weight of "anything" shows its comparison without a
+// weight field, and that showing either changes nothing.
 func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -288,6 +289,9 @@ func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 			c.True(isPopup, "%s must be a comparison popup", one.cmpKey)
 			if isPopup {
 				c.Equal(one.want, popup.Text())
+			}
+			if kind, found := refAs[*unison.PopupMenu[prereq.Type]](t, p.AsPanel(), "r.0:type"); found {
+				c.Equal(one.prereq.PrereqType().String(), kind.Text(), "the type of %s is shown", one.cmpKey)
 			}
 			if one.noField != "" {
 				c.Nil(p.FindRefKey(one.noField), "%s must not be shown", one.noField)
@@ -391,8 +395,8 @@ func TestPrereqPanelMoves(t *testing.T) {
 }
 
 // TestPrereqPanelEscapeClosesTheOpenRow checks that Escape closes an open row, returning the focus to its sentence,
-// that Escape within the panel never reaches the editor, where it would discard the changes, and that Escape outside the
-// panel still does.
+// that Escape within the panel never reaches the editor, where it would discard the changes, and that Escape outside
+// the panel still does.
 func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -446,8 +450,8 @@ func TestPrereqPanelDoneKeyActsOnce(t *testing.T) {
 }
 
 // TestPrereqPanelCollapse checks that the title bar collapses the panel to a paragraph describing the tree and expands
-// it again, as does the paragraph, from a click or the keyboard, that a screen reader hears whether it is expanded, that
-// collapsing hands the focus from the rows to the title bar, and that it is no edit and keeps the open row open.
+// it again, as does the paragraph, from a click or the keyboard, that a screen reader hears whether it is expanded,
+// that collapsing hands the focus from the rows to the title bar, and that it is no edit and keeps the open row open.
 func TestPrereqPanelCollapse(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -971,8 +975,9 @@ func TestPrereqPanelDragFromRow(t *testing.T) {
 	c.Equal("r.0.1", p.open, "a slow click that barely moves is still a click")
 }
 
-// TestPrereqPanelLevelChip checks that a skill's level of at least 0 is shown, that removing it leaves no level, and
-// that a skill or trait the editor adds starts with none.
+// TestPrereqPanelLevelChip checks that a skill's level of at least 0 is shown, that removing it leaves no level, that a
+// skill or trait the editor adds starts with none, and that a trait's level of at least 0, which every trait has, isn't
+// shown.
 func TestPrereqPanelLevelChip(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -996,6 +1001,17 @@ func TestPrereqPanelLevelChip(t *testing.T) {
 	newTrait, ok := p.node("r.4").(*gurps.TraitPrereq)
 	c.True(ok)
 	c.Equal(criteria.AnyNumber, newTrait.LevelCriteria.Compare)
+	trait, ok := p.node("r.0").(*gurps.TraitPrereq)
+	c.True(ok)
+	c.Equal(criteria.AtLeastNumber, trait.LevelCriteria.Compare, "precondition: the trait's level is at least 0")
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("r.0:level"+keyChip), "a trait's level of at least 0 isn't a chip")
+		if add, isButton := refAs[*unison.Button](t, p.AsPanel(), "r.0:add level"); isButton {
+			add.ClickCallback()
+		}
+	})
+	screen.Do(func() { c.NotNil(p.FindRefKey("r.0:level"+keyChip), "adding the level, at least 1, makes it one") })
 }
 
 // TestPrereqPanelChipOrder checks that the buttons adding unused criteria follow the chips in use, and that an added
@@ -1147,6 +1163,7 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 		c.NotNil(p.FindRefKey(treeRootPath + ":tl" + keyChip))
 		c.Equal(0, len(root.Prereqs))
 		c.True(root.All)
+		c.Nil(menuAction(p.addEntries(p.tree(), treeRootPath), "Only When TL…"), "nor is another offered")
 	})
 	screen.Do(host.mgr.Undo)
 	pill, _ = headed()
@@ -1479,24 +1496,27 @@ func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 	c.Equal(0, differ, "the text is drawn in the same place with the focus as without")
 }
 
-// TestPrereqPanelEquippedEquipmentTags checks that the tags field of an equipped equipment prerequisite says how to
-// match any of several tags, since it matches each of the comma-separated tags in turn.
+// TestPrereqPanelEquippedEquipmentTags checks that the tags field of an equipped equipment prerequisite, and that of
+// its modifier, say how to match any of several tags, since each matches the comma-separated tags in turn.
 func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	equipped := gurps.NewEquippedEquipmentPrereq()
 	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Sword, Axe"}
+	equipped.ModifierTagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine, Balanced"}
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{equipped}
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	path := childPath(treeRootPath, 0)
 	screen.Do(func() { p.toggle(path) })
 	screen.Do(func() {
-		field := p.FindRefKey(path + ":tag")
-		c.NotNil(field, "the prerequisite has a tags field")
-		if field != nil {
-			c.True(strings.Contains(tooltipText(field.Tooltip), "Separate multiple tags with commas"),
-				"whose tooltip says to separate tags with commas")
+		for _, key := range []string{":tag", ":modtag"} {
+			field := p.FindRefKey(path + key)
+			c.NotNil(field, "the prerequisite has a %s field", key)
+			if field != nil {
+				c.True(strings.Contains(tooltipText(field.Tooltip), "Separate multiple tags with commas"),
+					"whose tooltip says to separate tags with commas: %s", key)
+			}
 		}
 	})
 }
@@ -1593,8 +1613,93 @@ func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelNewCriteriaChips checks that each new optional criterion of a trait, a skill, a spell and equipment
-// has a chip that, once added, sets that criterion.
+// TestPrereqPanelHasPopup checks that the has popup of a prerequisite that stores whether it is to be had says so in
+// the words of its type, and that choosing the other negates the prerequisite.
+func TestPrereqPanelHasPopup(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	trait := gurps.NewTraitPrereq()
+	spell := gurps.NewSpellPrereq()
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{trait, spell}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	for _, one := range []struct {
+		path, yes, no string
+		has           *bool
+	}{
+		{"r.0", "Has", "Doesn't have", &trait.Has},
+		{"r.1", "Knows", "Doesn't know", &spell.Has},
+	} {
+		c.True(*one.has, "precondition: %s starts out to be had", one.path)
+		screen.Do(func() { p.toggle(one.path) })
+		screen.Do(func() {
+			if popup, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), one.path+":has"); ok {
+				c.Equal(one.yes, popup.Text(), one.path)
+				popup.Select(false)
+			}
+		})
+		c.False(*one.has, "%s: choosing %q negates it", one.path, one.no)
+		screen.Do(func() {
+			if popup, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), one.path+":has"); ok {
+				c.Equal(one.no, popup.Text(), one.path)
+			}
+		})
+	}
+}
+
+// TestPrereqPanelSamePowerSourceOnlyForSpells checks that matching the power source of the spell is offered only to a
+// spell's own prerequisites, where a spell prerequisite the panel adds, and a power source criterion added to one,
+// start out matching it, while elsewhere the one starts without the criterion and the other as an "is" comparison, and
+// that removing the criterion or choosing a comparison stops matching the spell's.
+func TestPrereqPanelSamePowerSourceOnlyForSpells(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	same := "and whose power source is the same as this spell's"
+	for _, ownerIsSpell := range []bool{false, true} {
+		var root *gurps.PrereqList
+		p, _ := showPrereqPanel(t, screen, &root, ownerIsSpell)
+		screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), "Spell")() })
+		spell, ok := p.node("r.0").(*gurps.SpellPrereq)
+		c.True(ok, "precondition: a spell prerequisite was added")
+		if !ok {
+			return
+		}
+		c.Equal(ownerIsSpell, spell.SamePowerSource, "a new one matches the spell's power source: %v", ownerIsSpell)
+		click := func(key string) {
+			screen.Do(func() {
+				var buttons []*unison.Button
+				if panel := p.FindRefKey(key); panel != nil {
+					buttons = uxtest.PanelsOfType[*unison.Button](panel)
+				}
+				c.NotEqual(0, len(buttons), "%s is shown", key)
+				if len(buttons) != 0 {
+					buttons[len(buttons)-1].ClickCallback()
+				}
+			})
+		}
+		if ownerIsSpell {
+			click("r.0:power" + keyChip)
+			c.False(spell.SamePowerSource, "removing the chip stops matching the spell's power source")
+		}
+		click("r.0:add power")
+		c.Equal(ownerIsSpell, spell.SamePowerSource, "the chip matches the spell's power source: %v", ownerIsSpell)
+		c.Equal(!ownerIsSpell, spell.PowerSourceCriteria.Compare == criteria.IsText, "or else is an \"is\" comparison")
+		screen.Do(func() {
+			if popup, found := refAs[*unison.PopupMenu[string]](t, p.AsPanel(), "r.0:powercmp"); found {
+				c.Equal(ownerIsSpell, popup.IndexOfItem(same) != -1, "matching the spell's is offered: %v", ownerIsSpell)
+				if ownerIsSpell {
+					is, _ := popup.ItemAt(1)
+					popup.Select(is)
+				}
+			}
+		})
+		c.False(spell.SamePowerSource, "choosing a comparison stops matching the spell's power source")
+		c.Equal(criteria.IsText, spell.PowerSourceCriteria.Compare)
+	}
+}
+
+// TestPrereqPanelNewCriteriaChips checks that each new optional criterion of a trait, a skill, a spell, equipment and
+// an attribute has a chip that, once added, sets that criterion.
 func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1602,8 +1707,9 @@ func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 	skill := gurps.NewSkillPrereq()
 	spell := gurps.NewSpellPrereq()
 	equipped := gurps.NewEquippedEquipmentPrereq()
+	attribute := gurps.NewAttributePrereq(nil)
 	root := gurps.NewPrereqList()
-	root.Prereqs = gurps.Prereqs{trait, skill, spell, equipped}
+	root.Prereqs = gurps.Prereqs{trait, skill, spell, equipped, attribute}
 	for _, one := range root.Prereqs {
 		one.SetParentList(root)
 	}
@@ -1628,6 +1734,7 @@ func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 		{"r.3", "modnotes", textOn(&equipped.ModifierNotesCriteria)},
 		{"r.3", "modtag", textOn(&equipped.ModifierTagsCriteria)},
 		{"r.3", "titlenote", textOn(&equipped.TitleNoteCriteria)},
+		{"r.4", "combined", func() bool { return attribute.CombinedWith != "" }},
 	} {
 		c.False(one.on(), "precondition: %s %s starts out off", one.path, one.key)
 		screen.Do(func() {

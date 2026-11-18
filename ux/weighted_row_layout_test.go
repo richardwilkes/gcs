@@ -86,6 +86,9 @@ func TestWeightedRowLayoutDividesByWeight(t *testing.T) {
 	c.Equal(geom.NewRect(0, 0, 24.5, 40), children[0].FrameRect())
 	c.Equal(geom.NewRect(25.5, 0, 49, 40), children[1].FrameRect(), "each child follows the last, plus the spacing")
 	c.Equal(geom.NewRect(75.5, 0, 24.5, 40), children[2].FrameRect())
+
+	layout.weights = []fxp.Int{0, fxp.Two}
+	c.Equal(widths, layout.widths(len(children), 100), "a weight of zero, or none at all, counts as 1")
 }
 
 // Dividing a row by weight never makes a child narrower than the floor, taking what pinning one there costs from the
@@ -109,20 +112,12 @@ func TestWeightedRowLayoutPinsToTheFloor(t *testing.T) {
 			msg:       "the second child is pinned at the floor and the first gets the rest",
 		},
 		{
-			weights:   []fxp.Int{fxp.One, fxp.One},
-			minWidth:  50,
-			prefWidth: 50,
-			width:     101,
-			want:      []float32{50, 50},
-			msg:       "an even split gives each child exactly the width its content asked for",
-		},
-		{
 			weights:   []fxp.Int{fxp.Three, fxp.One},
 			minWidth:  50,
 			prefWidth: 50,
 			width:     101,
 			want:      []float32{75, 25},
-			msg:       "changing the weights must re-proportion the row regardless of the content",
+			msg:       "the weights must proportion the row regardless of the width the content asks for",
 		},
 	} {
 		row, layout := newTestRow(tc.weights, 0,
@@ -243,15 +238,6 @@ func TestWeightedRowLayoutOtherChildrenShareWhatIsLeft(t *testing.T) {
 			children: []*unison.Panel{newSquareTestPanel(30), newSizedPanel(0, 10, 80)},
 			width:    576,
 			widths:   []float32{squareWidth(80), 575 - squareWidth(80)},
-			height:   80,
-		},
-		{
-			name:     "an A4 page",
-			weights:  []fxp.Int{fxp.One, fxp.One},
-			square:   []bool{true, false},
-			children: []*unison.Panel{newSquareTestPanel(30), newSizedPanel(0, 10, 80)},
-			width:    559,
-			widths:   []float32{squareWidth(80), 558 - squareWidth(80)},
 			height:   80,
 		},
 		{

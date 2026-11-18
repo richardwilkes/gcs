@@ -83,8 +83,9 @@ func TestPageSearchMatchesCarryTheirListTitles(t *testing.T) {
 		matchLabels(loot.search.findMatches("findable")))
 }
 
-// A long label is cut short, and a weapon, whose description column shows its owner, adds its usage so that one
-// weapon's attacks can be told apart, even when its owner's name is cut short.
+// A long label is cut short, a note's label skips the blank lines it starts with, and a weapon, whose description
+// column shows its owner, adds its usage so that one weapon's attacks can be told apart, even when its owner's name is
+// cut short.
 func TestPageSearchLabels(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -106,7 +107,9 @@ func TestPageSearchLabels(t *testing.T) {
 	entity.Traits = []*gurps.Trait{blade, longBlade}
 	note := gurps.NewNote(entity, nil, false)
 	note.MarkDown = "Findable " + strings.Repeat("x", maxPageSearchLabelLength)
-	entity.Notes = []*gurps.Note{note}
+	spaced := gurps.NewNote(entity, nil, false)
+	spaced.MarkDown = "\n  \nFindable below blank lines"
+	entity.Notes = []*gurps.Note{note, spaced}
 	sheet.Rebuild(true)
 	c.Equal([]string{
 		"Findable Blade (Swung) | Melee Attacks",
@@ -116,79 +119,8 @@ func TestPageSearchLabels(t *testing.T) {
 		"Findable Blade | Traits",
 		cutName + " | Traits",
 		"Findable " + strings.Repeat("x", maxPageSearchLabelLength-len("Findable ")) + "… | Notes",
+		"Findable below blank lines | Notes",
 	}, matchLabels(sheet.search.findMatches("findable")))
-}
-
-// A row of the dropdown shows the match's name followed by the title of its list, and is named for both to an
-// assistive technology. A match with an icon, as the Library Explorer's have, shows it, and one without a title, as a
-// root row of the Library Explorer is, is named by its name alone.
-func TestSearchMatchCellShowsTheTitleAndIcon(t *testing.T) {
-	c := check.New(t)
-	list := unison.NewList[*searchMatch]()
-	match := &searchMatch{name: "Findable", title: "Traits", show: func() {}}
-	label, ok := (&searchMatchCellFactory{}).CreateCell(list, match, 0, unison.Black, unison.White, false, false).(*unison.Label)
-	if !ok {
-		t.Fatal("the cell must be a label")
-	}
-	c.Equal("Findable  Traits", label.String())
-	c.Equal("Findable, Traits", label.Accessibility.Name)
-	c.Nil(label.Drawable, "a match without an icon shows none")
-
-	icon := &unison.DrawableSVG{SVG: unison.DocumentSVG}
-	match = &searchMatch{name: "Library", icon: icon, show: func() {}}
-	label, ok = (&searchMatchCellFactory{}).CreateCell(list, match, 0, unison.Black, unison.White, false, false).(*unison.Label)
-	if !ok {
-		t.Fatal("the cell must be a label")
-	}
-	c.Equal("Library", label.String())
-	c.Equal("Library", label.Accessibility.Name)
-	c.True(label.Drawable == icon, "a match with an icon shows it")
-}
-
-// A row that only carries a note, as the one saying the matches were cut short is, is set apart from the matches: it
-// is drawn dimmed in the italic secondary font, under a line, and shows no icon.
-func TestSearchMatchCellSetsANoteApart(t *testing.T) {
-	c := check.New(t)
-	list := unison.NewList[*searchMatch]()
-	factory := &searchMatchCellFactory{}
-	match, ok := factory.CreateCell(list, &searchMatch{name: "Findable", show: func() {}}, 0, unison.Black, unison.White,
-		false, false).(*unison.Label)
-	if !ok {
-		t.Fatal("the cell must be a label")
-	}
-	note, ok := factory.CreateCell(list, &searchMatch{name: "Narrow the search"}, 0, unison.Black, unison.White, false,
-		false).(*unison.Label)
-	if !ok {
-		t.Fatal("the cell must be a label")
-	}
-	c.Equal("Narrow the search", note.String())
-	c.Equal("Narrow the search", note.Accessibility.Name)
-	c.Nil(note.Drawable)
-	want := noteFont()
-	c.True(note.Font.Face() == want.Face() && note.Font.Size() == want.Size(), "a note is drawn in the note font")
-	var isDimmed bool
-	note.Text.AdjustDecorations(func(d *unison.TextDecoration) { _, isDimmed = d.OnBackgroundInk.(*unison.ColorFilteredInk) })
-	c.True(isDimmed, "a note is dimmed")
-	c.Equal(match.Border().Insets().Top+1, note.Border().Insets().Top, "a note sits under a line")
-	c.Equal(match.Border().Insets().Bottom, note.Border().Insets().Bottom)
-}
-
-// The search field switches to the focus border while it holds the focus, as other fields do, and still searches for
-// the text it holds when it gains the focus.
-func TestSearchFieldShowsTheFocusBorder(t *testing.T) {
-	c := check.New(t)
-	walks := 0
-	s := newSearchDropdown(func(string) []*searchMatch {
-		walks++
-		return nil
-	}, func(*searchMatch) {})
-	unfocused := s.field.Border()
-	s.field.SetText("findable")
-	s.field.GainedFocusCallback()
-	c.True(s.field.Border() != unfocused, "gaining the focus shows the focus border")
-	c.Equal(1, walks, "and searches for the text")
-	s.field.LostFocusCallback()
-	c.True(s.field.Border() == unfocused, "losing the focus puts the unfocused border back")
 }
 
 // The lists are only walked while the matches can be seen: not for an empty search, not for text put in the field while
@@ -252,6 +184,25 @@ func TestPageSearchCapsTheMatches(t *testing.T) {
 	c.Equal(found[:maxSearchMatches], rows[:maxSearchMatches], "the first are offered")
 	c.Nil(rows[maxSearchMatches].show, "followed by a notice that chooses nothing")
 	c.Contains(rows[maxSearchMatches].name, "Narrow the search")
+}
+
+// Choosing a match selects its row alone, deselecting the rows of every list first, not only those of its own.
+func TestPageSearchChoosingDeselectsEveryList(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	entity.Traits = []*gurps.Trait{newFindableTrait(entity, "Findable")}
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Brawling"
+	entity.Skills = []*gurps.Skill{skill}
+	sheet.Rebuild(true)
+	sheet.Skills.Table.SelectByIndex(0)
+	c.Equal(1, sheet.Skills.Table.SelectionCount(), "precondition: the skill is selected")
+	found := sheet.search.findMatches("findable")
+	c.Equal(1, len(found), "the trait is found")
+	sheet.search.choose(found[0])
+	c.Equal(0, sheet.Skills.Table.SelectionCount(), "choosing the trait deselects the skill")
+	c.Equal(1, sheet.Traits.Table.SelectionCount(), "and selects the trait")
 }
 
 // pageSearchFixture is a character sheet open in a headless workspace, with the traits the test asked for and the focus
@@ -510,9 +461,10 @@ func TestPageSearchShowsMatchesOnFocus(t *testing.T) {
 	c.NotNil(f.offered(), "handing over the text the focused field holds offers the matches again")
 }
 
-// Choosing a match inside a closed container scrolls the row into view even when disclosing the container grows the
-// page: the scroll panel's range is only as large as the page was at its last layout, so the page has to be laid out
-// again before the scroll is asked for, or it stops short of a row beneath the old bottom of the page.
+// Choosing a match inside a closed container scrolls the row into view, within the view of its list on the later page
+// showing it, even when disclosing the container adds pages: the scroll panel's range is only as large as the pages
+// were at its last layout, so they have to be filled and laid out again before the scroll is asked for, or it stops
+// short of a row beneath the old bottom of the last page.
 func TestPageSearchScrollsDisclosedRowIntoView(t *testing.T) {
 	c := check.New(t)
 	f := startPageSearch(t, c, func(_ *gurps.Entity) []*gurps.Trait { return nil })
@@ -539,18 +491,21 @@ func TestPageSearchScrollsDisclosedRowIntoView(t *testing.T) {
 	c.Equal(1, f.rows(), "the note is offered")
 	f.screen.KeyPress(unison.KeyReturn, mod.None)
 	index := -1
+	var laterPage bool
 	var rowRect, viewRect geom.Rect
 	f.screen.Do(func() {
 		table := f.sheet.Notes.Table
 		index = rowIndexForData(table, last)
 		if index >= 0 {
 			view := table.ViewForRow(index)
+			laterPage = view != table
 			rowRect = view.RectToRoot(view.RowFrame(index))
 		}
 		view := f.sheet.scroll.ContentView()
 		viewRect = view.RectToRoot(view.ContentRect(false))
 	})
 	c.True(index >= 0, "the chosen note is shown")
+	c.True(laterPage, "the chosen note must be on a later page than its list's first")
 	// The scroll and the conversion to root coordinates each scale the row through the page view's scale, so the two can
 	// differ by a rounding error; half a pixel covers that without letting a row that is really cut off through.
 	viewRect = viewRect.Inset(geom.NewUniformInsets(-0.5))

@@ -17,9 +17,9 @@ import (
 )
 
 // TestNewListQuestionPanel verifies the shape of the panel the list question dialogs share: the operation label, if
-// any, then the header, then any extra headers in order, and last the list's scroll panel, the only child that takes up
-// spare room. The extra headers are how the modifier prompt names the row being asked about, so they must land between
-// the header and the list.
+// any, then the header, which names the list, then any extra headers in order, and last the list's scroll panel, the
+// only child that takes up spare room. The extra headers are how the modifier prompt names the row being asked about,
+// so they must land between the header and the list.
 func TestNewListQuestionPanel(t *testing.T) {
 	c := check.New(t)
 	list := unison.NewPanel()
@@ -32,6 +32,7 @@ func TestNewListQuestionPanel(t *testing.T) {
 	header, ok := children[0].Self.(*unison.Label)
 	c.True(ok, "the first child must be the header label")
 	c.Equal("Header", header.String())
+	c.True(list.Accessibility.LabeledBy == unison.Paneler(header), "the header must name the list for accessibility")
 	c.Equal(extra.AsPanel(), children[1], "the extra header must follow the header label")
 
 	c.Equal(scroll.AsPanel(), children[2], "the list must be wrapped in the scroll panel returned with the panel")

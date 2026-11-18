@@ -861,6 +861,35 @@ func TestBodyNotesHeaderIsReadAsTheOtherHeadersAre(t *testing.T) {
 	}
 }
 
+// TestDescribeWithHint verifies that a hint is put at the front of a control's description, trimmed, unless it is empty
+// or already says what the control's name or description does, and that the control's own callback still runs.
+func TestDescribeWithHint(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		hint        string
+		name        string
+		description string
+		want        string
+	}{
+		{hint: "seconds", name: "Tooltip Delay", want: "seconds"},
+		{hint: "seconds", name: "Tooltip Delay", description: "Value must be at least 0", want: "seconds. Value must be at least 0"},
+		{hint: " seconds ", name: "Tooltip Delay", want: "seconds"},
+		{hint: "", name: "Tooltip Delay", description: "How long to wait", want: "How long to wait"},
+		{hint: "FP", name: "FP", want: ""},
+		{hint: "FP", name: "Fatigue", description: "FP", want: "FP"},
+	} {
+		field := unison.NewField()
+		called := false
+		field.Accessibility.Callback = func(_ *accessibility.Node) { called = true }
+		describeWithHint(field, func() string { return one.hint })
+		node := &accessibility.Node{Name: one.name, Description: one.description}
+		field.Accessibility.Callback(node)
+		c.True(called, "the callback the field already had is still called")
+		c.Equal(one.want, node.Description, "hint %q, name %q, description %q", one.hint, one.name, one.description)
+		c.Equal(one.name, node.Name)
+	}
+}
+
 // A label that follows a field, such as its units, is the field's description rather than an element of its own, so it
 // is no tab stop with static text in the Tab order. (The calculators' link-aware labels are covered by the same test
 // in ux/calculators.)

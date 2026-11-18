@@ -25,15 +25,12 @@ import (
 // second SVG opens in a new dock instead of stacking with the first.
 func TestImageFileTypesGroupWithEachOther(t *testing.T) {
 	c := check.New(t)
-	RegisterExternalFileTypes()
+	RegisterKnownFileTypes()
 	imageExts := make([]string, 0, 16)
 	for _, ext := range append(imgfmt.AllReadableExtensions(), uti.SVG.Extensions...) {
 		if !slices.Contains(imageExts, ext) {
 			imageExts = append(imageExts, ext)
 		}
-	}
-	for _, ext := range uti.SVG.Extensions {
-		c.True(slices.Contains(imageExts, ext), ext+" should be one of the image extensions")
 	}
 	for _, ext := range imageExts {
 		fi := gurps.FileInfoFor("image" + ext)

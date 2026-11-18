@@ -43,3 +43,39 @@ func TestSideBarYieldsToNarrowView(t *testing.T) {
 	side, _, _ = layOut(1000)
 	c.Equal(float32(sideBarInitialWidth), side, "the side bar is back at its preferred width in a wide view")
 }
+
+// TestSideBarDividerDragResizesIt verifies that dragging the divider widens or narrows the side bar by the distance
+// dragged, though to no more than the 40% of the view it is laid out at, so that it keeps the width it was left showing
+// once the view widens, and to no less than 1.
+func TestSideBarDividerDragResizesIt(t *testing.T) {
+	c := check.New(t)
+	container := unison.NewPanel()
+	container.SetLayout(&unison.FlexLayout{Columns: 1, HAlign: align.Fill, VAlign: align.Fill})
+	content := unison.NewPanel()
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Fill, HGrab: true, VGrab: true})
+	container.AddChild(content)
+	s := newSideBar(unison.NewPanel())
+	s.toggle(container, content)
+	layOut := func(width float32) float32 {
+		container.SetFrameRect(geom.NewRect(0, 0, width, 400))
+		container.ValidateLayout()
+		return s.scroll.FrameRect().Width
+	}
+	// The gesture begins at the divider's left edge. dragTo moves the pointer dx from there and lays the view out again,
+	// which moves the divider, so the pointer is handed over in the divider's coordinates as they are at that moment.
+	start := geom.NewPoint(layOut(1000), 10)
+	dragTo := func(dx float32) float32 {
+		s.divider.MouseDragCallback(s.divider.PointFromRoot(container.PointToRoot(start.Add(geom.NewPoint(dx, 0)))), 0,
+			0)
+		return layOut(1000)
+	}
+
+	c.Equal(float32(sideBarInitialWidth), start.X)
+	s.divider.MouseDownCallback(s.divider.PointFromRoot(container.PointToRoot(start)), 0, 1, 0)
+	c.Equal(float32(sideBarInitialWidth+50), dragTo(50), "dragging right widens the side bar")
+	c.Equal(float32(sideBarInitialWidth-50), dragTo(-50), "dragging left narrows the side bar")
+	c.Equal(float32(400), dragTo(1000), "the side bar stops at 40% of the view")
+	c.Equal(float32(1), dragTo(-1000), "the side bar stops short of nothing")
+	dragTo(1000)
+	c.Equal(float32(400), layOut(2000), "the side bar keeps the width it was dragged to when the view widens")
+}

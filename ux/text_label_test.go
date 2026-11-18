@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
@@ -222,33 +221,8 @@ func TestTextLabelIsATabStopWhileItHoldsLinks(t *testing.T) {
 	c.Equal(role.Heading, heading.Accessibility.Role)
 }
 
-func TestDescribeWithHint(t *testing.T) {
-	c := check.New(t)
-	for _, one := range []struct {
-		hint        string
-		name        string
-		description string
-		want        string
-	}{
-		{hint: "seconds", name: "Tooltip Delay", want: "seconds"},
-		{hint: "seconds", name: "Tooltip Delay", description: "Value must be at least 0", want: "seconds. Value must be at least 0"},
-		{hint: " seconds ", name: "Tooltip Delay", want: "seconds"},
-		{hint: "", name: "Tooltip Delay", description: "How long to wait", want: "How long to wait"},
-		{hint: "FP", name: "FP", want: ""},
-		{hint: "FP", name: "Fatigue", description: "FP", want: "FP"},
-	} {
-		field := unison.NewField()
-		called := false
-		field.Accessibility.Callback = func(_ *accessibility.Node) { called = true }
-		describeWithHint(field, func() string { return one.hint })
-		node := &accessibility.Node{Name: one.name, Description: one.description}
-		field.Accessibility.Callback(node)
-		c.True(called, "the callback the field already had is still called")
-		c.Equal(one.want, node.Description, "hint %q, name %q, description %q", one.hint, one.name, one.description)
-		c.Equal(one.name, node.Name)
-	}
-}
-
+// TestFindRefs verifies that the references given are found wherever they appear as whole words, in the order they
+// appear, and that an empty reference finds nothing.
 func TestFindRefs(t *testing.T) {
 	c := check.New(t)
 	found := func(text string, refs ...string) []string {

@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -62,4 +63,17 @@ func TestScaleCommandsFollowFieldEnabledState(t *testing.T) {
 	for _, id := range ids {
 		c.False(d.CanPerformCmd(nil, id), "command %d must not be offered while the scale field is disabled", id)
 	}
+}
+
+// TestScaleStepCommandsStopAtTheLimits verifies that Scale Up and Scale Down are not offered at the largest and
+// smallest scales.
+func TestScaleStepCommandsStopAtTheLimits(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	d.PerformCmd(nil, Scale400ItemID)
+	c.Equal(gurps.InitialUIScaleMax, d.scale)
+	c.False(d.CanPerformCmd(nil, ScaleUpItemID), "Scale Up must not be offered at the largest scale")
+	d.PerformCmd(nil, Scale50ItemID)
+	c.Equal(gurps.InitialUIScaleMin, d.scale)
+	c.False(d.CanPerformCmd(nil, ScaleDownItemID), "Scale Down must not be offered at the smallest scale")
 }

@@ -172,27 +172,28 @@ func TestTemplatePageRefHighlightFallsBackToTheName(t *testing.T) {
 	c.Equal("Knights", template.pageRefHighlight(), "a highlight is looked for as given")
 }
 
-// TestTemplateNewCharacterStartsAtAnExactTarget verifies that a sheet made from a template aimed at an exact number of
-// points starts with that many, and that any other target leaves the default from the settings alone.
-func TestTemplateNewCharacterStartsAtAnExactTarget(t *testing.T) {
+// TestTemplateCurrentPointsFlagsAMissedTarget verifies that the readout beside the target shows what the template
+// costs, in the error ink and with a tooltip saying why while that cost misses the target, and plainly once it is met.
+func TestTemplateCurrentPointsFlagsAMissedTarget(t *testing.T) {
 	c := check.New(t)
-	defaultPoints := gurps.GlobalSettings().GeneralSettings().InitialPoints
-	c.NotEqual(fxp.FromInteger(250), defaultPoints, "the test requires the target to differ from the default")
 	data := gurps.NewTemplate()
-	template := newTestTemplateDockable("Exact", data)
-
-	data.TargetPoints = gurps.NumericRangeOf(fxp.FromInteger(250))
-	e := template.newCharacter()
-	c.Equal(fxp.FromInteger(250), e.TotalPoints)
-	c.Equal(1, len(e.PointsRecord), "the target replaces the initial points rather than adding to them")
-	c.Equal(fxp.FromInteger(250), e.PointsRecord[0].Points)
-
-	for _, target := range []gurps.NumericRange{
-		{},
-		{Min: new(fxp.FromInteger(100)), Max: new(fxp.FromInteger(150))},
-		{Min: new(fxp.FromInteger(100))},
-	} {
-		data.TargetPoints = target
-		c.Equal(defaultPoints, template.newCharacter().TotalPoints, "a target of %s must leave the default", target)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.BasePoints = fxp.FromInteger(15)
+	data.Traits = []*gurps.Trait{trait}
+	data.TargetPoints = gurps.NumericRangeOf(fxp.FromInteger(10))
+	template := newTestTemplateDockable("Current", data)
+	current, ok := template.targetMgr.Find(templatePanelCurrentPointsFieldRefKey).Self.(*NonEditablePageField)
+	c.True(ok, "the template must have a readout of its current points")
+	textInk := func() (ink unison.Ink) {
+		current.Text.AdjustDecorations(func(d *unison.TextDecoration) { ink = d.OnBackgroundInk })
+		return ink
 	}
+	c.Equal("15", current.Text.String())
+	c.Equal(unison.Ink(unison.ThemeError), textInk(), "a cost of 15 misses a target of 10")
+	c.NotNil(current.Tooltip, "the flagged readout must say why")
+
+	data.TargetPoints = gurps.NumericRangeOf(fxp.FromInteger(15))
+	current.Sync()
+	c.Equal(unison.Ink(unison.ThemeOnSurface), textInk(), "a cost of 15 meets a target of 15")
+	c.Nil(current.Tooltip, "a met target leaves nothing to say")
 }

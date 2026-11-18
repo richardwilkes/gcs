@@ -48,6 +48,20 @@ func TestEquipmentContextMenuLeavesOutTheListName(t *testing.T) {
 	c.False(hasChoice, "the other equipment list never holds choices")
 }
 
+// TestEquipmentDragMovesWithinASheet verifies that equipment dragged within a sheet, from one of its equipment lists to
+// the other included, is moved there, while equipment dragged to another sheet is copied.
+func TestEquipmentDragMovesWithinASheet(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	other := newTestSheetForTemplate(t)
+	carried := sheet.CarriedEquipment.Table
+	provider, ok := carried.ClientData()[TableProviderClientKey].(TableProvider[*gurps.Equipment])
+	c.True(ok, "the table must have its provider recorded")
+	c.True(provider.DropShouldMoveData(carried, carried), "a drag within a list must move")
+	c.True(provider.DropShouldMoveData(carried, sheet.OtherEquipment.Table), "a drag between a sheet's lists must move")
+	c.False(provider.DropShouldMoveData(carried, other.CarriedEquipment.Table), "a drag between sheets must copy")
+}
+
 // TestEquipmentPageHeaderSyncRefreshesTotalsTooltip verifies that syncing a page's equipment list refreshes the
 // header's tooltip along with the totals in its title. The tooltip is where the exact totals are offered once the
 // display formats round them, and the formats can change after the headers were built -- which is exactly what

@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -264,4 +265,45 @@ func TestShoppingRecordHeadless(t *testing.T) {
 		}
 	})
 	c.Equal(0, open, "the record closes with its sheet")
+}
+
+// TestShoppingRecordWindowHasRoomForEntries checks that a window packed around an empty shopping record, as when the
+// Editors group opens in a window, is big enough to list entries rather than closing up around the record's header.
+func TestShoppingRecordWindowHasRoomForEntries(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var content, hint geom.Size
+	var rowHeight float32
+	screen.Do(func() {
+		d := newShoppingRecordDockable(sheet)
+		wnd, err := NewWindowForDockable(d, dgroup.Editors)
+		if err != nil {
+			t.Errorf("unable to open the shopping record in a window of its own: %v", err)
+			return
+		}
+		defer wnd.Dispose()
+		content = wnd.ContentRect().Size
+		hint = d.sizeHint()
+		rowHeight = unison.DefaultLabelTheme.Font.LineHeight()
+	})
+	c.True(content.Width >= hint.Width && content.Height >= hint.Height,
+		"the window must be at least as big as the hint %v, not %v", hint, content)
+	c.True(hint.Height >= rowHeight*shoppingRecordHintRows, "the hint must have room for %d entries",
+		shoppingRecordHintRows)
+}
+
+// TestShoppingRecordCellsWithoutMoney checks that an entry for which no money changed hands, such as the purchase of
+// something free, shows only the amount exchanged in its money column.
+func TestShoppingRecordCellsWithoutMoney(t *testing.T) {
+	c := check.New(t)
+	cells := shoppingRecordCells(&gurps.ShoppingRecordEntry{
+		Name:  "Bought pebble",
+		Kind:  gurps.ShoppingBought,
+		Items: []gurps.ShoppingRecordItem{{Name: "Pebble", Quantity: fxp.One}},
+	}, gurps.FactorySheetSettings())
+	c.Equal("$0", cells[shoppingRecordMoneyColumn])
 }

@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/yuin/goldmark"
@@ -168,6 +170,22 @@ func TestNewComparisonPopup(t *testing.T) {
 	c.Nil(popup.SelectionChangedCallback, "no selection callback should be installed")
 }
 
+// TestAddStringCriteriaPanel verifies that choosing a comparison stores it in the criteria, and that the qualifier
+// field is blanked while the comparison matches anything, since then there is nothing for it to qualify.
+func TestAddStringCriteriaPanel(t *testing.T) {
+	c := check.New(t)
+	var text criteria.Text
+	popup, field := addStringCriteriaPanel(unison.NewPanel(), "whose name", "whose name", "Name", &text, 1, false)
+	c.Equal(int(criteria.AnyText), popup.SelectedIndex())
+	c.False(field.Enabled(), "matching anything blanks the qualifier")
+	popup.SelectIndex(int(criteria.StartsWithText))
+	c.Equal(criteria.StartsWithText, text.Compare, "the comparison chosen is stored")
+	c.True(field.Enabled(), "a comparison that needs a qualifier offers the field")
+	popup.SelectIndex(int(criteria.AnyText))
+	c.Equal(criteria.AnyText, text.Compare)
+	c.False(field.Enabled(), "going back to matching anything blanks the qualifier again")
+}
+
 // lastLabeledPair checks that the last two children of parent are a tooltip-less label showing labelText and then
 // whatever was added after it, and returns the latter.
 func lastLabeledPair(t *testing.T, parent *unison.Panel, labelText string) *unison.Panel {
@@ -280,6 +298,74 @@ func TestAddLabelAndScriptField(t *testing.T) {
 	plain := addLabelAndScriptField(parent, mgr, "k:plain", "Plain", "Another", get, set, false)
 	c.Equal(2, len(lastLabeledPair(t, parent, "Plain").Children()), "no markdown guide button was asked for")
 	c.True(mgr.Find("k:plain").Is(plain))
+}
+
+// TestAddNotesLabelAndField verifies that the notes field every editor shows edits the notes it is given.
+func TestAddNotesLabelAndField(t *testing.T) {
+	c := check.New(t)
+	parent := unison.NewPanel()
+	notes := "old"
+	addNotesLabelAndField(parent, &notes)
+	field, ok := lastLabeledPair(t, parent, "Notes").Children()[0].Self.(*StringField)
+	c.True(ok, "the field leads the wrapper after the label")
+	c.Equal("old", field.Text())
+	field.SetText("new")
+	c.Equal("new", notes)
+}
+
+// TestAddTechLevelRequired verifies the Required check box beside a tech level field: the field is disabled while no
+// tech level is required, checking the box requires a blank one and enables the field, and clearing the box drops the
+// requirement while remembering the level typed, which checking the box again brings back. Only outside a sheet does
+// the tooltip explain that a blank level is filled in from the character.
+func TestAddTechLevelRequired(t *testing.T) {
+	c := check.New(t)
+	parent := unison.NewPanel()
+	var tl *string
+	level := func() string {
+		if tl == nil {
+			return "<nil>"
+		}
+		return *tl
+	}
+	addTechLevelRequired(parent, &tl, false)
+	wrapper := lastLabeledPair(t, parent, "Tech Level")
+	field, ok := wrapper.Children()[0].Self.(*StringField)
+	c.True(ok, "the field leads the wrapper")
+	required, ok := wrapper.Children()[1].Self.(*CheckBox)
+	c.True(ok, "the Required check box follows the field")
+	c.True(strings.Contains(tooltipText(field.Tooltip), "Leave field blank"),
+		"outside a sheet, the tooltip says what a blank level does")
+	c.False(field.Enabled(), "no tech level is required, so there is none to edit")
+
+	required.Click()
+	c.Equal("", level(), "checking Required requires a blank tech level")
+	c.True(field.Enabled())
+	field.SetText("3")
+	c.Equal("3", level())
+
+	required.Click()
+	c.Nil(tl, "clearing Required drops the tech level")
+	c.False(field.Enabled())
+
+	required.Click()
+	c.Equal("3", level(), "checking Required again brings back the level typed")
+	c.True(field.Enabled())
+
+	addTechLevelRequired(parent, &tl, true)
+	c.False(strings.Contains(tooltipText(lastLabeledPair(t, parent, "Tech Level").Children()[0].Tooltip),
+		"Leave field blank"), "on a sheet, the tooltip leaves that out")
+}
+
+// TestAddAttributeChoicePopup verifies that the attribute popup starts out on the attribute the value names and stores
+// the key of each attribute chosen.
+func TestAddAttributeChoicePopup(t *testing.T) {
+	c := check.New(t)
+	key := gurps.DexterityID
+	popup := addAttributeChoicePopup(unison.NewPanel(), gurps.NewEntity(), "", &key, gurps.TenFlag)
+	selected, ok := popup.Selected()
+	c.True(ok && selected.Key == gurps.DexterityID, "the attribute the value names is selected")
+	popup.SelectIndex(0)
+	c.Equal("10", key, "choosing an attribute stores its key")
 }
 
 // TestWidgetHelpersAcceptPointerOrAccessor verifies that a widget helper edits its value the same way whether it is

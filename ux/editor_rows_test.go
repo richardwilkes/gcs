@@ -19,8 +19,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // The shared row setup widens the right inset for an outermost row so that the overlaid scrollbar doesn't cover its
@@ -360,6 +362,38 @@ func TestInitTitledEditorSection(t *testing.T) {
 	level := study.Standard
 	studies := []*gurps.Study{{Type: study.Self}}
 	expectTitledEditorSection(c, newStudyPanel(&level, &studies), "Study")
+}
+
+// TestMakeDisclosure checks that a disclosure takes a held key without toggling again, leaves a key pressed with a
+// modifier to what holds it, and takes a screen reader's request to expand it while expanded, or collapse it while
+// collapsed, without toggling.
+func TestMakeDisclosure(t *testing.T) {
+	c := check.New(t)
+	key := func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) func(p *unison.Panel) bool {
+		return func(p *unison.Panel) bool { return p.KeyDownCallback(keyCode, mods, repeat) }
+	}
+	ask := func(action accessibility.Action) func(p *unison.Panel) bool {
+		return func(p *unison.Panel) bool {
+			return p.Accessibility.ActionCallback(accessibility.ActionRequest{Action: action})
+		}
+	}
+	for _, tc := range []struct {
+		name     string
+		expanded bool
+		act      func(p *unison.Panel) bool
+		taken    bool
+	}{
+		{name: "held space", act: key(unison.KeySpace, mod.None, true), taken: true},
+		{name: "command return", act: key(unison.KeyReturn, mod.OSMenuCommand(), false)},
+		{name: "expand while expanded", expanded: true, act: ask(accessibility.Expand), taken: true},
+		{name: "collapse while collapsed", act: ask(accessibility.Collapse), taken: true},
+	} {
+		toggles := 0
+		p := unison.NewPanel()
+		makeDisclosure(p, func() bool { return tc.expanded }, func() { toggles++ })
+		c.Equal(tc.taken, tc.act(p), "%s: taken", tc.name)
+		c.Equal(0, toggles, "%s: the disclosure doesn't toggle", tc.name)
+	}
 }
 
 func TestNewSectionAddButton(t *testing.T) {

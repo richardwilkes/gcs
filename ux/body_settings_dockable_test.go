@@ -10,12 +10,6 @@
 package ux
 
 import (
-	"go/ast"
-	"go/parser"
-	"go/token"
-	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -27,18 +21,24 @@ import (
 
 var _ BodySettingsOwner = &bodySettingsOwnerForTest{}
 
-// bodySettingsOwnerForTest is a minimal BodySettingsOwner standing in for a sheet.
+// bodySettingsOwnerForTest is a minimal BodySettingsOwner standing in for a sheet, whose body type resets to defaults.
 type bodySettingsOwnerForTest struct {
 	unison.Panel
-	entity *gurps.Entity
-	body   *gurps.Body
+	entity   *gurps.Entity
+	body     *gurps.Body
+	defaults *gurps.Body
 }
 
 func (p *bodySettingsOwnerForTest) Entity() *gurps.Entity         { return p.entity }
 func (p *bodySettingsOwnerForTest) BodySettingsTitle() string     { return "test" }
 func (p *bodySettingsOwnerForTest) SetBodySettings(b *gurps.Body) { p.body = b }
 
-func (p *bodySettingsOwnerForTest) BodySettings(_ bool) *gurps.Body { return p.body }
+func (p *bodySettingsOwnerForTest) BodySettings(forReset bool) *gurps.Body {
+	if forReset {
+		return p.defaults
+	}
+	return p.body
+}
 
 // TestBodySettingsDockableIdentifiedByOwner verifies that an open body settings dockable is matched to the settings it
 // edits by the identity of its owner, so that a second request for the same settings reactivates the existing dockable
@@ -64,39 +64,24 @@ func TestBodySettingsDockableIdentifiedByOwner(t *testing.T) {
 	c.False(isBodySettingsFor(recorder, globalBodySettings), "an unrelated dockable must never match")
 }
 
-// TestGlobalBodySettingsOwnerIsShared verifies that only one globalBodySettingsOwner is ever created. The dockable for
-// the default body settings is located by comparing owners, and globalBodySettingsOwner is a zero-size struct: the Go
-// spec permits distinct zero-size variables to share an address, so a call site that allocates its own owner would be
-// relying on unspecified behavior for "Default Body Type…" to reactivate the existing dockable instead of opening a
-// duplicate, and would break outright if the struct ever gained a field.
-func TestGlobalBodySettingsOwnerIsShared(t *testing.T) {
+// TestBodySettingsResetUsesTheOwnersDefaults verifies that resetting the body type replaces it, undoably, with a copy
+// of the one the owner resets to, which later edits therefore leave alone.
+func TestBodySettingsResetUsesTheOwnersDefaults(t *testing.T) {
 	c := check.New(t)
-	c.NotNil(globalBodySettings, "the shared global body settings owner must exist")
-	entries, err := os.ReadDir(".")
-	c.NoError(err, "the package directory must be readable")
-	fset := token.NewFileSet()
-	var found []string
-	for _, entry := range entries {
-		name := entry.Name()
-		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
-			continue
-		}
-		var file *ast.File
-		if file, err = parser.ParseFile(fset, name, nil, 0); err != nil {
-			c.NoError(err, "%s must be parsable", name)
-			continue
-		}
-		ast.Inspect(file, func(n ast.Node) bool {
-			if lit, ok := n.(*ast.CompositeLit); ok {
-				if id, ok2 := lit.Type.(*ast.Ident); ok2 && id.Name == "globalBodySettingsOwner" {
-					found = append(found, filepath.ToSlash(name))
-				}
-			}
-			return true
-		})
+	d := newTestBodySettingsDockable("a")
+	defaults := gurps.FactoryBody()
+	defaults.Name = "Defaults"
+	if owner, ok := d.owner.(*bodySettingsOwnerForTest); ok {
+		owner.defaults = defaults
 	}
-	c.Equal([]string{"body_settings_owner.go"}, found,
-		"globalBodySettingsOwner must be instantiated exactly once, by the shared globalBodySettings variable")
+
+	d.reset()
+	c.Equal("Defaults", d.model.Name, "the body type is reset to the owner's defaults")
+	c.True(d.Modified())
+	d.model.Name = "Edited"
+	c.Equal("Defaults", defaults.Name, "the dockable edits a copy of the defaults")
+	d.undoMgr.Undo()
+	c.Equal("Test", d.model.Name, "undo brings back the body type as it was")
 }
 
 // TestHitLocationDragDropReordersOwningTable verifies that dropping a dragged hit location moves it within the table
@@ -167,6 +152,13 @@ func TestHitLocationDragDropReordersOwningTable(t *testing.T) {
 	c.Equal([]string{"1", "2-3", "4-6"}, hitLocationRollRanges(d.model))
 	c.False(d.undoMgr.CanUndo(), "each drop is a single edit")
 	c.False(d.Modified())
+
+	// Dropping a location just below itself leaves everything as it is.
+	rows = uxtest.PanelsOfType[*hitLocationSettingsPanel](d.AsPanel())
+	beginDragOver(&d.rowDragState, rows[0].Parent(), 1)
+	d.dataDragDrop(geom.Point{}, dragDataForRow(t, rows[0].AsPanel()))
+	c.Equal([]string{"a", "b", "c"}, hitLocationIDs(d.model))
+	c.False(d.undoMgr.CanUndo(), "a drop that moves nothing posts no edit")
 }
 
 func hitLocationIDs(table *gurps.Body) []string {
@@ -183,4 +175,24 @@ func hitLocationRollRanges(table *gurps.Body) []string {
 		ranges[i] = loc.RollRange
 	}
 	return ranges
+}
+
+// newTestBodySettingsDockable returns a dockable, its content built, that edits a body whose hit locations have the IDs
+// and take three slots each. The undo manager is replaced by one that panics on an error, so that a test sees it.
+func newTestBodySettingsDockable(ids ...string) *bodySettingsDockable {
+	entity := gurps.NewEntity()
+	body := &gurps.Body{Name: "Test", Roll: gurps.Roller.Parse("1d")}
+	for _, id := range ids {
+		loc := gurps.NewHitLocation(entity, "")
+		loc.LocID = id
+		loc.Slots = 3
+		body.AddLocation(loc)
+	}
+	body.Update(entity)
+	owner := &bodySettingsOwnerForTest{entity: entity, body: body}
+	owner.Self = owner
+	d := newBodySettingsDockable(owner)
+	d.undoMgr = unison.NewUndoManager(100, func(err error) { panic(err) })
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	return d
 }

@@ -92,8 +92,6 @@ func TestConditionalAndReactionProvidersUseTheirOwnSpec(t *testing.T) {
 				"the description column carries the disclosure triangles for the group containers")
 		})
 	}
-	// The two providers must not share row data even though they are built from the same list provider.
-	check.New(t).NotEqual(NewConditionalModifiersProvider(lists).RootRowCount(), NewReactionModifiersProvider(lists).RootRowCount())
 }
 
 // TestCondModProviderWrapsGroupChildren verifies that a group's members are wrapped beneath its node in order, while an

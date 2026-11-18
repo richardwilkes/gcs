@@ -11,6 +11,7 @@ package ux
 
 import (
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -186,6 +187,57 @@ func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
 		open = len(AllDockables())
 	})
 	c.Equal(0, open, "canceling a picker must close the new sheet")
+}
+
+// A character created from a template has no state from before the template was applied, so there must be nothing to
+// undo on its new sheet.
+func TestNewSheetFromTemplateLeavesNothingToUndo(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	template := newTestTemplateWithBodyType("Template Body")
+	var sheet *Sheet
+	screen.Do(func() {
+		template.newSheetFromTemplate(nil)
+		for _, one := range AllDockables() {
+			if s, ok := one.(*Sheet); ok {
+				sheet = s
+			}
+		}
+	})
+	if sheet == nil {
+		t.Fatal("creating a character from a template must open a sheet for it")
+	}
+	screen.Do(func() {
+		c.True(slices.ContainsFunc(sheet.Entity().Traits, func(one *gurps.Trait) bool { return one.Name == "Template Trait" }),
+			"the template's trait must be on the new sheet")
+		c.False(sheet.undoMgr.CanUndo(), "the new sheet must have nothing to undo")
+		sheet.markUnmodified() // So that closing it at the end of the test asks nothing.
+	})
+}
+
+// TestTemplateNewCharacterStartsAtAnExactTarget verifies that a sheet made from a template aimed at an exact number of
+// points starts with that many, and that any other target leaves the default from the settings alone.
+func TestTemplateNewCharacterStartsAtAnExactTarget(t *testing.T) {
+	c := check.New(t)
+	defaultPoints := gurps.GlobalSettings().GeneralSettings().InitialPoints
+	c.NotEqual(fxp.FromInteger(250), defaultPoints, "the test requires the target to differ from the default")
+	data := gurps.NewTemplate()
+	template := newTestTemplateDockable("Exact", data)
+
+	data.TargetPoints = gurps.NumericRangeOf(fxp.FromInteger(250))
+	e := template.newCharacter()
+	c.Equal(fxp.FromInteger(250), e.TotalPoints)
+	c.Equal(1, len(e.PointsRecord), "the target replaces the initial points rather than adding to them")
+	c.Equal(fxp.FromInteger(250), e.PointsRecord[0].Points)
+
+	for _, target := range []gurps.NumericRange{
+		{},
+		{Min: new(fxp.FromInteger(100)), Max: new(fxp.FromInteger(150))},
+		{Min: new(fxp.FromInteger(100))},
+	} {
+		data.TargetPoints = target
+		c.Equal(defaultPoints, template.newCharacter().TotalPoints, "a target of %s must leave the default", target)
+	}
 }
 
 // TestApplyTemplateUndoRestoresBodyType verifies that applying a template gives the sheet a copy of the template's body

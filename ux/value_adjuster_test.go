@@ -101,27 +101,37 @@ func TestToggleDisabledUpdatesTheSheetOnlyOnce(t *testing.T) {
 	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the undo must bump the modification timestamp, too")
 }
 
-// The difference between the two "will the owner recalculate this entity on its own" checks: marking a sheet as
-// modified does nothing while the sheet is inside an update pass, so an edit that left the recalculation to it then
-// would drop it rather than defer it, while rebuilding is never suppressed. Anything that isn't the sheet holding the
-// entity leaves the recalculation to the caller either way.
-func TestOwnerRebuildRecalculatesIgnoresTheUpdatePass(t *testing.T) {
-	c := check.New(t)
+// The checks that keep a single edit from recalculating the entity twice: only the sheet holding the entity
+// recalculates it on its own, when marked as modified or rebuilt. Marking it as modified does nothing while it is
+// inside an update pass, so an edit that left the recalculation to it then would drop it rather than defer it, while
+// rebuilding is never suppressed. Anything else leaves the recalculation to the caller.
+func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-
-	c.True(ownerRebuildRecalculates(sheet, entity), "a sheet recalculates its own entity when it is rebuilt")
-	c.True(ownerRebuildRecalculates(sheet.Traits, entity), "a panel within the sheet resolves to the sheet")
-
-	sheet.awaitingUpdate = true
-	c.False(ownerRecalculates(sheet, entity),
-		"a sheet already inside an update pass won't recalculate when it is marked as modified")
-	c.True(ownerRebuildRecalculates(sheet, entity), "a rebuild recalculates even inside an update pass")
-	sheet.awaitingUpdate = false
-
-	c.False(ownerRebuildRecalculates(sheet, gurps.NewEntity()), "another entity isn't the sheet's to recalculate")
-	c.False(ownerRebuildRecalculates(sheet, nil), "there is no entity to recalculate")
-	c.False(ownerRebuildRecalculates(nil, entity), "there is no owner to do the recalculation")
-	c.False(ownerRebuildRecalculates(NewTemplate("test"+gurps.TemplatesExt, gurps.NewTemplate()), entity),
-		"a template doesn't recalculate an entity when it is rebuilt")
+	for _, tc := range []struct {
+		name     string
+		owner    unison.Paneler
+		entity   *gurps.Entity
+		updating bool
+		modified bool // What ownerRecalculates returns.
+		rebuilt  bool // What ownerRebuildRecalculates returns.
+	}{
+		{name: "sheet", owner: sheet, entity: entity, modified: true, rebuilt: true},
+		{name: "panel within the sheet", owner: sheet.Traits, entity: entity, modified: true, rebuilt: true},
+		{name: "sheet in an update pass", owner: sheet, entity: entity, updating: true, rebuilt: true},
+		{name: "panel in an update pass", owner: sheet.Traits, entity: entity, updating: true, rebuilt: true},
+		{name: "another entity", owner: sheet, entity: gurps.NewEntity()},
+		{name: "no entity", owner: sheet},
+		{name: "no owner", entity: entity},
+		{name: "panel outside a modifiable root", owner: unison.NewPanel(), entity: entity},
+		{name: "template", owner: NewTemplate("test"+gurps.TemplatesExt, gurps.NewTemplate()), entity: entity},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet.awaitingUpdate = tc.updating
+			t.Cleanup(func() { sheet.awaitingUpdate = false })
+			c.Equal(tc.modified, ownerRecalculates(tc.owner, tc.entity), "when marked as modified")
+			c.Equal(tc.rebuilt, ownerRebuildRecalculates(tc.owner, tc.entity), "when rebuilt")
+		})
+	}
 }

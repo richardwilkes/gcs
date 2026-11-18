@@ -244,41 +244,6 @@ func TestPDFRendererSearchMatchesEmptySearch(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchMatches runs the whole search path against a real document: the ask that arrives before there is
-// anything to search, the extraction it queues, and then the hits themselves, which must match what the page's text
-// reports directly.
-func TestPDFRendererSearchMatches(t *testing.T) {
-	pdfBlockSharedQueue(t)
-	pdf := newPDFTextSampleRenderer(t)
-
-	// Nothing has been extracted, so there is no answer yet -- and asking puts the extraction in the queue.
-	if matches, ok := pdf.SearchMatches(0, "Hello"); ok || matches != nil {
-		t.Errorf("searching page 0 answered %v ok=%v before its text was extracted", matches, ok)
-	}
-	want, _ := pdfTextRequestState(pdf)
-	if !slices.Contains(want, 0) {
-		t.Fatalf("searching page 0 didn't queue its text extraction; %v is queued", want)
-	}
-	if !pdf.extractNextText() {
-		t.Fatal("extractNextText did nothing with the page the search asked for")
-	}
-
-	matches, ok := pdf.SearchMatches(0, "Hello")
-	if !ok {
-		t.Fatal("searching page 0 still has no answer after its text was extracted")
-	}
-	if len(matches) != 1 {
-		t.Fatalf("searching page 0 for %q found %d matches, want 1: %v", "Hello", len(matches), matches)
-	}
-	text, err := pdf.doc.TextPage(0, pdf.dpi)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if expected := pdf.convertMatches(text.Search("Hello", pdfMaxSearchHits)); !reflect.DeepEqual(matches, expected) {
-		t.Errorf("searching page 0 for %q found %v, want %v", "Hello", matches, expected)
-	}
-}
-
 // TestPDFRendererSearchMatchesNeedles pins what each kind of needle finds on the fixture's one line. The
 // whitespace-only needle is the one worth having: the search field is a text field like any other, so a space typed
 // into it must not light up every gap on the page.
@@ -350,18 +315,34 @@ func TestPDFRendererSearchMatchesCached(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchMatchesScaled pins that the hits come back in the logical space the view draws in rather than
-// the pixel space the extracted text works in. On a Retina display the two differ by a factor of two, so a skipped
-// conversion would put every underline at twice the offset and twice the size of the text it belongs to.
-func TestPDFRendererSearchMatchesScaled(t *testing.T) {
+// TestPDFRendererSearchMatches runs the whole search path against a real document: the ask that arrives before there is
+// anything to search, the extraction it queues, and then the hits themselves, which must be what the page's text
+// reports, brought from the pixel space the extracted text works in to the logical space the view draws in. On a Retina
+// display the two differ by a factor of two, so a skipped conversion would put every underline at twice the offset and
+// twice the size of the text it belongs to.
+func TestPDFRendererSearchMatches(t *testing.T) {
 	scaleAdjust := geom.NewPoint(0.5, 0.5)
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRendererAtScale(t, scaleAdjust)
-	pdfExtractSamplePage(t, pdf)
+
+	// Nothing has been extracted, so there is no answer yet -- and asking puts the extraction in the queue.
+	if matches, ok := pdf.SearchMatches(0, "World"); ok || matches != nil {
+		t.Errorf("searching page 0 answered %v ok=%v before its text was extracted", matches, ok)
+	}
+	want, _ := pdfTextRequestState(pdf)
+	if !slices.Contains(want, 0) {
+		t.Fatalf("searching page 0 didn't queue its text extraction; %v is queued", want)
+	}
+	if !pdf.extractNextText() {
+		t.Fatal("extractNextText did nothing with the page the search asked for")
+	}
 
 	matches, ok := pdf.SearchMatches(0, "World")
 	if !ok {
-		t.Fatal("searching page 0 has no answer after its text was extracted")
+		t.Fatal("searching page 0 still has no answer after its text was extracted")
+	}
+	if len(matches) != 1 {
+		t.Fatalf("searching page 0 for %q found %d matches, want 1: %v", "World", len(matches), matches)
 	}
 	text, err := pdf.doc.TextPage(0, pdf.dpi)
 	if err != nil {
@@ -435,6 +416,34 @@ func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 	}
 }
 
+// TestPDFRendererPendingFollowsTheWantedPages pins which pages are pending, which is what brings up the "Rendering page
+// N…" overlay: a wanted page that hasn't been rendered. A page that stops being wanted is no longer pending, so coming
+// back to it starts the overlay's timer over, and a rendered page doesn't go back to pending when the wanted set
+// changes around it.
+func TestPDFRendererPendingFollowsTheWantedPages(t *testing.T) {
+	pdfBlockSharedQueue(t)
+	pdf := newPDFTextSampleRenderer(t)
+	pdf.SetWantedPages([]int{0})
+	if _, pending := pdf.PendingSince(0); !pending {
+		t.Fatal("page 0 isn't pending though it is wanted and hasn't been rendered")
+	}
+	pdf.SetWantedPages(nil)
+	if when, pending := pdf.PendingSince(0); pending {
+		t.Errorf("page 0 is still pending, since %v, after it stopped being wanted", when)
+	}
+
+	pdf.SetWantedPages([]int{0})
+	pdf.renderNext()
+	if page := pdf.CachedPage(0); page == nil || page.Image == nil {
+		t.Fatalf("page 0 didn't render: %+v", page)
+	}
+	pdf.SetWantedPages(nil)
+	pdf.SetWantedPages([]int{0})
+	if when, pending := pdf.PendingSince(0); pending {
+		t.Errorf("page 0 went back to pending, since %v, when it was wanted again after it was rendered", when)
+	}
+}
+
 // TestPDFRendererTextCacheHoldsCap pins that the text cache stays within its cap no matter how many pages are paged
 // through. storeText is exercised directly rather than through recordText, since recordText also fires the callback
 // and talks to the shared render queue. A nil text stands in for the extracted text, which the eviction bookkeeping
@@ -474,5 +483,34 @@ func TestPDFRendererTextCacheEvictsLeastRecentlyUsed(t *testing.T) {
 	}
 	if _, exists := p.textCache[1]; exists {
 		t.Error("page 1 survived even though it was the least recently used")
+	}
+}
+
+// TestPDFRendererPageCacheEvictsLeastRecentlyUsedUnwantedPages pins which rendered pages go once the cache is over its
+// cap: the least recently used of those no longer wanted, and only until the cache is back within the cap. A wanted
+// page stays however long ago it was used, since it is on screen or about to be. The pages hold no image, which the
+// eviction only releases.
+func TestPDFRendererPageCacheEvictsLeastRecentlyUsedUnwantedPages(t *testing.T) {
+	half := maxPDFPageCacheBytes / 2
+	p := &PDFRenderer{
+		cache: map[int]*pdfCacheEntry{
+			0: {page: &PDFPage{PageNumber: 0}, bytes: half, lastUsed: 2},
+			1: {page: &PDFPage{PageNumber: 1}, bytes: half, lastUsed: 3},
+			2: {page: &PDFPage{PageNumber: 2}, bytes: half, lastUsed: 1},
+		},
+		cacheBytes: 3 * half,
+		wantSet:    map[int]bool{2: true},
+	}
+	p.evictCachedPages()
+	kept := make([]int, 0, len(p.cache))
+	for pageNumber := range p.cache {
+		kept = append(kept, pageNumber)
+	}
+	slices.Sort(kept)
+	if !slices.Equal(kept, []int{1, 2}) {
+		t.Errorf("pages %v are left in the cache, want [1 2]", kept)
+	}
+	if p.cacheBytes != 2*half {
+		t.Errorf("the cache holds %d bytes, want %d", p.cacheBytes, 2*half)
 	}
 }

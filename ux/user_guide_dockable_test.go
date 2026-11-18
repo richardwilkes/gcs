@@ -186,6 +186,37 @@ func TestUserGuideNavigatesInPlace(t *testing.T) {
 	}
 }
 
+// TestUserGuideNewPlaceDropsTheForwardHistory verifies that, after going Back, going to the place that is next in the
+// User Guide's history keeps the places beyond it to go Forward to, while going anywhere else drops them, as a browser
+// does.
+func TestUserGuideNewPlaceDropsTheForwardHistory(t *testing.T) {
+	c := check.New(t)
+	d := newUserGuideDockable()
+	for _, page := range []string{"Traits.md", "Skills.md", "Equipment.md"} {
+		d.navigate(page, "", true)
+	}
+	// pages returns the pages the history holds.
+	pages := func() []string {
+		all := make([]string, 0, len(d.history))
+		for _, loc := range d.history {
+			all = append(all, loc.page)
+		}
+		return all
+	}
+	d.back()
+	d.back()
+	d.navigate("Skills.md", "", true)
+	c.Equal([]string{"Traits.md", "Skills.md", "Equipment.md"}, pages(), "going to the next place keeps those beyond it")
+	c.Equal(1, d.historyPos)
+	c.True(d.forwardButton.Enabled(), "so Forward is still offered")
+
+	d.back()
+	d.navigate(userguide.HomePage, "", true)
+	c.Equal([]string{"Traits.md", userguide.HomePage}, pages(), "going anywhere else drops them")
+	c.Equal(1, d.historyPos)
+	c.False(d.forwardButton.Enabled(), "so Forward is no longer offered")
+}
+
 // TestUserGuideBackAndForwardRestoreTheView verifies that Back and Forward return to the page each history entry holds,
 // showing at the top of the view what was there when it was left rather than its anchor or top, even when the page has
 // been wrapped to another width or shown at another scale since.

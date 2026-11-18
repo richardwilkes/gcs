@@ -19,12 +19,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
@@ -75,6 +77,21 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 	screen.KeyPress(unison.KeySpace, mod.None)
 	c.Equal([]string{ref}, screen.OpenedURLs(), "and so does Space")
 	c.Equal(link, focus(), "the focus stays on the page reference")
+}
+
+// TestPickerRowPageRefLooksForTheNameWithoutAHighlight verifies that a picker row's page link looks for the row's name
+// on the page while the row has no highlight, as the page reference cell of a table does.
+func TestPickerRowPageRefLooksForTheNameWithoutAHighlight(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Alpha"
+	trait.PageRef = "B35"
+	ref, highlight := pickerRowPageRef(trait)
+	c.Equal("B35", ref)
+	c.Equal("Alpha", highlight, "a row without a highlight looks for its name")
+	trait.PageRefHighlight = "Beta"
+	_, highlight = pickerRowPageRef(trait)
+	c.Equal("Beta", highlight, "a highlight is looked for as given")
 }
 
 // The organizing groups kept with what was picked from them reach the table, where one goes only once all of that
@@ -218,6 +235,173 @@ func TestPickerRowNameFollowsLevel(t *testing.T) {
 	})
 }
 
+// The pencil beside a leveled trait sets its level, which its row then shows.
+func TestPickerRowLevelEditorSetsTheLevel(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	choice := gurps.NewTrait(nil, nil, true)
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	trait := gurps.NewTrait(nil, choice, false)
+	trait.Name = "Fearlessness"
+	trait.CanLevel = true
+	trait.Levels = fxp.One
+	choice.Children = []*gurps.Trait{trait}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	closed := false
+	c.True(screen.Post(func() {
+		s.showPicker(choice, 0)
+		closed = true
+	}))
+	screen.Sync()
+	pickerWnd, _ := modalDialog(t, screen, wnd)
+	var edit *unison.Button
+	screen.Do(func() {
+		cells := uxtest.PanelsOfType[*unison.CheckBox](pickerWnd.Content())[0].Parent().Parent().Children()
+		if button, ok := cells[len(cells)-1].Self.(*unison.Button); ok {
+			edit = button
+		}
+	})
+	if edit == nil {
+		t.Fatal("the leveled trait must have a button to edit its level")
+	}
+	screen.Click(screen.PanelCenter(edit))
+	levelWnd := screen.FocusedWindow()
+	if levelWnd == nil || levelWnd == pickerWnd {
+		t.Fatal("the level editor must be up")
+	}
+	screen.Do(func() {
+		fields := uxtest.PanelsOfType[*DecimalField](levelWnd.Content())
+		c.Equal(1, len(fields))
+		if len(fields) == 1 {
+			fields[0].RequestFocus()
+			fields[0].SelectAll()
+		}
+	})
+	screen.Type("3")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal(fxp.Three, trait.Levels)
+	screen.Do(func() {
+		c.True(slices.Contains(uxtest.LabelTexts(pickerWnd.Content()), "Fearlessness 3"), "the row shows the new level")
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(closed, "the picker has closed")
+}
+
+// An option of a choice made by points shows what it costs. TestPickerUnitContainerInformationRows covers a choice made
+// by count.
+func TestPickerRowShowsItsPoints(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen.Do(func() {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "Luck"
+		trait.BasePoints = fxp.FromInteger(15)
+		list := &pickerList{panel: unison.NewPanel(), pt: picker.Points, refresh: func() {}}
+		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(list, trait, nil, false, 0)()
+		c.True(slices.Contains(uxtest.LabelTexts(list.panel), " [15 points]"), "the option shows its cost")
+	})
+}
+
+// Clicking an option's name checks or unchecks it, as when the name was its checkbox's title.
+func TestPickerRowNameClicksItsCheckbox(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	closed := false
+	c.True(screen.Post(func() {
+		s.showPicker(n["fit"], 0)
+		closed = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	var name *unison.Label
+	screen.Do(func() {
+		for _, label := range uxtest.PanelsOfType[*unison.Label](dialogWnd.Content()) {
+			if label.String() == "fit2" {
+				name = label
+			}
+		}
+	})
+	if name == nil {
+		t.Fatal("the option must show its name")
+	}
+	screen.Click(screen.PanelCenter(name))
+	c.True(s.chosen[n["fit2"]], "clicking the name checks the option")
+	screen.Click(screen.PanelCenter(name))
+	c.False(s.chosen[n["fit2"]], "and clicking it again unchecks it")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(closed, "the dialog has closed")
+}
+
+// A picker stacked on another clears its own options with Clear Selections, and stays up.
+func TestPickerClearSelections(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	choose(s, n, "fit", "fit1", "fit2")
+	closed := false
+	c.True(screen.Post(func() {
+		s.showPicker(n["fit"], 1)
+		closed = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	var button *unison.Button
+	screen.Do(func() { button = buttonWithTitle(dialogWnd.Content(), "Clear Selections") })
+	if button == nil {
+		t.Fatal("a stacked picker must have a Clear Selections button")
+	}
+	screen.Click(screen.PanelCenter(button))
+	c.False(closed, "the dialog stays up")
+	c.False(s.chosen[n["fit1"]] || s.chosen[n["fit2"]], "its options are cleared")
+	screen.Do(func() {
+		for _, box := range uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content()) {
+			c.Equal(uncheck.Off, box.State, "its boxes show it")
+		}
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(closed, "the dialog has closed")
+}
+
+// The button beside an option that is a choice puts up that choice's picker, stacked on this one, and then shows that
+// it was answered.
+func TestPickerChooseButtonPutsUpTheChoice(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	var asked []string
+	s.runPicker = func(row *gurps.Trait, depth int) int {
+		asked = append(asked, fmt.Sprintf("%s %d", row.Name, depth))
+		choose(s, n, "fit1")
+		return unison.ModalResponseOK
+	}
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(n["root"], 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		defer dialog.Window().Dispose()
+		buttons := uxtest.PanelsMatching(dialog.Window().Content(), func(p *unison.Panel) bool {
+			return p.Accessibility.Name == "Choose from fit"
+		})
+		c.Equal(1, len(buttons), "the choice has a button to choose from it")
+		if len(buttons) != 1 {
+			return
+		}
+		button, ok := buttons[0].Self.(*unison.Button)
+		c.True(ok, "it is a button")
+		if !ok {
+			return
+		}
+		button.Click()
+		c.Equal([]string{"fit 1"}, asked)
+		c.True(s.chosen[n["fit"]], "confirming checks the row")
+		c.Equal("Change the picks in fit", button.Accessibility.Name, "the button shows the choice was answered")
+	})
+}
+
 // A picker too tall for the display keeps its place in the list when a click refreshes it.
 func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	c := check.New(t)
@@ -288,6 +472,30 @@ func TestPickerDialogHintColor(t *testing.T) {
 			c.Equal(tc.ink, hints[0].ink, tc.row)
 			c.Equal(tc.boxed, hints[0].Border() != nil, "only a warning or an error is set out in a box: %s", tc.row)
 		})
+	}
+}
+
+// TestPickerStatePill verifies that each state has its own look, in the theme's own colors save for green when all is
+// well, so the pill follows the theme. What is still open is in the alert color.
+func TestPickerStatePill(t *testing.T) {
+	c := check.New(t)
+	pill, update := newPickerStatePill(0)
+	for state, want := range map[pickerState]pickerPillLook{
+		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
+		pickerOpen: {
+			icon: unison.CircledQuestionSVG, background: unison.ThemeAlert, onBackground: unison.ThemeOnAlert,
+		},
+		pickerWarning: {
+			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,
+		},
+		pickerError: {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
+	} {
+		c.True(want == pickerPillLooks[state], state.tip())
+		update(state, "1 / 1")
+		drawable, ok := pill.Drawable.(*unison.DrawableSVG)
+		c.True(ok)
+		c.Equal(want.icon, drawable.SVG)
+		c.True(want.onBackground == pill.OnBackgroundInk, "the pill's text and icon must be drawn in the look's ink")
 	}
 }
 
@@ -499,8 +707,8 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	// The chevron is turned down while its group is open.
 	isOpen := func() (open bool) {
 		screen.Do(func() {
-			if svg, ok := chevron.Drawable.(*unison.DrawableSVG); ok {
-				open = svg.RotationDegrees == 90
+			if drawable, ok := chevron.Drawable.(*unison.DrawableSVG); ok {
+				open = drawable.RotationDegrees == 90
 			}
 		})
 		return open
@@ -874,9 +1082,11 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 }
 
 // TestPickerRowDetailsForEquipment verifies that the template picker dialog shows an equipment option's quantity along
-// with the value and weight of all of it, and shows no such details for other kinds of options.
+// with the value and weight of all of it, under their headings and with a button to edit the quantity of an option of
+// a choice made by value, and shows no such details for other kinds of options.
 func TestPickerRowDetailsForEquipment(t *testing.T) {
 	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
 	c.Equal([]string{"Qty", "Value", "Weight"}, pickerRowDetailHeaders(choice))
 	c.Equal(0, len(pickerRowDetailHeaders(gurps.NewTraitChoiceContainer(nil, nil))), "traits have no details")
@@ -895,6 +1105,43 @@ func TestPickerRowDetailsForEquipment(t *testing.T) {
 	rope.SetParent(group)
 	group.Children = []*gurps.Equipment{rope}
 	c.Equal([]string{"", "$30", "6 lb"}, details(group), "a group has no quantity of its own")
+
+	valued := gurps.NewEquipmentChoiceContainer(nil, nil)
+	valued.TemplatePicker.Type = picker.Value
+	torch := gurps.NewEquipment(nil, valued, false)
+	torch.Quantity = fxp.FromInteger(4)
+	torch.BaseValue = "3"
+	torch.BaseWeight = "1 lb"
+	valued.Children = []*gurps.Equipment{torch}
+	s = newPickerSession(promptOperation{}, []*gurps.Equipment{valued}, false)
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(valued, 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		defer dialog.Window().Dispose()
+		cells := uxtest.PanelsOfType[*unison.CheckBox](dialog.Window().Content())[0].Parent().Parent().Children()
+		c.Equal(10, len(cells), "a row of headings and one of the option, each with a cell in every column")
+		if len(cells) != 10 {
+			return
+		}
+		title := func(p *unison.Panel) string {
+			if label, ok := p.Self.(*unison.Label); ok {
+				return label.String()
+			}
+			return ""
+		}
+		var headings, shown []string
+		for i := 1; i < 4; i++ {
+			headings = append(headings, title(cells[i]))
+			shown = append(shown, title(cells[5+i]))
+		}
+		c.Equal([]string{"Qty", "Value", "Weight"}, headings)
+		c.Equal([]string{"4", "$12", "4 lb"}, shown, "each under its heading")
+		_, ok := cells[9].Self.(*unison.Button)
+		c.True(ok, "the quantity can be edited")
+	})
 }
 
 // TestPickerWeightUnitsFollowTheSheet verifies that the picker dialog shows weights in the units of the sheet the rows

@@ -15,6 +15,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -22,11 +24,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
+	"github.com/richardwilkes/unison/enums/side"
 )
 
 // TestSettingsDockableDoLoadPrefersRefLoader checks that the toolbar menu's doLoad prefers RefLoader, falls back to
@@ -94,6 +99,118 @@ func TestSettingsDockableCanLoad(t *testing.T) {
 	c.True(d.canLoad(), "both loaders")
 	d.Loader = nil
 	c.True(d.canLoad(), "RefLoader only")
+}
+
+// TestSettingsDockableResetAsksFirst checks that the toolbar's reset button asks, naming the view, before it resets,
+// and that declining resets nothing.
+func TestSettingsDockableResetAsksFirst(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	resets := 0
+	d := &SettingsDockable{TabTitle: "Test Settings", Resetter: func() { resets++ }}
+	var reset *unison.Button
+	screen.Do(func() { reset = buttonWithSVG(d.createToolbar(nil, nil), svg.Reset) })
+	if reset == nil {
+		t.Fatal("the toolbar must have a reset button")
+	}
+	for _, one := range []struct {
+		name     string
+		response int
+		resets   int
+	}{
+		{name: "Cancel", response: unison.ModalResponseCancel},
+		{name: "OK", response: unison.ModalResponseOK, resets: 1},
+	} {
+		// The question runs a nested modal loop, so the click is posted rather than run through Do.
+		c.True(screen.Post(reset.Click))
+		screen.Sync()
+		dialogWnd, dialog := modalDialog(t, screen, wnd)
+		var texts []string
+		screen.Do(func() { texts = uxtest.LabelTexts(dialogWnd.Content()) })
+		c.Contains(strings.Join(texts, "\n"), "Test Settings?", "the question names the view")
+		c.Equal(0, resets, "%s: nothing is reset while the question is up", one.name)
+		screen.Do(func() { dialog.StopModal(one.response) })
+		screen.Sync()
+		c.Equal(one.resets, resets, "%s: resets", one.name)
+		resets = 0
+	}
+}
+
+// TestSettingsDockableCloseAsksTheView checks that closing a view asks its will-close callback first, leaving the view
+// open when that refuses.
+func TestSettingsDockableCloseAsksTheView(t *testing.T) {
+	c := check.New(t)
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	asked := 0
+	allow := false
+	d := &SettingsDockable{WillCloseCallback: func() bool {
+		asked++
+		return allow
+	}}
+	d.Self = d
+	Workspace.DocumentDock.DockTo(d, nil, side.Left)
+	c.False(d.AttemptClose(), "a refusal stops the close")
+	c.Equal(1, asked, "the view is asked")
+	c.NotNil(unison.Ancestor[*unison.DockContainer](d), "and stays open")
+	allow = true
+	c.True(d.AttemptClose(), "a view that agrees is closed")
+	c.Nil(unison.Ancestor[*unison.DockContainer](d), "and leaves the dock")
+}
+
+// TestSettingsFileMenuEnablesItsCommands checks that the toolbar's menu offers Import… with a loader, ahead of Export…
+// with a saver, which canSave, when set, disables while there is nothing to export, and that with a selection saver it
+// offers Export All… and Export Selected…, the latter enabled only while something is selected.
+func TestSettingsFileMenuEnablesItsCommands(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var button *unison.Button
+	screen.Do(func() { button = unison.NewSVGButton(svg.Menu) })
+	wnd := showInTestWindow(t, screen, 100, button)
+	load := func(*library.NamedFileRef) error { return nil }
+	save := func(string) error { return nil }
+	answer := func(yes bool) func() bool { return func() bool { return yes } }
+	for _, one := range []struct {
+		name  string
+		menu  settingsFileMenu
+		items []string // the title of each item, marked when it is disabled
+	}{
+		{name: "a loader and a saver", menu: settingsFileMenu{load: load, saver: save}, items: []string{"Import…", "Export…"}},
+		{
+			name:  "nothing to export",
+			menu:  settingsFileMenu{saver: save, canSave: answer(false)},
+			items: []string{"Export… (disabled)"},
+		},
+		{name: "something to export", menu: settingsFileMenu{saver: save, canSave: answer(true)}, items: []string{"Export…"}},
+		{
+			name:  "nothing selected",
+			menu:  settingsFileMenu{saver: save, selectionSaver: save, hasSelection: answer(false)},
+			items: []string{"Export All…", "Export Selected… (disabled)"},
+		},
+		{
+			name:  "something selected",
+			menu:  settingsFileMenu{saver: save, selectionSaver: save, hasSelection: answer(true)},
+			items: []string{"Export All…", "Export Selected…"},
+		},
+	} {
+		m := one.menu
+		m.extensions = []string{".none"}
+		screen.Do(func() { m.show(button) })
+		var panels []*unison.Panel
+		screen.Do(func() { panels = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
+		c.NotNil(screen.AccessibilityTree(wnd), one.name)
+		var items []string
+		for _, item := range panels {
+			if node := screen.AccessibilityNodeFor(item); node != nil && node.Role == role.MenuItem {
+				if node.Disabled {
+					items = append(items, node.Name+" (disabled)")
+				} else {
+					items = append(items, node.Name)
+				}
+			}
+		}
+		c.Equal(one.items, items, one.name)
+		closeContextMenu(c, screen, wnd)
+	}
 }
 
 // TestSettingsFileMenuExportOffersTheWholeTitle checks that Export… offers the menu's title as the file name, made safe

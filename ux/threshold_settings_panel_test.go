@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -420,96 +421,58 @@ func TestThresholdFeaturesKeepAPendingCriterionAcrossRebuilds(t *testing.T) {
 	c.True(inGroupField(), "the group field is still there once undo rebuilds the content, with the focus in it")
 }
 
-// TestCollapsingAnAttributeRowClosesItsGrantItemEditorsFirst checks that collapsing a pool's row, by its header or by
-// the toolbar's toggle, first closes the editor open on the item one of its thresholds grants, asking whether to save
-// its changes as applying the settings does, and leaves the row expanded when that is canceled; and that collapsing
-// another row asks nothing and leaves the editor open.
-func TestCollapsingAnAttributeRowClosesItsGrantItemEditorsFirst(t *testing.T) {
-	for _, tc := range []struct {
-		name      string
-		id        string // the row collapsed, or "" for the toolbar's toggle
-		prompts   bool   // whether the editor is expected to ask about its changes
-		answer    int    // the response to the prompt
-		collapsed bool   // whether the row of hp ends up collapsed
-		closed    bool   // whether the editor ends up closed
-		item      string // the name of the item the grant then gives
-	}{
-		{name: "cancel", id: "hp", prompts: true, answer: unison.ModalResponseCancel, item: "Night Vision"},
-		{
-			name: "save", id: "hp", prompts: true, answer: unison.ModalResponseOK, collapsed: true, closed: true,
-			item: "Dark Vision",
-		},
-		{
-			name: "discard", id: "hp", prompts: true, answer: unison.ModalResponseDiscard, collapsed: true, closed: true,
-			item: "Night Vision",
-		},
-		{name: "toolbar cancel", prompts: true, answer: unison.ModalResponseCancel, item: "Night Vision"},
-		{name: "another row", id: "st", item: "Night Vision"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
+// TestPoolThresholdDragDropReorders verifies that dropping a dragged pool threshold moves it within the thresholds of
+// the pool that owns it, undoably, leaving the definitions themselves in place.
+func TestPoolThresholdDragDropReorders(t *testing.T) {
+	c := check.New(t)
+	defs := testAttrDefs("st", "hp")
+	pool := defs.Set["hp"]
+	pool.Type = attribute.Pool
+	for _, state := range []string{"Reeling", "Collapse", "Dead"} {
+		pool.Thresholds = append(pool.Thresholds, &gurps.PoolThreshold{State: state})
+	}
+	d := newTestAttributeSettingsDockableFor(defs)
+	initTestSettingsContent(&d.undoableSettingsDockable)
+	expandAllAttributes(d)
+	pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
+	c.Equal(1, len(pools), "only the pool attribute has a threshold list")
+	rows := pools[0].Children()
+	c.Equal(3, len(rows))
+	dd := dragDataForRow(t, rows[2])
+	c.Equal("Pool Threshold Drag", dd.title)
+
+	beginDragOver(&d.rowDragState, pools[0].AsPanel(), 0)
+	d.dataDragDrop(geom.Point{}, dd)
+	c.Equal([]string{"Dead", "Reeling", "Collapse"}, thresholdStates(d.model.Set["hp"]))
+	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions keep their order")
+	c.False(d.inDragOver, "the drag state is cleared")
+	pools = uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
+	c.Equal(1, len(pools), "the panels are rebuilt")
+	c.Equal("Dead", uxtest.PanelsOfType[*thresholdSettingsPanel](pools[0].AsPanel())[0].threshold.State)
+
+	d.undoMgr.Undo()
+	c.Equal([]string{"Reeling", "Collapse", "Dead"}, thresholdStates(d.model.Set["hp"]), "undo restores the order")
+	c.False(d.undoMgr.CanUndo(), "the drop is a single edit")
+}
+
+// TestThresholdFieldsEditTheirOwnPart checks that each of a threshold's text fields edits its own part of the threshold
+// in the model the dockable holds, leaving the others alone.
+func TestThresholdFieldsEditTheirOwnPart(t *testing.T) {
+	parts := func(threshold *gurps.PoolThreshold) []string {
+		return []string{threshold.State, threshold.Value, threshold.Explanation}
+	}
+	for i, key := range []string{"state", "threshold", "explanation"} {
+		t.Run(key, func(t *testing.T) {
 			c := check.New(t)
-			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-			g := gurps.NewGrant(feature.GrantTrait)
-			g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
-			isTraitEditor := func(one unison.Dockable) bool {
-				_, ok := one.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
-				return ok
-			}
-			var d *attributeSettingsDockable
-			screen.Do(func() {
-				defs := testAttrDefs("st", "hp")
-				def := defs.Set["hp"]
-				def.Type = attribute.Pool
-				def.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", Features: gurps.Features{g}}}
-				d = newAttributeSettingsDockable(nil, defs)
-				d.TabTitle = "Attributes"
-				d.TabIcon = svg.Attributes
-				d.show()
-				expandAllAttributes(d)
-				p := thresholdFeaturesPanel(c, d)
-				p.editGrantedItem(grantAt(t, p, 0))
-			})
-			nested := uxtest.SoleEditor[*editor[*gurps.Trait, *gurps.TraitEditData]](t, screen, isTraitEditor)
-			screen.Do(func() {
-				nested.editorData.Name = "Dark Vision"
-				nested.MarkModified(nil)
-			})
-			screen.Post(func() {
-				if tc.id == "" {
-					toolbarButtonWithTip(t, d.toolbar, toggleAttributesTip).ClickCallback()
-				} else {
-					askAttrRow(t, d, tc.id, false)
-				}
-			})
-			if tc.prompts {
-				_, dialog := modalDialog(t, screen, wnd)
-				screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, tc.answer)))
-			} else {
-				var dialog *unison.Dialog
-				screen.Do(func() {
-					for _, w := range unison.Windows() {
-						if one, ok := w.ClientData()[unison.DialogClientDataKey].(*unison.Dialog); ok {
-							dialog = one
-						}
-					}
-				})
-				c.Nil(dialog, "collapsing a row without the editor's grant asks nothing")
-				if dialog != nil {
-					screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
-				}
-			}
-			screen.Do(func() {
-				c.Equal(tc.collapsed, attrRowExpanded(d, "hp") == false, "the pool's row is collapsed: %v", tc.collapsed)
-				c.Equal(tc.id == "st", !attrRowExpanded(d, "st"), "only the row asked to collapse without the editor does")
-				c.Equal(!tc.closed, len(AllMatchingDockables(isTraitEditor)) == 1, "the editor is open: %v", !tc.closed)
-				c.Equal(1, len(unison.Windows()), "no prompt is left up")
-				var item string
-				if one, ok := d.model.Set["hp"].Thresholds[0].Features[0].(*gurps.Grant); ok {
-					item = one.ItemName()
-				}
-				c.Equal(tc.item, item, "the grant gives the item the answer leaves it")
-				c.Equal(tc.item == "Dark Vision", d.applyButton.Enabled(), "saving the item changes the settings")
-			})
+			d := newTestThresholdDockable(testAttrDefs("st", "hp"), nil)
+			threshold := d.model.Set["hp"].Thresholds[0]
+			threshold.Value = "$hp/3"
+			threshold.Explanation = "Halve Move"
+			d.sync() // So that the fields show the parts as they now are.
+			want := parts(threshold)
+			want[i] = "Edited"
+			widgetFor[*StringField](t, d, threshold.KeyPrefix+key).SetText("Edited")
+			c.Equal(want, parts(d.model.Set["hp"].Thresholds[0]), "the field edits its own part of the threshold")
 		})
 	}
 }

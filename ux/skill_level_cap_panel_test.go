@@ -286,6 +286,31 @@ func TestSkillLevelCapPanelTypeChange(t *testing.T) {
 	}
 }
 
+// TestSkillLevelCapPanelModifierWritesTheAdjustment checks that the modifier field of an open value resting on a skill
+// writes its adjustment, as a step that undo takes back.
+func TestSkillLevelCapPanelModifierWritesTheAdjustment(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	lc := newPanelTestLevelCap()
+	before := gurps.Hash64(lc)
+	p, host := showSkillLevelCapPanel(t, screen, lc)
+	screen.Do(func() { p.toggle("r.1") })
+	screen.Do(func() {
+		if field, ok := refAs[*DecimalField](t, p.AsPanel(), "r.1:modifier"); ok {
+			field.SetText("+3")
+		}
+	})
+	screen.Do(func() {
+		skill, ok := p.node("r.1").(*gurps.ReferenceLevelCap)
+		c.True(ok, "precondition: the value rests on a skill")
+		if ok {
+			c.Equal(fxp.Three, skill.Modifier, "the field writes the adjustment")
+		}
+		host.undoMgr.Undo()
+	})
+	c.Equal(before, gurps.Hash64(lc), "undo takes it back")
+}
+
 // TestSkillLevelCapPanelGroupKinds checks that a group's pill switches it between taking the lowest and the highest of
 // its children, that Wrap in Group puts a value in a group of the other kind than the one holding it, and that Ungroup
 // is offered only where taking the group away keeps what it caps at: for a group of its parent's kind, or of one value.

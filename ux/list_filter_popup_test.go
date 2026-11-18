@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -204,6 +205,9 @@ func TestListFilterPopupNewFilter(t *testing.T) {
 	c.True(saved[1] == chosen, "the filter put in force must be the new one")
 	c.Equal(popupFirstSavedIndex+1, h.popup.popup.SelectedIndex(),
 		"the new filter's item, not the command, must be the selection")
+	data, err := os.ReadFile(gurps.SettingsPath)
+	c.NoError(err, "the settings must have been saved")
+	c.Contains(string(data), "Zeta", "with the new filter among them")
 
 	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, _ *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool { return false })
@@ -648,11 +652,11 @@ func TestListFilterEditCancelHeadless(t *testing.T) {
 }
 
 // TestListFilterChangesReachOtherDockablesHeadless verifies that a change made to the saved filters through one
-// list's popup reaches every other open list of the same type: a renamed filter that is in force there keeps its
-// place under its new name, a new filter appears in its popup, and a deleted filter that was in force there leaves the
-// list with no saved filter. Each time, the other list's popup keeps its width. The two lists share a tab group, so
-// only the second, in front, can be clicked; the first is driven through its popup's callback directly. The editor is
-// stubbed, since it is the popups' bookkeeping that is under test here.
+// list's popup reaches every other open list of the same type: a filter in force there that is renamed and given new
+// conditions keeps its place under its new name and filters the list anew, a new filter appears in its popup, and a
+// deleted filter that was in force there leaves the list with no saved filter. Each time, the other list's popup keeps
+// its width. The two lists share a tab group, so only the second, in front, can be clicked; the first is driven through
+// its popup's callback directly. The editor is stubbed, since it is the popups' bookkeeping that is under test here.
 func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -667,10 +671,16 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c.Equal([]string{"Combat Reflexes"}, state.names, "and filtering it")
 	c.True(mental == readListFilterState(screen, first).selected, "and in force in the list behind")
 
-	// Rename the filter through the list behind. The one in front keeps it in force, under the new name.
+	// Rename the filter through the list behind and change what it requires. The one in front keeps it in force, under
+	// the new name, and filters by it anew.
 	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "Mind"
+			for _, node := range filter.Root.Children {
+				if condition, ok := node.(*gurps.FilterCondition); ok {
+					condition.Text.Qualifier = "Exotic"
+				}
+			}
 			return true
 		})
 	editIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, editFilterItemTitle)
@@ -678,7 +688,7 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	state = readListFilterState(screen, second)
 	c.True(mental == state.selected, "the renamed filter itself must still be in force in the list in front")
 	c.Equal("Mind", state.popupText, "under its new name")
-	c.Equal([]string{"Combat Reflexes"}, state.names, "and still filtering it")
+	c.Equal([]string{"Fur"}, state.names, "and filtering it by what the filter now requires")
 
 	// Create a filter through the list behind. The popup in front lists it without growing to fit its long name, while
 	// the list keeps what it had in force.

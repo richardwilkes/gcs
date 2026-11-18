@@ -16,9 +16,8 @@ import (
 )
 
 func TestParseRulesLookupData(t *testing.T) {
-	c := check.New(t)
-
-	t.Run("groups by book", func(_ *testing.T) {
+	t.Run("groups by book", func(t *testing.T) {
+		c := check.New(t)
 		rules, err := parseRulesLookupData([]byte(`[
 			{"Rule":"Dodge","Category":["Combat"],"Book":"B","Page":"374","Link":"B374"},
 			{"Rule":"Parry","Category":["Combat"],"Book":"B","Page":"376","Link":"B376"},
@@ -28,19 +27,24 @@ func TestParseRulesLookupData(t *testing.T) {
 		c.Equal(2, len(rules))
 		c.Equal(2, len(rules["B"]))
 		c.Equal(1, len(rules["M"]))
+		if t.Failed() {
+			return
+		}
 		c.Equal("Dodge", rules["B"][0].Rule)
 		c.Equal("B374", rules["B"][0].Link)
 		c.Equal([]string{"Spells"}, rules["M"][0].Category)
 	})
 
-	t.Run("strips a byte order mark", func(_ *testing.T) {
+	t.Run("strips a byte order mark", func(t *testing.T) {
+		c := check.New(t)
 		rules, err := parseRulesLookupData(append([]byte("\xef\xbb\xbf"),
 			[]byte(`[{"Rule":"Dodge","Book":"B","Page":"374","Link":"B374"}]`)...))
 		c.NoError(err)
 		c.Equal(1, len(rules["B"]))
 	})
 
-	t.Run("reports malformed data", func(_ *testing.T) {
+	t.Run("reports malformed data", func(t *testing.T) {
+		c := check.New(t)
 		rules, err := parseRulesLookupData([]byte("not json"))
 		c.HasError(err)
 		c.Equal(0, len(rules), "a parse failure must not yield any rules")

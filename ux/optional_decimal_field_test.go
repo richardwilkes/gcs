@@ -37,7 +37,7 @@ func TestOptionalDecimalFieldBlankMeansNone(t *testing.T) {
 // to a number and which fxp.FromString takes for zero, shows as invalid without changing the value, rather than
 // clearing it to none or committing the zero; that undoing an edit made over such text restores the value from before
 // it; that leaving the field puts the value's text back; and that an assistive technology handing such text to the
-// field without the focus is refused.
+// field without the focus is refused. Text that is not the start of a number is refused when typed.
 func TestOptionalDecimalFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
 	ten := optionalDecimal{value: fxp.Ten, present: true}
 	for _, one := range []struct {
@@ -66,6 +66,8 @@ func TestOptionalDecimalFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
 					c.True(f.RuneTypedCallback(ch), "typing %q is accepted", ch)
 				}
 			} else {
+				c.False(f.RuneTypedCallback(rune(text[0])), "typing %q is refused", text[:1])
+				c.Equal("10", f.Text(), "which leaves the text as it was")
 				f.SetText(text)
 			}
 			c.Equal(text, f.Text(), "the text shows")
@@ -123,6 +125,47 @@ func TestOptionalDecimalFieldUnfocusedAccessibilityEditsWithoutANewValue(t *test
 			c.Equal(optionalDecimal{value: fxp.Ten, present: true}, optionalDecimalOf(value), "the value is unchanged")
 			c.Equal("10", f.Text(), "the value's text still shows")
 			c.False(root.mgr.CanUndo(), "nothing is recorded")
+		})
+	}
+}
+
+// TestOptionalDecimalFieldUnfocusedAccessibilityEditsSetANewValue verifies that an assistive technology handing a field
+// without the focus a new value, or blank text for none, sets it as an edit that can be undone.
+func TestOptionalDecimalFieldUnfocusedAccessibilityEditsSetANewValue(t *testing.T) {
+	ten := optionalDecimal{value: fxp.Ten, present: true}
+	for _, one := range []struct {
+		name string
+		req  accessibility.ActionRequest
+		want optionalDecimal
+	}{
+		{
+			name: "setting a new value",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue, Value: "12"},
+			want: optionalDecimal{value: fxp.Twelve, present: true},
+		},
+		{
+			name: "replacing part of the text",
+			req:  accessibility.ActionRequest{Action: accessibility.ReplaceText, Start: 0, End: 1, Value: "3"},
+			want: optionalDecimal{value: fxp.FromInteger(30), present: true},
+		},
+		{
+			name: "setting blank text",
+			req:  accessibility.ActionRequest{Action: accessibility.SetValue},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			value := new(fxp.Ten)
+			f := NewOptionalDecimalField(nil, "", "Value", func() *fxp.Int { return value },
+				func(v *fxp.Int) { value = v })
+			root := newPageUndoRoot()
+			root.AddChild(f)
+			c.True(f.PerformAccessibilityAction(one.req), "the request is carried out")
+			c.Equal(one.want, optionalDecimalOf(value), "the new value is set")
+			c.Equal(formatOptionalDecimal(one.want), f.Text(), "and its text shows")
+			c.True(root.mgr.CanUndo(), "the change is recorded")
+			root.mgr.Undo()
+			c.Equal(ten, optionalDecimalOf(value), "undoing it restores the value from before it")
 		})
 	}
 }

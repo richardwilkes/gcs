@@ -10,11 +10,14 @@
 package ux
 
 import (
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -129,24 +132,28 @@ func prepareUpdateCheckSettings(t *testing.T) (*gurps.GeneralSettings, *updateCh
 func TestUpdateCheckPopupsApplyTheirSelection(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)
+	// Settings that differ from each other and from the default, so that each popup can show only its own.
+	gs.AppUpdateCheck = updatecheck.Hourly
+	gs.LibraryUpdateCheck = updatecheck.Daily
 
 	d := &generalSettingsDockable{}
 	d.createUpdateCheckPopups(unison.NewPanel())
 	selected, ok := d.appUpdateCheckPopup.Selected()
 	c.True(ok, "the app update popup should have a selection")
-	c.Equal(updatecheck.AtLaunch, selected, "the app update popup should start out showing the current setting")
+	c.Equal(updatecheck.Hourly, selected, "the app update popup should start out showing the current setting")
 	selected, ok = d.libraryUpdateCheckPopup.Selected()
 	c.True(ok, "the library update popup should have a selection")
-	c.Equal(updatecheck.AtLaunch, selected, "the library update popup should start out showing the current setting")
+	c.Equal(updatecheck.Daily, selected, "the library update popup should start out showing the current setting")
 
-	d.appUpdateCheckPopup.Select(updatecheck.Daily)
-	c.Equal(updatecheck.Daily, gs.AppUpdateCheck, "selecting in the app update popup should record the choice")
-	c.Equal(updatecheck.AtLaunch, gs.LibraryUpdateCheck,
+	d.appUpdateCheckPopup.Select(updatecheck.Never)
+	c.Equal(updatecheck.Never, gs.AppUpdateCheck, "selecting in the app update popup should record the choice")
+	c.Equal(updatecheck.Daily, gs.LibraryUpdateCheck,
 		"the app update popup must not disturb the library update setting")
 
-	d.libraryUpdateCheckPopup.Select(updatecheck.Never)
-	c.Equal(updatecheck.Never, gs.LibraryUpdateCheck, "selecting in the library update popup should record the choice")
-	c.Equal(updatecheck.Daily, gs.AppUpdateCheck, "the library update popup must not disturb the app update setting")
+	d.libraryUpdateCheckPopup.Select(updatecheck.AtLaunch)
+	c.Equal(updatecheck.AtLaunch, gs.LibraryUpdateCheck,
+		"selecting in the library update popup should record the choice")
+	c.Equal(updatecheck.Never, gs.AppUpdateCheck, "the library update popup must not disturb the app update setting")
 }
 
 // Choosing anything other than Never in a popup that was at Never must run that check right away, for the app and the
@@ -181,24 +188,20 @@ func TestUpdateCheckPopupsRunACheckWhenTurnedOn(t *testing.T) {
 	c.Equal(2, stub.libraryRuns, "turning the library check on again must run it again")
 }
 
-// The popups must follow settings that were replaced wholesale, as a reset or a load of a settings file does, and
-// selecting the replaced value must bring the repeating check into line with it as well: the popup's own callback
-// reschedules on a change, and a value that didn't change needs no rescheduling, since the schedule reads the settings
-// live. This is what sync() performs; the rest of sync() isn't exercised here, since a bare dockable has none of the
-// other widgets it touches.
+// The popups must follow settings that were replaced wholesale, as a reset or a load of a settings file does, once
+// sync() brings the view into line with them, and selecting the replaced value must bring the repeating check into line
+// with it as well, through the popup's own callback. TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext covers
+// re-applying an unchanged setting, which must leave the pending tick alone.
 func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	c := check.New(t)
-	gs, stub := prepareUpdateCheckSettings(t)
+	d, stub := newTestGeneralSettingsDockable(t)
+	gs := gurps.GlobalSettings().General
 	ApplyUpdateCheckSettings() // What launch does, after making its own checks
 	c.Equal(0, len(stub.ticks), "checking at launch must not schedule a repeating check")
 
-	d := &generalSettingsDockable{}
-	d.createUpdateCheckPopups(unison.NewPanel())
-
 	gs.AppUpdateCheck = updatecheck.Hourly
 	gs.LibraryUpdateCheck = updatecheck.Hourly
-	d.appUpdateCheckPopup.Select(gs.AppUpdateCheck)
-	d.libraryUpdateCheckPopup.Select(gs.LibraryUpdateCheck)
+	d.sync()
 
 	selected, ok := d.appUpdateCheckPopup.Selected()
 	c.True(ok, "the app update popup should have a selection")
@@ -208,13 +211,6 @@ func TestUpdateCheckPopupsFollowTheSettings(t *testing.T) {
 	c.Equal(updatecheck.Hourly, selected, "the library update popup should show the replaced setting")
 	c.True(libraryUpdateCheck.pending, "selecting the replaced setting must reschedule the check")
 	c.Equal(updatecheck.Hourly, libraryUpdateCheck.scheduled)
-
-	// Replacing the settings with the same values again, as re-applying a settings file does, changes nothing, so the
-	// tick already pending must be left alone.
-	ticks := len(stub.ticks)
-	d.appUpdateCheckPopup.Select(gs.AppUpdateCheck)
-	d.libraryUpdateCheckPopup.Select(gs.LibraryUpdateCheck)
-	c.Equal(ticks, len(stub.ticks), "re-selecting an unchanged setting must not schedule another tick")
 }
 
 // The counterpart to TestOpenInWindowCheckboxLeavesDeepSearchAlone: the deep-search checkboxes are the ones that must
@@ -239,10 +235,10 @@ func TestDeepSearchCheckboxRebuildsDeepSearch(t *testing.T) {
 
 // newTestGeneralSettingsDockable returns a general settings dockable with its content built on a bare panel, the way
 // Setup would build it, but without a workspace to dock it in. The settings its widgets and its reset mutate are put
-// back when the test ends, and the update checks its popups drive are stubbed.
-func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
+// back when the test ends, and the update checks its popups drive are stubbed by the returned stub.
+func newTestGeneralSettingsDockable(t *testing.T) (*generalSettingsDockable, *updateCheckStub) {
 	t.Helper()
-	prepareUpdateCheckSettings(t)
+	_, stub := prepareUpdateCheckSettings(t)
 	RegisterKnownFileTypes()
 	gs := gurps.GlobalSettings().General
 	saved := *gs
@@ -254,7 +250,7 @@ func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 	uxtest.SwapForTest(t, &languageSetting, "")
 	d := &generalSettingsDockable{}
 	d.initContent(unison.NewPanel())
-	return d
+	return d, stub
 }
 
 // Every checkbox in the checkbox block and every initial scale field must edit its own field of the live general
@@ -263,7 +259,7 @@ func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 // settings struct rather than swapping it out.
 func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T) {
 	c := check.New(t)
-	d := newTestGeneralSettingsDockable(t)
+	d, _ := newTestGeneralSettingsDockable(t)
 	gs := gurps.GlobalSettings().General
 	c.Equal(9, len(d.checkBoxes), "expected one checkbox per general setting in the block")
 	c.Equal(6, len(d.initialScaleFields), "expected one initial scale field per document kind")
@@ -339,7 +335,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 
 func TestFocusForReadingCheckBoxAppliesToUnison(t *testing.T) {
 	c := check.New(t)
-	d := newTestGeneralSettingsDockable(t)
+	d, _ := newTestGeneralSettingsDockable(t)
 	gs := gurps.GlobalSettings().General
 	*gs = *gurps.NewGeneralSettings()
 	gs.EnsureValidity()
@@ -368,7 +364,7 @@ func TestFocusForReadingCheckBoxAppliesToUnison(t *testing.T) {
 
 func TestGeneralSettingsResetRunsTheSideEffectsOfTheBoxesItChanges(t *testing.T) {
 	c := check.New(t)
-	d := newTestGeneralSettingsDockable(t)
+	d, _ := newTestGeneralSettingsDockable(t)
 	gs := gurps.GlobalSettings().General
 	*gs = *gurps.NewGeneralSettings()
 	gs.EnsureValidity()
@@ -397,4 +393,72 @@ func TestGeneralSettingsResetRunsTheSideEffectsOfTheBoxesItChanges(t *testing.T)
 		"the reset brings the box back into line")
 	c.Equal(2, fired[&gs.GroupContainersOnSort], "the reset has the side effect of the box it changed")
 	c.Equal(1, len(fired), "the boxes the reset left alone have no side effect")
+}
+
+// TestGeneralSettingsResetClearsTheListsAndLocale verifies that a reset also clears the file types searched deeply, the
+// groups opened in separate windows and the interface locale, which live outside the general settings proper, bringing
+// their widgets and the Library Explorer's deep search into line.
+func TestGeneralSettingsResetClearsTheListsAndLocale(t *testing.T) {
+	c := check.New(t)
+	d, _ := newTestGeneralSettingsDockable(t)
+	settings := gurps.GlobalSettings()
+	*settings.General = *gurps.NewGeneralSettings()
+	settings.General.EnsureValidity()
+	if len(d.deepSearchableCheckbox) == 0 || len(d.openInWindowCheckbox) == 0 {
+		t.Fatal("expected deep search and separate window checkboxes")
+	}
+	deepSearch, separateWindow := d.deepSearchableCheckbox[0], d.openInWindowCheckbox[0]
+	settings.DeepSearch = []string{deepSearch.item}
+	settings.OpenInWindow = []dgroup.Group{separateWindow.item}
+	languageSetting = "fr"
+	d.sync()
+	c.Equal(uncheck.On, deepSearch.box.State, "precondition: the deep search checkbox shows its setting")
+	c.Equal(uncheck.On, separateWindow.box.State, "precondition: the separate window checkbox shows its setting")
+	c.Equal("fr", d.localeField.Text(), "precondition: the locale field shows its setting")
+	c.True(Workspace.Navigator.deepSearch[sentinelDeepSearchKey], "precondition: the deep search map is the sentinel")
+
+	d.reset()
+	c.Equal(0, len(settings.DeepSearch), "the reset clears the deep search setting")
+	c.Equal(uncheck.Off, deepSearch.box.State, "and its checkbox shows that")
+	c.Equal(0, len(settings.OpenInWindow), "the reset clears the separate window setting")
+	c.Equal(uncheck.Off, separateWindow.box.State, "and its checkbox shows that")
+	c.Equal("", languageSetting, "the reset clears the locale")
+	c.Equal("", d.localeField.Text(), "and its field shows that")
+	c.Equal(map[string]bool{}, Workspace.Navigator.deepSearch,
+		"the reset rebuilds the deep search map from the cleared setting")
+}
+
+// TestGeneralSettingsLoadCopiesIntoTheLiveSettings verifies that loading a settings file copies it into the live
+// general settings, which the widgets hold pointers into, rather than replacing them, and brings the widgets into line.
+func TestGeneralSettingsLoadCopiesIntoTheLiveSettings(t *testing.T) {
+	c := check.New(t)
+	d, _ := newTestGeneralSettingsDockable(t)
+	gs := gurps.GlobalSettings().General
+	*gs = *gurps.NewGeneralSettings()
+	gs.EnsureValidity()
+	d.sync()
+	var box settingCheckBox
+	for _, one := range d.checkBoxes {
+		if one.value == &gs.AutoFillProfile {
+			box = one
+			break
+		}
+	}
+	if box.box == nil {
+		t.Fatal("expected a checkbox for the initial description setting")
+	}
+	file := gurps.NewGeneralSettings()
+	file.DefaultPlayerName = "Loaded Player"
+	file.AutoFillProfile = !gs.AutoFillProfile
+	dir := t.TempDir()
+	name := "General" + gurps.GeneralSettingsExt
+	c.NoError(file.Save(filepath.Join(dir, name)))
+
+	c.NoError(d.load(os.DirFS(dir), name))
+	c.Equal("Loaded Player", d.nameField.Text(), "the name field shows the loaded setting")
+	c.Equal(uncheck.FromBool(file.AutoFillProfile), box.box.State, "the checkbox shows the loaded setting")
+	box.box.State = uncheck.FromBool(!file.AutoFillProfile)
+	box.box.ClickCallback()
+	c.Equal(!file.AutoFillProfile, gurps.GlobalSettings().General.AutoFillProfile,
+		"the checkbox still edits the live settings")
 }

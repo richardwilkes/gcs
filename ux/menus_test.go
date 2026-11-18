@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -122,8 +123,9 @@ func menuBarTitles() (bar unison.Menu, titles []string) {
 }
 
 // TestMenuBarStructure pins down the arrangement of the menu bar: which menus it holds, in what order, and what each
-// of the application's own menus and sub-menus holds. The items the platform contributes, such as Quit and the Window
-// menu's own entries, are left to unison, so the File menu is checked only up to its last application item.
+// of the application's own menus and sub-menus holds. The items the platform contributes, such as Quit, About and the
+// Window menu's own entries, are left to unison, so the File menu is checked only up to its last application item and
+// the Help menu only from its first.
 func TestMenuBarStructure(t *testing.T) {
 	c := check.New(t)
 	bar, titles := menuBarTitles()
@@ -302,4 +304,50 @@ func TestMenuBarStructure(t *testing.T) {
 
 	window := menuItemTitles(bar.Menu(unison.WindowMenuID))
 	c.Equal("Undock From Workspace", window[len(window)-1], "the Window menu ends with the undock item")
+
+	// The update status item takes its title from the state of the update checks, and several others name the
+	// application, so those are read from their actions.
+	help := []string{
+		"User Guide",
+		"---",
+		sponsorDevelopmentAction.Title,
+		makeDonationAction.Title,
+		"---",
+		updateAppStatusAction.Title,
+		checkForAppUpdatesAction.Title,
+		"Release Notes",
+		"License",
+		"---",
+		"Web Site",
+		"Discord Server",
+	}
+	titles = menuItemTitles(bar.Menu(unison.HelpMenuID))
+	if len(titles) < len(help) {
+		t.Fatalf("expected the Help menu to end with %q, found %q", help, titles)
+	}
+	c.Equal(help, titles[len(titles)-len(help):], "Help menu, after the About item unison adds to a per-window bar")
+}
+
+// TestOpenRecentMenuNamesTheFiles verifies that the Open Recent menu lists the recent files that can still be read, in
+// order, by file name, falling back to the full path for files that share a name, and says so when there are none.
+// Building the menu, which happens each time it is opened, replaces what it held rather than adding to it.
+func TestOpenRecentMenuNamesTheFiles(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	first := filepath.Join(dir, "a", "Sheet.gcs")
+	other := filepath.Join(dir, "a", "Other.gcs")
+	second := filepath.Join(dir, "b", "Sheet.gcs")
+	for _, one := range []string{first, other, second} {
+		c.NoError(os.MkdirAll(filepath.Dir(one), 0o750))
+		c.NoError(os.WriteFile(one, []byte("{}"), 0o640))
+	}
+	global := gurps.GlobalSettings()
+	uxtest.SwapForTest(t, &global.RecentFiles, []string{first, filepath.Join(dir, "Gone.gcs"), other, second})
+	menu := unison.NewInWindowMenuFactory().NewMenu(RecentFilesMenuID, "Open Recent", nil)
+	menuBarScope{}.recentFilesUpdater(menu)
+	c.Equal([]string{first, "Other.gcs", second}, menuItemTitles(menu))
+
+	global.RecentFiles = nil
+	menuBarScope{}.recentFilesUpdater(menu)
+	c.Equal([]string{"No recent files available"}, menuItemTitles(menu))
 }

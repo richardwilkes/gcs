@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // newEntityWithAscendingPointsRecord returns an entity whose points record list is stored oldest first, the opposite
@@ -58,4 +59,25 @@ func TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList(t *testing.T) {
 
 	e.current[0].Points -= fxp.One
 	c.False(e.isModified(), "putting the original value back must clear the change")
+}
+
+// TestPointsEditorDeleteButtonRemovesItsRow verifies that a row's delete button takes that row's record, and that row's
+// widgets alone, out of the editor.
+func TestPointsEditorDeleteButtonRemovesItsRow(t *testing.T) {
+	c := check.New(t)
+	e := newPointsEditor(nil, newEntityWithAscendingPointsRecord())
+	e.content = unison.NewPanel()
+	e.initContent()
+	widgets := slices.Clone(e.content.Children())
+	c.Equal(3*5, len(widgets), "precondition: each record has a row of five widgets")
+	middle := e.current[1]
+	button, ok := widgets[5].Self.(*unison.Button)
+	c.True(ok, "precondition: a row starts with its delete button")
+	if !ok {
+		return
+	}
+	button.ClickCallback()
+	c.Equal(2, len(e.current))
+	c.False(slices.Contains(e.current, middle), "the row's record is removed")
+	c.True(slices.Equal(slices.Concat(widgets[:5], widgets[10:]), e.content.Children()), "along with its widgets alone")
 }

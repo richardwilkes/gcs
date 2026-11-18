@@ -73,6 +73,54 @@ func pickFirstOption(t *testing.T) *int {
 	return &calls
 }
 
+// TestNewApplyPartsHoldsEachRowTypeInItsOwnPart verifies that newApplyParts holds the part it is given as the part for
+// its row type, the one that places the rows in their table, whichever of the five types that is.
+func TestNewApplyPartsHoldsEachRowTypeInItsOwnPart(t *testing.T) {
+	c := check.New(t)
+	// held returns how many rows each part holds, in the order traits, skills, spells, equipment and notes.
+	held := func(parts *applyParts) []int {
+		return []int{
+			len(parts.traits.rows), len(parts.skills.rows), len(parts.spells.rows), len(parts.equipment.rows),
+			len(parts.notes.rows),
+		}
+	}
+	for _, tc := range []struct {
+		name  string
+		parts *applyParts
+		want  []int
+	}{
+		{
+			name:  "traits",
+			parts: newApplyParts(applyPart[*gurps.Trait]{rows: []*gurps.Trait{gurps.NewTrait(nil, nil, false)}}),
+			want:  []int{1, 0, 0, 0, 0},
+		},
+		{
+			name:  "skills",
+			parts: newApplyParts(applyPart[*gurps.Skill]{rows: []*gurps.Skill{gurps.NewSkill(nil, nil, false)}}),
+			want:  []int{0, 1, 0, 0, 0},
+		},
+		{
+			name:  "spells",
+			parts: newApplyParts(applyPart[*gurps.Spell]{rows: []*gurps.Spell{gurps.NewSpell(nil, nil, false)}}),
+			want:  []int{0, 0, 1, 0, 0},
+		},
+		{
+			name: "equipment",
+			parts: newApplyParts(applyPart[*gurps.Equipment]{
+				rows: []*gurps.Equipment{gurps.NewEquipment(nil, nil, false)},
+			}),
+			want: []int{0, 0, 0, 1, 0},
+		},
+		{
+			name:  "notes",
+			parts: newApplyParts(applyPart[*gurps.Note]{rows: []*gurps.Note{gurps.NewNote(nil, nil, false)}}),
+			want:  []int{0, 0, 0, 0, 1},
+		},
+	} {
+		c.Equal(tc.want, held(tc.parts), "%s must be held as their own part", tc.name)
+	}
+}
+
 // TestCopyFromTemplateToSheetResolvesPickers verifies that rows copied from a template onto a sheet have their
 // template choices settled on the way, since only a template may hold them: the choice container dissolves into the
 // options chosen.
@@ -265,10 +313,13 @@ func TestCopyOfAncestryBetweenSheetsOffersRandomization(t *testing.T) {
 // TestRandomizationSeesTheArrivingTraits verifies that the profile is randomized against the character as it is once
 // the rows have arrived. The Human ancestry derives height from ST, and a template raising ST by 10 moves the range of
 // heights it can give from 63-73 inches to 83-93, so a height drawn against the ST the character had beforehand is
-// told apart from one drawn against the ST it has now.
+// told apart from one drawn against the ST it has now. Undo puts back the profile the randomization replaced, and redo
+// the one it drew.
 func TestRandomizationSeesTheArrivingTraits(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	before := entity.Profile.ProfileRandom
 	strong := gurps.NewTrait(nil, nil, false)
 	strong.Name = "Increased Strength"
 	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
@@ -280,11 +331,15 @@ func TestRandomizationSeesTheArrivingTraits(t *testing.T) {
 
 	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
 
-	entity := sheet.Entity()
 	c.Equal(fxp.FromInteger(20), entity.ResolveAttributeCurrent(gurps.StrengthID), "the template must raise ST to 20")
 	height := fxp.Int(entity.Profile.Height)
 	c.True(height >= fxp.FromInteger(83) && height <= fxp.FromInteger(93),
 		"the height must have been drawn for ST 20, not ST 10, got "+height.String()+" inches")
+	randomized := entity.Profile.ProfileRandom
+	sheet.undoMgr.Undo()
+	c.Equal(before, entity.Profile.ProfileRandom, "undo must put back the profile the randomization replaced")
+	sheet.undoMgr.Redo()
+	c.Equal(randomized, entity.Profile.ProfileRandom, "redo must put back the profile the randomization drew")
 }
 
 // TestCanceledModifierPromptLeavesSheetUntouched verifies that canceling the modifier prompt of a copy onto a sheet
@@ -317,14 +372,15 @@ func dragged(table *unison.Table[*Node[*gurps.Trait]]) *unison.TableDragData[*No
 }
 
 // TestDropOnSheetIsAppliedWhereItLanded verifies that a drop onto a sheet goes through the same application as a copy,
-// with the rows ending up where they were dropped -- here, inside a container, ahead of the row already there -- and
-// that the whole of it can be undone in one step.
+// with the rows ending up where they were dropped -- here, inside a closed container, ahead of the row already there,
+// the container being opened to show them selected -- and that the whole of it can be undone in one step.
 func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	group := gurps.NewTrait(entity, nil, true)
 	group.Name = "Group"
+	group.SetOpen(false)
 	existing := gurps.NewTrait(entity, group, false)
 	existing.Name = "Existing"
 	group.Children = []*gurps.Trait{existing}
@@ -350,6 +406,13 @@ func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	c.Equal("Claws", group.Children[0].Name, "the dropped row must be where it was dropped")
 	c.Equal(group, group.Children[0].Parent(), "the dropped row must belong to the container it was dropped into")
 	c.False(group.Children[0].Modifiers[0].IsDisabled(), "the answer to the modifier prompt must have been kept")
+	c.True(group.IsOpen(), "the container dropped into must be opened to show the dropped row")
+	rows := sheet.Traits.Table.SelectedRows(false)
+	selected := make([]string, 0, len(rows))
+	for _, row := range rows {
+		selected = append(selected, row.Data().Name)
+	}
+	c.Equal([]string{"Claws"}, selected, "the dropped row must be left selected")
 	c.True(sheet.undoMgr.CanUndo(), "the drop must be undoable")
 
 	sheet.undoMgr.Undo()

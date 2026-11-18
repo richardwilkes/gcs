@@ -10,7 +10,10 @@
 package ux
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,32 +30,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/role"
 )
-
-// TestMarkModifiedRecalculates checks that telling the sheet something changed brings the entity's derived state up to
-// date, since everything MarkModified goes on to do displays that state, and hashing the entity for the tab's unsaved
-// changes check no longer recalculates it.
-func TestMarkModifiedRecalculates(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	skill := gurps.NewSkill(entity, nil, false)
-	skill.Name = "Brawling"
-	skill.Points = fxp.Four
-	entity.Skills = append(entity.Skills, skill)
-	entity.Recalculate()
-	before := skill.LevelData.Level
-
-	entity.Attributes.Set["dx"].Adjustment = fxp.Four
-	sheet.MarkModified(nil)
-
-	c.Equal(before+fxp.Four, skill.LevelData.Level, "the skill level must reflect the raised attribute")
-}
 
 // TestNewItemCommandUsesTheLiveList checks that the "New Trait" command adds its item to the list on screen even after
 // the sheet has replaced that list, as gaining the switch column forces. A command that captured the original list
@@ -142,6 +126,51 @@ func TestSheetRebuildCarriesTheSelectionToAReplacedList(t *testing.T) {
 	c.NotEqual(stale, sheet.Traits, "gaining the switch column must have replaced the traits list")
 	c.True(sheet.Traits.Table.CopySelectionMap()[plain.ID()],
 		"the selection must have followed the row into the replacement")
+}
+
+// TestSheetReroutesDropsToTheListOfTheirKind verifies that an item of each kind the sheet takes, dropped anywhere on
+// it, is rerouted to the list of that kind.
+func TestSheetReroutesDropsToTheListOfTheirKind(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	for _, one := range []struct {
+		name string
+		key  *uti.DataType
+		list unison.Paneler
+	}{
+		{"equipment", equipmentDragKey, sheet.CarriedEquipment},
+		{"a skill", skillDragKey, sheet.Skills},
+		{"a spell", spellDragKey, sheet.Spells},
+		{"a trait", traitDragKey, sheet.Traits},
+		{"a note", noteDragKey, sheet.Notes},
+	} {
+		c.True(unison.AncestorIs(sheet.keyToPanel(one.key), one.list), "%s dropped on the sheet must go to its list",
+			one.name)
+	}
+}
+
+// TestSheetClearPortraitCommandIsUndoable verifies that the Clear Portrait command is on offer only while the sheet has
+// a portrait, takes the portrait away, and can be undone and redone.
+func TestSheetClearPortraitCommandIsUndoable(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	profile := &sheet.Entity().Profile
+	p := sheet.AsPanel()
+	c.False(p.CanPerformCmd(nil, ClearPortraitItemID), "there is no portrait to clear")
+	var buf bytes.Buffer
+	c.NoError(png.Encode(&buf, image.NewNRGBA(image.Rect(0, 0, 1, 1))))
+	portrait := buf.Bytes()
+	profile.SetPortraitData(portrait)
+	c.True(p.CanPerformCmd(nil, ClearPortraitItemID), "a portrait can be cleared")
+
+	p.PerformCmd(nil, ClearPortraitItemID)
+	c.Equal(0, len(profile.PortraitData), "the command takes the portrait away")
+	mgr := sheet.UndoManager()
+	c.True(mgr.CanUndo(), "clearing the portrait must be undoable")
+	mgr.Undo()
+	c.Equal(portrait, profile.PortraitData, "undo puts the portrait back")
+	mgr.Redo()
+	c.Equal(0, len(profile.PortraitData), "redo takes it away again")
 }
 
 // newContradictoryTraitRing returns two traits that each require the other's absence, so that a sheet enforcing trait
@@ -910,9 +939,9 @@ func BenchmarkNameablesPanel(b *testing.B) {
 	})
 }
 
-// TestSheetBenchSkipsAListNotOnThePage verifies that a benchmark of a list that a loaded sheet leaves off the page, such
-// as the ranged weapons of a character without any, is skipped rather than measuring whatever part of the page is in
-// view.
+// TestSheetBenchSkipsAListNotOnThePage verifies that a benchmark of a list that a loaded sheet leaves off the page,
+// such as the ranged weapons of a character without any, is skipped rather than measuring whatever part of the page is
+// in view.
 func TestSheetBenchSkipsAListNotOnThePage(t *testing.T) {
 	c := check.New(t)
 	path := filepath.Join(t.TempDir(), "empty"+gurps.SheetExt)

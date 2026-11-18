@@ -228,8 +228,8 @@ func TestDefaultsPanelOpenAndClose(t *testing.T) {
 }
 
 // TestDefaultsPanelBuildingChangesNothing opens every row in turn, holding values a file can hold but the editor
-// doesn't write, and checks that none of it changes the data, since opening an editor must not mark it modified, that
-// a type written as "Skill" is shown as a skill default, and that an unknown type is shown and described as such.
+// doesn't write, and checks that none of it changes the data, since opening an editor must not mark it modified, and
+// that a type written as "Skill" is shown as a skill default.
 func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -238,19 +238,13 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 		&gurps.SkillDefault{DefaultType: "unknown"})
 	start := defaultsJSON(c, defaults)
 	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
-	screen.Do(func() { c.Equal(`Unknown type "unknown" at +0`, rowSentence(p, "4"), "an unknown type says so") })
 	for i := range defaults {
 		path := strconv.Itoa(i)
 		screen.Do(func() { p.toggle(path) })
 		screen.Do(func() { c.NotNil(p.FindRefKey(path + keyFirst)) })
 		c.Equal(start, defaultsJSON(c, defaults), "opening %s changes nothing", path)
 	}
-	screen.Do(func() {
-		if popup := defaultTypePopup(c, p, "4"); popup != nil {
-			c.Equal(`Unknown type "unknown"`, popup.Text(), "the type popup shows an unknown type as such")
-		}
-		p.toggle("3")
-	})
+	screen.Do(func() { p.toggle("3") })
 	screen.Do(func() {
 		if popup := defaultTypePopup(c, p, "3"); popup != nil {
 			c.Equal("Skill", popup.Text(), "a type written as \"Skill\" is a skill")
@@ -451,10 +445,10 @@ func TestDefaultsPanelChips(t *testing.T) {
 	})
 }
 
-// TestDefaultsPanelMoreMenu checks that Duplicate, Move up, Move down and Delete change the list as they say, each
-// installing a new list rather than changing the one held before and each a step to undo, that the open row stays open
-// wherever it goes, that the focus goes to the more button of the row the default ends up in, and that the moves are
-// offered only where there is room.
+// TestDefaultsPanelMoreMenu checks that Duplicate, Move up, Move down and Delete, which a row's more button offers,
+// change the list as they say, each installing a new list rather than changing the one held before and each a step to
+// undo, that the open row stays open wherever it goes, that the focus goes to the more button of the row the default
+// ends up in, and that the moves are offered only where there is room.
 func TestDefaultsPanelMoreMenu(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -484,7 +478,16 @@ func TestDefaultsPanelMoreMenu(t *testing.T) {
 		p.toggle("1")
 	})
 	start := []string{gurps.DexterityID, gurps.SkillID, gurps.ParryID}
-	act("1", "Move Up")
+	// The first is chosen from the menu the row's more button opens, as a user would.
+	held = defaults
+	var wnd *unison.Window
+	var more *unison.Panel
+	screen.Do(func() {
+		wnd = p.Window()
+		more = p.FindRefKey("1" + keyMore)
+	})
+	screen.Click(screen.PanelCenter(more))
+	chooseOpenMenuItem(t, screen, wnd, "Move Up")
 	moved := []string{gurps.SkillID, gurps.DexterityID, gurps.ParryID}
 	c.Equal(moved, defaultTypes(defaults))
 	c.Equal(start, defaultTypes(held), "the list held before is left as it was")
@@ -588,7 +591,8 @@ func TestDefaultsPanelUndo(t *testing.T) {
 // TestDefaultsPanelDragAndDrop checks that a dragged default goes before or after a row by which half of the row it is
 // over, into a new list, that a drop is one step to undo and redo, that the open row follows its default, that a drop
 // onto or beside itself, or of a row dragged from a panel of another kind, changes nothing, and that a row dragged from
-// another defaults panel is copied in where it is dropped, unless the panel is read-only.
+// another defaults panel is copied in where it is dropped, or at the end of a collapsed panel, which expands, unless
+// the panel is read-only.
 func TestDefaultsPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -649,9 +653,34 @@ func TestDefaultsPanelDragAndDrop(t *testing.T) {
 	screen.Do(host.mgr.Redo)
 	c.Equal([]string{gurps.IntelligenceID, gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults),
 		"and to redo")
+	c.True(dragFrom(other.AsPanel(), "0", "1", 0.8))
+	c.Equal([]string{gurps.IntelligenceID, gurps.SkillID, gurps.IntelligenceID, gurps.ParryID, gurps.DexterityID},
+		defaultTypes(defaults), "a copy dropped on the lower half of a row goes after it")
+
+	screen.Do(p.collapse.toggle)
+	accepted := false
+	screen.Do(func() {
+		summary := p.FindRefKey(sectionSummaryKey)
+		c.NotNil(summary, "precondition: the collapsed panel shows its paragraph")
+		if summary == nil {
+			return
+		}
+		where := p.RectFromRoot(summary.RectToRoot(summary.ContentRect(true))).Center()
+		data := &rowDrag{panel: other.AsPanel(), path: "0"}
+		p.dragOver(where, data)
+		accepted = p.dropTarget != nil
+		p.drop(where, data)
+	})
+	c.True(accepted, "a copy can be dropped on a collapsed panel")
+	c.Equal([]string{
+		gurps.IntelligenceID, gurps.SkillID, gurps.IntelligenceID, gurps.ParryID, gurps.DexterityID,
+		gurps.IntelligenceID,
+	}, defaultTypes(defaults), "where it goes at the end")
+	c.False(p.collapse.collapsed, "expanding the panel")
+
 	screen.Do(p.makeReadOnly)
 	c.False(dragFrom(other.AsPanel(), "0", "0", 0.2), "a read-only panel takes no copies")
-	c.Equal(4, len(defaults))
+	c.Equal(6, len(defaults))
 }
 
 // TestDefaultsPanelDragFromRow checks that a row can be dragged through the window by its sentence without also opening

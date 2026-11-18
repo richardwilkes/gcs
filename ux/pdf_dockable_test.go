@@ -303,6 +303,19 @@ func TestPDFSelectionRangeAgainstRealText(t *testing.T) {
 	}
 }
 
+// newPagedPDFDockable returns a PDF dockable with the given number of pages and no document or window, which is all
+// that moving between pages needs: where it would scroll to is left in pendingScrollPage.
+func newPagedPDFDockable(pages int) *PDFDockable {
+	return &PDFDockable{
+		backButton:        unison.NewButton(),
+		forwardButton:     unison.NewButton(),
+		pageRects:         make([]geom.Rect, pages),
+		pendingScrollPage: -1,
+		// Marked as already queued, so that no sync is, since the dockable has no document to sync.
+		viewSyncPending: true,
+	}
+}
+
 // TestPDFTOCScrollsToTheRowChosen verifies that extending the table of contents' selection to a bookmark, up or down,
 // scrolls to that bookmark's page rather than to the page of another selected row.
 func TestPDFTOCScrollsToTheRowChosen(t *testing.T) {
@@ -310,15 +323,8 @@ func TestPDFTOCScrollsToTheRowChosen(t *testing.T) {
 	const pdfPath = "/does/not/exist/toc-scroll.pdf"
 	settings := gurps.GlobalSettings()
 	t.Cleanup(func() { delete(settings.PDFs, pdfPath) })
-	d := &PDFDockable{
-		path:              pdfPath,
-		backButton:        unison.NewButton(),
-		forwardButton:     unison.NewButton(),
-		pageRects:         make([]geom.Rect, 3),
-		pendingScrollPage: -1,
-		// Marked as already queued, so that no sync is, since the dockable has no document to sync.
-		viewSyncPending: true,
-	}
+	d := newPagedPDFDockable(3)
+	d.path = pdfPath
 	d.createTOC()
 	d.tocPanel.SetRootRows(newTOC(d, nil, []*PDFTableOfContents{
 		{Title: "First", PageNumber: 0},
@@ -331,4 +337,68 @@ func TestPDFTOCScrollsToTheRowChosen(t *testing.T) {
 	c.Equal(2, d.pendingScrollPage, "Shift+Down to the third bookmark scrolls to its page")
 	d.tocPanel.KeyDownCallback(unison.KeyHome, mod.Shift, false)
 	c.Equal(0, d.pendingScrollPage, "Shift+Home to the first bookmark scrolls to its page")
+}
+
+// TestPDFBackAndForwardRetraceThePagesJumpedTo verifies that Back and Forward return to the pages jumped to, in order,
+// and that, after going Back, a jump to the next page in the history keeps the pages beyond it to go Forward to, while
+// a jump anywhere else drops them, as a browser's history does. A jump to the page already shown adds nothing.
+func TestPDFBackAndForwardRetraceThePagesJumpedTo(t *testing.T) {
+	c := check.New(t)
+	d := newPagedPDFDockable(4)
+	for _, page := range []int{0, 2, 3, 3} {
+		d.ScrollToPage(page, true)
+	}
+	c.Equal([]int{0, 2, 3}, d.history, "the pages jumped to")
+	d.Back()
+	c.Equal(2, d.pendingScrollPage, "Back returns to the page jumped to before")
+	d.Back()
+	c.Equal(0, d.pendingScrollPage, "and Back again to the one before that")
+	d.Forward()
+	c.Equal(2, d.pendingScrollPage, "Forward retraces the jumps")
+	d.Forward()
+	c.Equal(3, d.pendingScrollPage, "and Forward again to the last of them")
+
+	d.Back()
+	d.Back()
+	d.ScrollToPage(2, true)
+	c.Equal([]int{0, 2, 3}, d.history, "a jump to the next page in the history keeps those beyond it")
+	c.Equal(1, d.historyPos)
+	c.True(d.forwardButton.Enabled(), "so Forward is still offered")
+	d.Back()
+	d.ScrollToPage(1, true)
+	c.Equal([]int{0, 1}, d.history, "a jump anywhere else drops them")
+	c.False(d.forwardButton.Enabled(), "so Forward is no longer offered")
+}
+
+// TestPDFKeysMoveBetweenPages verifies the keys that move through a PDF: Home and End go to its first and last pages,
+// and Left or Up and Right or Down to the page before or after the one shown, but no further than the first or last
+// page. Any other key is left for something else to handle.
+func TestPDFKeysMoveBetweenPages(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		key     unison.KeyCode
+		current int
+		want    int // the page scrolled to, or -1 for a key that isn't handled
+	}{
+		{name: "Home", key: unison.KeyHome, current: 1, want: 0},
+		{name: "End", key: unison.KeyEnd, current: 1, want: 2},
+		{name: "Left", key: unison.KeyLeft, current: 1, want: 0},
+		{name: "Up", key: unison.KeyUp, current: 1, want: 0},
+		{name: "Right", key: unison.KeyRight, current: 1, want: 2},
+		{name: "Down", key: unison.KeyDown, current: 1, want: 2},
+		{name: "Up on the first page", key: unison.KeyUp, current: 0, want: 0},
+		{name: "Down on the last page", key: unison.KeyDown, current: 2, want: 2},
+		{name: "another key", key: unison.KeyA, current: 1, want: -1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := newPagedPDFDockable(3)
+			d.currentPage = tc.current
+			if handled := d.keyDown(tc.key, 0, false); handled != (tc.want >= 0) {
+				t.Errorf("the key was handled: %v, want %v", handled, tc.want >= 0)
+			}
+			if d.pendingScrollPage != tc.want {
+				t.Errorf("the key scrolls to page %d, want %d", d.pendingScrollPage, tc.want)
+			}
+		})
+	}
 }

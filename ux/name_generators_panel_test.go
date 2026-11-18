@@ -103,6 +103,25 @@ func TestNameGeneratorRowEditButtonFollowsAvailability(t *testing.T) {
 	c.True(rows[1].editButton.Enabled(), "a row that only offers known generators stays enabled")
 }
 
+// TestNameGeneratorRowRemoveButtonRemovesItsGenerator verifies that a row's remove button removes the generator the row
+// shows, and no other.
+func TestNameGeneratorRowRemoveButtonRemovesItsGenerator(t *testing.T) {
+	c := check.New(t)
+	a := gurps.NewAncestry()
+	a.CommonOptions.NameGenerators = []string{"Human First - Male", "Human Last"}
+	d := newTestAncestryEditorDockable(a, "Human First - Male", "Human Last")
+	rows := uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())
+	if len(rows) != 2 {
+		t.Fatalf("expected a row per generator, found %d", len(rows))
+	}
+	remove := buttonWithTooltip(rows[1].AsPanel(), "Remove name generator")
+	if remove == nil {
+		t.Fatal("the row has no remove button")
+	}
+	remove.ClickCallback()
+	c.Equal([]string{"Human First - Male"}, d.model.CommonOptions.NameGenerators)
+}
+
 // TestNameGeneratorsAddAndRemove verifies that an empty list shows no rows container, that adding a generator defaults
 // to the first available one, or to an empty entry when none is available, and builds a row for it, that removing the
 // last generator removes the rows container again, and that both are undoable.

@@ -68,7 +68,7 @@ func TestEditorNewItemCommandsAddToTheirPanels(t *testing.T) {
 // TestDroppedModifierLegacyReplacementsJoinTheEditorsData verifies that the replacements an older version saved on a
 // modifier dropped into an item editor's list of modifiers go into the editor's data, which keeps its own value for a
 // code both have, leaving the item alone until the editor is applied, that undoing the drop takes them back out and
-// redoing it puts them back, and that applying the editor gives them to the item.
+// redoing it puts them back, except for a value changed since, and that applying the editor gives them to the item.
 func TestDroppedModifierLegacyReplacementsJoinTheEditorsData(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -136,8 +136,15 @@ func TestDroppedModifierLegacyReplacementsJoinTheEditorsData(t *testing.T) {
 			c.Equal(map[string]string{"Foo": "Bar"}, *data, "undoing the drop must take them back out")
 			undo.Redo()
 			c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, *data, "redoing it must put them back")
+			// As Set Substitutions does, which is no edit to undo.
+			*data = map[string]string{"Foo": "Bar", "Material": "Iron"}
+			undo.Undo()
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Iron"}, *data,
+				"undoing the drop must keep a value changed since")
+			undo.Redo()
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Iron"}, *data, "and redoing it must not replace it")
 			apply()
-			c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, *item, "applying must give them to the item")
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Iron"}, *item, "applying must give them to the item")
 		})
 	}
 }

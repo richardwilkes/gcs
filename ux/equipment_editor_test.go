@@ -39,10 +39,11 @@ func newEditorEquipment(mutate func(e *gurps.Equipment, mod *gurps.EquipmentModi
 	return equipment, &data
 }
 
-// Both previews must follow what is typed into the editor -- the level a "per level" modifier and the weight a "per
-// pound" one is multiplied by, the quantity, and whether a modifier is enabled -- rather than the unedited target,
-// which they leave untouched, and must agree with what the sheet shows once the edits are applied.
-func TestExtendedPreviewsHonorModifierEnablement(t *testing.T) {
+// TestExtendedPreviewsFollowTheEdits verifies that both previews follow what is typed into the editor -- the level a
+// "per level" modifier and the weight a "per pound" one is multiplied by, the quantity, and whether a modifier is
+// enabled -- rather than the unedited target, which they leave untouched, and agree with what the sheet shows once the
+// edits are applied.
+func TestExtendedPreviewsFollowTheEdits(t *testing.T) {
 	for _, tc := range []struct {
 		name                 string
 		setup                func(e *gurps.Equipment, mod *gurps.EquipmentModifier)

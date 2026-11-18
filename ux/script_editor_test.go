@@ -70,11 +70,31 @@ func TestScriptEditor(t *testing.T) {
 	c.Equal("a\n  b", script, "Shift+Tab changes nothing")
 	screen.Do(func() { c.Equal(editor.field.AsPanel(), editor.field.Window().Focus(), "nor moves the focus") })
 
+	menuButton := func(title string) *unison.Button {
+		t.Helper()
+		var button *unison.Button
+		screen.Do(func() {
+			for _, one := range uxtest.PanelsOfType[*unison.Button](editor.AsPanel()) {
+				if one.Text != nil && one.Text.String() == title {
+					button = one
+				}
+			}
+		})
+		if button == nil {
+			t.Fatalf("the editor must have the %s button", title)
+		}
+		return button
+	}
+	insert := menuButton("Insert")
 	screen.Do(func() {
 		editor.field.SetSelection(1, 1)
-		editor.insertEntry(1, 1, editor.opts.Inserts[0])
+		insert.RequestFocus()
+		c.Equal(insert.AsPanel(), insert.Window().Focus(), "precondition: the field gives up the focus")
 	})
-	c.Equal("afn()\n  b", script, "an insert goes in at the caret")
+	screen.Click(screen.PanelCenter(insert))
+	screen.KeyPress(unison.KeyDown, mod.None)
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal("afn()\n  b", script, "the Insert menu puts the entry chosen in at the caret")
 	start, end := selection()
 	c.Equal(4, start, "the caret goes where the entry asks")
 	c.Equal(4, end)
@@ -95,18 +115,8 @@ func TestScriptEditor(t *testing.T) {
 	screen.Do(func() { after = evaluations })
 	c.Equal(before+1, after, "changes in quick succession are evaluated once")
 
-	var snippets *unison.Button
-	screen.Do(func() {
-		for _, one := range uxtest.PanelsOfType[*unison.Button](editor.AsPanel()) {
-			if one.Text != nil && one.Text.String() == "Snippets" {
-				snippets = one
-			}
-		}
-		editor.field.SetText("«x»") // Longer in bytes than in runes.
-	})
-	if snippets == nil {
-		t.Fatal("the editor must have a Snippets button")
-	}
+	snippets := menuButton("Snippets")
+	screen.Do(func() { editor.field.SetText("«x»") }) // Longer in bytes than in runes.
 	screen.Click(screen.PanelCenter(snippets))
 	screen.KeyPress(unison.KeyDown, mod.None)
 	screen.KeyPress(unison.KeyReturn, mod.None)

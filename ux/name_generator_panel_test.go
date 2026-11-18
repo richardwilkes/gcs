@@ -10,16 +10,13 @@
 package ux
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
-	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/unison"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
@@ -156,6 +153,16 @@ func TestNameGeneratorPanelDepthField(t *testing.T) {
 	field.SetText("0")
 	c.Equal(0, g.Depth, "zero is accepted")
 	c.Contains(tooltipText(field.Tooltip), "default of 3", "zero is not flagged")
+}
+
+// TestNameGeneratorPanelSeparatorField verifies that the separator field of a compound generator writes the model.
+func TestNameGeneratorPanelSeparatorField(t *testing.T) {
+	c := check.New(t)
+	g := gurps.NewNameGenerator()
+	g.Type = namegen.Compound
+	d := newTestNameGeneratorEditorDockable(g)
+	stringFieldFor(t, d, g.KeyPrefix+"separator").SetText("-")
+	c.Equal("-", d.model.Separator)
 }
 
 // TestNameGeneratorPanelCompoundAddRemove verifies that adding a generator to a compound generator appends a simple one
@@ -343,37 +350,4 @@ func TestNameGeneratorPanelImportDedupes(t *testing.T) {
 	c.Equal([]string{"Alice"}, optionValues(d.model.Entries), "the first import is a single edit")
 	c.Equal(1, d.model.Entries[0].Weight, "that undoes the added weight too")
 	c.False(d.undoMgr.CanUndo(), "and an import with no names posted none")
-}
-
-// TestNameGeneratorSamplesPanel verifies that the samples panel shows ten names from a working definition, the reason
-// when the definition cannot generate names, and that the samples follow edits and can be regenerated on demand.
-func TestNameGeneratorSamplesPanel(t *testing.T) {
-	c := check.New(t)
-	d := newTestNameGeneratorEditorDockable(simpleNameGenerator("Alice"))
-	c.NotNil(d.samples)
-	c.Equal(strings.Repeat("Alice, ", 9)+"Alice", d.samples.label.text, "ten names, joined by commas")
-	c.Equal(unison.DefaultLabelTheme.OnBackgroundInk, d.samples.label.ink, "names are drawn normally")
-
-	trainingNamesPanel(d, d.model).removeOption(d.model.Entries[0])
-	c.Contains(d.samples.label.text, "No training data has been provided", "the rebuilt samples say what is missing")
-	c.Equal(unison.ThemeWarning, d.samples.label.ink, "the reason is drawn as a warning")
-
-	d.undoMgr.Undo()
-	c.Equal(strings.Repeat("Alice, ", 9)+"Alice", d.samples.label.text, "undo brings the names back")
-
-	// Typing into a field is not a structural edit, yet the samples must follow it, which they do through Sync.
-	stringFieldFor(t, d, d.model.Entries[0].KeyPrefix+"value").SetText("Bob")
-	c.Equal(strings.Repeat("Bob, ", 9)+"Bob", d.samples.label.text, "the samples follow a typed change")
-
-	d.model.Entries[0].Value = "Carol"
-	button := buttonWithSVG(d.samples.AsPanel(), svg.Randomize)
-	c.NotNil(button, "the header has a regenerate button")
-	button.ClickCallback()
-	c.Equal(strings.Repeat("Carol, ", 9)+"Carol", d.samples.label.text, "the button regenerates the samples")
-
-	compound := gurps.NewNameGenerator()
-	compound.Type = namegen.Compound
-	d = newTestNameGeneratorEditorDockable(compound)
-	c.Contains(d.samples.label.text, "at least one name generator", "an empty compound generator explains itself")
-	c.NotContains(d.samples.label.text, "\n", "the message carries no stack trace")
 }

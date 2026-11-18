@@ -117,24 +117,44 @@ func useTestAppIdentifier(t *testing.T) {
 	uxtest.SwapForTest(t, &xos.AppIdentifier, "com.trollworks.gcs")
 }
 
-// The sending side applies the same bound, so it reports the problem against the paths it can name instead of writing
-// a payload the receiver is going to throw away.
-func TestHandoffRefusesOversizedPayload(t *testing.T) {
+// The sending side gives up without writing anything when it must not send what it has: a payload over the bound,
+// which the receiver would throw away, or anything at all to a port held by some other application.
+func TestHandoffRefusesWithoutSending(t *testing.T) {
 	c := check.New(t)
 	useTestAppIdentifier(t)
-	client, server := net.Pipe()
-	defer xio.CloseIgnoringErrors(server)
-	go func() {
-		if _, err := server.Write([]byte(xos.AppIdentifier)); err != nil {
-			return
+	for _, one := range []struct {
+		name       string
+		identifier string
+		size       int
+	}{
+		{name: "a payload over the maximum", identifier: xos.AppIdentifier, size: maxHandoffPayloadSize + 1},
+		{name: "another application on the port", identifier: strings.ToUpper(xos.AppIdentifier), size: 2},
+	} {
+		client, server := net.Pipe()
+		received := make(chan int64, 1)
+		go func() {
+			defer xio.CloseIgnoringErrors(server)
+			if _, err := server.Write([]byte(one.identifier)); err != nil {
+				// The sender hung up without reading the identifier, so it sent nothing.
+				received <- 0
+				return
+			}
+			// Drain whatever arrives, so that a sender which fails to give up fails the assertions below instead of
+			// blocking forever against the unbuffered pipe. handoff closes its end when it returns, which ends this.
+			n, err := io.Copy(io.Discard, server)
+			if err != nil {
+				n = -1
+			}
+			received <- n
+		}()
+		c.False(handoff(client, make([]byte, one.size)), "%s: the handoff must fail", one.name)
+		select {
+		case n := <-received:
+			c.Equal(int64(0), n, "%s: nothing must be sent", one.name)
+		case <-time.After(5 * time.Second):
+			c.True(false, "%s: timed out waiting for the sender to close the connection", one.name)
 		}
-		// Drain whatever arrives, so that a sender which fails to apply the bound fails the assertion below instead
-		// of blocking forever against the unbuffered pipe.
-		if _, err := io.Copy(io.Discard, server); err != nil {
-			return
-		}
-	}()
-	c.False(handoff(client, make([]byte, maxHandoffPayloadSize+1)), "an oversized payload must not be sent")
+	}
 }
 
 // Runs the sending and receiving halves against each other: they must agree on the wire format and a normal path list

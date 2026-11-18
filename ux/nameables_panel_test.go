@@ -11,6 +11,7 @@ package ux
 
 import (
 	"maps"
+	"slices"
 	"strings"
 	"testing"
 
@@ -174,23 +175,16 @@ func TestNameablesPanelLinksModifierCodes(t *testing.T) {
 	p, host := showNameablesPanel(t, screen, &defs, &texts, &links, modifiers, "")
 	itemSentence := func() string {
 		var text string
-		screen.Do(func() {
-			if sentence, ok := p.FindRefKey(pathOf("style") + keySentence).Self.(*sentenceButton); ok {
-				text = sentence.plainText()
-			}
-		})
+		screen.Do(func() { text, _ = nameableRowSentence(p, pathOf("style")) })
 		return text
 	}
 	c.Equal("@style@ asks for Style as any text; used once, and once in a modifier", itemSentence(),
 		"a modifier's use of a code it shares with the item counts for the item's")
 	sharedSentence := func() string {
 		var text string
-		screen.Do(func() {
-			if sentence, ok := p.FindRefKey("m:" + string(id) + ":style" + keySentence).Self.(*sentenceButton); ok {
-				c.Nil(sentence.onClick, "a code the item also has has nothing to link")
-				text = sentence.plainText()
-			}
-		})
+		var editable bool
+		screen.Do(func() { text, editable = nameableRowSentence(p, "m:"+string(id)+":style") })
+		c.False(editable, "a code the item also has has nothing to link")
 		return text
 	}
 	c.Equal("@style@ on Practiced shares the item's answer; used once", sharedSentence())
@@ -252,14 +246,7 @@ func TestNameablesPanelShowsLinkOverSameNamedCode(t *testing.T) {
 	}}
 	p, _ := showNameablesPanel(t, screen, &defs, &texts, &links, modifiers, "")
 	sentenceAt := func(path string) (text string, editable bool) {
-		screen.Do(func() {
-			if panel := p.FindRefKey(path + keySentence); panel != nil {
-				if sentence, ok := panel.Self.(*sentenceButton); ok {
-					text = sentence.plainText()
-					editable = sentence.onClick != nil
-				}
-			}
-		})
+		screen.Do(func() { text, editable = nameableRowSentence(p, path) })
 		return text, editable
 	}
 	art := "m:" + string(id) + ":art"
@@ -359,6 +346,15 @@ func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
 				{modRow, "@style@ on Focus shares the item's answer, though the modifier doesn't define it; used once", false},
 				{path: "u:style", text: "@style@ isn't defined; used once, and once in a modifier"},
 				{path: pathOf("art"), text: "@art@ asks for Art as any text; used once"},
+			},
+		},
+		{
+			name:  "defined but not used by the item",
+			defs:  map[string]nameable.Detail{"style": {Label: "Style", FreeForm: true}},
+			texts: []string{"Trained"},
+			rows: []row{
+				{modRow, "@style@ on Focus shares the item's answer, though the modifier doesn't define it; used once", false},
+				{path: pathOf("style"), text: "@style@ asks for Style as any text; used once in a modifier"},
 			},
 		},
 		{
@@ -651,6 +647,84 @@ func TestNameablesPanelRenameThroughModifierCode(t *testing.T) {
 		}
 	})
 	c.Equal(map[tid.TID]map[string]string{id: {"art": "arts"}}, links, "the link follows the rest of the rename")
+}
+
+// TestNameablesPanelKeepsCodesUniqueAndValid checks that the add button gives each new nameable a code no other has and
+// opens it, and that typing into the code field renames a nameable only to a valid code that no other has.
+func TestNameablesPanelKeepsCodesUniqueAndValid(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	style := nameable.Detail{Label: "Style", FreeForm: true}
+	defs := map[string]nameable.Detail{"style": style}
+	texts := []string{"@style@"}
+	p, _ := showNameablesPanel(t, screen, &defs, &texts, nil, nil, "")
+	screen.Do(func() { clickNameablesButton(c, p, nameablesAddKey) })
+	screen.Do(func() { clickNameablesButton(c, p, nameablesAddKey) })
+	c.Equal([]string{"new", "new2", "style"}, slices.Sorted(maps.Keys(defs)), "each new nameable gets a code of its own")
+	c.Equal(pathOf("new2"), p.open, "and opens for editing")
+
+	var field *StringField
+	screen.Do(func() {
+		if panel := p.FindRefKey(nameablesCodeKey); panel != nil {
+			if one, ok := panel.Self.(*StringField); ok {
+				field = one
+			}
+		}
+	})
+	if field == nil {
+		t.Fatal("the open row has no code field")
+	}
+	screen.Do(func() {
+		field.SetText("style")
+		field.SetText("")
+		field.SetText("new code")
+	})
+	c.Equal([]string{"new", "new2", "style"}, slices.Sorted(maps.Keys(defs)),
+		"neither a code another nameable has nor an invalid one is taken")
+	c.Equal(style, defs["style"], "the nameable whose code was typed is left as it was")
+	screen.Do(func() { field.SetText("new_code") })
+	c.Equal([]string{"new", "new_code", "style"}, slices.Sorted(maps.Keys(defs)), "a valid code no other has is taken")
+}
+
+// TestNameablesPanelDeleteDropsTheLinksToIt checks that deleting a nameable through its row's more menu also removes
+// the links of the modifiers' codes to it, and only those, and that one undo brings both back.
+func TestNameablesPanelDeleteDropsTheLinksToIt(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	art := nameable.Detail{Label: "Art", FreeForm: true}
+	defs := map[string]nameable.Detail{"style": {Label: "Style", FreeForm: true}, "art": art}
+	texts := []string{"@style@ @art@"}
+	practiced := tid.MustNewTID('m')
+	focused := tid.MustNewTID('m')
+	links := map[tid.TID]map[string]string{practiced: {"aim": "art", "school": "style"}, focused: {"focus": "style"}}
+	modifiers := []nameableModifier{
+		{id: practiced, name: "Practiced", uses: map[string]int{"aim": 1, "school": 1}},
+		{id: focused, name: "Focused", uses: map[string]int{"focus": 1}},
+	}
+	p, host := showNameablesPanel(t, screen, &defs, &texts, &links, modifiers, "")
+	var wnd *unison.Window
+	var more *unison.Panel
+	screen.Do(func() {
+		wnd = p.Window()
+		more = p.FindRefKey(pathOf("style") + keyMore)
+	})
+	if more == nil {
+		t.Fatal("the nameable's row has no more button")
+	}
+	screen.Click(screen.PanelCenter(more))
+	var items []*unison.Panel
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
+	if len(items) != 1 {
+		t.Fatalf("expected the more menu to hold Delete alone, found %d items", len(items))
+	}
+	screen.Click(screen.PanelCenter(items[0]))
+	c.Equal(map[string]nameable.Detail{"art": art}, defs, "Delete removes the nameable")
+	c.Equal(map[tid.TID]map[string]string{practiced: {"aim": "art"}}, links, "and the links to it, but no others")
+	c.Equal("Undo Delete Nameable", host.mgr.UndoTitle())
+	screen.Do(host.mgr.Undo)
+	c.Equal([]string{"art", "style"}, slices.Sorted(maps.Keys(defs)), "undo brings the nameable back")
+	c.Equal(map[tid.TID]map[string]string{practiced: {"aim": "art", "school": "style"}, focused: {"focus": "style"}},
+		links, "and the links to it")
 }
 
 func TestNameablesPanelCollapses(t *testing.T) {

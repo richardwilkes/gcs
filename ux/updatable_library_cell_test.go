@@ -19,6 +19,22 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
+// TestLibraryUpdateButtonNamesTheVersion verifies that a library's Update button names the release it updates to, but
+// not the commit that a library following its repository's most recent commit updates to.
+func TestLibraryUpdateButtonNamesTheVersion(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		version string
+		want    string
+	}{
+		{version: "5.13.0", want: "Update to v5.13"},
+		{version: "0123456789abcdef0123456789abcdef01234567", want: "Update"},
+	} {
+		cell := newUpdatableLibraryCell(&library.Library{}, unison.NewLabel(), &library.Release{Version: one.version})
+		c.Equal(one.want, cell.button.Text.String(), one.version)
+	}
+}
+
 // TestLibraryUpdateButtonIgnoresNonPrimaryPresses verifies that a library's Update button starts an update only for a
 // click of the primary button: a right-drag unison hands back to the table reaches the button like any other press.
 func TestLibraryUpdateButtonIgnoresNonPrimaryPresses(t *testing.T) {

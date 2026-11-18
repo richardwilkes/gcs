@@ -11,8 +11,10 @@ package ux
 
 import (
 	"net/url"
+	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -25,6 +27,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/side"
 )
 
 // fakeDragInfo is a minimal drag.Info carrying only a set of data types, letting tests drive the drag callbacks
@@ -276,6 +279,122 @@ func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
 	table.RowFromIndex(1).SetOpen(true)
 	table.SyncToModel()
 	c.True(table.IsRowSelected(2), "the selection must still hold the child once it is disclosed again")
+}
+
+// TestAltDropOntoASelectionIsASingleUndoableEdit drives the whole alternate drop path with several rows selected: a
+// trait modifier released over one of two selected traits must be attached to both, and one undo must take it back off
+// both. The drop is recorded as a single snapshot of the entire table, so nothing has to be done per row for that to
+// hold -- but the drop is also what the undo edit is collected around, so a handler that rebuilt the sheet between the
+// two rows would leave the edit pointed at a table that no longer holds either of them. Since one undo of a whole-table
+// snapshot would clear both traits even if the handler had pushed an edit per row, the undo stack is checked to be
+// exhausted by that one undo, and the redo stack by the one redo.
+func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
+
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	first := gurps.NewTrait(entity, nil, false)
+	first.Name = "Claws"
+	second := gurps.NewTrait(entity, nil, false)
+	second.Name = "Fangs"
+	entity.Traits = []*gurps.Trait{first, second}
+	sheet.Rebuild(true)
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.False(mgr.CanUndo(), "the sheet must start out with nothing to undo")
+	c.Equal(1, table.LastRowIndex(), "the sheet must show both traits")
+
+	// Stand in for the drag out of a trait modifiers table, which is the only thing that ever fills this in.
+	dropped := gurps.NewTraitModifier(nil, nil, false)
+	dropped.Name = "Dropped"
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	draggedTableData = &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+
+	table.SelectByIndex(0, 1)
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	where := geom.Point{X: 1, Y: table.RowFrame(0).CenterY()}
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None),
+		"entering over a selected row must offer to copy the modifier")
+	c.True(table.DropCallback(di, where, mod.None), "the drop must be handled")
+
+	c.Equal(2, len(entity.Traits), "the drop must not add or remove any traits")
+	for _, trait := range entity.Traits {
+		c.Equal(1, len(trait.Modifiers), "every selected trait must receive the dropped modifier: "+trait.Name)
+	}
+	c.True(mgr.CanUndo(), "the drop must have registered an undo edit")
+
+	mgr.Undo()
+	c.Equal(2, len(entity.Traits), "undo must leave the traits themselves alone")
+	for _, trait := range entity.Traits {
+		c.Equal(0, len(trait.Modifiers), "a single undo must take the modifier off every trait: "+trait.Name)
+	}
+	c.False(mgr.CanUndo(), "one undo must exhaust the drop's edits, since it was recorded as a single edit")
+
+	c.True(mgr.CanRedo(), "the drop must be redoable")
+	mgr.Redo()
+	for _, trait := range entity.Traits {
+		c.Equal(1, len(trait.Modifiers), "a single redo must put the modifier back on every trait: "+trait.Name)
+	}
+	c.False(mgr.CanRedo(), "one redo must exhaust the drop's edits, since it was recorded as a single edit")
+}
+
+// TestAltDropWithACanceledPromptLeavesNothingBehind verifies that a modifier drop whose nameables prompt is canceled
+// leaves nothing behind: the target keeps the modifiers it had, no edit is recorded, and the sheet is neither marked
+// as modified, rebuilt, re-synced nor timestamped.
+func TestAltDropWithACanceledPromptLeavesNothingBehind(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
+	shown := 0
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
+		shown++
+		return false
+	}))
+
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Claws"
+	existing := gurps.NewTraitModifier(nil, nil, false)
+	existing.Name = "Sharp"
+	trait.AddModifiers(existing)
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	sheet.markUnmodified()
+	stamp := jio.Time(time.Date(2020, time.January, 2, 3, 4, 5, 0, time.UTC))
+	entity.ModifiedOn = stamp
+	table := sheet.Traits.Table
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	counter := installSyncCounter(sheet)
+
+	// The nameable key brings the prompt up; the switchable feature would make a premature rebuild replace the table.
+	dropped := newSwitchableTraitModifier("@Material@ Coating")
+	modTable := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	draggedTableData = &unison.TableDragData[*Node[*gurps.TraitModifier]]{
+		Table: modTable,
+		Rows:  []*Node[*gurps.TraitModifier]{NewNode(modTable, nil, dropped, false)},
+	}
+	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
+	where := geom.Point{X: 1, Y: table.RowFrame(0).CenterY()}
+	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "entering over a row must offer to copy the modifier")
+	c.True(table.DropCallback(di, where, mod.None), "the drop must be handled, canceled or not")
+
+	c.Equal(1, shown, "the nameables prompt must have been shown")
+	c.Equal([]string{"Sharp"}, appliedModifierNames(trait.Modifiers), "the target must keep the modifiers it had")
+	c.False(mgr.CanUndo(), "a canceled drop must leave nothing to undo")
+	c.False(sheet.Modified(), "a canceled drop must leave the sheet unmodified")
+	c.Equal(stamp, entity.ModifiedOn, "a canceled drop must not bump the modification timestamp")
+	c.Equal(0, counter.count, "a canceled drop must not re-sync the sheet")
+	c.Equal(table, sheet.Traits.Table, "a canceled drop must not rebuild the sheet")
 }
 
 // TestApplyOptionsFor verifies what rows arriving in each kind of document go through, depending on where they came
@@ -762,4 +881,109 @@ func TestDropIntoASheetSyncsTheSheetOnlyOnce(t *testing.T) {
 	template := newTestTemplateWithBodyType("Humanoid")
 	c.Nil(dropRebuilder(template.Traits.Table), "a drop into a template's list is not reported by a rebuild")
 	c.Nil(dropRebuilder(nil), "no table means nothing to rebuild")
+}
+
+// openTestTraitsLibrary opens a library list of the traits in the headless workspace, docked to the left of the open
+// documents so that both are in view, and returns it. It is left unmodified when the test ends.
+func openTestTraitsLibrary(t *testing.T, screen *unison.HeadlessScreen, traits ...*gurps.Trait) *TableDockable[*gurps.Trait] {
+	t.Helper()
+	var library *TableDockable[*gurps.Trait]
+	screen.Do(func() {
+		library = NewTraitTableDockable(filepath.Join(t.TempDir(), "Traits"+gurps.TraitsExt), traits)
+		Workspace.DocumentDock.DockTo(library, nil, side.Left)
+	})
+	t.Cleanup(func() { screen.Do(library.markUnmodified) })
+	return library
+}
+
+// TestDropFromALibraryOntoASheetIsApplied verifies that a row dragged from a library onto a sheet is applied to the
+// sheet the way a copy is, which asks about the row's modifiers before anything reaches the sheet, rather than being
+// added to the list as unison would add it.
+func TestDropFromALibraryOntoASheetIsApplied(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drag leaves its data behind; put the prior data back.
+	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	t.Cleanup(func() { screen.Do(sheet.markUnmodified) })
+	var entity *gurps.Entity
+	var traitCount int
+	screen.Do(func() {
+		entity = sheet.Entity()
+		traitCount = len(entity.Traits)
+	})
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Claws"
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Retractable"
+	modifier.SetDisabled(true)
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	library := openTestTraitsLibrary(t, screen, trait)
+
+	// The sheet takes a drop anywhere on it into the list that holds what is dropped.
+	screen.Drag(cellScreenPoint(t, screen, wnd, library.table, 0, gurps.TraitDescriptionColumn),
+		screen.PanelCenter(sheet), 10)
+
+	var prompts, count int
+	var last string
+	var disabled bool
+	screen.Do(func() {
+		prompts = *shown
+		count = len(entity.Traits)
+		if count != 0 {
+			added := entity.Traits[count-1]
+			last = added.Name
+			disabled = len(added.Modifiers) == 0 || added.Modifiers[0].IsDisabled()
+		}
+	})
+	c.Equal(1, prompts, "the drop must ask about the modifiers of the row arriving from the library")
+	c.Equal(traitCount+1, count, "the drop must add the row to the sheet")
+	c.Equal("Claws", last, "the row must land at the end of the traits list")
+	c.False(disabled, "the answer to the modifier prompt must have been kept")
+}
+
+// TestDropWithinALibraryListMarksItModified verifies that rearranging a library list's rows by dragging marks its tab
+// as modified. A drop into a list with no entity behind it is reported by the table's drop notification rather than by
+// a rebuild (see dropRebuilder), which happens once the drop is done.
+func TestDropWithinALibraryListMarksItModified(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drag leaves its data behind; put the prior data back.
+	traits := make([]*gurps.Trait, 0, 3)
+	for _, name := range []string{"First", "Second", "Third"} {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = name
+		traits = append(traits, trait)
+	}
+	library := openTestTraitsLibrary(t, screen, traits...)
+	var title, tab string
+	screen.Do(func() {
+		title = library.Title()
+		tab = dockTabTitle(library)
+	})
+	c.Equal(title, tab, "the library's tab must start out showing it as unmodified")
+
+	// Releasing over the lower half of the last row puts the dragged row after it.
+	to := cellScreenPoint(t, screen, wnd, library.table, 2, gurps.TraitDescriptionColumn)
+	to.Y += 2
+	screen.Drag(cellScreenPoint(t, screen, wnd, library.table, 0, gurps.TraitDescriptionColumn), to, 10)
+
+	var names []string
+	screen.Do(func() { names = traitNames(ExtractNodeDataFromList(library.table.RootRows())) })
+	c.Equal([]string{"Second", "Third", "First"}, names, "the drag must have moved the first row to the end")
+	// The notification is deferred until the drop handlers have had their turn, so it is waited for.
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		screen.Do(func() { tab = dockTabTitle(library) })
+		if tab != title || time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	c.Equal("*"+title, tab, "the library's tab must show it as modified once the drop is done")
 }

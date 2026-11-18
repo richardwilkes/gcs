@@ -21,9 +21,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestAttrPanelHashReflectsTraitDrivenVisibility verifies that the panel's hash changes when a trait is added, removed,
@@ -211,7 +213,9 @@ func markdownText(md *unison.Markdown) string {
 	return b.String()
 }
 
-// The drawn text is withheld from the node, since macOS would speak both the name and the text.
+// TestAttrPanelPointsFieldsAreSpokenAsPoints verifies that an attribute's points field is spoken as a count of points
+// that follows the attribute, with the drawn text withheld from the node, since macOS would speak both the name and the
+// text.
 func TestAttrPanelPointsFieldsAreSpokenAsPoints(t *testing.T) {
 	c := check.New(t)
 	c.Equal("1 point", spokenPoints(fxp.One))
@@ -345,77 +349,153 @@ func TestAttrPanelShowsAdjustedCurrentValue(t *testing.T) {
 	c.Equal(fxp.Eleven, st.Maximum(), "rested, replacing a range of the value shown edits the maximum")
 }
 
+// TestAttrPanelShowsAdjustedDisplayOnlyValue verifies that the value of a display-only attribute held away from its
+// maximum by a pool threshold is drawn in adjustedInk and spoken as adjusted from the maximum, with the drawn text
+// withheld, since macOS would speak both, and that it is drawn and spoken as before once the threshold no longer
+// applies.
+func TestAttrPanelShowsAdjustedDisplayOnlyValue(t *testing.T) {
+	c := check.New(t)
+	halve := gurps.NewAttributeBonus("shown")
+	halve.Multiply = true
+	halve.Amount = fxp.Half
+	e := tiredEntity(t, halve)
+	e.SheetSettings.Attributes.Set["shown"] = &gurps.AttributeDef{
+		DefID:     "shown",
+		Type:      attribute.IntegerRef,
+		Placement: attribute.Secondary,
+		Name:      "Shown",
+		Base:      "10",
+	}
+	e.Attributes.Set["shown"] = gurps.NewAttribute(e, "shown", len(e.Attributes.Set))
+	fp := e.Attributes.Set[gurps.FatiguePointsID]
+	fp.Damage = 0
+	e.Recalculate()
+	panel := NewSecondaryAttrPanel(e, NewTargetMgr(unison.NewPanel()))
+	field, ok := panel.valueFields["shown"].(*NonEditablePageField)
+	if !ok {
+		t.Fatalf("the value field of a display-only attribute must be a non-editable field, not a %T",
+			panel.valueFields["shown"])
+	}
+	normalInk := field.OnBackgroundInk
+	c.NotEqual(adjustedInk, normalInk, "rested, the value is drawn in the normal ink")
+	// spoken returns the node describing the field, which, as for any static text, is named by the text it draws.
+	spoken := func() *accessibility.Node {
+		text := field.Text.String()
+		node := &accessibility.Node{Role: role.Label, Name: text, Text: &accessibility.TextInfo{Text: text}}
+		field.Accessibility.Callback(node)
+		return node
+	}
+	// drawnInk returns the ink the field's text is drawn in.
+	drawnInk := func() unison.Ink {
+		var ink unison.Ink
+		field.Text.AdjustDecorations(func(d *unison.TextDecoration) { ink = d.OnBackgroundInk })
+		return ink
+	}
+	for _, damage := range []fxp.Int{fxp.Seven, 0} {
+		fp.Damage = damage
+		e.Recalculate()
+		DeepSync(panel)
+		node := spoken()
+		if damage != 0 {
+			c.Equal("5", field.Text.String(), "tired, the current value is halved")
+			c.Equal(adjustedInk, field.OnBackgroundInk, "tired, the value is drawn in adjustedInk")
+			c.Equal(adjustedInk, drawnInk(), "tired, the value is drawn in adjustedInk")
+			c.Equal("5, adjusted from 10", node.Name, "tired, the adjustment is spoken")
+			c.Nil(node.Text, "tired, the drawn text is withheld")
+			continue
+		}
+		c.Equal("10", field.Text.String(), "rested again, the current value is the maximum")
+		c.Equal(normalInk, field.OnBackgroundInk, "rested again, the value is drawn in the normal ink")
+		c.Equal(normalInk, drawnInk(), "rested again, the value is drawn in the normal ink")
+		c.Equal("10", node.Name, "rested again, the value alone is spoken")
+		c.NotNil(node.Text, "rested again, the drawn text is left alone")
+	}
+}
+
 // TestAttrPanelStandInLimitedBonusesAreNotAdjustments verifies that the value field of an attribute standing in for
-// Lifting ST, whose current value takes the lifting-only ST bonuses as part of the value, as the lifting ST the sheet
-// works out without it does, is drawn in the normal ink and neither named nor spoken as adjusted while no threshold or
-// multiplier alters it, even when it allows decimals and its current value drops the fraction its maximum has, and
-// that it is once the factory Tired threshold halves lifting ST.
+// Striking ST, Lifting ST or Throwing ST, whose current value takes the ST bonuses limited to that use as part of the
+// value, as the ST the sheet works out for that use without it does, is drawn in the normal ink and neither named nor
+// spoken as adjusted while no threshold or multiplier alters it, even when it allows decimals and its current value
+// drops the fraction its maximum has, and that it is once the factory Tired threshold halves lifting ST.
 func TestAttrPanelStandInLimitedBonusesAreNotAdjustments(t *testing.T) {
-	for _, one := range []struct {
-		name    string
-		typ     attribute.Type
-		base    string
-		maximum string
+	for _, standIn := range []struct {
+		id         string
+		name       string
+		limitation stlimit.Option
 	}{
-		{name: "integer", typ: attribute.Integer, base: "$st", maximum: "10"},
-		{name: "decimal", typ: attribute.Decimal, base: "$st + 0.5", maximum: "10.5"},
+		{id: gurps.StrikingStrengthID, name: "Striking ST", limitation: stlimit.StrikingOnly},
+		{id: gurps.LiftingStrengthID, name: "Lifting ST", limitation: stlimit.LiftingOnly},
+		{id: gurps.ThrowingStrengthID, name: "Throwing ST", limitation: stlimit.ThrowingOnly},
 	} {
-		t.Run(one.name, func(t *testing.T) {
-			c := check.New(t)
-			e := gurps.NewEntity()
-			e.SheetSettings.Attributes.Set[gurps.LiftingStrengthID] = &gurps.AttributeDef{
-				DefID: gurps.LiftingStrengthID,
-				Type:  one.typ,
-				Name:  "Lifting ST",
-				Base:  one.base,
-			}
-			e.Attributes.Set[gurps.LiftingStrengthID] = gurps.NewAttribute(e, gurps.LiftingStrengthID,
-				len(e.Attributes.Set))
-			trait := gurps.NewTrait(e, nil, false)
-			trait.Name = "Lifting Harness"
-			bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-			bonus.Amount = fxp.Two
-			bonus.Limitation = stlimit.LiftingOnly
-			trait.Features = gurps.Features{bonus}
-			e.Traits = append(e.Traits, trait)
-			e.Recalculate()
-			panel := NewSecondaryAttrPanel(e, NewTargetMgr(unison.NewPanel()))
-			var field *unison.Field
-			switch f := panel.valueFields[gurps.LiftingStrengthID].(type) {
-			case *IntegerField:
-				field = f.Field
-			case *DecimalField:
-				field = f.Field
-			default:
-				t.Fatalf("the lifting ST value field must be a numeric field, not a %T", f)
-			}
-			spokenName := func() string {
-				node := &accessibility.Node{Name: "Lifting ST"}
-				field.Accessibility.Callback(node)
-				return node.Name
-			}
-			normalInk := field.OnEditableInk
+		for _, one := range []struct {
+			name    string
+			typ     attribute.Type
+			base    string
+			maximum string
+		}{
+			{name: "integer", typ: attribute.Integer, base: "$st", maximum: "10"},
+			{name: "decimal", typ: attribute.Decimal, base: "$st + 0.5", maximum: "10.5"},
+		} {
+			t.Run(standIn.name+" "+one.name, func(t *testing.T) {
+				c := check.New(t)
+				e := gurps.NewEntity()
+				e.SheetSettings.Attributes.Set[standIn.id] = &gurps.AttributeDef{
+					DefID: standIn.id,
+					Type:  one.typ,
+					Name:  standIn.name,
+					Base:  one.base,
+				}
+				e.Attributes.Set[standIn.id] = gurps.NewAttribute(e, standIn.id, len(e.Attributes.Set))
+				trait := gurps.NewTrait(e, nil, false)
+				trait.Name = "Harness"
+				bonus := gurps.NewAttributeBonus(gurps.StrengthID)
+				bonus.Amount = fxp.Two
+				bonus.Limitation = standIn.limitation
+				trait.Features = gurps.Features{bonus}
+				e.Traits = append(e.Traits, trait)
+				e.Recalculate()
+				panel := NewSecondaryAttrPanel(e, NewTargetMgr(unison.NewPanel()))
+				var field *unison.Field
+				switch f := panel.valueFields[standIn.id].(type) {
+				case *IntegerField:
+					field = f.Field
+				case *DecimalField:
+					field = f.Field
+				default:
+					t.Fatalf("the %s value field must be a numeric field, not a %T", standIn.name, f)
+				}
+				spokenName := func() string {
+					node := &accessibility.Node{Name: standIn.name}
+					field.Accessibility.Callback(node)
+					return node.Name
+				}
+				normalInk := field.OnEditableInk
 
-			c.Equal("12", field.Text(), "the current value takes the lifting-only ST bonus")
-			tip := tooltipText(field.Tooltip)
-			c.Contains(tip, "Lifting Harness [+2]", "the tooltip names the lifting-only ST bonus")
-			c.NotContains(tip, "Adjusted from", "a lifting-only ST bonus is not an adjustment")
-			c.Equal("Lifting ST", spokenName(), "a lifting-only ST bonus is not spoken as an adjustment")
-			c.NotEqual(adjustedInk, field.OnEditableInk, "a lifting-only ST bonus is not drawn in adjustedInk")
+				c.Equal("12", field.Text(), "the current value takes the limited ST bonus")
+				tip := tooltipText(field.Tooltip)
+				c.Contains(tip, "Harness [+2]", "the tooltip names the limited ST bonus")
+				c.NotContains(tip, "Adjusted from", "a limited ST bonus is not an adjustment")
+				c.Equal(standIn.name, spokenName(), "a limited ST bonus is not spoken as an adjustment")
+				c.NotEqual(adjustedInk, field.OnEditableInk, "a limited ST bonus is not drawn in adjustedInk")
+				if standIn.limitation != stlimit.LiftingOnly {
+					return // The factory Tired threshold halves lifting ST alone.
+				}
 
-			e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Seven
-			e.Recalculate()
-			DeepSync(panel)
-			c.Equal("6", field.Text(), "tired, the current value is halved")
-			c.Contains(tooltipText(field.Tooltip), "Adjusted from "+one.maximum, "tired, the tooltip names the maximum")
-			c.Equal("Lifting ST, adjusted from "+one.maximum, spokenName(), "tired, the adjustment is spoken")
-			c.Equal(adjustedInk, field.OnEditableInk, "tired, the value is drawn in adjustedInk")
+				e.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Seven
+				e.Recalculate()
+				DeepSync(panel)
+				c.Equal("6", field.Text(), "tired, the current value is halved")
+				c.Contains(tooltipText(field.Tooltip), "Adjusted from "+one.maximum,
+					"tired, the tooltip names the maximum")
+				c.Equal(standIn.name+", adjusted from "+one.maximum, spokenName(), "tired, the adjustment is spoken")
+				c.Equal(adjustedInk, field.OnEditableInk, "tired, the value is drawn in adjustedInk")
 
-			e.Attributes.Set[gurps.FatiguePointsID].Damage = 0
-			e.Recalculate()
-			DeepSync(panel)
-			c.Equal(normalInk, field.OnEditableInk, "rested, the value is drawn in the normal ink again")
-		})
+				e.Attributes.Set[gurps.FatiguePointsID].Damage = 0
+				e.Recalculate()
+				DeepSync(panel)
+				c.Equal(normalInk, field.OnEditableInk, "rested, the value is drawn in the normal ink again")
+			})
+		}
 	}
 }
 
@@ -451,7 +531,7 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	}
 	c.Equal("[TIRED]", strings.ToUpper(label.Text.String()))
 	c.Equal(adjustedInk, stateInk(), "a threshold with features is drawn in adjustedInk")
-	md := findMarkdown(label.Tooltip)
+	md, _ := uxtest.FirstPanelOfType[*unison.Markdown](label.Tooltip)
 	c.NotNil(md, "the tooltip must hold the explanation")
 	text := markdownText(md)
 	c.True(strings.HasPrefix(text, "Move, Dodge and ST are halved"), "the explanation leads the tooltip: %s", text)
@@ -472,4 +552,65 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 	panel.Sync()
 	c.Equal("[UNNAMED THRESHOLD]", strings.ToUpper(panel.stateLabels[gurps.FatiguePointsID].Text.String()),
 		"a threshold with no state is named as tooltips name it")
+}
+
+// TestAttrPanelSeparatorShowsAndHidesItsSection verifies that a click on a separator's button hides the attributes that
+// follow it, which start out shown, and that another click shows them again.
+func TestAttrPanelSeparatorShowsAndHidesItsSection(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	e := gurps.NewEntity()
+	e.SheetSettings.Attributes.Set["sep"] = &gurps.AttributeDef{
+		DefID: "sep",
+		Type:  attribute.SecondarySeparator,
+		Name:  "Extras",
+		Order: 1000,
+	}
+	e.SheetSettings.Attributes.Set["extra"] = &gurps.AttributeDef{
+		DefID:     "extra",
+		Type:      attribute.Integer,
+		Placement: attribute.Secondary,
+		Name:      "Extra",
+		Base:      "10",
+		Order:     1001,
+	}
+	e.Attributes.Set["extra"] = gurps.NewAttribute(e, "extra", 1001)
+	e.Recalculate()
+	var panel *AttrPanel
+	screen.Do(func() {
+		sheet := NewSheet("test"+gurps.SheetExt, e)
+		DisplayNewDockable(sheet)
+		for _, one := range uxtest.PanelsOfType[*AttrPanel](sheet.AsPanel()) {
+			if one.kind == gurps.SecondaryAttrKind {
+				panel = one
+			}
+		}
+	})
+	if panel == nil {
+		t.Fatal("the sheet shows the secondary attributes")
+	}
+	// shown returns the IDs of the attributes the panel shows, of those around the separator.
+	shown := func() []string {
+		var ids []string
+		screen.Do(func() {
+			for _, id := range []string{"will", "extra"} {
+				if _, ok := panel.nameLabels[id]; ok {
+					ids = append(ids, id)
+				}
+			}
+		})
+		return ids
+	}
+	all := []string{"will", "extra"}
+	c.Equal(all, shown(), "the attributes after the separator start out shown")
+	for _, want := range [][]string{{"will"}, all} {
+		screen.Do(func() {
+			buttons := uxtest.PanelsOfType[*unison.Button](panel.AsPanel())
+			c.Equal(1, len(buttons), "the separator alone has a button")
+			if len(buttons) == 1 {
+				buttons[0].ClickCallback()
+			}
+		})
+		c.Equal(want, shown(), "a click on the separator's button shows or hides what follows it")
+	}
 }

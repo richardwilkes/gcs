@@ -86,6 +86,15 @@ func TestEncumbrancePanelSpeaksTheCurrentLevel(t *testing.T) {
 	node = &accessibility.Node{Text: &accessibility.TextInfo{Text: "0"}}
 	panel.levels[0].Accessibility.Callback(node)
 	c.NotNil(node.Text, "a row that is not current keeps its drawn text")
+
+	// Carrying the extra-heavy limit itself is not carrying more than the maximum load.
+	eq.BaseWeight = "200 lb"
+	entity.Recalculate()
+	panel.Sync()
+	c.Equal(last, panel.current)
+	c.False(panel.overloaded, "carrying exactly the maximum load is no overload")
+	levels, _ = spoken()
+	c.Equal("Current Encumbrance Level 4", levels[last])
 }
 
 // The encumbrance block finds the current level when it is synced rather than as it is drawn, so a block built for a

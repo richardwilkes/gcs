@@ -18,8 +18,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, and saving it
-// writes back to the file without needing to be told where.
+// A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, saving it writes
+// back to the file without needing to be told where, and it follows the file when the file is renamed.
 func TestOpenDockableFromFile(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -49,6 +49,11 @@ func TestOpenDockableFromFile(t *testing.T) {
 
 	_, err = NewTraitTableDockableFromFile(filepath.Join(t.TempDir(), "missing"+gurps.TraitsExt))
 	c.HasError(err, "opening a file that does not exist must fail")
+
+	renamed := filepath.Join(filepath.Dir(p), "renamed"+gurps.TraitsExt)
+	d.SetBackingFilePath(renamed)
+	c.Equal(renamed, d.BackingFilePath(), "the dockable follows its file to its new path")
+	c.Equal("renamed", d.Title())
 }
 
 // A sheet, loot sheet or template that has never been saved takes its file name from the name of its content, and only
@@ -119,27 +124,36 @@ func TestFileViewerIsNeverModified(t *testing.T) {
 	c.True(ok, "an image dockable must have a dock key, so that it can be restored with the workspace")
 	c.Equal(filePrefix+p, keyed.DockKey())
 
+	md := filepath.Join(filepath.Dir(p), "notes.md")
+	c.NoError(os.WriteFile(md, []byte("# Notes\n"), 0o600))
+	readOnlyFile, err := NewMarkdownDockable(md, false, false)
+	c.NoError(err)
+	c.False(readOnlyFile.Modified())
+	c.Equal("notes", readOnlyFile.Title())
+	c.Equal(md, readOnlyFile.Tooltip())
+
 	readOnly := NewMarkdownDockableWithContent("Read Me", "# Hello\n", false, false)
 	c.False(readOnly.Modified())
 	c.Equal("Read Me", readOnly.Title())
 	c.Equal("", readOnly.Tooltip(), "content that is not in a file has no path to show")
 }
 
-// Saving an edited markdown file writes the edited content back to it and clears the modified state, which is what the
-// hash over its content is for.
-func TestMarkdownDockableSaves(t *testing.T) {
+// TestSanitizeFileName pins how a name is made into a file name: each character a platform takes for a path separator
+// becomes an underscore, a name that would make a hidden file gets one ahead of its dot, and a name that is empty or
+// names a folder is replaced by a word.
+func TestSanitizeFileName(t *testing.T) {
 	c := check.New(t)
-	p := filepath.Join(t.TempDir(), "notes.md")
-	c.NoError(os.WriteFile(p, []byte("# Title\n"), 0o600))
-	dockable, err := NewMarkdownDockable(p, true, false)
-	c.NoError(err)
-	d, ok := dockable.(*MarkdownDockable)
-	c.True(ok)
-	d.content += "\nMore text.\n"
-	c.True(d.Modified())
-	c.True(d.save(false))
-	c.False(d.Modified(), "the content must not be reported as modified once it has been saved")
-	data, err := os.ReadFile(p)
-	c.NoError(err)
-	c.Equal("# Title\n\nMore text.\n", string(data))
+	for _, tc := range []struct {
+		name string
+		want string
+	}{
+		{name: "Warrior Mage", want: "Warrior Mage"},
+		{name: `a:b/c\d`, want: "a_b_c_d"},
+		{name: ".hidden", want: "_.hidden"},
+		{name: "", want: "unnamed"},
+		{name: ".", want: "dot"},
+		{name: "..", want: "dotdot"},
+	} {
+		c.Equal(tc.want, sanitizeFileName(tc.name), "%q", tc.name)
+	}
 }

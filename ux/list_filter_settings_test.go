@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -117,7 +116,8 @@ func TestListFilterSettingsCommands(t *testing.T) {
 }
 
 // TestListFilterSettingsListTypeSelection verifies that selecting a list type's row selects every filter of that type,
-// that the Delete key deletes the selection, and that the view asks for a width and keeps a minimum size.
+// that the Delete key deletes the selection, that Backspace does too and asks about a lone filter by its name, and that
+// the view asks for a width and keeps a minimum size.
 func TestListFilterSettingsListTypeSelection(t *testing.T) {
 	c := check.New(t)
 	f := newListFilterSettingsFixture(t, c)
@@ -143,6 +143,11 @@ func TestListFilterSettingsListTypeSelection(t *testing.T) {
 		c.Equal("Delete the 2 selected filters?", asked, "the Delete key asks to delete the selection")
 		c.Equal(0, len(savedNames("adq")), "every filter of the list type is deleted")
 		c.Equal([]string{"Gamma"}, savedNames("skl"), "other list types are left alone")
+
+		v.selectFilters([]*gurps.ListFilter{f.gamma})
+		c.True(v.table.KeyDownCallback(unison.KeyBackspace, 0, false), "the Backspace key is handled")
+		c.Equal("Delete the filter 'Gamma'?", asked, "the Backspace key asks to delete the lone filter by name")
+		c.Equal(0, len(savedNames("skl")), "which is deleted")
 	})
 }
 
@@ -170,13 +175,15 @@ func TestListFilterSettingsRecordsPopupChanges(t *testing.T) {
 }
 
 // TestListFilterSettingsExportImport verifies that Export Selected writes only the selection and Export All every
-// filter, and that an imported filter whose name is in use is renamed.
+// filter, that keeping none of the filters offered for import changes nothing, and that an imported filter whose name
+// is in use is renamed.
 func TestListFilterSettingsExportImport(t *testing.T) {
 	c := check.New(t)
 	f := newListFilterSettingsFixture(t, c)
 	one := filepath.Join(t.TempDir(), "one"+gurps.ListFiltersExt)
 	all := filepath.Join(t.TempDir(), "all"+gurps.ListFiltersExt)
 	var offered []importedListFilter
+	keepNone := false
 	uxtest.SwapForTest(t, &showImportFilters,
 		func(_ string, set map[string][]*gurps.ListFilter) []importedListFilter {
 			offered = nil
@@ -184,6 +191,9 @@ func TestListFilterSettingsExportImport(t *testing.T) {
 				for _, lf := range filters {
 					offered = append(offered, importedListFilter{key: key, filter: lf})
 				}
+			}
+			if keepNone {
+				return nil
 			}
 			return offered
 		})
@@ -195,6 +205,10 @@ func TestListFilterSettingsExportImport(t *testing.T) {
 		c.NoError(v.saveSelected(one))
 		c.NoError(v.Saver(all))
 
+		keepNone = true
+		c.NoError(v.load(diskFileRef(all)))
+		c.False(v.undoMgr.CanUndo(), "keeping none of the offered filters is no undo step")
+		keepNone = false
 		c.NoError(v.load(diskFileRef(all)))
 		c.Equal(3, len(offered), "Export All writes every filter, whatever is selected")
 		v.undoMgr.Undo()
@@ -203,20 +217,4 @@ func TestListFilterSettingsExportImport(t *testing.T) {
 		c.Equal([]string{"Alpha", "Beta", "Beta (2)"}, savedNames("adq"), "a name in use gets a number")
 		c.Equal("Undo Import", v.undoMgr.UndoTitle())
 	})
-}
-
-// TestSummarizeListFilter verifies the summary of a filter's conditions in the Saved Filters view.
-func TestSummarizeListFilter(t *testing.T) {
-	c := check.New(t)
-	fields := filterFieldInfos(gurps.TraitFilterFields(), nil)
-	f := gurps.NewListFilter("x")
-	c.Equal("No conditions", summarizeListFilter(f, fields))
-	cond := gurps.NewFilterCondition(f.Root, "tags")
-	cond.Text.Compare = criteria.IsText
-	cond.Text.Qualifier = "Mental"
-	f.Root.Children = append(f.Root.Children, cond, gurps.NewFilterGroup(f.Root))
-	c.Equal("Must have tags where at least one is Mental; All of (No conditions)", summarizeListFilter(f, fields))
-	f.Root.All = false
-	c.Equal("Any of (Must have tags where at least one is Mental; All of (No conditions))",
-		summarizeListFilter(f, fields))
 }

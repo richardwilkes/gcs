@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/unison"
 )
 
 // A disabled skill, spell or piece of equipment offers none of the increment and decrement adjustments, in either
@@ -113,4 +114,41 @@ func TestQuantityCommandsSkipGroups(t *testing.T) {
 	adjustQuantity(sheet, table, true)
 	c.Equal(fxp.FromInteger(2), item.Quantity, "the item must be incremented")
 	c.Equal(fxp.One, group.Quantity, "the group must be left at one")
+}
+
+// TestQuantityCommandsStepToWholeNumbers verifies that Increment and Decrement move a quantity to the next whole number
+// up or down, that Decrement isn't offered once nothing is left, and that undo puts the quantity back.
+func TestQuantityCommandsStepToWholeNumbers(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		quantity  fxp.Int
+		increment bool
+		offered   bool
+		want      fxp.Int
+	}{
+		{name: "increment a whole number", quantity: fxp.Two, increment: true, offered: true, want: fxp.Three},
+		{name: "increment a fraction", quantity: fxp.TwoAndAHalf, increment: true, offered: true, want: fxp.Three},
+		{name: "decrement a whole number", quantity: fxp.Two, offered: true, want: fxp.One},
+		{name: "decrement a fraction", quantity: fxp.TwoAndAHalf, offered: true, want: fxp.Two},
+		{name: "decrement a fraction of one", quantity: fxp.Half, offered: true, want: 0},
+		{name: "decrement nothing", quantity: 0, want: 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			item := gurps.NewEquipment(nil, nil, false)
+			item.Quantity = tc.quantity
+			sheet := newTestSheetWithEquipment(t, item)
+			table := sheet.CarriedEquipment.Table
+			table.SetSelectionMap(map[tid.TID]bool{item.ID(): true})
+			c.Equal(tc.offered, canAdjustQuantity(table, tc.increment), "whether the command is offered")
+			adjustQuantity(sheet, table, tc.increment)
+			c.Equal(tc.want, item.Quantity, "the adjusted quantity")
+			mgr := unison.UndoManagerFor(table)
+			c.Equal(tc.offered, mgr.CanUndo(), "whether the adjustment is undoable")
+			if tc.offered {
+				mgr.Undo()
+				c.Equal(tc.quantity, item.Quantity, "undo must put the quantity back")
+			}
+		})
+	}
 }

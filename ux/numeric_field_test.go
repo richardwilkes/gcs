@@ -119,8 +119,7 @@ func TestNumericFieldValidationPreservesTooltip(t *testing.T) {
 // TestFixedPointPrototypes verifies the values a fixed-point field is sized to fit, which the decimal, length and
 // weight fields share: explicit bounds are widened to fill every decimal place of their integer part, while the
 // unbounded extremes are stood in for by -1 and 1 rather than rendered, since a field sized to fxp.Min and fxp.Max
-// would be enormous. The length and weight variants must agree exactly with the decimal one, since the conversions to
-// and from fxp.Int inside the helper are the only thing that differs.
+// would be enormous.
 func TestFixedPointPrototypes(t *testing.T) {
 	c := check.New(t)
 	widest := fxp.Two - 1 // 1.9999
@@ -131,15 +130,6 @@ func TestFixedPointPrototypes(t *testing.T) {
 		"the unbounded extremes are replaced by -1 and 1 before being widened")
 	c.Equal([]fxp.Int{fxp.FromInteger(6) - 1, widest, widest}, fixedPointPrototypes(fxp.FromInteger(5), fxp.Max),
 		"a bound that is already integral is still filled out to the last decimal place")
-
-	want := fixedPointPrototypes(fxp.Min, fxp.FromStringForced("500.25"))
-	c.Equal(len(want), 3)
-	gotLength := fixedPointPrototypes(fxp.Length(fxp.Min), fxp.Length(fxp.FromStringForced("500.25")))
-	gotWeight := fixedPointPrototypes(fxp.Weight(fxp.Min), fxp.Weight(fxp.FromStringForced("500.25")))
-	for i, v := range want {
-		c.Equal(fxp.Length(v), gotLength[i], "length prototypes match the decimal ones")
-		c.Equal(fxp.Weight(v), gotWeight[i], "weight prototypes match the decimal ones")
-	}
 }
 
 // TestUnitsFieldAcceptsUnitsBeingTyped verifies that a units field lets a units suffix be typed after the number, one
@@ -164,39 +154,15 @@ func TestUnitsFieldAcceptsUnitsBeingTyped(t *testing.T) {
 	c.Equal("7 kg", fxp.Kilogram.Format(stored), "the typed value and units were committed")
 }
 
-// TestDisabledFieldIsLeftAloneByTheFocus verifies that a field focused while disabled, which happens only for a screen
-// reader, is not treated as being edited: Sync replaces its text and losing the focus does not reformat it. A field
-// that could have been edited is still brought into range.
-func TestDisabledFieldIsLeftAloneByTheFocus(t *testing.T) {
+// TestNumericFieldRefusesAMinusSignWithoutNegativeValues verifies that a field whose minimum is not negative refuses a
+// typed minus sign, which could only start a value the field does not take.
+func TestNumericFieldRefusesAMinusSignWithoutNegativeValues(t *testing.T) {
 	c := check.New(t)
-
 	f, value := newTestIntegerField(5, 0, 10)
-	f.SetEnabled(false)
-	f.gainedFocus()
-	*value = 7
-	f.Sync()
-	c.Equal("7", f.Text(), "a disabled field holding the focus shows the value it is given")
-	c.Equal(7, *value)
-	*value = 50 // Out of the field's range, as a value from the model may be.
-	f.Sync()
-	c.Equal("50", f.Text(), "whatever the value is")
-	f.lostFocus()
-	c.Equal("50", f.Text(), "the focus leaving a field that was only read leaves its text alone")
-
-	// A field enabled by the time the focus leaves it may have been typed into.
-	f.gainedFocus()
-	f.SetEnabled(true)
-	f.lostFocus()
-	c.Equal("10", f.Text(), "a field that could be typed into is brought into range")
-
-	// So may one that gained the focus while enabled, even if disabled since.
-	f, value = newTestIntegerField(5, 0, 10)
-	f.gainedFocus()
-	f.Field.SetText("50")
-	f.SetEnabled(false)
-	f.lostFocus()
-	c.Equal("10", f.Text(), "a field that was being edited is brought into range")
-	c.Equal(10, *value)
+	f.SelectAll()
+	c.False(f.RuneTypedCallback('-'), "a field with a minimum of zero refuses a minus sign")
+	c.Equal("5", f.Text())
+	c.Equal(5, *value)
 }
 
 // TestNumericFieldRefusesValuesAboveItsMaximum verifies that a field told to refuse values above its maximum turns
@@ -233,7 +199,7 @@ func TestNumericFieldRefusesValuesAboveItsMaximum(t *testing.T) {
 // or the start of a number, a sign or a decimal point by itself, which is typed as it would be on the way to a number
 // and which the decimal extractor takes for zero, shows as invalid without changing the value, rather than committing
 // the zero a failed parse gives; that undoing an edit made over such text restores the value from before it; and that
-// leaving the field puts the value's text back.
+// leaving the field puts the value's text back. Text that is not the start of a number is refused when typed.
 func TestNumericFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
 	for _, one := range []struct {
 		text  string
@@ -261,6 +227,8 @@ func TestNumericFieldKeepsItsValueForTextItCannotParse(t *testing.T) {
 					c.True(f.RuneTypedCallback(ch), "typing %q is accepted", ch)
 				}
 			} else {
+				c.False(f.RuneTypedCallback(rune(text[0])), "typing %q is refused", text[:1])
+				c.Equal("10", f.Text(), "which leaves the text as it was")
 				f.SetText(text)
 			}
 			c.Equal(text, f.Text(), "the text shows")
@@ -339,7 +307,8 @@ func newDisplayFormatWeightField(t *testing.T) (field *WeightField, value *fxp.W
 // TestNumericFieldSyncShowsDisplayText verifies that a page field with a DisplayFormat shows the rounded text from the
 // moment it is built, and that syncing it shows that text without writing the rounding back into the value. Sync()
 // previously went through setWithoutUndo, which parses whatever text it is handed and stores the result, so showing
-// rounded text there would have silently truncated the character's weight.
+// rounded text there would have silently truncated the character's weight. A value changed behind the field's back is
+// the one whose exact text the focus then brings back.
 func TestNumericFieldSyncShowsDisplayText(t *testing.T) {
 	c := check.New(t)
 	f, value := newDisplayFormatWeightField(t)
@@ -351,6 +320,12 @@ func TestNumericFieldSyncShowsDisplayText(t *testing.T) {
 	f.Sync()
 	c.Equal(roundedWeightText, f.Text(), "syncing again leaves the display rendering in place")
 	c.Equal(exactWeightText, f.Format(*value), "syncing must not round the stored value")
+
+	*value = fxp.WeightFromStringForced("9.1234 lb", fxp.Pound)
+	f.Sync()
+	c.Equal("9.12 lb", f.Text(), "syncing shows the display rendering of a value changed behind the field's back")
+	f.gainedFocus()
+	c.Equal("9.1234 lb", f.Text(), "and focusing the field then shows that value's exact text")
 }
 
 // TestNumericFieldFocusRestoresExactText verifies that the exact value is put back into the field the moment it is

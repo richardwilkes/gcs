@@ -12,10 +12,7 @@ package ux
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
 	"go/token"
-	"io/fs"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -30,35 +27,10 @@ import (
 // does.
 func TestNoDiscardedConstructorResults(t *testing.T) {
 	c := check.New(t)
-	root, err := filepath.Abs("..")
-	c.NoError(err, "the module root must be locatable")
-
-	fileSet := token.NewFileSet()
 	files := 0
 	var discarded []string
-	c.NoError(filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			// Skip anything that isn't our own source.
-			if name := d.Name(); path != root && (strings.HasPrefix(name, ".") || name == "testdata") {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		if !strings.HasSuffix(path, ".go") {
-			return nil
-		}
-		file, parseErr := parser.ParseFile(fileSet, path, nil, 0)
-		if parseErr != nil {
-			return parseErr
-		}
+	walkModuleSources(c, func(fileSet *token.FileSet, rel string, file *ast.File) {
 		files++
-		rel, relErr := filepath.Rel(root, path)
-		if relErr != nil {
-			rel = path
-		}
 		pkgNames := importedPackageNames(file)
 		ast.Inspect(file, func(node ast.Node) bool {
 			stmt, ok := node.(*ast.ExprStmt)
@@ -81,8 +53,7 @@ func TestNoDiscardedConstructorResults(t *testing.T) {
 				pkg.Name, sel.Sel.Name))
 			return true
 		})
-		return nil
-	}), "the source tree must be walkable")
+	})
 	c.Equal(0, len(discarded), "these constructors have their result discarded; remove the call or keep what it "+
 		"builds:\n%s", strings.Join(discarded, "\n"))
 	c.True(files > 100, "the walk should have found the source files, but only saw %d", files)

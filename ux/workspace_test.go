@@ -11,6 +11,7 @@ package ux
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -165,6 +166,119 @@ func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	c.True(restored, "restoring with no documents must report that the navigator was given the focus")
 	c.True(navigatorTableFocused, "restoring with no documents must hand the focus to the navigator's table")
 	c.Equal(0, open, "restoring a dock state without files must open nothing")
+}
+
+// TestClosingTheWorkspaceSettlesDocumentsNeverSaved verifies that closing the workspace asks whether to save a modified
+// document that has never been saved, and stays open with the document when that is canceled. The documents never
+// saved are closed rather than recorded in the dock state, since there is no file to reopen them from.
+func TestClosingTheWorkspaceSettlesDocumentsNeverSaved(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	global := gurps.GlobalSettings()
+	uxtest.SwapForTest(t, &global.TopDockState, nil)
+	uxtest.SwapForTest(t, &global.DocDockState, nil)
+	uxtest.SwapForTest(t, &global.OpenInWindow, nil) // The documents must land in the dock for the dock state to see them.
+
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var modified, allowed bool
+	screen.Do(func() {
+		sheet.Entity().Profile.Name = "Changed"
+		modified = sheet.Modified()
+	})
+	c.True(modified, "the sheet must have unsaved changes for the workspace to ask about")
+	returned := false
+	c.True(screen.Post(func() {
+		allowed = isWorkspaceAllowedToClose()
+		returned = true
+	}))
+	screen.Sync()
+	_, dialog := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var open int
+	var recorded bool
+	screen.Do(func() {
+		open = len(AllDockables())
+		recorded = global.DocDockState != nil
+	})
+	c.True(returned, "the close has been decided")
+	c.False(allowed, "canceling the save must keep the workspace open")
+	c.Equal(1, open, "canceling the save must leave the sheet open")
+	c.False(recorded, "a canceled close must record nothing")
+
+	screen.Do(sheet.markUnmodified)
+	uxtest.OpenedByAction(t, screen, newTraitsLibraryAction)
+	var keys []string
+	screen.Do(func() {
+		allowed = isWorkspaceAllowedToClose()
+		open = len(AllDockables())
+		keys = dockStateKeys(global.DocDockState)
+	})
+	c.True(allowed, "the workspace must be allowed to close")
+	c.Equal(0, open, "closing the workspace must close the documents never saved")
+	for _, key := range keys {
+		c.False(strings.HasPrefix(key, filePrefix), "a document never saved must not be recorded: %s", key)
+	}
+}
+
+// TestClosingAModifiedDocumentFollowsTheSavePrompt verifies that closing a document with unsaved changes asks whether
+// to save them: saving writes them to the document's file and closes it, while canceling leaves it open with its
+// changes unwritten.
+func TestClosingAModifiedDocumentFollowsTheSavePrompt(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil)
+	for _, one := range []struct {
+		name     string
+		response int
+		closed   bool
+	}{
+		{name: "save", response: unison.ModalResponseOK, closed: true},
+		{name: "cancel", response: unison.ModalResponseCancel},
+	} {
+		path := filepath.Join(t.TempDir(), "sheet"+gurps.SheetExt)
+		c.NoError(gurps.NewEntity().Save(path))
+		var sheet *Sheet
+		var modified bool
+		screen.Do(func() {
+			OpenFiles([]string{path})
+			if s, ok := LocateFileBackedDockable(path).(*Sheet); ok {
+				sheet = s
+				s.Entity().Profile.Name = "Changed"
+				modified = s.Modified()
+			}
+		})
+		if sheet == nil {
+			t.Fatalf("%s: the sheet was not opened", one.name)
+		}
+		c.True(modified, "%s: the sheet must have unsaved changes for closing it to ask about", one.name)
+		var closed, returned bool
+		c.True(screen.Post(func() {
+			closed = sheet.AttemptClose()
+			returned = true
+		}))
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, one.response)))
+		var open bool
+		screen.Do(func() {
+			open = !xreflect.IsNil(LocateFileBackedDockable(path))
+			modified = sheet.Modified()
+		})
+		c.True(returned, "%s: the close has been decided", one.name)
+		c.Equal(one.closed, closed, "%s: whether the close went ahead", one.name)
+		c.Equal(!one.closed, open, "%s: whether the sheet is still open", one.name)
+		c.Equal(one.response != unison.ModalResponseOK, modified, "%s: whether the changes are still unsaved", one.name)
+		saved := loadSavedFile(t, c, path, gurps.NewEntityFromFile).Profile.Name
+		c.Equal(one.response == unison.ModalResponseOK, saved == "Changed", "%s: whether the changes were written",
+			one.name)
+		if open {
+			screen.Do(sheet.markUnmodified)
+			uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
+		}
+	}
 }
 
 // TestClosingTheLastTabFocusesTheNavigator verifies that closing the tab that holds the keyboard focus hands the focus
@@ -329,6 +443,64 @@ func TestBringingADockedDockableForwardShowsIt(t *testing.T) {
 	c.True(stillMaximized, "activating a dockable in the maximized container must leave it maximized")
 
 	uxtest.CloseEditorWithoutPrompt(t, screen, big)
+	uxtest.CloseEditorWithoutPrompt(t, screen, d)
+}
+
+// TestDockUnDockMovesADockableBetweenTheWorkspaceAndAWindow verifies that the Undock From Workspace command gives the
+// docked dockable that has the focus a window of its own and that, from that window, the same command, retitled Dock
+// Into Workspace, puts the dockable back in the dock under the group it was placed with and closes the window.
+func TestDockUnDockMovesADockableBetweenTheWorkspaceAndAWindow(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The dockable must start out in the dock.
+
+	type state struct {
+		title   string
+		enabled bool
+		window  *unison.Window
+		docked  bool
+		group   any
+		windows int
+	}
+	var d *MarkdownDockable
+	current := func(do func()) state {
+		var s state
+		screen.Do(do)
+		screen.Sync()
+		screen.Do(func() {
+			s.enabled = dockUnDockAction.Enabled(nil)
+			s.title = dockUnDockAction.Title
+			s.window = d.AsPanel().Window()
+			s.docked = unison.Ancestor[*unison.DockContainer](d) != nil
+			s.group = d.AsPanel().ClientData()[dockGroupClientDataKey]
+			s.windows = len(unison.Windows())
+		})
+		return s
+	}
+
+	s := current(func() {
+		d = newMarkdownDockable(markdownContentOnlyPrefix+"Moving", "# Moving\n", false, false)
+		PlaceInDock(d, dgroup.Markdown, false)
+		ActivateDockable(d)
+	})
+	c.True(s.enabled, "the command must be enabled for a docked dockable that has the focus")
+	c.Equal("Undock From Workspace", s.title)
+	c.True(s.docked && s.window == wnd, "the dockable must start out in the workspace's dock")
+
+	s = current(func() { dockUnDockAction.Execute(nil) })
+	c.False(s.docked, "undocking must take the dockable out of the dock")
+	c.True(s.window != nil && s.window != wnd, "undocking must give the dockable a window of its own")
+	c.Equal(2, s.windows)
+
+	own := s.window
+	s = current(own.ToFront)
+	c.True(s.enabled, "the command must be enabled in the dockable's own window")
+	c.Equal("Dock Into Workspace", s.title)
+
+	s = current(func() { dockUnDockAction.Execute(nil) })
+	c.True(s.docked && s.window == wnd, "docking must put the dockable back in the workspace's dock")
+	c.Equal(1, s.windows, "docking must close the window the dockable had")
+	c.Equal(any(dgroup.Markdown), s.group, "docking must keep the group the dockable was placed with")
 	uxtest.CloseEditorWithoutPrompt(t, screen, d)
 }
 

@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // A trait's levels are plain data that no disabling changes the meaning of, so the level commands stay available for a
@@ -52,4 +53,44 @@ func TestTraitLevelsStayAdjustableWhileDisabled(t *testing.T) {
 	tmpl.Traits = []*gurps.Trait{alternative}
 	c.True(allowed(alternative, false), "decrementing the level of a disabled alternative on a template")
 	c.True(allowed(alternative, true), "incrementing the level of a disabled alternative on a template")
+}
+
+// TestAdjustTraitLevelStepsToWholeLevels verifies that Increment Level and Decrement Level move a trait to the next or
+// previous whole level, a fractional level counting as lying between two, and that they are offered only for a leveled
+// trait, Decrement Level only while it has a level to take away.
+func TestAdjustTraitLevelStepsToWholeLevels(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		canLevel  bool
+		levels    fxp.Int
+		increment bool
+		allowed   bool
+		want      fxp.Int
+	}{
+		{name: "increment a whole level", canLevel: true, levels: fxp.Two, increment: true, allowed: true, want: fxp.Three},
+		{
+			name: "increment a fractional level", canLevel: true, levels: fxp.TwoAndAHalf, increment: true, allowed: true,
+			want: fxp.Three,
+		},
+		{name: "decrement a whole level", canLevel: true, levels: fxp.Two, allowed: true, want: fxp.One},
+		{name: "decrement a fractional level", canLevel: true, levels: fxp.TwoAndAHalf, allowed: true, want: fxp.Two},
+		{name: "decrement level zero", canLevel: true, want: 0},
+		{name: "increment an unleveled trait", increment: true, want: 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			trait := gurps.NewTrait(entity, nil, false)
+			trait.CanLevel = tc.canLevel
+			trait.Levels = tc.levels
+			entity.Traits = []*gurps.Trait{trait}
+			sheet.Rebuild(true)
+			table := sheet.Traits.Table
+			table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+			c.Equal(tc.allowed, canAdjustTraitLevel(table, tc.increment), "whether the command is offered")
+			adjustTraitLevel(sheet, table, tc.increment)
+			c.Equal(tc.want, trait.Levels, "the level the command leaves")
+		})
+	}
 }

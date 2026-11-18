@@ -885,35 +885,24 @@ func TestHideBlockThatIsAlreadyHiddenDoesNothing(t *testing.T) {
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "hiding a block that is already hidden must not be recorded")
 }
 
-// TestMoveBlockByDragging checks that dropping a block against the edge of another one moves it there as a single
-// undoable edit that updates the sheet exactly once, and that the move round trips through undo and redo.
-func TestMoveBlockByDragging(t *testing.T) {
+// TestCloseButtonHidesTheBlock checks that a press and release on a block's close button takes that block off the
+// sheet, and that a press on it let go of somewhere else leaves the block where it is.
+func TestCloseButtonHidesTheBlock(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
-	counter := installSyncCounter(sheet)
-	mgr := sheet.UndoManager()
-	before := sheet.Entity().SheetSettings.Layout.VisibleKeys()
-	regions := editor.ensureRegions()
-	spells := leafOnPage(t, regions, gurps.BlockSpellsKey)
-	notes := leafOnPage(t, regions, gurps.BlockNotesKey)
+	layout := func() *gurps.SheetLayout { return sheet.Entity().SheetSettings.Layout }
+	notes := leafOnPage(t, editor.ensureRegions(), gurps.BlockNotesKey)
+	where := notes.closeRect.Center()
+	elsewhere := notes.rect.Center()
+	c.Equal(unison.PointingCursor(), editor.cursorAt(where), "the pointer must say the button can be pressed")
 
-	counter.count = 0
-	editor.beginBlockDrag(gurps.BlockSpellsKey, spells.rect.Center())
-	editor.endBlockDrag(geom.NewPoint(notes.rect.X+1, notes.rect.CenterY()))
+	editor.mouseDown(where, unison.ButtonLeft)
+	editor.mouseUp(elsewhere, unison.ButtonLeft)
+	c.True(layout().Contains(gurps.BlockNotesKey), "a press let go of off the button must leave the block alone")
 
-	c.Equal(1, counter.count, "moving a block must sync the sheet exactly once")
-	node, parent, index := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockSpellsKey)
-	c.NotNil(node, "the moved block must still be in the tree")
-	c.Equal(layoutnode.Row, parent.Type, "the moved block must have joined a row")
-	c.Equal(0, index, "the moved block must sit to the left of the block it was dropped on")
-	c.Equal(gurps.BlockNotesKey, parent.Children[1].Key, "the moved block must sit beside the notes block")
-
-	mgr.Undo()
-	c.Equal(before, sheet.Entity().SheetSettings.Layout.VisibleKeys(), "undo must put the block back where it was")
-	mgr.Redo()
-	_, parent, _ = sheet.Entity().SheetSettings.Layout.Find(gurps.BlockSpellsKey)
-	c.Equal(layoutnode.Row, parent.Type, "redo must move the block back beside the notes block")
-	c.Equal(1, undoEditCount(mgr), "moving a block must be one undoable edit")
+	editor.mouseDown(where, unison.ButtonLeft)
+	editor.mouseUp(where, unison.ButtonLeft)
+	c.False(layout().Contains(gurps.BlockNotesKey), "a press and release on the close button must hide the block")
 }
 
 // TestMoveBlockBesideAColumn checks that a block dropped a step inside the left edge of the primary attributes block
@@ -1171,6 +1160,8 @@ func TestEditingModeSurvivesARebuild(t *testing.T) {
 	c.NotNil(editor.ensureRegions().leafFor(gurps.BlockNotesKey), "the regions must describe the rebuilt page")
 }
 
+// TestLeavingEditingModeTakesTheOverlayAway checks that leaving editing mode takes the overlay off the content, leaving
+// only the page.
 func TestLeavingEditingModeTakesTheOverlayAway(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
@@ -1274,9 +1265,9 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 }
 
-// TestCancelDragPutsTheLayoutBack checks that abandoning a gesture partway through restores the layout it started from,
-// which is what the Escape key does.
-func TestCancelDragPutsTheLayoutBack(t *testing.T) {
+// TestEscapeAbandonsTheGestureThenLeavesEditing checks that the Escape key abandons a gesture partway through,
+// restoring the layout it started from, that the next one leaves editing mode, and that other keys are left alone.
+func TestEscapeAbandonsTheGestureThenLeavesEditing(t *testing.T) {
 	c := check.New(t)
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	before := gurps.Hash64(sheet.Entity().SheetSettings.Layout)
@@ -1290,13 +1281,19 @@ func TestCancelDragPutsTheLayoutBack(t *testing.T) {
 	editor.beginDividerDrag(divider, start)
 	editor.updateDividerDrag(geom.NewPoint(start.X+40, start.Y))
 	c.NotEqual(before, gurps.Hash64(sheet.Entity().SheetSettings.Layout), "the drag must have altered the layout")
+	c.False(editor.keyDown(unison.KeySpace, mod.None, false), "a key other than Escape must not be consumed")
+	c.Equal(layoutDraggingDivider, editor.mode, "nor may it end the drag")
 
-	editor.cancelDrag()
+	c.True(editor.keyDown(unison.KeyEscape, mod.None, false), "Escape must be consumed")
 	c.Equal(before, gurps.Hash64(sheet.Entity().SheetSettings.Layout), "canceling must put the layout back")
 	c.False(sheet.UndoManager().CanUndo(), "a canceled drag must not be recorded")
 	c.Equal(layoutIdle, editor.mode, "canceling must leave nothing in progress")
 	c.Equal(modified, sheet.Entity().ModifiedOn,
 		"a canceled drag must leave the modification date alone, since nothing about the sheet changed")
+	c.True(sheet.layoutEditing(), "the Escape that abandons a gesture must not also leave editing mode")
+
+	c.True(editor.keyDown(unison.KeyEscape, mod.None, false), "Escape must be consumed")
+	c.False(sheet.layoutEditing(), "an Escape with no gesture under way must leave editing mode")
 }
 
 // newTestSheetWithLayout returns a sheet in block layout editing mode whose layout is the given bands, with every block
@@ -1568,6 +1565,23 @@ func TestDropBetweenTwoBlocksSideBySideFromTheSeamBetweenThem(t *testing.T) {
 
 	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockNotesKey, where, "column[row[traits skills] notes]",
 		"column[row[traits notes skills]]", "coming between two blocks")
+}
+
+// TestMoveBlockBesideABandFurtherDown checks that a band dropped against the left edge of a band further down the page
+// shares a row with it in that band's place, which moves up one once the dropped band has left the page above it.
+func TestMoveBlockBesideABandFurtherDown(t *testing.T) {
+	c := check.New(t)
+	sheet, editor := newTestSheetWithLeafBands(t, gurps.BlockTraitsKey, gurps.BlockSkillsKey, gurps.BlockNotesKey,
+		gurps.BlockSpellsKey)
+	regions := editor.ensureRegions()
+	notes := leafOnPage(t, regions, gurps.BlockNotesKey)
+	where := geom.NewPoint(notes.rect.X+1, notes.rect.CenterY())
+	target := resolveDropTarget(regions, where, gurps.BlockTraitsKey)
+	c.Equal(dropOnEdge, target.kind, "the test requires a drop against the edge of a band")
+	c.True(notes.node == target.node, "the drop must be against the notes band")
+
+	checkSingleLayoutEdit(t, c, sheet, editor, gurps.BlockTraitsKey, where, "column[traits skills notes spells]",
+		"column[skills row[traits notes] spells]", "moving a band beside one further down the page")
 }
 
 // portraitContentSize returns the size of the portrait's picture area, which is the block's content rect: its frame

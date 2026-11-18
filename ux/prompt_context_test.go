@@ -16,7 +16,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // TestPromptOperationTitle verifies that a prompt is titled with its operation's name and its step, and with whichever
@@ -93,6 +95,25 @@ func TestNameList(t *testing.T) {
 	c.Equal("and 3 more", lines[9], "the last line must count every name not shown")
 	long := strings.Repeat("x", maxNameLength+10)
 	c.Equal(strings.Repeat("x", maxNameLength)+"…", nameList([]string{long}), "a long name must be cut down")
+}
+
+// TestNewOperationLabel verifies that the label describing an operation shows a description that fits as is, and cuts
+// one too long to show short with the whole of it in a tooltip.
+func TestNewOperationLabel(t *testing.T) {
+	c := check.New(t)
+	const fits = "Applying template Knight to Sir Bob"
+	label := newOperationLabel(promptOperation{description: fits})
+	c.Equal(fits, label.String())
+	c.Nil(label.Tooltip, "a description shown in full needs no tooltip")
+
+	long := "Applying template " + strings.Repeat("Knight of the Realm ", 5) + "to Sir Bob"
+	label = newOperationLabel(promptOperation{description: long})
+	c.Equal(xstrings.Truncate(long, maxContextLineLength, true), label.String(), "a long description is cut short")
+	c.NotEqual(long, label.String(), "the description must be too long to show for this to mean anything")
+	if label.Tooltip == nil {
+		t.Fatal("a description cut short must have a tooltip")
+	}
+	c.Equal(long, strings.Join(uxtest.LabelTexts(label.Tooltip), " "), "the tooltip holds the whole description")
 }
 
 // TestShortNames verifies that names are cut down for use in a description, and that short ones are left alone.

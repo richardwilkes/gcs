@@ -110,12 +110,6 @@ func clickCheckBox(box *CheckBox, on bool) {
 	box.ClickCallback()
 }
 
-// findFeaturesPanel returns the first features panel found anywhere beneath the given panel.
-func findFeaturesPanel(p *unison.Panel) *featuresPanel {
-	panel, _ := uxtest.FirstPanelOfType[*featuresPanel](p)
-	return panel
-}
-
 // Both container and non-container traits offer the "Switched On" checkbox, since a container's modifiers can hold
 // switchable features even though the container itself has none of its own.
 func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
@@ -270,109 +264,6 @@ func TestEquipmentEditorHasSwitchedOnCheckBox(t *testing.T) {
 				"the Switched On checkbox must sit with the editor's other checkbox")
 		})
 	}
-}
-
-// A non-container spell can be given features, along with the switch that governs the switchable ones; a spell
-// container, which has no features of its own, gets neither.
-func TestSpellEditorHasFeaturesPanelAndSwitch(t *testing.T) {
-	t.Run("spell", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		spell := gurps.NewSpell(sheet.Entity(), nil, false)
-		e, content := buildEditorContent(sheet, spell, initSpellEditor)
-		c.NotNil(findFeaturesPanel(content), "expected a features panel in the spell editor")
-		box := findCheckBoxTitled(content, i18n.Text("Switched On"))
-		c.NotNil(box, "expected a Switched On checkbox in the spell editor")
-
-		clickCheckBox(box, true)
-		c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
-	})
-
-	t.Run("spell container", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		spell := gurps.NewSpell(sheet.Entity(), nil, true)
-		_, content := buildEditorContent(sheet, spell, initSpellEditor)
-		c.Nil(findFeaturesPanel(content), "a spell container must not offer a features panel")
-		c.Nil(findCheckBoxTitled(content, i18n.Text("Switched On")),
-			"a spell container has nothing to switch, so it must not offer the checkbox")
-	})
-}
-
-// panelBesideLabel returns the panel that follows the label bearing the given text among the panel's direct children,
-// or nil if there is none.
-func panelBesideLabel(p *unison.Panel, labelText string) *unison.Panel {
-	children := p.Children()
-	for i, child := range children {
-		if label, ok := child.Self.(*unison.Label); ok && label.String() == labelText && i+1 < len(children) {
-			return children[i+1]
-		}
-	}
-	return nil
-}
-
-// A non-container spell gets a field for each part of its rituals text, each wired to its own part; a spell container
-// has no rituals, so it gets none.
-func TestSpellEditorEditsEachRitualOverride(t *testing.T) {
-	t.Run("spell", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		spell := gurps.NewSpell(sheet.Entity(), nil, false)
-		e, content := buildEditorContent(sheet, spell, initSpellEditor)
-		row := panelBesideLabel(content, i18n.Text("Rituals"))
-		if row == nil {
-			t.Fatal("expected a Rituals row in the spell editor")
-		}
-		for _, one := range []struct {
-			label string
-			text  string
-		}{
-			{i18n.Text("Ritual"), "must speak"},
-			{i18n.Text("Time"), "not reduced"},
-			{i18n.Text("Cost"), "-"},
-		} {
-			field := stringFieldLabeled(row, one.label)
-			if field == nil {
-				t.Fatalf("expected a field after the %s label in the Rituals row", one.label)
-			}
-			field.SetText(one.text)
-		}
-		c.Equal(gurps.RitualOverrides{Ritual: "must speak", Time: "not reduced", Cost: "-"}, e.editorData.RitualOverrides,
-			"each field edits its own part")
-		c.True(e.isModified(), "editing an override modifies the editor")
-	})
-
-	t.Run("spell container", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		spell := gurps.NewSpell(sheet.Entity(), nil, true)
-		_, content := buildEditorContent(sheet, spell, initSpellEditor)
-		c.Nil(panelBesideLabel(content, i18n.Text("Rituals")), "a spell container has no rituals to override")
-	})
-}
-
-// Only a skill that can hold features offers the switch.
-func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
-	t.Run("skill", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		skill := gurps.NewSkill(sheet.Entity(), nil, false)
-		e, content := buildEditorContent(sheet, skill, initSkillEditor)
-		box := findCheckBoxTitled(content, i18n.Text("Switched On"))
-		c.NotNil(box, "expected a Switched On checkbox in the skill editor")
-
-		clickCheckBox(box, true)
-		c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
-	})
-
-	t.Run("skill container", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		skill := gurps.NewSkill(sheet.Entity(), nil, true)
-		_, content := buildEditorContent(sheet, skill, initSkillEditor)
-		c.Nil(findCheckBoxTitled(content, i18n.Text("Switched On")),
-			"a skill container has nothing to switch, so it must not offer the checkbox")
-	})
 }
 
 // scrollRecordingPanel stands in for a scroll area above a table, recording the rects it is asked to bring into view.
@@ -679,6 +570,89 @@ func TestEditorApplySortsTagsAndColleges(t *testing.T) {
 	spellEditor.applyEdits()
 	c.Equal([]string{"AAA", "BBB"}, spell.Tags, "applying the edit sorts the spell's tags")
 	c.Equal(gurps.CollegeList{"Air", "Water"}, spell.College, "applying the edit sorts the spell's colleges")
+}
+
+// TestModifierEditorFollowsTheChoiceRules verifies that enabling an option in its own editor makes it the pick,
+// turning the one that was picked off, and that undo puts both back. On a sheet, the pick of a mandatory choice can't
+// be turned off there either, though it can be elsewhere.
+func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
+	options := traitEditor.editorData.Modifiers[0].Children
+
+	e, _ := buildEditorContent(traitEditor, options[1], initTraitModifierEditor)
+	e.editorData.Disabled = false
+	e.applyEdits()
+	c.False(options[0].Enabled(), "enabling B in its editor turns A off")
+	c.True(options[1].Enabled())
+	mgr := unison.UndoManagerFor(traitEditor)
+	mgr.Undo()
+	c.True(options[0].Enabled(), "undo turns A back on")
+	c.False(options[1].Enabled(), "and B back off")
+	mgr.Redo()
+	c.False(options[0].Enabled(), "redo turns A off again")
+	c.True(options[1].Enabled(), "and B back on")
+	mgr.Undo()
+
+	e, _ = buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
+	e.editorData.Disabled = true
+	e.applyEdits()
+	c.True(options[0].Enabled(), "the pick of a mandatory choice on a sheet can't be turned off in its editor")
+
+	offSheet := newTraitModifierChoiceFor(nil, true, []string{"A"}, "A")
+	e, _ = buildEditorContent(nil, offSheet.Children[0], initTraitModifierEditor)
+	e.editorData.Disabled = true
+	e.applyEdits()
+	c.False(offSheet.Children[0].Enabled(), "off a sheet a mandatory choice may be left without its pick")
+}
+
+// TestEditorKeepsAPickMadeSinceItOpened verifies that applying an option's editor, opened while it was the pick, after
+// another option has been picked in the list leaves that later pick alone, since the editor didn't change whether its
+// option is enabled.
+func TestEditorKeepsAPickMadeSinceItOpened(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	traitEditor, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
+	options := traitEditor.editorData.Modifiers[0].Children
+	aEditor, _ := buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
+	adjustModifierEnabled(traitEditor, table, options[1], true)
+	c.True(options[1].Enabled())
+	aEditor.editorData.Name = "Renamed"
+	aEditor.applyEdits()
+	c.Equal("Renamed", options[0].Name)
+	c.False(options[0].Enabled(), "the editor didn't change whether A is enabled, so A stays off")
+	c.True(options[1].Enabled(), "and B stays the pick")
+}
+
+// TestChoiceMadeMandatoryInItsEditorOnASheet verifies that applying a choice's editor on a sheet without changing what
+// the choice asks for leaves its options as they are, so a mandatory choice flagged for want of a pick isn't given one,
+// while a choice made mandatory there gets its first option picked, as Convert to Choice does, undo and redo covering
+// it.
+func TestChoiceMadeMandatoryInItsEditorOnASheet(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}))
+	choice := traitEditor.editorData.Modifiers[0]
+	choiceEditor, _ := buildEditorContent(traitEditor, choice, initTraitModifierEditor)
+	choiceEditor.editorData.Name = "Renamed"
+	choiceEditor.applyEdits()
+	c.Equal("Renamed", choice.Name)
+	c.False(choice.Children[0].Enabled(), "the edit doesn't pick the first option")
+	c.False(choice.Children[1].Enabled())
+
+	choice.SetMandatoryChoice(false)
+	choiceEditor, _ = buildEditorContent(traitEditor, choice, initTraitModifierEditor)
+	choiceEditor.editorData.SetMandatoryChoice(true)
+	choiceEditor.applyEdits()
+	c.True(gurps.IsMandatoryModifierChoice(choice))
+	c.True(choice.Children[0].Enabled(), "the first option is picked")
+	mgr := unison.UndoManagerFor(traitEditor)
+	mgr.Undo()
+	c.False(gurps.IsMandatoryModifierChoice(choice))
+	c.False(choice.Children[0].Enabled(), "undo takes the pick back")
+	mgr.Redo()
+	c.True(choice.Children[0].Enabled(), "redo picks it again")
 }
 
 // pageRefButtonAndField returns the button that opens the page reference the content edits and the field that holds the

@@ -10,13 +10,18 @@
 package ux
 
 import (
+	"bytes"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"image"
+	"image/png"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -162,6 +167,34 @@ func TestInstallDropReroutingWithoutATarget(t *testing.T) {
 	c.Equal(drag.Copy, root.DragEnteredCallback(skillDrag, where, mod.None), "re-enter the bare target")
 	root.DragExitedCallback()
 	c.False(root.DropCallback(skillDrag, where, mod.None), "exit cleared the bare target")
+}
+
+// TestWindowTakesAnImageFileDroppedFromOutside verifies that a window is registered for the file paths other
+// applications drag, so that an image file dropped onto a sheet's portrait from outside GCS becomes the portrait.
+func TestWindowTakesAnImageFileDroppedFromOutside(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	t.Cleanup(func() { screen.Do(sheet.markUnmodified) })
+	var buffer bytes.Buffer
+	c.NoError(png.Encode(&buffer, image.NewNRGBA(image.Rect(0, 0, 4, 4))))
+	path := filepath.Join(t.TempDir(), "portrait.png")
+	c.NoError(os.WriteFile(path, buffer.Bytes(), 0o600))
+	var portrait *PortraitPanel
+	screen.Do(func() { portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
+	if portrait == nil {
+		t.Fatal("the sheet must show a portrait")
+	}
+
+	at := screen.PanelCenter(portrait)
+	screen.DropExternal(at, at, 1, drag.Copy, drag.Data{Type: uti.FileURL, Data: []byte(path)})
+	var data []byte
+	screen.Do(func() { data = sheet.Entity().Profile.PortraitData })
+	c.NotEqual(0, len(data), "the dropped image must become the portrait")
 }
 
 // TestAllDragDataTypesListsEveryDragKey verifies that every private drag data type declared in the package's source is

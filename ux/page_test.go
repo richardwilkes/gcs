@@ -13,7 +13,9 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -40,4 +42,29 @@ func TestPageNumberingCountsOnlyPages(t *testing.T) {
 		c.Equal(i+1, number, "page %d must be numbered by its place among the pages alone", i+1)
 		c.Equal(len(pages), count, "the count must be the number of pages, not of children")
 	}
+}
+
+// TestPageBorderFollowsThePageSettings verifies that a page laid out after its margins were changed takes each new
+// margin as its border on that edge, with room for the footer still kept below the bottom one.
+func TestPageBorderFollowsThePageSettings(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	page := NewPage(entity)
+	before := page.Border().Insets()
+	settings := entity.PageSettings()
+	footer := before.Bottom - settings.BottomMargin.Pixels()
+	inches := func(length float64) paper.Length { return paper.Length{Length: length, Units: paper.Inch} }
+	settings.TopMargin = inches(1)
+	settings.LeftMargin = inches(0.75)
+	settings.BottomMargin = inches(0.5)
+	settings.RightMargin = inches(1.25)
+	want := geom.Insets{
+		Top:    inches(1).Pixels(),
+		Left:   inches(0.75).Pixels(),
+		Bottom: inches(0.5).Pixels() + footer,
+		Right:  inches(1.25).Pixels(),
+	}
+	c.NotEqual(want, before, "the margins must start out otherwise, or the check below means nothing")
+	page.Sizes(geom.Size{})
+	c.Equal(want, page.Border().Insets(), "the border must follow the margins the page is laid out with")
 }

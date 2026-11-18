@@ -136,9 +136,9 @@ func TestAttachModifierClonesGivesEachTargetItsOwnCopies(t *testing.T) {
 }
 
 // TestAttachModifierClonesAsksAboutContainersOnASheet verifies that a container among the modifiers applied to a
-// sheet's rows brings up the modifier prompt once per target, with that target's clones and the ones pointed at
-// directly already enabled, and that the answers are kept. Canceling the prompt for the first target stops there,
-// skips the nameables prompt, and leaves every target as it was with nothing shown or reported.
+// sheet's rows brings up the modifier prompt once per target, numbered among the targets, with that target's clones and
+// the ones pointed at directly already enabled, and that the answers are kept. Canceling the prompt for the first
+// target stops there, skips the nameables prompt, and leaves every target as it was with nothing shown or reported.
 func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 	newModifiers := func() []*gurps.TraitModifier {
 		ranged := gurps.NewTraitModifier(nil, nil, false)
@@ -155,9 +155,10 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		return []*gurps.TraitModifier{ranged, group}
 	}
 	type prompt struct {
-		title   string
-		names   []string
-		enabled []bool
+		title       string
+		step, steps int
+		names       []string
+		enabled     []bool
 	}
 	// recordPrompts substitutes a prompt that records what it was shown and then lets respond act on it.
 	recordPrompts := func(t *testing.T, respond func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool)) *[]prompt {
@@ -165,7 +166,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		var prompts []prompt
 		uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 			title := info.name
-			p := prompt{title: title}
+			p := prompt{title: title, step: info.step, steps: info.steps}
 			gurps.Traverse(func(m *gurps.TraitModifier) bool {
 				p.names = append(p.names, m.Name)
 				p.enabled = append(p.enabled, m.Enabled())
@@ -176,9 +177,11 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		})
 		return &prompts
 	}
-	wantPrompt := func(title string) prompt {
+	wantPrompt := func(title string, step int) prompt {
 		return prompt{
 			title:   title,
+			step:    step,
+			steps:   2,
 			names:   []string{"Ranged", "Group", "First", "Second", "Third"},
 			enabled: []bool{true, true, false, true, false},
 		}
@@ -201,8 +204,9 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 
 		c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{sheet.Traits.Table}, entity,
 			[]*gurps.Trait{alpha, beta}, newModifiers(), gurps.LibraryFile{}))
-		c.Equal([]prompt{wantPrompt("Alpha"), wantPrompt("Beta")}, *prompts,
-			"each target must be asked about its own copies, the ones pointed at directly already switched on")
+		c.Equal([]prompt{wantPrompt("Alpha", 1), wantPrompt("Beta", 2)}, *prompts,
+			"each target must be asked about its own copies, numbered among the targets, the ones pointed at directly "+
+				"already switched on")
 		c.Equal([]string{"Ranged", "Group"}, appliedModifierNames(alpha.Modifiers))
 		c.False(alpha.Modifiers[1].Children[0].IsDisabled(), "Alpha's answer must be kept")
 		c.True(alpha.Modifiers[1].Children[1].IsDisabled(), "Alpha's answer must be kept")
@@ -452,6 +456,8 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 		"the copy of the modifier within the container must record the library file too")
 }
 
+// TestCanReceiveModifiersNeedsATargetAProviderAndAnUndoManager verifies that a list can receive modifiers only while it
+// holds a row that can take them, carries its provider and sits under an undo manager.
 func TestCanReceiveModifiersNeedsATargetAProviderAndAnUndoManager(t *testing.T) {
 	c := check.New(t)
 	sheet := newApplyModifierTestSheet(t)

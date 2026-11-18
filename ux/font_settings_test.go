@@ -111,3 +111,30 @@ func TestFontChangeRewrapsMarkdownViews(t *testing.T) {
 	uxtest.CloseEditorWithoutPrompt(t, screen, file)
 	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 }
+
+// TestFontSettingsResetShowsTheFactoryFonts verifies that resetting the Font settings puts the factory fonts back in
+// use and shows them in the font panels, which edit the fonts in use.
+func TestFontSettingsResetShowsTheFactoryFonts(t *testing.T) {
+	c := check.New(t)
+	g := gurps.GlobalSettings()
+	uxtest.SwapForTest(t, &g.Fonts, g.Fonts)
+	live := fonts.CurrentFonts()[0]
+	saved := live.Font.Font
+	t.Cleanup(func() { live.Font.Font = saved })
+	var factory unison.FontDescriptor
+	for _, one := range fonts.FactoryFonts() {
+		if one.ID == live.ID {
+			factory = one.Font.Descriptor()
+		}
+	}
+	d := &fontSettingsDockable{}
+	d.initContent(unison.NewPanel())
+	changed := factory
+	changed.Size *= 2
+	d.fontPanels[0].SetFontDescriptor(changed)
+	c.Equal(changed, live.Font.Descriptor(), "precondition: the font panel edits the font in use")
+
+	d.reset()
+	c.Equal(factory, live.Font.Descriptor(), "the reset puts the factory font back in use")
+	c.Equal(factory, d.fontPanels[0].FontDescriptor(), "and the font panel shows it")
+}

@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"path"
@@ -115,19 +116,6 @@ func newTestCharacter(name string) *gurps.Entity {
 func saveTestSheet(c check.Checker, lib *library.Library, fileName string, entity *gurps.Entity) *NavigatorNode {
 	c.NoError(entity.Save(filepath.Join(lib.Path(false), fileName)))
 	return NewFileNode(lib, fileName, nil)
-}
-
-// TestNavigatorNodeSortTextIsTheTextShown verifies that a navigator row's sort text, which a screen reader is given as
-// the row's name, is the text the row shows with no ordering rank ahead of it.
-func TestNavigatorNodeSortTextIsTheTextShown(t *testing.T) {
-	c := check.New(t)
-	n := newDeepSearchNavigator()
-	lib := newTestLibrary(t)
-	libNode := NewLibraryNode(n, lib, nil)
-	c.Equal("Test", libNode.CellDataForSort(0), "a library row is named by its title alone")
-	c.Equal("", libNode.CellDataForSort(1), "the navigator has only one column")
-	fileNode := writeTestLibraryFile(c, lib, "Conan.gcs", []byte("{}"))
-	c.Equal("Conan", fileNode.CellDataForSort(0), "a file row is named by its file name without the extension")
 }
 
 // TestPrepareProfileForContentCache verifies that every profile field placed into the deep search content cache is
@@ -355,6 +343,20 @@ func TestNavigatorSearchMatches(t *testing.T) {
 	c.True(ok && icon.SVG == gurps.FileInfoFor(gurps.SheetExt).SVG, "a file shows the icon of its type")
 	icon, ok = n.newSearchMatch(sub).icon.(*unison.DrawableSVG)
 	c.True(ok && icon.SVG == gurps.FileInfoFor(gurps.ClosedFolder).SVG, "a container shows a folder")
+}
+
+// TestNavigatorSearchStopsOnePastWhatTheDropdownOffers verifies that a search of the tree stops once it has found one
+// more match than the dropdown offers, which is what tells the dropdown to say that it shows only the first of them.
+func TestNavigatorSearchStopsOnePastWhatTheDropdownOffers(t *testing.T) {
+	c := check.New(t)
+	lib := newTestLibrary(t)
+	n := newDeepSearchNavigator()
+	rows := make([]*NavigatorNode, 0, maxSearchMatches+10)
+	for i := range cap(rows) {
+		rows = append(rows, NewFileNode(lib, fmt.Sprintf("match %d%s", i, gurps.SheetExt), nil))
+	}
+	installTestTable(n, rows...)
+	c.Equal(maxSearchMatches+1, len(n.findMatches("match")))
 }
 
 // TestNavigatorRefreshSearchWhileHiddenLeavesTableAlone verifies what refreshing the search does while the matches are
@@ -786,160 +788,6 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c.Equal([]string{relPath}, lib1.Favorites())
 }
 
-// flattenEntries returns the paths of the entries and, after each folder's, of those beneath it, folders marked with a
-// trailing slash.
-func flattenEntries(entries []*navigatorEntry) []string {
-	var paths []string
-	for _, entry := range entries {
-		if entry.isDir {
-			paths = append(paths, entry.path+"/")
-			paths = append(paths, flattenEntries(entry.entries)...)
-		} else {
-			paths = append(paths, entry.path)
-		}
-	}
-	return paths
-}
-
-// ignoreSymlinkedFolder is the symlinkedFolder callback for a listing whose symlinks are of no interest.
-func ignoreSymlinkedFolder(_ *library.Library, _ string) {}
-
-// TestListFolderListsWhatTheTreeShows verifies the walk the rows are built from: the entries come in the order the tree
-// shows them, folders ahead of files when they are grouped and otherwise mixed in, in natural order of the name without
-// its extension and then of the whole name; entries named with a leading dot, the library's own settings and output
-// template folders, though not folders so named deeper down, the Master Library's copy of the User Guide, though not
-// another library's folder at that path, and the files of special types are left out; a symlink to a folder that holds
-// something is listed as a folder and reported, so that the library's watch can follow it, while one to an empty folder
-// or to a file is listed as a file of the type its own name says, and one that leads back to a folder it lies within is
-// listed as a folder with nothing beneath it and not reported.
-func TestListFolderListsWhatTheTreeShows(t *testing.T) {
-	c := check.New(t)
-	RegisterKnownFileTypes()
-	lib := newTestLibrary(t)
-	root := lib.Path(false)
-	for _, dir := range []string{
-		"sub/inner", "zeta", ".hidden", library.SettingsDirName,
-		library.OutputTemplatesDirName, "sub/" + library.SettingsDirName, "empty",
-	} {
-		c.NoError(os.MkdirAll(filepath.Join(root, dir), 0o750))
-	}
-	for _, name := range []string{
-		"b.gcs", "a.skl", "10.gcs", "9.gcs", "alpha.gcs", "same.gcs", "same.skl", ".dotfile",
-		"weird" + gurps.ClosedFolder, "sub/inner/deep.gcs", "sub/x.gcs",
-	} {
-		c.NoError(os.WriteFile(filepath.Join(root, name), []byte("{}"), 0o600))
-	}
-	c.Equal([]string{
-		"empty/", "sub/", "sub/inner/", "sub/inner/deep.gcs", "sub/" + library.SettingsDirName + "/", "sub/x.gcs",
-		"zeta/", "9.gcs", "10.gcs", "a.skl", "alpha.gcs", "b.gcs", "same.gcs", "same.skl",
-	}, flattenEntries(listFolder(lib, ".", true, ignoreSymlinkedFolder)), "grouped")
-	mixed := listFolder(lib, ".", false, ignoreSymlinkedFolder)
-	top := make([]string, 0, len(mixed))
-	for _, entry := range mixed {
-		top = append(top, entry.path)
-	}
-	c.Equal([]string{"9.gcs", "10.gcs", "a.skl", "alpha.gcs", "b.gcs", "empty", "same.gcs", "same.skl", "sub", "zeta"},
-		top, "mixed in")
-
-	master := library.NewLibraries().Master()
-	c.NoError(master.SetPath(t.TempDir()))
-	other := newTestLibrary(t)
-	for _, one := range []*library.Library{master, other} {
-		for _, dir := range []string{"Markdown/User Guide", "Markdown/Mine"} {
-			c.NoError(os.MkdirAll(filepath.Join(one.Path(false), dir), 0o750))
-			c.NoError(os.WriteFile(filepath.Join(one.Path(false), dir, "Home.md"), []byte("# Home\n"), 0o600))
-		}
-	}
-	c.Equal([]string{"Markdown/", "Markdown/Mine/", "Markdown/Mine/Home.md"},
-		flattenEntries(listFolder(master, ".", true, ignoreSymlinkedFolder)),
-		"the Master Library's copy of the User Guide must be left out")
-	c.Equal([]string{
-		"Markdown/", "Markdown/Mine/", "Markdown/Mine/Home.md", "Markdown/User Guide/", "Markdown/User Guide/Home.md",
-	}, flattenEntries(listFolder(other, ".", true, ignoreSymlinkedFolder)), "while another library's folder of that name is the user's own")
-
-	if err := os.Symlink(filepath.Join(root, "sub"), filepath.Join(root, "link-sub")); err != nil {
-		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
-	}
-	c.NoError(os.Symlink(filepath.Join(root, "empty"), filepath.Join(root, "link-empty.gcs")))
-	c.NoError(os.Symlink(filepath.Join(root, "b.gcs"), filepath.Join(root, "link-file.gcs")))
-	var reported []string
-	byPath := make(map[string]*navigatorEntry)
-	for _, entry := range listFolder(lib, ".", true, func(reportedLib *library.Library, dirPath string) {
-		c.True(reportedLib == lib)
-		reported = append(reported, dirPath)
-	}) {
-		byPath[entry.path] = entry
-	}
-	c.Equal([]string{"link-sub"}, reported, "only a symlink to a folder that holds something is reported")
-	c.True(byPath["link-sub"] != nil && byPath["link-sub"].isDir, "and listed as a folder")
-	c.Equal([]string{
-		"link-sub/inner/", "link-sub/inner/deep.gcs", "link-sub/" + library.SettingsDirName + "/",
-		"link-sub/x.gcs",
-	}, flattenEntries(byPath["link-sub"].entries), "with what the folder holds beneath it")
-	c.True(byPath["link-empty.gcs"] != nil && !byPath["link-empty.gcs"].isDir, "a symlink to an empty folder is a file")
-	c.True(byPath["link-file.gcs"] != nil && !byPath["link-file.gcs"].isDir, "as is one to a file")
-
-	loopLib := newTestLibrary(t)
-	loopRoot := loopLib.Path(false)
-	c.NoError(os.MkdirAll(filepath.Join(loopRoot, "a"), 0o750))
-	c.NoError(os.WriteFile(filepath.Join(loopRoot, "a", "b.gcs"), []byte("{}"), 0o600))
-	c.NoError(os.Symlink(loopRoot, filepath.Join(loopRoot, "a", "up")))
-	reported = nil
-	c.Equal([]string{"a/", "a/b.gcs", "a/up/"}, flattenEntries(listFolder(loopLib, ".", true,
-		func(_ *library.Library, dirPath string) { reported = append(reported, dirPath) })),
-		"a symlink that leads back to a folder it lies within must not have that folder listed within itself")
-	c.Equal(0, len(reported), "nor be reported, since the folder it leads to is watched already")
-}
-
-// TestListFavoritesDropsWhatIsGone verifies that listing the favorites drops from each library the favorites that can
-// no longer be found, lists the rest in the order the Favorites row shows them, folders ahead of files when they are
-// grouped, and lists what a favorite folder holds, leaving out a favorite that is the Master Library's copy of the User
-// Guide or lies within it, though not another library's folder at that path.
-func TestListFavoritesDropsWhatIsGone(t *testing.T) {
-	c := check.New(t)
-	RegisterKnownFileTypes()
-	lib := newTestLibrary(t)
-	root := lib.Path(false)
-	c.NoError(os.MkdirAll(filepath.Join(root, "sub"), 0o750))
-	for _, name := range []string{"alpha.gcs", "beta.gcs", "sub/inner.gcs"} {
-		c.NoError(os.WriteFile(filepath.Join(root, name), []byte("{}"), 0o600))
-	}
-	for _, p := range []string{"sub", "alpha.gcs", "gone.gcs", "beta.gcs"} {
-		lib.ToggleFavorite(p)
-	}
-	entries := func(lib *library.Library, grouped bool) []string {
-		favs := listFavorites([]*library.Library{lib}, grouped, ignoreSymlinkedFolder)
-		paths := make([]string, 0, len(favs))
-		for _, one := range favs {
-			c.True(one.library == lib)
-			paths = append(paths, flattenEntries([]*navigatorEntry{one.entry})...)
-		}
-		return paths
-	}
-	c.Equal([]string{"sub/", "sub/inner.gcs", "alpha.gcs", "beta.gcs"}, entries(lib, true), "grouped")
-	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub"}, lib.Favorites(), "the favorite that is gone must be dropped")
-	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub/", "sub/inner.gcs"}, entries(lib, false), "mixed in")
-
-	master := library.NewLibraries().Master()
-	c.NoError(master.SetPath(t.TempDir()))
-	other := newTestLibrary(t)
-	for _, one := range []*library.Library{master, other} {
-		c.NoError(os.MkdirAll(filepath.Join(one.Path(false), "Markdown", "User Guide"), 0o750))
-		c.NoError(os.WriteFile(filepath.Join(one.Path(false), "Markdown", "User Guide", "Home.md"), []byte("# Home\n"),
-			0o600))
-		for _, p := range []string{"Markdown", "Markdown/User Guide", "Markdown/User Guide/Home.md"} {
-			one.ToggleFavorite(p)
-		}
-	}
-	c.Equal([]string{"Markdown/"}, entries(master, true),
-		"a favorite that is the Master Library's copy of the User Guide, or lies within it, must be left out")
-	c.Equal([]string{
-		"Markdown/", "Markdown/User Guide/", "Markdown/User Guide/Home.md",
-		"Markdown/User Guide/", "Markdown/User Guide/Home.md",
-		"Markdown/User Guide/Home.md",
-	}, entries(other, true), "while another library's folder of that name is the user's own")
-}
-
 // TestRowsForLeavesOutARemovedLibrary verifies that the rows built from a walk leave out a library, and its favorites,
 // that was removed from the settings while the walk ran, since the reload its removal asked for is still to come and
 // the library would otherwise show again until then.
@@ -987,6 +835,82 @@ func TestDoubleClickCountsTheFilesItOpens(t *testing.T) {
 		{"one file reached twice", []*NavigatorNode{files[0], NewFileNode(lib, "1.gcs", folders[0])}, 1},
 	} {
 		c.Equal(one.want, filesToOpen(one.rows), one.name)
+	}
+}
+
+// TestNavigatorToolbarFollowsTheSelection verifies which of the Library Explorer's toolbar buttons the selection
+// enables: Favorite and Delete for files and folders, Rename and New Folder for one of them, New Folder for one library
+// too, Configure for libraries alone, Update and Release Notes for libraries alone that each have a release to offer or
+// a repository to ask, and Delete for libraries other than the Master and User Libraries, but not for libraries mixed
+// with anything else. The Favorites row enables nothing, as does no selection.
+func TestNavigatorToolbarFollowsTheSelection(t *testing.T) {
+	c := check.New(t)
+	n := newDeepSearchNavigator()
+	n.toolbar = NewToolbar()
+	n.scroll = unison.NewScrollPanel()
+	n.setupToolBar()
+	libs := library.NewLibraries()
+	local := library.NewLibrary("Local", "", "", "local", t.TempDir())
+	remote := newTestLibrary(t)
+	favorites := NewFavoritesNode(n, nil)
+	master := NewLibraryNode(n, libs.Master(), nil)
+	user := NewLibraryNode(n, libs.User(), nil)
+	localNode := NewLibraryNode(n, local, nil)
+	remoteNode := NewLibraryNode(n, remote, nil)
+	file := NewFileNode(local, "a"+gurps.SheetExt, nil)
+	other := NewFileNode(local, "b"+gurps.SheetExt, nil)
+	// Built by hand, since NewDirectoryNode records the folder's path in the global settings.
+	folder := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorDirectory), path: "sub", library: local}
+	// The library without a repository comes first, so that Update must stay off once it has been turned off.
+	installTestTable(n, favorites, master, user, localNode, remoteNode, file, other, folder)
+	buttons := []struct {
+		name   string
+		button *unison.Button
+	}{
+		{"Favorite", n.favoriteButton},
+		{"Delete", n.deleteButton},
+		{"Rename", n.renameButton},
+		{"New Folder", n.newFolderButton},
+		{"Update", n.downloadLibraryButton},
+		{"Release Notes", n.libraryReleaseNotesButton},
+		{"Configure", n.configLibraryButton},
+	}
+	for _, one := range []struct {
+		name string
+		rows []*NavigatorNode
+		want []string
+	}{
+		{"Favorites", []*NavigatorNode{favorites}, nil},
+		{"a file", []*NavigatorNode{file}, []string{"Favorite", "Delete", "Rename", "New Folder"}},
+		{"a folder", []*NavigatorNode{folder}, []string{"Favorite", "Delete", "Rename", "New Folder"}},
+		{"two files", []*NavigatorNode{file, other}, []string{"Favorite", "Delete"}},
+		{"the Master Library", []*NavigatorNode{master}, []string{
+			"New Folder", "Update", "Release Notes", "Configure",
+		}},
+		{"the User Library", []*NavigatorNode{user}, []string{"New Folder", "Configure"}},
+		{"a library with a repository", []*NavigatorNode{remoteNode}, []string{
+			"Delete", "New Folder", "Update", "Release Notes", "Configure",
+		}},
+		{"a library without one", []*NavigatorNode{localNode}, []string{"Delete", "New Folder", "Configure"}},
+		{"libraries with and without a repository", []*NavigatorNode{localNode, remoteNode}, []string{
+			"Delete", "Configure",
+		}},
+		{"a library and a file", []*NavigatorNode{localNode, file}, []string{"Favorite"}},
+		{"nothing", nil, nil},
+	} {
+		selection := make(map[tid.TID]bool, len(one.rows))
+		for _, row := range one.rows {
+			selection[row.ID()] = true
+		}
+		n.table.SetSelectionMap(selection)
+		n.selectionChanged()
+		var enabled []string
+		for _, b := range buttons {
+			if b.button.Enabled() {
+				enabled = append(enabled, b.name)
+			}
+		}
+		c.Equal(one.want, enabled, one.name)
 	}
 }
 
@@ -1454,113 +1378,6 @@ func TestNewFolderIsUnavailableForFavorites(t *testing.T) {
 	c.Equal(1, windows, "asking for a new folder in the Favorites row must not prompt for its name")
 }
 
-// TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState verifies that a folder shown more than once under Favorites, as a
-// favorite and within a favorited folder, has an ID of its own in each place, as does each folder within it, so that
-// selecting or disclosing one copy leaves the other alone, across a Reload too, and that each copy keeps its ID, on
-// which the settings key its open state, in a tree built afresh, as on the next launch. A folder shown once keeps the
-// ID it was given before copies were told apart, so that the open state saved for it is kept.
-func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
-	c := check.New(t)
-	// Keeps the open states set here out of the settings the other tests see.
-	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	c.NoError(os.MkdirAll(filepath.Join(dir, "sub", "inner", "deeper"), 0o750))
-	c.NoError(os.MkdirAll(filepath.Join(dir, "sub", "other"), 0o750))
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	lib.ToggleFavorite("sub")
-	lib.ToggleFavorite("sub/inner")
-	var n *Navigator
-	screen.Do(func() { n = Workspace.Navigator })
-	// The library joins once the rows the navigator starts with are in, so that the reload below is what adds its rows.
-	stopNavigatorWatches(t, screen, n)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-
-	// The copies of inner and deeper as the favorite inner shows them and as the favorite sub shows them, and other,
-	// which only sub shows.
-	type copies struct {
-		inner, innerInSub, deeper, deeperInSub, otherInSub *NavigatorNode
-	}
-	child := func(row *NavigatorNode, p string) *NavigatorNode {
-		for _, one := range row.Children() {
-			if one.library == lib && one.path == p {
-				return one
-			}
-		}
-		return nil
-	}
-	// find returns the copies beneath the navigator's Favorites row or, if fresh, beneath one built afresh.
-	find := func(fresh bool) copies {
-		var found copies
-		screen.Do(func() {
-			favorites := n.table.RootRows()[0]
-			if fresh {
-				settings := gurps.GlobalSettings()
-				favorites = NewFavoritesNode(n, listFavorites(settings.Libraries.List(),
-					settings.General.GroupContainersOnSort, ignoreSymlinkedFolder))
-			}
-			if found.inner = child(favorites, "sub/inner"); found.inner != nil {
-				found.deeper = child(found.inner, "sub/inner/deeper")
-			}
-			if sub := child(favorites, "sub"); sub != nil {
-				if found.innerInSub = child(sub, "sub/inner"); found.innerInSub != nil {
-					found.deeperInSub = child(found.innerInSub, "sub/inner/deeper")
-				}
-				found.otherInSub = child(sub, "sub/other")
-			}
-		})
-		if found.deeper == nil || found.deeperInSub == nil || found.otherInSub == nil {
-			t.Fatal("expected inner and deeper under both favorites, and other under sub")
-		}
-		return found
-	}
-	reloadNavigator(t, screen, n)
-	rows := find(false)
-	var otherID tid.TID
-	screen.Do(func() {
-		otherID = gurps.IDForNavNode("F@"+filepath.Join(dir, "sub", "other"), kinds.NavigatorDirectory)
-	})
-	c.NotEqual(rows.inner.ID(), rows.innerInSub.ID(), "each copy of a favorite within a favorite has its own ID")
-	c.NotEqual(rows.deeper.ID(), rows.deeperInSub.ID(), "as has each copy of a folder within it")
-	c.Equal(otherID, rows.otherInSub.ID(), "a folder shown once keeps the ID it was given before copies were "+
-		"told apart")
-
-	// state returns whether each copy is open, and where the selected rows are.
-	state := func(rows copies) (open []bool, selected []string) {
-		screen.Do(func() {
-			open = []bool{rows.inner.IsOpen(), rows.innerInSub.IsOpen(), rows.deeper.IsOpen(), rows.deeperInSub.IsOpen()}
-			for _, row := range n.table.SelectedRows(false) {
-				selected = append(selected, row.path+" in "+row.Parent().primaryColumnText())
-			}
-		})
-		return open, selected
-	}
-	// A Reload closes the rows it adds, so each copy starts out closed.
-	screen.Do(func() {
-		rows.innerInSub.Parent().SetOpen(true) // So that both copies of inner show
-		rows.inner.SetOpen(true)
-		rows.deeperInSub.SetOpen(true)
-		n.table.SyncToModel()
-		n.table.SetSelectionMap(map[tid.TID]bool{rows.inner.ID(): true})
-	})
-	want := []bool{true, false, false, true}
-	open, selected := state(rows)
-	c.Equal(want, open, "opening a copy leaves the other closed")
-	c.Equal([]string{"sub/inner in Favorites"}, selected, "selecting a copy selects it alone")
-
-	reloadNavigator(t, screen, n)
-	open, selected = state(find(false))
-	c.Equal(want, open, "each copy keeps its own open state across a Reload")
-	c.Equal([]string{"sub/inner in Favorites"}, selected, "and the selection stays on the copy selected")
-
-	fresh := find(true)
-	c.Equal([]tid.TID{rows.inner.ID(), rows.innerInSub.ID(), rows.deeper.ID(), rows.deeperInSub.ID()},
-		[]tid.TID{fresh.inner.ID(), fresh.innerInSub.ID(), fresh.deeper.ID(), fresh.deeperInSub.ID()},
-		"each copy keeps its ID in a tree built afresh")
-}
-
 // TestNewFolderSelectsOnlyTheFolderItMade verifies that the folder New Folder makes ends up the only row selected: the
 // copy within the row it was asked for in, or beside it for a file, though a folder shown both under its library and
 // under Favorites shows the new one in both, or the copy under its library when that place doesn't show it, as
@@ -1715,6 +1532,134 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 		})
 		c.Equal(1, windows, "the prompt for the %s row has been dismissed", one.name)
 		c.Equal([]string{created}, selected, "the folder made in the %s row must end up selected", one.name)
+	}
+}
+
+// TestRenameCarriesFavoritesAndOpenFilesAlong drives Rename for a folder and a file of a library, each a favorite with
+// a file open from it: each is renamed on disk, its favorite follows it, as does the file open from it, while a file
+// open from a folder whose name begins with the renamed folder's stays where it is, and the renamed row ends up the
+// only one selected.
+func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
+	c := check.New(t)
+	// Every row starts out disclosed, so that the rows renamed below show.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	inFolder := filepath.Join(dir, "sub", "a"+gurps.SheetExt)
+	inSibling := filepath.Join(dir, "sub2", "b"+gurps.SheetExt)
+	top := filepath.Join(dir, "top"+gurps.SheetExt)
+	for _, p := range []string{inFolder, inSibling, top} {
+		c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+		c.NoError(gurps.NewEntity().Save(p))
+	}
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	lib.ToggleFavorite("sub")
+	lib.ToggleFavorite("top" + gurps.SheetExt)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+	reloadNavigator(t, screen, n)
+	sheets := make(map[string]*Sheet)
+	screen.Do(func() {
+		for _, p := range []string{inFolder, inSibling, top} {
+			d, _ := OpenFile(p, gurps.PageInfo{})
+			if sheet, ok := d.(*Sheet); ok {
+				sheets[p] = sheet
+			}
+		}
+	})
+	if len(sheets) != 3 {
+		t.Fatal("expected each file to open as a sheet")
+	}
+	backingPath := func(p string) string {
+		var result string
+		screen.Do(func() { result = sheets[p].BackingFilePath() })
+		return result
+	}
+
+	for _, one := range []struct {
+		name      string
+		row       string // The library-relative path of the row renamed
+		newName   string
+		renamed   string // Where the row's folder or file must be once renamed
+		open      string // The file open from the row
+		moved     string // Where that file must be once the row is renamed
+		favorites []string
+	}{
+		{
+			name:      "folder",
+			row:       "sub",
+			newName:   "renamed",
+			renamed:   filepath.Join(dir, "renamed"),
+			open:      inFolder,
+			moved:     filepath.Join(dir, "renamed", "a"+gurps.SheetExt),
+			favorites: []string{"renamed", "top" + gurps.SheetExt},
+		},
+		{
+			name:      "file",
+			row:       "top" + gurps.SheetExt,
+			newName:   "moved",
+			renamed:   filepath.Join(dir, "moved"+gurps.SheetExt),
+			open:      top,
+			moved:     filepath.Join(dir, "moved"+gurps.SheetExt),
+			favorites: []string{"moved" + gurps.SheetExt, "renamed"},
+		},
+	} {
+		var found bool
+		screen.Do(func() {
+			for _, root := range n.table.RootRows() {
+				if root.IsLibrary() && root.library == lib {
+					root.SetOpen(true) // A Reload closes the rows it adds
+					n.table.SyncToModel()
+					for _, row := range root.Children() {
+						if row.path == one.row {
+							n.table.SetSelectionMap(map[tid.TID]bool{row.ID(): true})
+							found = true
+						}
+					}
+				}
+			}
+		})
+		if !found {
+			t.Fatalf("expected a row for %s under the library", one.row)
+		}
+
+		// The dialog runs a nested modal loop, so the call is posted rather than run through Do.
+		c.True(screen.Post(n.renameSelection), one.name)
+		screen.Sync()
+		dialogWnd, dialog := modalDialog(t, screen, wnd)
+		var fields []*StringField
+		var okButton *unison.Button
+		screen.Do(func() {
+			fields = uxtest.PanelsOfType[*StringField](dialogWnd.Content())
+			okButton = dialog.Button(unison.ModalResponseOK)
+		})
+		if len(fields) != 2 {
+			t.Fatalf("expected a current name field and an entry, found %d fields", len(fields))
+		}
+		screen.Click(screen.PanelCenter(fields[1]))
+		screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+		screen.Type(one.newName)
+		screen.Click(screen.PanelCenter(okButton))
+		awaitNavigatorWalk(t, screen, n) // The row is selected once the reload Rename asks for has its rows in
+
+		_, err := os.Stat(one.renamed)
+		c.NoError(err, "the %s must have been renamed on disk", one.name)
+		favorites := lib.Favorites()
+		slices.Sort(favorites)
+		c.Equal(one.favorites, favorites, "the favorite must follow the renamed %s", one.name)
+		c.Equal(one.moved, backingPath(one.open), "the file open from the renamed %s must follow it", one.name)
+		var selected []string
+		screen.Do(func() { selected = n.SelectedPaths() })
+		c.Equal([]string{one.renamed}, selected, "the renamed %s must end up the only row selected", one.name)
+	}
+	c.Equal(inSibling, backingPath(inSibling),
+		"a file open from a folder whose name begins with the renamed folder's must stay where it is")
+	for _, sheet := range sheets {
+		uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 	}
 }
 

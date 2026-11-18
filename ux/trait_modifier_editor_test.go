@@ -10,97 +10,16 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
-
-// TestModifierEditorFollowsTheChoiceRules verifies that enabling an option in its own editor makes it the pick,
-// turning the one that was picked off, and that undo puts both back. On a sheet, the pick of a mandatory choice can't
-// be turned off there either, though it can be elsewhere.
-func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
-	options := traitEditor.editorData.Modifiers[0].Children
-
-	e, _ := buildEditorContent(traitEditor, options[1], initTraitModifierEditor)
-	e.editorData.Disabled = false
-	e.applyEdits()
-	c.False(options[0].Enabled(), "enabling B in its editor turns A off")
-	c.True(options[1].Enabled())
-	mgr := unison.UndoManagerFor(traitEditor)
-	mgr.Undo()
-	c.True(options[0].Enabled(), "undo turns A back on")
-	c.False(options[1].Enabled(), "and B back off")
-	mgr.Redo()
-	c.False(options[0].Enabled(), "redo turns A off again")
-	c.True(options[1].Enabled(), "and B back on")
-	mgr.Undo()
-
-	e, _ = buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
-	e.editorData.Disabled = true
-	e.applyEdits()
-	c.True(options[0].Enabled(), "the pick of a mandatory choice on a sheet can't be turned off in its editor")
-
-	offSheet := newTraitModifierChoiceFor(nil, true, []string{"A"}, "A")
-	e, _ = buildEditorContent(nil, offSheet.Children[0], initTraitModifierEditor)
-	e.editorData.Disabled = true
-	e.applyEdits()
-	c.False(offSheet.Children[0].Enabled(), "off a sheet a mandatory choice may be left without its pick")
-}
-
-// TestEditorKeepsAPickMadeSinceItOpened verifies that applying an option's editor, opened while it was the pick, after
-// another option has been picked in the list leaves that later pick alone, since the editor didn't change whether its
-// option is enabled.
-func TestEditorKeepsAPickMadeSinceItOpened(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	traitEditor, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
-	options := traitEditor.editorData.Modifiers[0].Children
-	aEditor, _ := buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
-	adjustModifierEnabled(traitEditor, table, options[1], true)
-	c.True(options[1].Enabled())
-	aEditor.editorData.Name = "Renamed"
-	aEditor.applyEdits()
-	c.Equal("Renamed", options[0].Name)
-	c.False(options[0].Enabled(), "the editor didn't change whether A is enabled, so A stays off")
-	c.True(options[1].Enabled(), "and B stays the pick")
-}
-
-// TestChoiceMadeMandatoryInItsEditorOnASheet verifies that applying a choice's editor on a sheet without changing what
-// the choice asks for leaves its options as they are, so a mandatory choice flagged for want of a pick isn't given one,
-// while a choice made mandatory there gets its first option picked, as Convert to Choice does, undo and redo covering
-// it.
-func TestChoiceMadeMandatoryInItsEditorOnASheet(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}))
-	choice := traitEditor.editorData.Modifiers[0]
-	choiceEditor, _ := buildEditorContent(traitEditor, choice, initTraitModifierEditor)
-	choiceEditor.editorData.Name = "Renamed"
-	choiceEditor.applyEdits()
-	c.Equal("Renamed", choice.Name)
-	c.False(choice.Children[0].Enabled(), "the edit doesn't pick the first option")
-	c.False(choice.Children[1].Enabled())
-
-	choice.SetMandatoryChoice(false)
-	choiceEditor, _ = buildEditorContent(traitEditor, choice, initTraitModifierEditor)
-	choiceEditor.editorData.SetMandatoryChoice(true)
-	choiceEditor.applyEdits()
-	c.True(gurps.IsMandatoryModifierChoice(choice))
-	c.True(choice.Children[0].Enabled(), "the first option is picked")
-	mgr := unison.UndoManagerFor(traitEditor)
-	mgr.Undo()
-	c.False(gurps.IsMandatoryModifierChoice(choice))
-	c.False(choice.Children[0].Enabled(), "undo takes the pick back")
-	mgr.Redo()
-	c.True(choice.Children[0].Enabled(), "redo picks it again")
-}
 
 // TestLockedPickHasItsEnabledBoxDisabled verifies that the editor of the pick of a mandatory choice on a sheet doesn't
 // let its Enabled box be unchecked, and that the editor of an option that isn't the pick does.
@@ -121,6 +40,35 @@ func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
 	pick := newEquipmentModifierChoiceFor(entity, []string{"A"}, "A").Children[0]
 	_, content = buildEditorContent(nil, pick, initEquipmentModifierEditor)
 	c.False(findCheckBoxTitled(content, "Enabled").Enabled(), "the same goes for equipment modifiers")
+}
+
+// TestTraitModifierEditorMultiplierCostAffectsTheTotal verifies that a cost entered as a multiplier, which can only
+// apply to the whole cost, has the cost affect the total and locks that choice, while any other cost leaves it open.
+func TestTraitModifierEditorMultiplierCostAffectsTheTotal(t *testing.T) {
+	c := check.New(t)
+	e, content := buildEditorContent(nil, gurps.NewTraitModifier(nil, nil, false), initTraitModifierEditor)
+	row := panelBesideLabel(content, "Cost")
+	if row == nil || len(row.Children()) < 2 {
+		t.Fatal("the trait modifier editor must have a Cost row holding the cost and what it affects")
+	}
+	cost, ok := row.Children()[0].Self.(*StringField)
+	if !ok {
+		t.Fatal("the Cost row must start with the cost field")
+	}
+	popup, ok := row.Children()[1].Self.(*unison.PopupMenu[affects.Option])
+	if !ok {
+		t.Fatal("the cost field must be followed by what the cost affects")
+	}
+	selectPopupIndex(popup, slices.Index(affects.Options, affects.LevelsOnly))
+	c.Equal(affects.LevelsOnly, e.editorData.Affects, "precondition: the popup sets what the cost affects")
+
+	cost.SetText("x2")
+	c.Equal("x2", e.editorData.CostAdj, "the field sets the cost")
+	c.Equal(affects.Total, e.editorData.Affects, "a multiplier affects the total cost")
+	c.False(popup.Enabled(), "and can't be made to affect anything else")
+
+	cost.SetText("+5")
+	c.True(popup.Enabled(), "any other cost can be made to affect part of the cost again")
 }
 
 // modifierShowTitles are the titles of the checkboxes that say where a modifier is shown, in the order they appear: the

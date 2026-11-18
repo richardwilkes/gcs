@@ -381,7 +381,7 @@ func TestPageReferenceWithoutKeyOpensNothing(t *testing.T) {
 // TestPageReferencePromptRecordsTheChosenPDF verifies how the PDF chosen for a page reference that has no usable
 // mapping is recorded: in place of a mapping for its key whose PDF can no longer be read, keeping that mapping's page
 // offset, and otherwise under the key as the known keys and imported mappings spell it, with the colon that a key
-// ending in a digit is written with.
+// ending in a digit is written with, or as BX for a B page from 338 on, which is in the Basic Set's Campaigns book.
 func TestPageReferencePromptRecordsTheChosenPDF(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -415,6 +415,16 @@ func TestPageReferencePromptRecordsTheChosenPDF(t *testing.T) {
 			stored: []*gurps.PageRef{{ID: "PY120:", Path: gone, Offset: 3}},
 			ref:    "PY120:12",
 			want:   []gurps.PageRef{{ID: "PY120:", Path: chosen, Offset: 3}},
+		},
+		{
+			name: "under B for a Basic Set page before 338",
+			ref:  "B337",
+			want: []gurps.PageRef{{ID: "B", Path: chosen}},
+		},
+		{
+			name: "under BX for a Basic Set page from 338 on, in the Campaigns book",
+			ref:  "B338",
+			want: []gurps.PageRef{{ID: "BX", Path: chosen}},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

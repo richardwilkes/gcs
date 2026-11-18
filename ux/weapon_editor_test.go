@@ -65,3 +65,16 @@ func TestWeaponEditorFragmentationFieldsFollowTheDice(t *testing.T) {
 		c.False(e.isModified(), "and leaves the weapon as it started")
 	}
 }
+
+// TestWeaponEditorJetSetsRateOfFire verifies that applying a ranged weapon's editor gives its rate of fire the state of
+// the Jet check box, which edits its accuracy, so that clearing the box leaves the weapon no longer a jet.
+func TestWeaponEditorJetSetsRateOfFire(t *testing.T) {
+	c := check.New(t)
+	w := gurps.NewWeapon(gurps.NewTrait(nil, nil, false), false)
+	w.RateOfFire.Jet = true
+	w.Accuracy.Jet = false // As clearing the check box leaves it.
+	var we weaponEditor
+	we.preApply(w)
+	c.False(w.Accuracy.Jet, "the check box stays clear")
+	c.False(w.RateOfFire.Jet, "and the rate of fire follows it")
+}

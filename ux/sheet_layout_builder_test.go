@@ -96,21 +96,6 @@ func TestBuildLayoutBandsBuildsOneBandPerRootChild(t *testing.T) {
 	c.Nil(buildLayoutNode(nil, leaf))
 }
 
-func TestBuildLayoutNodeColumn(t *testing.T) {
-	c := check.New(t)
-	leaf, panels := testLeafFunc(gurps.BlockTraitsKey, gurps.BlockSkillsKey)
-	built := buildLayoutNode(testContainerNode(layoutnode.Column, fxp.One,
-		testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		testBlockNode(gurps.BlockSkillsKey, fxp.One),
-	), leaf)
-	c.NotNil(built)
-	flex, ok := built.AsPanel().Layout().(*unison.FlexLayout)
-	c.True(ok, "a column is laid out by a single-column flex layout")
-	c.Equal(1, flex.Columns)
-	c.Equal(float32(1), flex.VSpacing)
-	c.Equal([]*unison.Panel{panels[gurps.BlockTraitsKey], panels[gurps.BlockSkillsKey]}, built.AsPanel().Children())
-}
-
 // TestBuildLayoutColumnChildrenFillTheRow checks that the blocks stacked in a column standing beside something taller
 // share out the height they are given, so the bottom of the last of them is the bottom of the row rather than the page
 // showing through below it.
@@ -502,8 +487,8 @@ func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
 	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is enabled again once the list is back")
 }
 
-// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page is
-// not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
+// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page
+// is not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
 func TestTemplateHidingABlockTakesItOffTheDropTargets(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()

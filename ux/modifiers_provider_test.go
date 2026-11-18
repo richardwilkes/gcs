@@ -210,6 +210,13 @@ func TestCreateItemVariants(t *testing.T) {
 		c.Equal(variant == AlternateItemVariant, item.IsRitualMagic(), "spell %d", i)
 	}
 
+	equipment, ok := NewEquipmentProvider(entity, true, false).(*equipmentProvider)
+	c.True(ok, "the equipment provider must be the expected type")
+	group := createItemForTest(c, equipment, &equipment.listProvider, GroupContainerItemVariant, "equipment")
+	c.Equal([]*gurps.Equipment{group}, entity.CarriedEquipment, "the group must be added to the list")
+	c.True(group != nil && group.IsGroup() && !gurps.IsTemplateChoiceContainer(group),
+		"the group variant must create a group container, not a physical container or a choice")
+
 	mods := &traitModifierListProvider{}
 	traitMods, ok := NewTraitModifiersProvider(mods, false).(*modifiersProvider[*gurps.TraitModifier])
 	c.True(ok, "the traitMods provider must be the expected type")

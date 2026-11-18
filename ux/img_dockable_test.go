@@ -12,13 +12,19 @@ package ux
 import (
 	"bytes"
 	"compress/gzip"
+	"image"
+	imagepng "image/png"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/canvas/codecs"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/unison"
 )
 
 const sampleSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16" width="48" height="32">` +
@@ -77,6 +83,39 @@ func TestLoadSVGFromFile(t *testing.T) {
 		c.Equal(float32(16), vector.Size().Height, tc.name)
 		c.Equal(float32(48), vector.SuggestedSize().Width, tc.name)
 		c.Equal(float32(32), vector.SuggestedSize().Height, tc.name)
+	}
+}
+
+// TestImageDockableShowsKindAndSize verifies that an image opens whether it is a vector or a raster one, with its
+// toolbar showing the kind of image and its size in pixels.
+func TestImageDockableShowsKindAndSize(t *testing.T) {
+	c := check.New(t)
+	codecs.Register() // done when the application starts, which this test skips
+	dir := t.TempDir()
+	var png bytes.Buffer
+	c.NoError(imagepng.Encode(&png, image.NewRGBA(image.Rect(0, 0, 3, 2))))
+	for _, tc := range []struct {
+		file string
+		data []byte
+		kind string
+		size string
+	}{
+		{file: "picture.svg", data: []byte(sampleSVG), kind: "SVG", size: "24 x 16 pixels"},
+		{file: "picture.png", data: png.Bytes(), kind: "PNG", size: "3 x 2 pixels"},
+	} {
+		p := filepath.Join(dir, tc.file)
+		c.NoError(os.WriteFile(p, tc.data, 0o600), tc.file)
+		d, err := NewImageDockable(p)
+		c.NoError(err, tc.file)
+		if err != nil {
+			continue
+		}
+		var texts []string
+		for _, label := range uxtest.PanelsOfType[*unison.Label](d.AsPanel()) {
+			texts = append(texts, label.String())
+		}
+		c.True(slices.Contains(texts, tc.kind), "%s: the toolbar shows %q, not the kind %q", tc.file, texts, tc.kind)
+		c.True(slices.Contains(texts, tc.size), "%s: the toolbar shows %q, not the size %q", tc.file, texts, tc.size)
 	}
 }
 

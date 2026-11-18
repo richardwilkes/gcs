@@ -422,49 +422,6 @@ func TestDisclosingARowOnALaterPageFillsThePagesAgain(t *testing.T) {
 	c.True(onSheet, "the focus must stay on the sheet")
 }
 
-// TestRevealingARowOnALaterPageScrollsToIt verifies that revealing a row inside a closed container a list shows on a
-// later page, as choosing a search match does, scrolls the page holding it into view. Scrolling before the pages are
-// filled again for the disclosed rows, or within the list's first view, fails it.
-func TestRevealingARowOnALaterPageScrollsToIt(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	var target *gurps.Trait
-	sheet := openPaginatedSheet(t, screen, func(entity *gurps.Entity) []*gurps.Trait {
-		traits := plainTraits(entity, 150)
-		bag := gurps.NewTrait(entity, nil, true)
-		bag.Name = "Bag"
-		bag.SetOpen(false)
-		bag.Children = plainTraits(entity, 80)
-		for _, child := range bag.Children {
-			child.SetParent(bag)
-		}
-		target = bag.Children[len(bag.Children)-1]
-		return append(traits, bag)
-	})
-	table := sheet.Traits.Table
-	var before, after float32
-	var index int
-	var inView, laterPage bool
-	screen.Do(func() {
-		sheet.scroll.SetPosition(0, 0)
-		_, before = sheet.scroll.Position()
-		node := table.RootRows()[len(table.RootRows())-1].Children()[79]
-		revealRow(table, node)
-	})
-	screen.Do(func() {
-		_, after = sheet.scroll.Position()
-		index = rowIndexForData(table, target)
-		if index >= 0 {
-			inView = rowInView(table, index)
-			laterPage = table.ViewForRow(index) != table
-		}
-	})
-	c.True(index >= 0, "the row must be disclosed")
-	c.True(laterPage, "the row must be on a later page than the list's first")
-	c.True(after > before, "the view must scroll down to the row")
-	c.True(inView, "the row must be in view")
-}
-
 // TestDropOnAPaginatedSheetGoesToTheEndOfTheList verifies that an item dropped anywhere on a sheet whose list goes on
 // over several pages is rerouted to the view of the list showing its last row, so that it lands at the end of the
 // list. Rerouting it to the list's first view, which ends on an earlier page, would insert it there instead.
@@ -485,7 +442,8 @@ func TestDropOnAPaginatedSheetGoesToTheEndOfTheList(t *testing.T) {
 // TestEditingTheLayoutShowsAPaginatedSheetContinuously verifies that editing the block layout of a sheet shown as pages
 // shows it as one continuous page, which the editor's overlay covers, for as long as the editing lasts, and that the
 // pages come back once it is over, all without changing the user's choice of pages. Leaving the pages up while the
-// layout is edited, or not putting them back after, fails it.
+// layout is edited, keeping a page or a list's range of rows left over from them, or not putting them back after, fails
+// it.
 func TestEditingTheLayoutShowsAPaginatedSheetContinuously(t *testing.T) {
 	c := check.New(t)
 	sheet := newPaginatedTestSheetWithTraits(t, 150)
@@ -496,6 +454,15 @@ func TestEditingTheLayoutShowsAPaginatedSheetContinuously(t *testing.T) {
 	c.Equal(1, len(sheet.grid.pages), "the layout must be edited on one continuous page")
 	c.False(sheet.page.Force, "the continuous page must be as tall as its content")
 	c.Equal(1, len(sheet.Traits.Table.Views()), "no list may go on past the continuous page")
+	start, endBefore := sheet.Traits.CurrentDrawRowRange()
+	c.Equal([2]int{0, sheet.Traits.RowCount()}, [2]int{start, endBefore}, "the list must show every row")
+	shown := 0
+	for _, child := range sheet.grid.Children() {
+		if _, ok := child.Self.(*Page); ok {
+			shown++
+		}
+	}
+	c.Equal(1, shown, "no other page may be left in the grid")
 	c.Equal(sheet.page.FrameRect(), sheet.layoutEditor.overlay.FrameRect(), "the overlay must cover the page")
 	sheet.toggleLayoutEditing()
 	c.True(sheet.paginated, "leaving the editor must leave the choice of pages alone")

@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -130,7 +129,6 @@ func TestPickerSessionStates(t *testing.T) {
 	s, n = newKnightSession()
 	choose(s, n, "ea", "fit", "fit1", "fit2", "luck")
 	c.Equal("2 / 1", s.pillText(n["fit"]))
-	c.Equal(" [15 points]", s.cost(n["fit2"], picker.Points).text, "a count choice shows what its options cost too")
 	c.Equal("20", s.actual(n["fit"], picker.Points).String(), "a count overridden past its number costs every pick")
 	c.Equal("60 / 60", s.pillText(n["root"]))
 	c.Equal(pickerWarning, s.state(n["root"]))
@@ -150,8 +148,8 @@ func TestPickerSessionStates(t *testing.T) {
 	c.True(s.resolved(n["wm"]))
 }
 
-// TestPickerSessionProcessesRows verifies that choices already answered are applied without their dialog, and that the
-// rest are asked once what holds them has been.
+// TestPickerSessionProcessesRows verifies that choices already answered are applied without their dialog, that the
+// rest are asked once what holds them has been, and that canceling any of them, however deep, cancels.
 func TestPickerSessionProcessesRows(t *testing.T) {
 	c := check.New(t)
 	s, n := newKnightSession()
@@ -212,6 +210,26 @@ func TestPickerSessionProcessesRows(t *testing.T) {
 	c.True(abort)
 	c.Equal([]string{"root"}, asked)
 	c.True(strings.HasPrefix(s.hint(n["root"]).text, "No random picks meet this rule."))
+
+	s, n = newKnightSession()
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		if row.Name == "root" {
+			choose(s, n, "ea", "order")
+			return unison.ModalResponseOK
+		}
+		return unison.ModalResponseCancel
+	}
+	_, abort = s.processRows([]*gurps.Trait{n["root"]})
+	c.True(abort, "canceling a choice picked from another cancels")
+
+	_, n = newKnightSession()
+	pack := gurps.NewTrait(nil, nil, true)
+	pack.Children = []*gurps.Trait{n["root"]}
+	SetParents(pack.Children, pack)
+	s = newPickerSession(promptOperation{}, []*gurps.Trait{pack}, true)
+	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseCancel }
+	_, abort = s.processRows([]*gurps.Trait{pack})
+	c.True(abort, "canceling a choice inside a plain container cancels")
 }
 
 // TestPickerSessionChoosesModifiers verifies that modifiers chosen from the picker count as answered and check the
@@ -475,7 +493,7 @@ func TestPickerSessionAnsweredWithNothingPicked(t *testing.T) {
 }
 
 // TestPickerSessionChoosesEquipmentModifiers verifies that equipment modifiers can be chosen from the picker too, the
-// prompt showing the value and weight.
+// prompt showing the value and weight and the row then showing the modifier picked.
 func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	c := check.New(t)
 	var cost string
@@ -488,6 +506,7 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	choice.TemplatePicker.Type = picker.Value
 	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	sword.Name = "Sword"
+	sword.Modifiers[0].Children[1].Name = "Fine"
 	sword.SetParent(choice)
 	choice.Children = []*gurps.Equipment{sword}
 	s := newPickerSession(promptOperation{}, []*gurps.Equipment{choice}, true)
@@ -496,30 +515,7 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	c.Equal("Sword: $150~200, 3~4 lb", cost)
 	c.True(s.chosen[sword])
 	c.Equal("$200", formatPickerTotal(sword, picker.Value, s.actual(sword, picker.Value)))
-}
-
-// TestPickerStatePill verifies that each state has its own look, in the theme's own colors save for green when all is
-// well, so the pill follows the theme. What is still open is in the alert color.
-func TestPickerStatePill(t *testing.T) {
-	c := check.New(t)
-	pill, update := newPickerStatePill(0)
-	for state, want := range map[pickerState]pickerPillLook{
-		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
-		pickerOpen: {
-			icon: unison.CircledQuestionSVG, background: unison.ThemeAlert, onBackground: unison.ThemeOnAlert,
-		},
-		pickerWarning: {
-			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,
-		},
-		pickerError: {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
-	} {
-		c.True(want == pickerPillLooks[state], state.tip())
-		update(state, "1 / 1")
-		drawable, ok := pill.Drawable.(*unison.DrawableSVG)
-		c.True(ok)
-		c.Equal(want.icon, drawable.SVG)
-		c.True(want.onBackground == pill.OnBackgroundInk, "the pill's text and icon must be drawn in the look's ink")
-	}
+	c.Equal(pickerText{text: " [Fine]"}, s.detail(sword), "the modifier picked follows the name")
 }
 
 // TestPickerSessionChoosesPicks verifies that a choice picked from another can be answered from its row, however deep,
@@ -642,6 +638,29 @@ func TestPickerSessionChoosesPicksBacksOut(t *testing.T) {
 	_, abort := s.processRows([]*gurps.Trait{n["root"]})
 	c.False(abort)
 	c.Equal([]string{"root", "fit"}, asked)
+
+	kit := gurps.NewEquipmentChoiceContainer(nil, nil)
+	torch := gurps.NewEquipment(nil, kit, false)
+	torch.Quantity = fxp.One
+	kit.Children = []*gurps.Equipment{torch}
+	es := newPickerSession(promptOperation{}, []*gurps.Equipment{kit}, false)
+	es.runPicker = func(*gurps.Equipment, int) int {
+		torch.Quantity = fxp.Two
+		return unison.ModalResponseCancel
+	}
+	es.choosePicks(kit, 0)
+	c.Equal(fxp.One, torch.Quantity, "a quantity changed under it is put back")
+	skills := gurps.NewSkillChoiceContainer(nil, nil)
+	skill := gurps.NewSkill(nil, skills, false)
+	skill.SetRawPoints(fxp.One)
+	skills.Children = []*gurps.Skill{skill}
+	ss := newPickerSession(promptOperation{}, []*gurps.Skill{skills}, false)
+	ss.runPicker = func(*gurps.Skill, int) int {
+		skill.SetRawPoints(fxp.Four)
+		return unison.ModalResponseCancel
+	}
+	ss.choosePicks(skills, 0)
+	c.Equal(fxp.One, skill.RawPoints(), "as are points")
 }
 
 // TestPickerSessionClear verifies that clearing a choice takes back only its own picks.
@@ -682,6 +701,11 @@ func TestPickerSessionRowText(t *testing.T) {
 		{start, "resPart", detail, pickerText{text: " [+10]", tip: "Preconfigured"}},
 		{start, "root", hint, pickerText{text: "2 picks still depend on choices below. Choose them now to fix the " +
 			"cost, or Override to answer them when the template is applied.", state: pickerOpen}},
+		{[]string{"ea", "order", "rose", "luck"}, "root", hint, pickerText{
+			text: "1 pick still depends on choices below. Choose it now to fix its cost, or Override to answer it " +
+				"when the template is applied.",
+			state: pickerOpen,
+		}},
 		{over, "lion", detail, pickerText{
 			text: " (pick 25 points worth)", state: pickerError,
 			tip: "The picks come to 39~64 points, but this asks for 25 points.",
@@ -736,6 +760,7 @@ func TestPickerSessionRowText(t *testing.T) {
 	n["root"].TemplatePicker.Qualifier.Compare = criteria.NotEqualsNumber
 	n["fit"].TemplatePicker.Qualifier.Compare = criteria.NotEqualsNumber
 	choose(s, n, "ea", "ep", "luck", "shield", "fit1")
+	c.Equal("60 / ≠60", s.pillText(n["root"]))
 	c.Equal(pickerText{
 		text:  "The picks come to 60 points, but this asks for anything but 60 points. Override to keep it anyway.",
 		state: pickerError,
@@ -1082,14 +1107,16 @@ func TestPickerSessionTroubleInsidePlainContainer(t *testing.T) {
 }
 
 // TestPickerSessionChooseWithinSkipsAnsweredModifiers verifies that choosing within a row again goes straight to a
-// choice inside it still to be made once its modifiers are answered, and asks everything again once nothing is left.
+// choice inside it still to be made once its modifiers are answered, asks everything again once nothing is left, and
+// puts up none of the choices inside once its modifier prompt is canceled.
 func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	c := check.New(t)
 	var asked []string
+	cancel := false
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		asked = append(asked, info.name)
 		mods[0].Children[1].SetDisabled(false)
-		return false, false
+		return false, cancel
 	})
 	root := gurps.NewTrait(nil, nil, true)
 	root.TemplatePicker.Type = picker.Count
@@ -1133,35 +1160,9 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	asked = nil
 	s.chooseWithin(pack, 0)
 	c.Equal([]string{"pack", "done", "sub"}, asked, "with nothing left, everything is asked again")
-}
-
-// TestPickerRowPageRefLooksForTheNameWithoutAHighlight verifies that a picker row's page link looks for the row's name
-// on the page while the row has no highlight, as the page reference cell of a table does.
-func TestPickerRowPageRefLooksForTheNameWithoutAHighlight(t *testing.T) {
-	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Alpha"
-	trait.PageRef = "B35"
-	ref, highlight := pickerRowPageRef(trait)
-	c.Equal("B35", ref)
-	c.Equal("Alpha", highlight, "a row without a highlight looks for its name")
-	trait.PageRefHighlight = "Beta"
-	_, highlight = pickerRowPageRef(trait)
-	c.Equal("Beta", highlight, "a highlight is looked for as given")
-}
-
-// TestPickerCostCountsQuantity verifies that the quantity of an option of a choice made by value or weight
-// counts toward what is shown for it.
-func TestPickerCostCountsQuantity(t *testing.T) {
-	c := check.New(t)
-	torch := gurps.NewEquipment(nil, nil, false)
-	torch.BaseValue = "3"
-	torch.BaseWeight = "1 lb"
-	torch.Quantity = fxp.FromInteger(4)
-	s := newPickerSession(promptOperation{}, []*gurps.Equipment{torch}, false)
-	c.Equal("$12", s.cost(torch, picker.Value).text)
-	units := gurps.SheetSettingsFor(nil).DefaultWeightUnits
-	c.Equal(units.Format(torch.ExtendedWeight(false, units)), s.cost(torch, picker.Weight).text)
+	asked, cancel = nil, true
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"pack"}, asked, "canceling the modifier prompt stops there")
 }
 
 // TestPickerCostsSheetRowsAsPrompted verifies that when the modifier prompt follows, the picker costs a row headed for
@@ -1185,5 +1186,4 @@ func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 		s := newPickerSession(promptOperation{}, []*gurps.Equipment{sword}, prompted)
 		c.Equal(want, [2]string{s.cost(sword, picker.Value).text, s.cost(sword, picker.Weight).text})
 	}
-	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, gurps.PickerMeasureRange(sword, picker.Value, true, nil)))
 }

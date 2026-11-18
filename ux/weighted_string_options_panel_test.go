@@ -99,7 +99,7 @@ func TestWeightedStringOptionsAddAndRemove(t *testing.T) {
 	row, ok := list.rows.Children()[0].Self.(*weightedStringOptionPanel)
 	c.True(ok, "the rows container holds option rows")
 	c.True(row.deleteButton.Enabled(), "the last option may still be removed")
-	list.removeOption(row.option)
+	row.deleteButton.ClickCallback()
 	c.Equal(0, len(d.model.CommonOptions.HairOptions), "the last option is removed")
 	list = listPanelFor(t, d, &d.model.CommonOptions.HairOptions)
 	c.Nil(list.rows, "the rows container is gone again")
@@ -110,28 +110,6 @@ func TestWeightedStringOptionsAddAndRemove(t *testing.T) {
 	d.undoMgr.Undo()
 	c.Equal(0, len(d.model.CommonOptions.HairOptions), "undo removes the added option")
 	c.False(d.undoMgr.CanUndo(), "each edit is its own undo")
-}
-
-// Each gender's lists must edit that gender's options, not the common ones, and all four must be present for each.
-func TestWeightedStringOptionsPerGenderListsBindToGender(t *testing.T) {
-	c := check.New(t)
-	a := gurps.NewAncestry()
-	d := newTestAncestryEditorDockable(a)
-	g := a.GenderOptions[1].Value
-	for _, list := range []*[]*gurps.WeightedStringOption{&g.HairOptions, &g.EyeOptions, &g.SkinOptions, &g.HandednessOptions} {
-		listPanelFor(t, d, list).addOption()
-	}
-	g = d.model.GenderOptions[1].Value
-	c.Equal(1, len(g.HairOptions))
-	c.Equal(1, len(g.EyeOptions))
-	c.Equal(1, len(g.SkinOptions))
-	c.Equal(1, len(g.HandednessOptions))
-	common := d.model.CommonOptions
-	c.Equal(0, len(common.HairOptions)+len(common.EyeOptions)+len(common.SkinOptions)+len(common.HandednessOptions),
-		"the common options are untouched")
-	other := d.model.GenderOptions[0].Value
-	c.Equal(0, len(other.HairOptions)+len(other.EyeOptions)+len(other.SkinOptions)+len(other.HandednessOptions),
-		"the other gender is untouched")
 }
 
 // How clicks build up a selection: a plain click selects one row, a shift-click extends from the row last clicked

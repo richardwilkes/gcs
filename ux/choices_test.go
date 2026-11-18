@@ -103,8 +103,8 @@ func TestChoicesOpeningState(t *testing.T) {
 }
 
 // TestChoicesForEquipment verifies that an equipment choice container's editor offers choices by count, value or
-// weight, taking a weight with its units, and that a group's does not. Changing the type between one entered as a
-// number and one entered as a weight keeps the qualifier, and its comparison, as they were.
+// weight, taking a weight entered with its units as the qualifier, and that a group's does not. Changing the type
+// between one entered as a number and one entered as a weight keeps the qualifier, and its comparison, as they were.
 func TestChoicesForEquipment(t *testing.T) {
 	c := check.New(t)
 	group := gurps.NewEquipmentGroup(nil, nil)
@@ -136,9 +136,13 @@ func TestChoicesForEquipment(t *testing.T) {
 	c.True(weightFieldIn(), "a weight must be entered with its units")
 	c.Equal(fxp.FromInteger(25), data.TemplatePicker.Qualifier.Qualifier, "the qualifier must be kept")
 	c.Equal(criteria.AtMostNumber, data.TemplatePicker.Qualifier.Compare, "the comparison must be kept")
+	for _, one := range uxtest.PanelsOfType[*WeightField](wrapper) {
+		one.SetText("2 lb")
+	}
+	c.Equal(fxp.Two, data.TemplatePicker.Qualifier.Qualifier, "a weight entered must become the qualifier")
 	typePopup.Select(picker.Value)
 	c.False(weightFieldIn(), "a value is not a weight")
-	c.Equal(fxp.FromInteger(25), data.TemplatePicker.Qualifier.Qualifier, "the qualifier must be kept")
+	c.Equal(fxp.Two, data.TemplatePicker.Qualifier.Qualifier, "the qualifier must be kept")
 	c.Equal(criteria.AtMostNumber, data.TemplatePicker.Qualifier.Compare, "the comparison must be kept")
 }
 

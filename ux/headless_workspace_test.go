@@ -369,6 +369,18 @@ func dialogButton(t *testing.T, screen *unison.HeadlessScreen, dialog *unison.Di
 	return button
 }
 
+// equipmentEditorsOpenFor returns how many equipment editors are open on the items.
+func equipmentEditorsOpenFor(screen *unison.HeadlessScreen, items ...*gurps.Equipment) int {
+	var count int
+	screen.Do(func() {
+		count = len(AllMatchingDockables(func(d unison.Dockable) bool {
+			e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+			return ok && slices.Contains(items, e.target)
+		}))
+	})
+	return count
+}
+
 // chooseOpenMenuItem clicks the item with the title in the popup menu open in wnd, failing the test if there is none.
 // An in-window menu item draws its title rather than holding it, so the item is found through its accessibility node.
 func chooseOpenMenuItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, title string) {

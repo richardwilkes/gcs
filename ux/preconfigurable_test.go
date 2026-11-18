@@ -34,6 +34,19 @@ func TestPreconfiguredCheckBoxHiddenOnSheets(t *testing.T) {
 	c.Equal(0, len(checkBoxesTitled(content, "Preconfigured")), "a loot sheet must not offer it")
 }
 
+// TestPreconfiguredCheckBoxOnContainersFollowsTheKind verifies that a container's editor offers the Preconfigured check
+// box only for a kind of container that has something to preconfigure: a trait container does, a skill container
+// doesn't.
+func TestPreconfiguredCheckBoxOnContainersFollowsTheKind(t *testing.T) {
+	c := check.New(t)
+	_, content := buildEditorContent(Rebuildable(NewTraitTableDockable("traits"+gurps.TraitsExt, nil)),
+		gurps.NewTrait(nil, nil, true), initTraitEditor)
+	c.Equal(1, len(checkBoxesTitled(content, "Preconfigured")), "a trait container offers it")
+	_, content = buildEditorContent(Rebuildable(NewSkillTableDockable("skills"+gurps.SkillsExt, nil)),
+		gurps.NewSkill(nil, nil, true), initSkillEditor)
+	c.Equal(0, len(checkBoxesTitled(content, "Preconfigured")), "a skill container must not offer it")
+}
+
 // TestPreconfiguredFlagKeptOutsideSheets verifies that only a sheet clears the Preconfigured flag of rows arriving in
 // it; a template and a library keep it, so that it is honored when their rows are copied onward.
 func TestPreconfiguredFlagKeptOutsideSheets(t *testing.T) {

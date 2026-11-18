@@ -129,6 +129,22 @@ func TestChooseFilesToOpen(t *testing.T) {
 	c.False(chosenOK, "a canceled dialog reports that nothing was chosen")
 	c.Nil(paths, "and returns no paths")
 	c.False(recorded, "a canceled dialog records no directory")
+
+	// Cancel the single-file chooser, which has no first file to hand back.
+	chosen = "unchanged"
+	returned = false
+	c.True(screen.Post(func() {
+		chosen, chosenOK = chooseFileToOpen(freshKey, "txt")
+		returned = true
+	}))
+	screen.Sync()
+	modalDialog(t, screen, wnd)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "escape has dismissed the dialog")
+	c.True(returned, "the canceled single-file call has returned")
+	c.False(chosenOK, "a canceled single-file dialog reports that nothing was chosen")
+	c.Equal("", chosen, "and returns no file")
 }
 
 // TestChooseFileToOpenNearStartsInThePathsDirectory verifies that choosing a file in place of another starts the dialog

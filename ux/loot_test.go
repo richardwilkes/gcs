@@ -73,57 +73,62 @@ func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	c.Equal(0, sheet.Equipment.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
 }
 
-// TestLootSheetIgnoresTheDefaultsItDoesNotShow verifies that a change to the default block layout, attribute
-// definitions or body type, none of which a loot sheet shows, leaves the loot sheet alone, as does any change made in
-// some character's per-sheet settings, since a loot sheet reads only the global ones. Setting the default layout or
-// applying the default attribute definitions used to fully rebuild every open loot sheet.
-func TestLootSheetIgnoresTheDefaultsItDoesNotShow(t *testing.T) {
+// TestLootSheetFollowsOnlyTheGlobalSheetSettings verifies that a change to the global sheet settings, which a loot
+// sheet shows but doesn't save, rebuilds the loot sheet without bumping its modification timestamp, its lists rebuilt
+// anew when the change calls for that, while a change to the default block layout, attribute definitions or body type,
+// none of which a loot sheet shows, or to some character's per-sheet settings leaves the loot sheet alone.
+func TestLootSheetFollowsOnlyTheGlobalSheetSettings(t *testing.T) {
 	for _, one := range []struct {
-		name   string
-		entity *gurps.Entity
-		parts  gurps.SheetSettingsParts
+		name        string
+		entity      *gurps.Entity
+		parts       gurps.SheetSettingsParts
+		fullRebuild bool
+		// toggleTLColumn hides or shows the TL column before the change is reported, which a loot sheet only shows
+		// once its lists are rebuilt anew.
+		toggleTLColumn bool
+		rebuilds       bool
 	}{
 		{
-			name:  "defaults the loot sheet doesn't show",
-			parts: gurps.SheetSettingsLayoutPart | gurps.SheetSettingsAttributesPart | gurps.SheetSettingsBodyTypePart,
+			name:     "global settings",
+			parts:    gurps.SheetSettingsGeneralPart,
+			rebuilds: true,
 		},
 		{
-			name:   "another entity's settings",
-			entity: gurps.NewEntity(),
-			parts:  gurps.SheetSettingsAllParts,
+			name:           "global settings calling for a full rebuild",
+			parts:          gurps.SheetSettingsGeneralPart,
+			fullRebuild:    true,
+			toggleTLColumn: true,
+			rebuilds:       true,
+		},
+		{
+			name:        "defaults the loot sheet doesn't show",
+			parts:       gurps.SheetSettingsLayoutPart | gurps.SheetSettingsAttributesPart | gurps.SheetSettingsBodyTypePart,
+			fullRebuild: true,
+		},
+		{
+			name:        "another entity's settings",
+			entity:      gurps.NewEntity(),
+			parts:       gurps.SheetSettingsAllParts,
+			fullRebuild: true,
 		},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			c := check.New(t)
 			sheet := newTestLootSheet(t)
 			sheet.loot.ModifiedOn = jio.Time{}
+			if one.toggleTLColumn {
+				settings := gurps.GlobalSettings().SheetSettings()
+				uxtest.SwapForTest(t, &settings.HideTLColumn, !settings.HideTLColumn)
+			}
 			before := currentDisplayStamp()
 
-			sheet.SheetSettingsUpdated(one.entity, one.parts, true)
-			c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "the change must not touch the loot sheet")
-			c.Equal(before, currentDisplayStamp(), "the change must not rebuild the loot sheet")
+			sheet.SheetSettingsUpdated(one.entity, one.parts, one.fullRebuild)
+			c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "the change is no edit of the loot")
+			c.Equal(one.rebuilds, currentDisplayStamp() != before, "whether the loot sheet is rebuilt")
+			c.Equal(one.rebuilds, sheet.Equipment.syncedAtStamp() > before, "whether the equipment list is synced")
+			c.Equal(one.rebuilds, sheet.Notes.syncedAtStamp() > before, "whether the notes list is synced")
+			c.False(sheet.Equipment.needReconstruction(), "the equipment list's columns follow the settings")
 		})
-	}
-}
-
-// TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified verifies that a change to the global sheet settings, which
-// a loot sheet shows but doesn't save, rebuilds the loot sheet without bumping its modification timestamp. Applying the
-// default attribute definitions or setting the default block layout used to leave every open loot sheet showing
-// "Modified" as of that moment, and saving that date, for an edit never made to it.
-func TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestLootSheet(t)
-	sheet.loot.ModifiedOn = jio.Time{}
-
-	for _, fullRebuild := range []bool{false, true} {
-		before := currentDisplayStamp()
-		sheet.SheetSettingsUpdated(nil, gurps.SheetSettingsGeneralPart, fullRebuild)
-		c.Equal(jio.Time{}, sheet.loot.ModifiedOn,
-			"a global settings change is no edit of the loot (fullRebuild=%v)", fullRebuild)
-		c.True(sheet.Equipment.syncedAtStamp() > before,
-			"the loot sheet's lists must be synced with the new settings (fullRebuild=%v)", fullRebuild)
-		c.True(sheet.Notes.syncedAtStamp() > before,
-			"the loot sheet's lists must be synced with the new settings (fullRebuild=%v)", fullRebuild)
 	}
 }
 
@@ -148,6 +153,25 @@ func TestLootCandidatesUseWhatGroupsHold(t *testing.T) {
 		names = append(names, one.Name)
 	}
 	c.Equal([]string{"Ruby", "Diamond", "Chest"}, names)
+}
+
+// TestTreasureIsPickedFromWhatFitsTheValueLeft verifies that treasure is picked only from equipment of which there is
+// some, that is worth something and that is worth no more than the value left to reach, each weighted by its quantity,
+// since a pick worth nothing would never bring the treasure any closer to its target.
+func TestTreasureIsPickedFromWhatFitsTheValueLeft(t *testing.T) {
+	c := check.New(t)
+	cheap := newTradeTestItem(nil, "Cheap", "10", fxp.Three)
+	exact := newTradeTestItem(nil, "Exact", "50", fxp.Two)
+	choices, total, highest := pruneEquipmentList(fxp.FromInteger(50), []*gurps.Equipment{
+		cheap,
+		newTradeTestItem(nil, "None Left", "10", 0),
+		newTradeTestItem(nil, "Worthless", "0", fxp.Five),
+		newTradeTestItem(nil, "Too Dear", "51", fxp.One),
+		exact,
+	})
+	c.Equal([]*gurps.Equipment{cheap, exact}, choices, "only what fits the value left may be picked")
+	c.Equal(fxp.Five, total, "each is weighted by its quantity")
+	c.Equal(fxp.FromInteger(50), highest, "the most any one pick is worth")
 }
 
 // TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange checks that a field built from a stored value in its

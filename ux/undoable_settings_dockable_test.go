@@ -117,3 +117,55 @@ func TestUndoableSettingsButtonsCloseTheirSubEditorsFirst(t *testing.T) {
 		})
 	}
 }
+
+// TestUndoableSettingsCloseAsksWhetherToApplyChanges verifies that closing the attribute settings with changes pending
+// asks whether to apply them: applying closes with them applied, declining closes without them, and canceling leaves
+// the settings open with nothing applied.
+func TestUndoableSettingsCloseAsksWhetherToApplyChanges(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		answer  int  // the response given at the prompt
+		closed  bool // whether the settings close
+		applied bool // whether the settings' changes reach the defaults
+	}{
+		{name: "apply", answer: unison.ModalResponseOK, closed: true, applied: true},
+		{name: "decline", answer: unison.ModalResponseDiscard, closed: true},
+		{name: "cancel", answer: unison.ModalResponseCancel},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			global := gurps.GlobalSettings()
+			t.Cleanup(gurps.SyncGlobalSheetSettings) // Runs after the swap below is undone.
+			uxtest.SwapForTest(t, &global.Sheet, global.Sheet.Clone(nil))
+			var d *attributeSettingsDockable
+			screen.Do(func() {
+				defs := testAttrDefs("st")
+				global.Sheet.Attributes = defs.Clone()
+				d = newAttributeSettingsDockable(nil, defs)
+				d.TabTitle = "Attributes"
+				d.TabIcon = svg.Attributes
+				d.show()
+				d.model.Set["st"].Name = "Brawn"
+				d.MarkModified(nil)
+			})
+			screen.Post(func() { d.AttemptClose() })
+			_, dialog := modalDialog(t, screen, wnd)
+			screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, tc.answer)))
+			var open bool
+			var attrName string
+			screen.Do(func() {
+				open = slices.ContainsFunc(AllDockables(), func(one unison.Dockable) bool {
+					return one.AsPanel().Self == d
+				})
+				attrName = global.Sheet.Attributes.Set["st"].Name
+			})
+			c.Equal(!tc.closed, open, "the settings stay open: %v", !tc.closed)
+			if tc.applied {
+				c.Equal("Brawn", attrName, "the settings' changes are applied")
+			} else {
+				c.Equal("ST", attrName, "the settings' changes are not applied")
+			}
+		})
+	}
+}

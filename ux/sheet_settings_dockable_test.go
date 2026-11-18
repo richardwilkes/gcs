@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"image/color"
 	"os"
 	"path/filepath"
@@ -21,6 +22,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -57,15 +60,6 @@ func (r *sheetSettingsRecorder) SheetSettingsUpdated(entity *gurps.Entity, parts
 	r.entities = append(r.entities, entity)
 	r.parts = append(r.parts, parts)
 	r.updates = append(r.updates, fullRebuild)
-}
-
-func (r *sheetSettingsRecorder) sawFullRebuild() bool {
-	for _, full := range r.updates {
-		if full {
-			return true
-		}
-	}
-	return false
 }
 
 type entityPanelForTest struct {
@@ -131,59 +125,91 @@ func flipCheckboxOptions(s *gurps.SheetSettings) {
 	s.EquipmentValueFormat.PadWithZeros = !s.EquipmentValueFormat.PadWithZeros
 }
 
-// TestSheetSettingsResetNotifiesSheets checks that resetting the sheet settings tells the open sheets to rebuild.
-// sync() only pushes the new values into this dockable's own widgets, and assigning a CheckBox's State does not fire
-// its ClickCallback, so settings differing only in the checkbox-backed options used to leave the open sheet showing the
-// old columns and values until some unrelated edit happened to trigger a rebuild.
-func TestSheetSettingsResetNotifiesSheets(t *testing.T) {
-	c := check.New(t)
-	owner := newEntityPanelWithFlaggedSettings()
-	d, recorder := newTestSheetSettingsDockable(t, owner)
-
-	d.reset()
-
-	c.Equal(gurps.GlobalSettings().Sheet.HideTLColumn, owner.entity.SheetSettings.HideTLColumn,
-		"reset must restore the default options")
-	c.True(len(recorder.updates) != 0, "reset must notify the open sheets")
-	c.True(recorder.sawFullRebuild(), "reset must ask for a full rebuild, since column visibility may have changed")
-	c.Equal(gurps.SheetSettingsAllParts, recorder.parts[0], "reset replaces the settings wholesale, so every part changed")
-}
-
-// TestSheetSettingsLoadNotifiesSheets checks the same for importing a sheet settings file: a file differing only in the
-// checkbox-backed options must still refresh the open sheets.
-func TestSheetSettingsLoadNotifiesSheets(t *testing.T) {
-	c := check.New(t)
-	owner := newEntityPanelWithFlaggedSettings()
-	d, recorder := newTestSheetSettingsDockable(t, owner)
-
-	// The file holds the global defaults, i.e. it differs from the owner's current settings only in the checkboxes.
-	dir := t.TempDir()
-	name := "settings." + gurps.SheetSettingsExt
-	c.NoError(gurps.GlobalSettings().Sheet.Save(filepath.Join(dir, name)))
-	c.NoError(d.load(os.DirFS(dir), name))
-
-	c.Equal(gurps.GlobalSettings().Sheet.HideTLColumn, owner.entity.SheetSettings.HideTLColumn,
-		"load must apply the file's options")
-	c.True(len(recorder.updates) != 0, "load must notify the open sheets")
-	c.True(recorder.sawFullRebuild(), "load must ask for a full rebuild, since column visibility may have changed")
-	c.Equal(gurps.SheetSettingsAllParts, recorder.parts[0], "load replaces the settings wholesale, so every part changed")
-}
-
-// TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks documents why the notification above has to be explicit: sync()
-// assigns each CheckBox's State directly, which unison does not treat as a click, so the callbacks that would otherwise
-// push the change out to the sheets never run.
-func TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks(t *testing.T) {
-	c := check.New(t)
-	owner := newEntityPanelWithFlaggedSettings()
-	d, recorder := newTestSheetSettingsDockable(t, owner)
-
-	// The replacement differs from the owner's current settings only in the checkbox-backed options.
-	replacement := gurps.GlobalSettings().Sheet.Clone(owner.entity)
-	owner.entity.SheetSettings = replacement
-	replacement.SetOwningEntity(owner.entity)
-	d.sync()
-
-	c.Equal(0, len(recorder.updates), "sync() alone must not be relied upon to notify the sheets")
+// TestSheetSettingsReplacingThemNotifiesSheets checks that resetting a sheet's settings or the defaults, or loading a
+// settings file into them, puts the new settings in place and tells the open sheets once that every part changed, with
+// a full rebuild, though the settings differ only in the options shown as checkboxes, or a sheet's only in a skill
+// level cap, which no checkbox shows: sync() shows the new settings in the dockable's own widgets without telling the
+// sheets, and assigning a CheckBox's State is not a click. A file read afterward without settings of its own takes on
+// the new defaults, and a file that can't be loaded changes nothing.
+func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
+	reset := func(_ *testing.T, d *sheetSettingsDockable, _ *gurps.SheetSettings) error {
+		d.reset()
+		return nil
+	}
+	load := func(t *testing.T, d *sheetSettingsDockable, want *gurps.SheetSettings) error {
+		dir := t.TempDir()
+		name := "settings" + gurps.SheetSettingsExt
+		if err := want.Save(filepath.Join(dir, name)); err != nil {
+			return err
+		}
+		return d.load(os.DirFS(dir), name)
+	}
+	for _, one := range []struct {
+		name     string
+		defaults bool // the defaults are replaced rather than a sheet's settings
+		capOnly  bool // the sheet's settings differ from the defaults only in holding a skill level cap
+		replace  func(t *testing.T, d *sheetSettingsDockable, want *gurps.SheetSettings) error
+		fails    bool
+	}{
+		{name: "resetting a sheet's", replace: reset},
+		{name: "loading a sheet's", replace: load},
+		{name: "resetting a sheet's that differ only in a cap", capOnly: true, replace: reset},
+		{name: "loading a sheet's that differ only in a cap", capOnly: true, replace: load},
+		{name: "resetting the defaults", defaults: true, replace: reset},
+		{name: "loading the defaults", defaults: true, replace: load},
+		{
+			name: "loading a file that isn't there",
+			replace: func(t *testing.T, d *sheetSettingsDockable, _ *gurps.SheetSettings) error {
+				return d.load(os.DirFS(t.TempDir()), "missing"+gurps.SheetSettingsExt)
+			},
+			fails: true,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			var owner EntityPanel
+			var entity *gurps.Entity
+			var want *gurps.SheetSettings
+			if one.defaults {
+				global := gurps.GlobalSettings()
+				t.Cleanup(gurps.SyncGlobalSheetSettings) // Runs after the swap below is undone.
+				flagged := gurps.FactorySheetSettings()
+				flipCheckboxOptions(flagged)
+				uxtest.SwapForTest(t, &global.Sheet, flagged)
+				gurps.SyncGlobalSheetSettings()
+				want = gurps.FactorySheetSettings()
+			} else {
+				p := newEntityPanelWithFlaggedSettings()
+				if one.capOnly {
+					flipCheckboxOptions(p.entity.SheetSettings) // Back to the defaults.
+					p.entity.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{newTestSkillLevelCap("Stealth", 12)}
+				}
+				owner, entity = p, p.entity
+				want = gurps.GlobalSettings().Sheet
+			}
+			d, recorder := newTestSheetSettingsDockable(t, owner)
+			before := checkBoxOptionsOf(d.settings())
+			err := one.replace(t, d, want)
+			if one.fails {
+				c.HasError(err, "the failure is returned")
+				c.Equal(before, checkBoxOptionsOf(d.settings()), "the settings are left as they were")
+				c.Equal(0, len(recorder.updates), "nothing is reported")
+				return
+			}
+			c.NoError(err)
+			c.Equal(checkBoxOptionsOf(want), checkBoxOptionsOf(d.settings()), "the new settings are in place")
+			c.Equal([]*gurps.Entity{entity}, recorder.entities, "the change is reported once, for the settings replaced")
+			c.Equal([]gurps.SheetSettingsParts{gurps.SheetSettingsAllParts}, recorder.parts, "as one to every part")
+			c.Equal([]bool{true}, recorder.updates, "with a full rebuild, since column visibility may have changed")
+			if one.defaults {
+				var read gurps.Entity
+				read.DiscardCaches()
+				c.NoError(jio.Unmarshal(fmt.Appendf(nil, `{"version":%d}`, jio.CurrentDataVersion), &read))
+				c.Equal(checkBoxOptionsOf(want), checkBoxOptionsOf(read.SheetSettings),
+					"a file read without settings of its own takes on the new defaults")
+			}
+		})
+	}
 }
 
 type numberFormatWidgets struct {
@@ -329,6 +355,98 @@ func TestSheetSettingsMarginFieldsWriteTheirOwnSetting(t *testing.T) {
 	for i, one := range d.marginFields {
 		c.Equal(margins()[i].String(), one.field.Text(), "field #%d must show its margin", i)
 	}
+}
+
+// TestSheetSettingsControlsWriteAndShowTheirSetting checks that the damage progression, units, paper size and
+// orientation controls each write their setting when changed, telling the open sheets, that the description under the
+// damage progression follows it, that a paper size that can't be parsed is refused, and that sync() shows each control
+// the setting of replaced settings.
+func TestSheetSettingsControlsWriteAndShowTheirSetting(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, recorder := newTestSheetSettingsDockable(t, owner)
+	description, ok := uxtest.FirstPanelOfType[*unison.Markdown](d.damageProgressionPopup.Parent())
+	if !ok {
+		t.Fatal("the damage progression must have a description")
+	}
+	controls := []struct {
+		name    string
+		change  func()                           // changes the control as a user would
+		changed any                              // the setting the change writes
+		setting func(s *gurps.SheetSettings) any // reads the setting the control edits
+		replace func(s *gurps.SheetSettings)     // gives the setting another value, for sync() to show
+		shown   func() any
+	}{
+		{
+			name:    "damage progression",
+			change:  func() { d.damageProgressionPopup.Select(progression.KnowingYourOwnStrength) },
+			changed: progression.KnowingYourOwnStrength,
+			setting: func(s *gurps.SheetSettings) any { return s.DamageProgression },
+			replace: func(s *gurps.SheetSettings) { s.DamageProgression = progression.Tbone2 },
+			shown:   func() any { v, _ := d.damageProgressionPopup.Selected(); return v },
+		},
+		{
+			name:    "length units",
+			change:  func() { d.lengthUnitsPopup.Select(fxp.Meter) },
+			changed: fxp.Meter,
+			setting: func(s *gurps.SheetSettings) any { return s.DefaultLengthUnits },
+			replace: func(s *gurps.SheetSettings) { s.DefaultLengthUnits = fxp.Inch },
+			shown:   func() any { v, _ := d.lengthUnitsPopup.Selected(); return v },
+		},
+		{
+			name:    "weight units",
+			change:  func() { d.weightUnitsPopup.Select(fxp.Kilogram) },
+			changed: fxp.Kilogram,
+			setting: func(s *gurps.SheetSettings) any { return s.DefaultWeightUnits },
+			replace: func(s *gurps.SheetSettings) { s.DefaultWeightUnits = fxp.Gram },
+			shown:   func() any { v, _ := d.weightUnitsPopup.Selected(); return v },
+		},
+		{
+			name:    "paper size",
+			change:  func() { d.paperSizeField.SetText("A4") },
+			changed: "a4",
+			setting: func(s *gurps.SheetSettings) any { return s.Page.Size },
+			replace: func(s *gurps.SheetSettings) { s.Page.Size = "legal" },
+			shown:   func() any { return d.paperSizeField.Text() },
+		},
+		{
+			name:    "orientation",
+			change:  func() { d.orientationPopup.Select(paper.Landscape) },
+			changed: paper.Landscape,
+			setting: func(s *gurps.SheetSettings) any { return s.Page.Orientation },
+			replace: func(s *gurps.SheetSettings) { s.Page.Orientation = paper.Portrait },
+			shown:   func() any { v, _ := d.orientationPopup.Selected(); return v },
+		},
+	}
+	s := owner.entity.SheetSettings
+	for _, one := range controls {
+		updates := len(recorder.updates)
+		one.change()
+		c.Equal(one.changed, one.setting(s), "the %s control writes its setting", one.name)
+		c.Equal(updates+1, len(recorder.updates), "a change to the %s is reported", one.name)
+	}
+	c.Equal(progression.KnowingYourOwnStrength.AltString(), string(description.ContentBytes()),
+		"the description follows the damage progression chosen")
+
+	updates := len(recorder.updates)
+	d.paperSizeField.SetText("nonsense")
+	c.Equal("a4", s.Page.Size, "a paper size that can't be parsed is not written")
+	c.Equal(updates, len(recorder.updates), "nor reported")
+	c.True(d.paperSizeField.Invalid(), "and the field says so")
+
+	replacement := s.Clone(owner.entity)
+	wants := make([]any, 0, len(controls))
+	for _, one := range controls {
+		one.replace(replacement)
+		wants = append(wants, one.setting(replacement))
+	}
+	owner.entity.SheetSettings = replacement
+	replacement.SetOwningEntity(owner.entity)
+	d.sync()
+	for i, one := range controls {
+		c.Equal(wants[i], one.shown(), "sync shows the %s of the replacement", one.name)
+	}
+	c.Equal(progression.Tbone2.AltString(), string(description.ContentBytes()), "and the description follows it")
 }
 
 // checkBoxOptionsOf returns the settings' boolean options by name: the top-level boolean settings along with the

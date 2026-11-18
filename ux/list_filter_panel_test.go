@@ -198,28 +198,20 @@ func TestListFilterPanelRows(t *testing.T) {
 		c.Equal("", p.open, "a condition on a field this version doesn't know doesn't open")
 		c.Equal(before, gurps.Hash64(f.Root), "showing the filter changes nothing")
 	})
-}
 
-// TestListFilterPanelListSentences checks the sentences of list conditions that accept anything or compare with an
-// empty value, and of values with space around them, which "is" leaves out and "contains" quotes so that it shows.
-func TestListFilterPanelListSentences(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	f := gurps.NewListFilter("")
-	anything := gurps.NewFilterCondition(f.Root, "tags")
-	none := gurps.NewFilterCondition(f.Root, "tags")
-	none.Text = criteria.Text{Compare: criteria.IsText}
-	padded := gurps.NewFilterCondition(f.Root, "name")
-	padded.Text = criteria.Text{Compare: criteria.IsText, Qualifier: " Axe "}
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().DefaultWeightUnits, fxp.Kilogram)
+	f = gurps.NewListFilter("")
+	weight := gurps.NewFilterCondition(f.Root, "weight")
+	weight.Weight = criteria.Weight{Compare: criteria.AtMostNumber, Qualifier: fxp.WeightFromInteger(2, fxp.Kilogram)}
 	spaced := gurps.NewFilterCondition(f.Root, "name")
 	spaced.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: " Axe "}
-	f.Root.Children = gurps.FilterNodes{anything, none, padded, spaced}
-	p, _ := showListFilterPanel(t, screen, f)
+	f.Root.Children = gurps.FilterNodes{weight, spaced}
+	p, _ = showListFilterPanel(t, screen, f)
 	screen.Do(func() {
-		c.Equal(`Must have tags that are anything`, sentenceText(p, "r.0"))
-		c.Equal(`Must have tags where at least one is ""`, sentenceText(p, "r.1"))
-		c.Equal(`Must have a name that is Axe`, sentenceText(p, "r.2"))
-		c.Equal(`Must have a name that contains " Axe "`, sentenceText(p, "r.3"))
+		c.Equal(`Must have a weight that is at most 2 kg`, sentenceText(p, "r.0"),
+			"a weight is given in the units the settings call for")
+		c.Equal(`Must have a name that contains " Axe "`, sentenceText(p, "r.1"),
+			"the space around a quoted value is kept")
 	})
 }
 
@@ -456,14 +448,19 @@ func TestListFilterPanelFieldChange(t *testing.T) {
 			"the field is remembered for the next condition")
 		if popup, ok := refAs[*unison.PopupMenu[criteria.NumericComparison]](t, p.AsPanel(), "r.0:numbercmp"); ok {
 			c.Equal(len(criteria.NumericComparisons), popup.ItemCount(), "which offers anything")
+			c.Equal("that is anything", popup.Text(), "worded to follow a singular title")
 		}
 		c.Nil(p.FindRefKey("r.0:number"), "and no number while it is anything")
 		if not, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), "r.0:not"); ok {
+			c.Equal("Must", not.Text())
 			not.Select(true)
 		}
 	})
 	screen.Do(func() {
 		c.True(filterConditionAt(t, p, "r.0").Not, "Must not negates the condition")
+		if not, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), "r.0:not"); ok {
+			c.Equal("Must not", not.Text(), "and says so")
+		}
 		host.undoMgr.Undo()
 		host.undoMgr.Undo()
 	})

@@ -276,14 +276,19 @@ func TestPurchaseDialog(t *testing.T) {
 	click(dialog, unison.ModalResponseCancel)
 
 	// Turning off a kind of money spends none of it. While the payment is the automatic one, it is worked out again
-	// from the money left; once it has been changed, the rest is left as it is.
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = nil })
+	// from the money left; once it has been changed, the rest is left as it is. The merge choice starts as the dockable
+	// last settled it.
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = nil
+		buy.merge = false
+	})
 	dialog, fields = open()
 	screen.Do(func() { focused = dialog.Window().CurrentFocus() == fields[penny].AsPanel() })
 	c.True(focused, "the penny field holds the focus to begin with")
 	screen.Click(screen.PanelCenter(uses[penny]))
 	state = read(dialog, fields)
 	uxtest.CaptureScreen(t, c, screen, "purchase_left_out")
+	c.Equal(uncheck.Off, state.merge, "the merge choice starts as the dockable last settled it")
 	c.Equal([]uncheck.Enum{uncheck.Off, uncheck.On}, state.use)
 	c.Equal([]string{"0", "3"}, state.spend, "the automatic payment is worked out again without the pennies")
 	c.Equal([]bool{false, true}, state.spendOn, "money that is not paid with can't have a quantity")

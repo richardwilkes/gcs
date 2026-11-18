@@ -20,14 +20,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
-
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
-
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -197,7 +195,8 @@ func TestBuyDockableDropAndAutomaticPayment(t *testing.T) {
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
-	longbow := buyTestItem(nil, "Longbow", "45", 1)
+	// Listed with none, as a used-up item can be, the longbow is still bought one at a time.
+	longbow := buyTestItem(nil, "Longbow", "45", 0)
 	kit := gurps.NewEquipmentGroup(nil, nil)
 	kit.Name = "Kit"
 	rope := buyTestItem(nil, "Rope", "5", 2)
@@ -522,7 +521,6 @@ func buyTestModifierLibrary(t *testing.T, screen *unison.HeadlessScreen, modifie
 // item shows it with a button that removes it, and a plain modifier asks nothing.
 func TestBuyDockableAttachesAndRemovesModifiers(t *testing.T) {
 	c := check.New(t)
-	forbidModifierPrompts(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
@@ -888,8 +886,8 @@ func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 }
 
 // TestBuyDockableOpensOncePerSheet checks that opening the buy dockable puts the keyboard focus on its first field, that
-// asking for it again brings the one already open forward rather than opening another, that its title follows the
-// character's name, and that it closes with its sheet.
+// asking for it again brings the one already open forward rather than opening another, that the title it shows follows
+// the character's name, and that it closes with its sheet.
 func TestBuyDockableOpensOncePerSheet(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -903,7 +901,7 @@ func TestBuyDockableOpensOncePerSheet(t *testing.T) {
 		sheet.CarriedEquipment.Table.RequestFocus()
 		first = showBuyDockable(sheet)
 		onPercent = wnd.CurrentFocus() == first.percentField.AsPanel()
-		title = first.Title()
+		title = first.title
 		sheet.OtherEquipment.Table.RequestFocus()
 		again = showBuyDockable(sheet)
 		for _, d := range AllDockables() {
@@ -913,7 +911,7 @@ func TestBuyDockableOpensOncePerSheet(t *testing.T) {
 		}
 		sheet.Entity().Profile.Name = "Bob"
 		sheet.Rebuild(true)
-		renamed = first.Title()
+		renamed = first.title
 	})
 	c.True(onPercent, "the focus must land on the first field of the buy dockable")
 	c.True(first == again, "asking to buy again must bring the open dockable forward")
@@ -978,7 +976,7 @@ func TestBuyDockableDropHighlightUsesTheDropColor(t *testing.T) {
 
 // TestBuyDockableNameFollowsTheItemsWhileFocused checks that the suggested transaction name follows the items until the
 // user edits it even while the name field has the keyboard focus, since the buttons that remove items don't take the
-// focus from it, and that the purchase is recorded under the name shown.
+// focus from it.
 func TestBuyDockableNameFollowsTheItemsWhileFocused(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -998,14 +996,38 @@ func TestBuyDockableNameFollowsTheItemsWhileFocused(t *testing.T) {
 	})
 	c.Equal("Bought Shortsword", readBuyDockable(t, screen, sheet).name,
 		"the name follows the items although the field has the focus")
+}
 
-	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
-	var record []*gurps.ShoppingRecordEntry
-	screen.Do(func() { record = gurps.CloneShoppingRecordList(sheet.Entity().ShoppingRecord) })
-	c.Equal(1, len(record))
-	if len(record) == 1 {
-		c.Equal("Bought Shortsword", record[0].Name, "the purchase is recorded under the name shown")
-		c.Equal(1, len(record[0].Items))
+// TestBuyDockableRecordsTheTransactionName checks that a purchase is recorded under the transaction name typed, trimmed
+// of the spaces around it, or under the suggested name when the name typed is blank.
+func TestBuyDockableRecordsTheTransactionName(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	for _, one := range []struct{ typed, recorded string }{
+		{typed: " Sidearm ", recorded: "Sidearm"},
+		{typed: " ", recorded: "Bought Dagger"},
+	} {
+		screen.Do(func() { showBuyDockable(sheet) })
+		if _, dropped := buyTestDrop(t, screen, sheet, library, dagger); !dropped {
+			t.Fatal("the dagger must be dropped into the buy dockable")
+		}
+		screen.Do(func() {
+			d := buyDockableFor(sheet)
+			d.nameField.SetText(one.typed)
+			d.finalize.Click()
+		})
+		var name string
+		screen.Do(func() {
+			if record := sheet.Entity().ShoppingRecord; len(record) == 1 {
+				name = record[0].Name
+			}
+			sheet.UndoManager().Undo()
+		})
+		c.Equal(one.recorded, name, "the purchase must be recorded as %q when %q is typed", one.recorded, one.typed)
 	}
 }
 
@@ -1115,18 +1137,6 @@ func TestBuyDockableChangeFollowsEditsToTheSellMoney(t *testing.T) {
 	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Penny ×5"}, buyTestCarried(screen, sheet))
 }
 
-// buyTestEditorsOpenFor returns how many equipment editors are open on the items.
-func buyTestEditorsOpenFor(screen *unison.HeadlessScreen, items ...*gurps.Equipment) int {
-	var count int
-	screen.Do(func() {
-		count = len(AllMatchingDockables(func(d unison.Dockable) bool {
-			e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
-			return ok && slices.Contains(items, e.target)
-		}))
-	})
-	return count
-}
-
 // TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges checks that finalizing closes the editors open on everything the
 // purchase changes, as a sale does, since an editor doesn't follow changes to its item and would put its stale quantity
 // back when applied: the carried money spent, a container the payment splits apart, and the carried items the purchase
@@ -1156,7 +1166,8 @@ func TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 		}
 		showBuyDockable(sheet)
 	})
-	c.Equal(6, buyTestEditorsOpenFor(screen, eagles, pile, purse, pursePennies, gloves, rope), "the editors must be open")
+	c.Equal(6, equipmentEditorsOpenFor(screen, eagles, pile, purse, pursePennies, gloves, rope),
+		"the editors must be open")
 	var rows []*Node[*gurps.Equipment]
 	screen.Do(func() { rows = library.RootRows() })
 	_, dropped := buyTestDrop(t, screen, sheet, library, rows[0].Data())
@@ -1172,17 +1183,18 @@ func TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 	c.Equal([]string{"Silver Eagle ×5", "Copper Penny ×22", "Purse ×1", "Purse ×1", "Leather Gloves ×2", "Rope ×1"},
 		buyTestCarried(screen, sheet), "the eagles and a purse's penny are spent, splitting the purse, and the gloves "+
 			"and the change merge into those carried")
-	c.Equal(0, buyTestEditorsOpenFor(screen, eagles, pursePennies), "the editors of the money spent are closed")
-	c.Equal(0, buyTestEditorsOpenFor(screen, purse), "the editor of the purse the payment splits apart is closed")
-	c.Equal(0, buyTestEditorsOpenFor(screen, gloves), "the editor of the gloves the purchase merges into is closed")
-	c.Equal(0, buyTestEditorsOpenFor(screen, pile), "the editor of the pennies the change merges into is closed")
-	c.Equal(1, buyTestEditorsOpenFor(screen, rope), "the editor of an item the purchase leaves alone stays open")
+	c.Equal(0, equipmentEditorsOpenFor(screen, eagles, pursePennies), "the editors of the money spent are closed")
+	c.Equal(0, equipmentEditorsOpenFor(screen, purse), "the editor of the purse the payment splits apart is closed")
+	c.Equal(0, equipmentEditorsOpenFor(screen, gloves), "the editor of the gloves the purchase merges into is closed")
+	c.Equal(0, equipmentEditorsOpenFor(screen, pile), "the editor of the pennies the change merges into is closed")
+	c.Equal(1, equipmentEditorsOpenFor(screen, rope), "the editor of an item the purchase leaves alone stays open")
 }
 
-// TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged checks that when an editor open on the money paid with is
-// saved at the prompt put up as finalizing closes it, and saving changes the payment, the purchase isn't made on the
-// terms the user accepted: the dockable, brought up to date by the save, stays for the user to look over.
-func TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
+// TestBuyDockableDoesNotFinalizeOverAnEditorsPrompt checks that finalizing, which closes the editor open on the money
+// paid with, makes no purchase when the editor's prompt to save is canceled, which leaves the editor open, or when
+// saving the editor there changes the payment from the one the user accepted: the dockable, brought up to date by the
+// save, stays for the user to look over.
+func TestBuyDockableDoesNotFinalizeOverAnEditorsPrompt(t *testing.T) {
 	c := check.New(t)
 	var eagles *gurps.Equipment
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1200,18 +1212,34 @@ func TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
 	c.Equal("Total: $15", readBuyDockable(t, screen, sheet).summary)
-	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
-	screen.Sync() // Finalizing is posted as a task, which puts up the editor's prompt.
-	_, prompt := modalDialog(t, screen, wnd)
-	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseOK)))
-	c.Equal(0, buyTestEditorsOpenFor(screen, eagles), "the editor is saved and closed")
-	c.Equal([]string{"Silver Eagle ×0"}, buyTestCarried(screen, sheet), "the eagles are as saved and nothing is bought")
+	finalizeAnswering := func(response int) {
+		t.Helper()
+		screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
+		screen.Sync() // Finalizing is posted as a task, which puts up the editor's prompt.
+		_, prompt := modalDialog(t, screen, wnd)
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, response)))
+	}
+	records := func() int {
+		var count int
+		screen.Do(func() { count = len(sheet.Entity().ShoppingRecord) })
+		return count
+	}
+
+	finalizeAnswering(unison.ModalResponseCancel)
+	c.Equal(1, equipmentEditorsOpenFor(screen, eagles), "canceling the prompt leaves the editor open")
+	c.Equal([]string{"Silver Eagle ×7"}, buyTestCarried(screen, sheet), "nothing is bought while the editor stays open")
 	state := readBuyDockable(t, screen, sheet)
+	c.Equal("Total: $15", state.summary)
+	c.True(state.finalizeOn, "the purchase can still be finalized")
+	c.Equal(0, records())
+
+	finalizeAnswering(unison.ModalResponseOK)
+	c.Equal(0, equipmentEditorsOpenFor(screen, eagles), "the editor is saved and closed")
+	c.Equal([]string{"Silver Eagle ×0"}, buyTestCarried(screen, sheet), "the eagles are as saved and nothing is bought")
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("Not enough money carried: $15 needed, $0 carried.", state.summary, "the dockable shows the payment as it now stands")
 	c.False(state.finalizeOn)
-	var records int
-	screen.Do(func() { records = len(sheet.Entity().ShoppingRecord) })
-	c.Equal(0, records)
+	c.Equal(0, records())
 }
 
 // TestBuyDockableFinalizingLeavesAFocusElsewhereAlone checks that finalizing a purchase while the keyboard focus is
@@ -1432,9 +1460,10 @@ func TestBuyDockableAsksBeforeDiscardingAPurchase(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	before := []string{"Silver Eagle ×7", "Copper Penny ×11"}
 	var d *buyDockable
+	// modified reports whether the dockable last showed itself as modified (see buyDockable.Sync).
 	modified := func() bool {
 		var result bool
-		screen.Do(func() { result = d.Modified() })
+		screen.Do(func() { result = d.modified })
 		return result
 	}
 	open := func() bool {

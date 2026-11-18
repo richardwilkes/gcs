@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -22,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -131,6 +133,127 @@ func TestTechniqueEditorOpensUnmodifiedWithoutADefault(t *testing.T) {
 	c.True(e.isModified(), "naming the skill is a change")
 	field.SetText("")
 	c.False(e.isModified(), "that taking the name back out undoes")
+}
+
+// TestTechniqueEditorLimitCheckBoxGivesALimit verifies that the technique editor's limit checkbox gives the technique a
+// limit, which the field beside it then edits, and takes it away again, blanking the field.
+func TestTechniqueEditorLimitCheckBoxGivesALimit(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	technique := gurps.NewTechnique(entity, nil, "Karate")
+	entity.Skills = append(entity.Skills, technique)
+	entity.Recalculate()
+	e, content := buildEditorContent(sheet, technique, initSkillEditor)
+	c.Nil(e.editorData.TechniqueLimitModifier, "precondition: the technique has no limit")
+	box := findCheckBoxTitled(content, "Cannot exceed default skill level by more than")
+	if box == nil {
+		t.Fatal("the technique editor has no limit checkbox")
+	}
+	siblings := box.Parent().Children()
+	i := slices.Index(siblings, box.AsPanel())
+	if i < 0 || i+1 >= len(siblings) {
+		t.Fatal("the limit checkbox must be followed by its field")
+	}
+	field, ok := siblings[i+1].Self.(*DecimalField)
+	if !ok {
+		t.Fatal("the limit checkbox must be followed by its field")
+	}
+	c.False(field.Enabled(), "the field is blank while there is no limit")
+
+	clickCheckBox(box, true)
+	c.NotNil(e.editorData.TechniqueLimitModifier, "checking the box gives the technique a limit")
+	c.True(field.Enabled(), "which the field then edits")
+	field.SetText("2")
+	if e.editorData.TechniqueLimitModifier != nil {
+		c.Equal(fxp.Two, *e.editorData.TechniqueLimitModifier, "the field sets the limit")
+	}
+
+	clickCheckBox(box, false)
+	c.Nil(e.editorData.TechniqueLimitModifier, "clearing the box takes the limit away")
+	c.False(field.Enabled(), "and blanks the field")
+}
+
+// TestTechniqueEditorDifficultyPricesALibraryTechnique verifies that choosing a technique's difficulty in its editor
+// gives a technique in a library the points its lowest level costs, 2 for Hard and 1 for Average, while one on a sheet
+// or a template, whose points the user sets, keeps them.
+func TestTechniqueEditorDifficultyPricesALibraryTechnique(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// owner returns what the technique, which costs 3 points, is edited in.
+		owner         func(t *testing.T, technique *gurps.Skill) Rebuildable
+		hard, average fxp.Int
+	}{
+		{
+			name: "library",
+			owner: func(_ *testing.T, technique *gurps.Skill) Rebuildable {
+				registerKeyBindingsOnce.Do(func() { registerActions() })
+				return NewSkillTableDockable("test"+gurps.SkillsExt, []*gurps.Skill{technique})
+			},
+			hard:    fxp.Two,
+			average: fxp.One,
+		},
+		{
+			name: "sheet",
+			owner: func(t *testing.T, technique *gurps.Skill) Rebuildable {
+				sheet := newTestSheetForTemplate(t)
+				sheet.Entity().Skills = []*gurps.Skill{technique}
+				return sheet
+			},
+			hard:    fxp.Three,
+			average: fxp.Three,
+		},
+		{
+			name: "template",
+			owner: func(_ *testing.T, technique *gurps.Skill) Rebuildable {
+				data := gurps.NewTemplate()
+				data.Skills = []*gurps.Skill{technique}
+				return newTestTemplateDockable("Template", data)
+			},
+			hard:    fxp.Three,
+			average: fxp.Three,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			technique := gurps.NewTechnique(nil, nil, "Karate")
+			technique.Points = fxp.Three
+			e, content := buildEditorContent(tc.owner(t, technique), technique, initSkillEditor)
+			popups := uxtest.PanelsOfType[*unison.PopupMenu[difficulty.Level]](content)
+			if len(popups) != 1 {
+				t.Fatalf("the technique editor must have one difficulty popup, not %d", len(popups))
+			}
+			selectPopupIndex(popups[0], slices.Index(difficulty.TechniqueLevels, difficulty.Hard))
+			c.Equal(difficulty.Hard, e.editorData.Difficulty.Difficulty, "precondition: the popup sets the difficulty")
+			c.Equal(tc.hard, e.editorData.Points, "the points after choosing Hard")
+			selectPopupIndex(popups[0], slices.Index(difficulty.TechniqueLevels, difficulty.Average))
+			c.Equal(tc.average, e.editorData.Points, "the points after choosing Average")
+		})
+	}
+}
+
+// Only a skill that can hold features offers the switch.
+func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
+	t.Run("skill", func(t *testing.T) {
+		c := check.New(t)
+		sheet := newTestSheetForTemplate(t)
+		skill := gurps.NewSkill(sheet.Entity(), nil, false)
+		e, content := buildEditorContent(sheet, skill, initSkillEditor)
+		box := findCheckBoxTitled(content, i18n.Text("Switched On"))
+		c.NotNil(box, "expected a Switched On checkbox in the skill editor")
+
+		clickCheckBox(box, true)
+		c.True(e.editorData.SwitchedOn, "checking the box must turn the switch on in the editor's data")
+	})
+
+	t.Run("skill container", func(t *testing.T) {
+		c := check.New(t)
+		sheet := newTestSheetForTemplate(t)
+		skill := gurps.NewSkill(sheet.Entity(), nil, true)
+		_, content := buildEditorContent(sheet, skill, initSkillEditor)
+		c.Nil(findCheckBoxTitled(content, i18n.Text("Switched On")),
+			"a skill container has nothing to switch, so it must not offer the checkbox")
+	})
 }
 
 // levelPreview returns the text of the editor's level field, which sits beside the Level label.

@@ -32,10 +32,7 @@ import (
 // text without the marker the sort text keeps to group containers ahead of the other rows.
 func TestCellDataForAccessibilityLeavesOutTheContainerMarker(t *testing.T) {
 	c := check.New(t)
-	settings := gurps.GlobalSettings()
-	saved := settings.General.GroupContainersOnSort
-	settings.General.GroupContainersOnSort = true
-	t.Cleanup(func() { settings.General.GroupContainersOnSort = saved })
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.GroupContainersOnSort, true)
 
 	entity := gurps.NewEntity()
 	container := gurps.NewEquipment(entity, nil, true)
@@ -166,77 +163,44 @@ func TestCheckCellDrawsTheNewStateBeforeReportingTheClick(t *testing.T) {
 // them to whichever panel saw the press go down, whether that panel consumed it or not.
 // TestCheckCellRightClickOpensMenuHeadless covers the right-click itself.
 func TestCheckCellLeavesNonPrimaryPressesToTheTable(t *testing.T) {
-	t.Run("switch cell", func(t *testing.T) {
-		c := check.New(t)
-		sheet, trait := newSheetWithSwitchableTrait(t)
-		table := sheet.Traits.Table
-		c.Equal(gurps.TraitSwitchColumn, table.Columns[0].ID, "the switch column must come first")
-		mgr := unison.UndoManagerFor(table)
-		c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c := check.New(t)
+	sheet, trait := newSheetWithSwitchableTrait(t)
+	table := sheet.Traits.Table
+	c.Equal(gurps.TraitSwitchColumn, table.Columns[0].ID, "the switch column must come first")
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
 
-		// The cells have to be part of the sheet's panel tree for the undo manager to be found, which is where the
-		// table itself puts them when it lays out the row.
-		for _, button := range []int{unison.ButtonRight, unison.ButtonMiddle} {
-			label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false,
-				false).(*unison.Label)
-			c.True(ok, "the switch cell must be a label")
-			table.AddChild(label)
-			c.False(label.MouseDownCallback(geom.Point{}, button, 1, mod.None),
-				"a non-primary press must be left for the table, as a right-drag handed back to it is")
-			c.False(trait.SwitchedOn, "a non-primary press must not throw the switch")
-			c.Equal(fxp.Int(0), stBonusFor(sheet.Entity()), "a non-primary press must not bring the bonus into play")
-			c.False(mgr.CanUndo(), "a non-primary press must not register an undo edit")
-			c.False(label.MouseDragCallback(geom.Point{}, button, mod.None),
-				"a drag from a press the cell didn't take must be left for the table as well")
-			c.False(label.MouseUpCallback(geom.Point{}, button, mod.None),
-				"the release of a press the cell didn't take must be left for the table as well")
-		}
-
+	// The cells have to be part of the sheet's panel tree for the undo manager to be found, which is where the table
+	// itself puts them when it lays out the row.
+	for _, button := range []int{unison.ButtonRight, unison.ButtonMiddle} {
 		label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false,
 			false).(*unison.Label)
 		c.True(ok, "the switch cell must be a label")
 		table.AddChild(label)
-		c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None),
-			"a primary single click must be consumed")
-		c.True(trait.SwitchedOn, "a primary single click must throw the switch")
-		c.Equal(fxp.One, stBonusFor(sheet.Entity()), "a primary single click must bring the bonus into play")
-		c.True(mgr.CanUndo(), "a primary single click must register an undo edit")
-		c.True(label.MouseDragCallback(geom.Point{}, unison.ButtonLeft, mod.None),
-			"a drag from a press the cell took must be consumed as well")
-		c.True(label.MouseUpCallback(geom.Point{}, unison.ButtonLeft, mod.None),
-			"the release of a press the cell took must be consumed as well")
-	})
+		c.False(label.MouseDownCallback(geom.Point{}, button, 1, mod.None),
+			"a non-primary press must be left for the table, as a right-drag handed back to it is")
+		c.False(trait.SwitchedOn, "a non-primary press must not throw the switch")
+		c.Equal(fxp.Int(0), stBonusFor(sheet.Entity()), "a non-primary press must not bring the bonus into play")
+		c.False(mgr.CanUndo(), "a non-primary press must not register an undo edit")
+		c.False(label.MouseDragCallback(geom.Point{}, button, mod.None),
+			"a drag from a press the cell didn't take must be left for the table as well")
+		c.False(label.MouseUpCallback(geom.Point{}, button, mod.None),
+			"the release of a press the cell didn't take must be left for the table as well")
+	}
 
-	t.Run("equipped cell", func(t *testing.T) {
-		c := check.New(t)
-		sheet := newTestSheetForTemplate(t)
-		entity := sheet.Entity()
-		eqp := gurps.NewEquipment(entity, nil, false)
-		eqp.Name = "Powered Armor"
-		eqp.Equipped = false
-		entity.CarriedEquipment = []*gurps.Equipment{eqp}
-		sheet.Rebuild(true)
-
-		table := sheet.CarriedEquipment.Table
-		c.Equal(gurps.EquipmentEquippedColumn, table.Columns[0].ID, "the equipped column must come first")
-		mgr := unison.UndoManagerFor(table)
-		c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-
-		for _, button := range []int{unison.ButtonRight, unison.ButtonMiddle} {
-			label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false,
-				false).(*unison.Label)
-			c.True(ok, "the equipped cell must be a label")
-			table.AddChild(label)
-			c.False(label.MouseDownCallback(geom.Point{}, button, 1, mod.None),
-				"a non-primary press must be left for the table, as a right-drag handed back to it is")
-			c.False(eqp.Equipped, "a non-primary press must not equip the item")
-			c.False(mgr.CanUndo(), "a non-primary press must not register an undo edit")
-			c.False(label.MouseDragCallback(geom.Point{}, button, mod.None),
-				"a drag from a press the cell didn't take must be left for the table as well")
-			c.False(label.MouseUpCallback(geom.Point{}, button, mod.None),
-				"the release of a press the cell didn't take must be left for the table as well")
-		}
-	})
+	label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false,
+		false).(*unison.Label)
+	c.True(ok, "the switch cell must be a label")
+	table.AddChild(label)
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None),
+		"a primary single click must be consumed")
+	c.True(trait.SwitchedOn, "a primary single click must throw the switch")
+	c.Equal(fxp.One, stBonusFor(sheet.Entity()), "a primary single click must bring the bonus into play")
+	c.True(mgr.CanUndo(), "a primary single click must register an undo edit")
+	c.True(label.MouseDragCallback(geom.Point{}, unison.ButtonLeft, mod.None),
+		"a drag from a press the cell took must be consumed as well")
+	c.True(label.MouseUpCallback(geom.Point{}, unison.ButtonLeft, mod.None),
+		"the release of a press the cell took must be consumed as well")
 }
 
 // TestCheckCellDoubleClickTogglesOnlyOnce verifies that a fast double-click on a check cell changes the item exactly
@@ -320,6 +284,44 @@ func TestCheckCellDoubleClickTogglesOnlyOnce(t *testing.T) {
 		c.True(eqp.Equipped, "redo must equip the item again")
 		c.Equal(fxp.One, stBonusFor(entity), "redo must put the feature back into play")
 	})
+}
+
+// TestSwitchCellOptionClickThrowsTheDescendantsToo verifies that a click on a container's switch cell throws its
+// switch alone, while an option-click also throws the switches of the descendants that have one.
+func TestSwitchCellOptionClickThrowsTheDescendantsToo(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		mods        mod.Modifiers
+		descendants bool
+	}{
+		{name: "click", mods: mod.None},
+		{name: "option-click", mods: mod.Option, descendants: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			container := gurps.NewTrait(entity, nil, true)
+			container.Name = "Cybernetics"
+			modifier := gurps.NewTraitModifier(entity, nil, false)
+			modifier.Name = "Powered"
+			modifier.Features = gurps.Features{switchableSTBonus(nil)}
+			container.Modifiers = []*gurps.TraitModifier{modifier}
+			child := newSwitchableTrait(entity, "Claws")
+			child.SetParent(container)
+			container.Children = []*gurps.Trait{child}
+			entity.Traits = []*gurps.Trait{container}
+			sheet.Rebuild(true)
+
+			table := sheet.Traits.Table
+			col := switchColumnIndex(table.Columns, gurps.TraitSwitchColumn)
+			c.NotEqual(-1, col, "the switch column must be present")
+			down, _ := clickSwitchCellThroughTable(table, 0, col, tc.mods)
+			c.True(down, "the container's switch cell must take the press")
+			c.True(container.SwitchedOn, "the container's switch must be thrown")
+			c.Equal(tc.descendants, child.SwitchedOn, "whether the child's switch is thrown too")
+		})
+	}
 }
 
 // TestCheckCellRevertsADeclinedClick verifies that a check cell whose click isn't taken -- the report answers false --
@@ -481,25 +483,22 @@ func TestMarkdownCellKeepsItsPanelsWhenSelectionChanges(t *testing.T) {
 	sheet.Rebuild(true)
 
 	table := sheet.Traits.Table
-	col := -1
-	for i := range table.Columns {
-		if table.Columns[i].ID == gurps.TraitDescriptionColumn {
-			col = i
-			break
-		}
-	}
+	col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
 	c.True(col >= 0, "the traits table must have a description column")
 	rows := table.RootRows()
 	c.Equal(1, len(rows), "the traits table must hold the one trait")
 
-	md := findMarkdown(rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel())
+	md, _ := uxtest.FirstPanelOfType[*unison.Markdown](
+		rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel(),
+	)
 	c.NotNil(md, "the description cell must show the notes as markdown")
 	children := slices.Clone(md.Children())
 	c.True(len(children) != 0, "the markdown must have built its content")
 	unselectedColor := markdownTextColor(c, md)
 
 	cell := rows[0].ColumnCell(0, col, unison.Red, unison.Blue, true, false, false).AsPanel()
-	c.Equal(md, findMarkdown(cell), "selecting the row must reuse the cached markdown")
+	selected, _ := uxtest.FirstPanelOfType[*unison.Markdown](cell)
+	c.Equal(md, selected, "selecting the row must reuse the cached markdown")
 	c.Equal(children, md.Children(), "selecting the row must not rebuild the markdown")
 	c.Equal(unison.Red, markdownTextColor(c, md),
 		"the markdown must draw with the selection's foreground")
@@ -508,18 +507,6 @@ func TestMarkdownCellKeepsItsPanelsWhenSelectionChanges(t *testing.T) {
 	c.Equal(children, md.Children(), "deselecting the row must not rebuild the markdown")
 	c.Equal(unselectedColor, markdownTextColor(c, md),
 		"the markdown must go back to its normal color")
-}
-
-func findMarkdown(panel *unison.Panel) *unison.Markdown {
-	if md, ok := panel.Self.(*unison.Markdown); ok {
-		return md
-	}
-	for _, child := range panel.Children() {
-		if md := findMarkdown(child); md != nil {
-			return md
-		}
-	}
-	return nil
 }
 
 func markdownTextColor(c check.Checker, md *unison.Markdown) unison.Color {
@@ -544,22 +531,15 @@ func TestChoiceTagFollowsTheRowColors(t *testing.T) {
 	rows := table.RootRows()
 	c.Equal(2, len(rows))
 	findTag := func(cell unison.Paneler) *unison.Tag {
-		var found *unison.Tag
-		var walk func(p *unison.Panel)
-		walk = func(p *unison.Panel) {
-			if tag, ok := p.Self.(*unison.Tag); ok && found == nil {
-				found = tag
-			}
-			for _, child := range p.Children() {
-				walk(child)
-			}
+		t.Helper()
+		tag, ok := uxtest.FirstPanelOfType[*unison.Tag](cell.AsPanel())
+		if !ok {
+			t.Fatal("the cell must hold its tag")
 		}
-		walk(cell.AsPanel())
-		return found
+		return tag
 	}
 
 	tag := findTag(rows[0].ColumnCell(0, 0, unison.White, unison.Blue, true, false, false))
-	c.NotNil(tag, "the choice's cell must hold its tag")
 	c.Equal(unison.Ink(unison.White), tag.BackgroundInk, "a selected row's tag must be drawn in its colors")
 	tag = findTag(rows[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false))
 	c.Equal(unison.Ink(unison.Black), tag.BackgroundInk, "the tag must follow the row once it is deselected")
@@ -567,10 +547,11 @@ func TestChoiceTagFollowsTheRowColors(t *testing.T) {
 
 	rows[1].ColumnCell(1, 0, unison.White, unison.Blue, true, false, false)
 	tag = findTag(rows[1].ColumnCell(1, 0, unison.Black, unison.White, false, false, false))
-	c.NotNil(tag, "the unsatisfied trait's cell must hold its tag")
 	c.Equal(unison.Ink(unison.ThemeError), tag.BackgroundInk, "a prerequisite tag must keep its own colors")
 }
 
+// TestPageRefLinkTakesNoMoreRoomThanItsText verifies that a page reference in a table cell is a link the size of its
+// text, with no tab stop or room left for a focus outline, since the focus stays with the table.
 func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -582,7 +563,7 @@ func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
 	sheet.Rebuild(true)
 
 	table := sheet.Traits.Table
-	col := columnIndexForID(table, gurps.TraitReferenceColumn)
+	col := table.ColumnIndexForID(gurps.TraitReferenceColumn)
 	c.True(col >= 0, "the traits table must have a page reference column")
 	rows := table.RootRows()
 	c.Equal(1, len(rows), "the traits table must hold the one trait")
@@ -623,7 +604,7 @@ func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
 	sheet.Rebuild(true)
 
 	table := sheet.Skills.Table
-	col := columnIndexForID(table, gurps.SkillDescriptionColumn)
+	col := table.ColumnIndexForID(gurps.SkillDescriptionColumn)
 	c.True(col >= 0, "the skills table must have a description column")
 	rows := table.RootRows()
 	c.Equal(1, len(rows), "the skills table must hold the one skill")
@@ -918,6 +899,24 @@ func TestLockedPickKeepsItsCheckmark(t *testing.T) {
 	c.False(unison.UndoManagerFor(table).CanUndo(), "a refused click records nothing")
 }
 
+// TestCheckCellInAReadOnlyViewIgnoresClicks verifies that clicking a check cell in a view that refuses changes, here an
+// editor that only shows its target, changes neither the item nor the mark drawn for it.
+func TestCheckCellInAReadOnlyViewIgnoresClicks(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	e, _, table := traitEditorOnSheet(t, sheet, gurps.NewTraitModifier(sheet.Entity(), nil, false))
+	e.makeReadOnly()
+	label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the enabled cell must be a label")
+	c.NotNil(label.Drawable, "the modifier starts out checked")
+	table.AddChild(label)
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	label.RemoveFromParent()
+	c.NotNil(label.Drawable, "the checkmark must stay")
+	c.True(e.editorData.Modifiers[0].Enabled(), "the modifier must stay enabled")
+	c.False(unison.UndoManagerFor(table).CanUndo(), "an ignored click records nothing")
+}
+
 // insertNewTraitModifier inserts a new trait modifier into an editor's table of modifiers, as "New Trait Modifier"
 // does, without opening an editor for it, and returns it.
 func insertNewTraitModifier(t *testing.T, owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]]) *gurps.TraitModifier {
@@ -1052,6 +1051,28 @@ func TestMovedRowGetsANewNodeWithTheRightParent(t *testing.T) {
 	c.Equal(0, len(rowA.Children()), "A's row must no longer hold the child")
 }
 
+// TestNodeSetOpenLeavesSyncToCaller verifies that setting a row's open state only records it: the table shows the same
+// rows until the caller syncs it. Every caller syncs once after setting every row it means to, so a sync from SetOpen
+// itself would rebuild the table once per container, which made toggling the hierarchy of a large list take seconds.
+func TestNodeSetOpenLeavesSyncToCaller(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	first := newTestContainer("First", true)
+	second := newTestContainer("Second", true)
+	dockable := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{first, second})
+	c.Equal(3, dockable.table.LastRowIndex(), "both containers start out open, showing their children")
+
+	for _, row := range dockable.table.RootRows() {
+		row.SetOpen(false)
+	}
+	c.False(first.IsOpen(), "the first container must record that it was closed")
+	c.False(second.IsOpen(), "the second container must record that it was closed")
+	c.Equal(3, dockable.table.LastRowIndex(), "the table must not rebuild its rows until it is synced")
+
+	dockable.table.SyncToModel()
+	c.Equal(1, dockable.table.LastRowIndex(), "the sync must hide the children of both containers")
+}
+
 // TestNotesToggleRebuildsAReusedCell verifies that showing or hiding a row's notes rebuilds its description cell in a
 // list that keeps the row across the sync that follows the toggle, as a sheet's list and a filtered library list do.
 // The cell's data stays the same, so only the notes disclosure kept with the panel tells the panel built before the
@@ -1102,7 +1123,8 @@ func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
 			c.True(col >= 0, "the traits table must have a description column")
 
 			before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-			c.True(findMarkdown(before) != nil, "the cell must show the open notes")
+			_, shown := uxtest.FirstPanelOfType[*unison.Markdown](before)
+			c.True(shown, "the cell must show the open notes")
 			button, ok := uxtest.FirstPanelOfType[*unison.Button](before)
 			c.True(ok, "the cell must hold the notes disclosure button")
 
@@ -1111,7 +1133,8 @@ func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
 			c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the sync")
 			after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
 			c.True(after != before, "the cell must be rebuilt once its notes are closed")
-			c.True(findMarkdown(after) == nil, "and must no longer show them")
+			_, shown = uxtest.FirstPanelOfType[*unison.Markdown](after)
+			c.False(shown, "and must no longer show them")
 		})
 	}
 }
@@ -1163,7 +1186,8 @@ func TestNotesToggleFollowsAConvertedRow(t *testing.T) {
 	c.True(gurps.IsClosed(newKey), "clicking the button must close the notes of the converted row")
 	c.False(gurps.IsClosed(oldKey), "and must leave the key the row no longer has alone")
 	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-	c.True(findMarkdown(after) == nil, "the cell must no longer show the notes")
+	_, shown := uxtest.FirstPanelOfType[*unison.Markdown](after)
+	c.False(shown, "the cell must no longer show the notes")
 }
 
 // TestFontChangeRebuildsCells verifies that a change of fonts rebuilds the panels a row keeps, although the data of
@@ -1270,15 +1294,6 @@ func TestInsertItemsSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.True(mgr.CanUndo(), "the insertion must be undoable")
 }
 
-func columnIndexForID[T unison.TableRowConstraint[T]](table *unison.Table[T], id int) int {
-	for i, col := range table.Columns {
-		if col.ID == id {
-			return i
-		}
-	}
-	return -1
-}
-
 // The table synthesizes no click for Space at cell level, so page reference and check cells must answer the press
 // themselves; a cell with nothing to press leaves Space to open the row's editor.
 func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
@@ -1342,7 +1357,7 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 		screen.KeyPress(unison.KeySpace, mod.None)
 	}
 
-	refCol := columnIndexForID(traits, gurps.TraitReferenceColumn)
+	refCol := traits.ColumnIndexForID(gurps.TraitReferenceColumn)
 	if refCol < 0 {
 		t.Fatal("the traits must show their page references")
 	}
@@ -1351,7 +1366,7 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 	c.Equal([]string{ref}, screen.OpenedURLs(), "space on a page reference opens it")
 	c.Equal(before, dockables(), "and opens no editor")
 
-	equippedCol := columnIndexForID(equipment, gurps.EquipmentEquippedColumn)
+	equippedCol := equipment.ColumnIndexForID(gurps.EquipmentEquippedColumn)
 	if equippedCol < 0 {
 		t.Fatal("the carried equipment must show whether it is equipped")
 	}
@@ -1365,7 +1380,7 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 	c.True(equipped, "and checks it again")
 	c.Nil(screen.OpenedURLs())
 
-	nameCol := columnIndexForID(traits, gurps.TraitDescriptionColumn)
+	nameCol := traits.ColumnIndexForID(gurps.TraitDescriptionColumn)
 	spaceOn(traits, func() bool { return traits.SetLeadCell(0, nameCol) })
 	c.Equal(before+1, dockables(), "space on a cell with nothing to press opens the editor")
 

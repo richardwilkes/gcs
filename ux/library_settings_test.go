@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -75,6 +76,43 @@ func TestLibraryKeyTakenByOther(t *testing.T) {
 	c.True(libraryKeyTakenByOther(libs, masterConfig.GitHubAccountName, masterConfig.RepoName, fresh))
 	c.False(libraryKeyTakenByOther(libs, "someone", "other-stuff", fresh))
 	c.False(libraryKeyTakenByOther(libs, "", "local-only", fresh))
+}
+
+// TestLibrarySettingsApplyNeedsAValidChange verifies that the settings view of a library offers to apply a change only
+// when the fields hold something to save: not once a change has been reverted, nor while the name or repository is
+// blank, the account/repo pair is another library's or the path is not absolute.
+func TestLibrarySettingsApplyNeedsAValidChange(t *testing.T) {
+	c := check.New(t)
+	libs := gurps.GlobalSettings().Libraries
+	taken := library.NewLibrary("Taken", "someone", "", "taken", t.TempDir())
+	libs.Store(taken.Key(), taken)
+	t.Cleanup(func() { libs.Remove(taken.Key()) })
+	name := func(d *librarySettingsDockable) *StringField { return d.nameField }
+	repo := func(d *librarySettingsDockable) *StringField { return d.repoField }
+	path := func(d *librarySettingsDockable) *StringField { return d.pathField }
+	dir := t.TempDir()
+	for _, one := range []struct {
+		name  string
+		field func(d *librarySettingsDockable) *StringField
+		texts []string // Put in the field in turn
+		want  bool
+	}{
+		{name: "another repository", field: repo, texts: []string{"free"}, want: true},
+		{name: "another path", field: path, texts: []string{t.TempDir()}, want: true},
+		{name: "a change reverted", field: repo, texts: []string{"free", "mine"}},
+		{name: "a blank name", field: name, texts: []string{"  "}},
+		{name: "a blank repository", field: repo, texts: []string{""}},
+		{name: "another library's account and repository", field: repo, texts: []string{"taken"}},
+		{name: "a relative path", field: path, texts: []string{"relative"}},
+	} {
+		d := newLibrarySettingsDockable(library.NewLibrary("Mine", "someone", "", "mine", dir))
+		d.addToStartToolbar(NewToolbar())
+		newSettingsContent(d.initContent)
+		for _, text := range one.texts {
+			one.field(d).SetText(text)
+		}
+		c.Equal(one.want, d.applyButton.Enabled(), one.name)
+	}
 }
 
 // TestLibrarySettingsFieldsShrinkToFitTheView verifies that the text in the view's fields has no say in how narrow its

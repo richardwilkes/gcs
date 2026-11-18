@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -50,9 +51,8 @@ func newFocusablePanel() *unison.Panel {
 }
 
 func TestFirstContentFocusTarget(t *testing.T) {
-	c := check.New(t)
-
-	t.Run("prefers first non-button focusable in content", func(_ *testing.T) {
+	t.Run("prefers first non-button focusable in content", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		toolbar.AddChild(unison.NewButton())
 		content := unison.NewPanel()
@@ -63,7 +63,8 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(field, firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("falls back to first focusable button in content", func(_ *testing.T) {
+	t.Run("falls back to first focusable button in content", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		toolbar.AddChild(newFocusablePanel())
 		content := unison.NewPanel()
@@ -73,7 +74,8 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(firstButton.AsPanel(), firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("falls back to toolbar when content has no focusables", func(_ *testing.T) {
+	t.Run("falls back to toolbar when content has no focusables", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		toolbar.AddChild(unison.NewPanel()) // not focusable
 		tbTarget := newFocusablePanel()
@@ -83,7 +85,8 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(tbTarget, firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("returns nil when nothing is focusable", func(_ *testing.T) {
+	t.Run("returns nil when nothing is focusable", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		toolbar.AddChild(unison.NewPanel())
 		content := unison.NewPanel()
@@ -91,7 +94,8 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal((*unison.Panel)(nil), firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("walks content depth-first in pre-order", func(_ *testing.T) {
+	t.Run("walks content depth-first in pre-order", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		content := unison.NewPanel()
 		branch := unison.NewPanel() // not focusable itself, but holds the earliest focusable
@@ -102,7 +106,8 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(deep, firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("skips hidden and disabled widgets", func(_ *testing.T) {
+	t.Run("skips hidden and disabled widgets", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		content := unison.NewPanel()
 		hidden := newFocusablePanel()
@@ -116,14 +121,16 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(reachable, firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("returns the content root when it is itself focusable", func(_ *testing.T) {
+	t.Run("returns the content root when it is itself focusable", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		content := newFocusablePanel()
 		content.AddChild(newFocusablePanel())
 		c.Equal(content, firstContentFocusTarget(toolbar, content))
 	})
 
-	t.Run("descends past a focusable button root during the non-button scan", func(_ *testing.T) {
+	t.Run("descends past a focusable button root during the non-button scan", func(t *testing.T) {
+		c := check.New(t)
 		toolbar := unison.NewPanel()
 		content := unison.NewPanel()
 		buttonRoot := unison.NewButton()
@@ -132,6 +139,19 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		content.AddChild(buttonRoot)
 		c.Equal(field, firstContentFocusTarget(toolbar, content))
 	})
+}
+
+// TestDetermineDataOwnerProviderFallsBackToTheOneSetOnThePanel verifies that a panel with no data owner provider among
+// its ancestors uses the one SetDataOwnerProvider put on it, until that is set to nil.
+func TestDetermineDataOwnerProviderFallsBackToTheOneSetOnThePanel(t *testing.T) {
+	c := check.New(t)
+	panel := unison.NewPanel()
+	c.True(DetermineDataOwnerProvider(panel) == nil, "nothing provides a data owner yet")
+	var entity gurps.DataOwnerProvider = gurps.NewEntity()
+	SetDataOwnerProvider(panel, entity)
+	c.True(DetermineDataOwnerProvider(panel) == entity, "the provider set on the panel must be used")
+	SetDataOwnerProvider(panel, nil)
+	c.True(DetermineDataOwnerProvider(panel) == nil, "setting nil must remove it")
 }
 
 // selectPopupIndex selects the given index and then runs the popup's selection callback once, mirroring what happens

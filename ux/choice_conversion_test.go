@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -123,29 +124,41 @@ func TestChoiceConversionWarnsAndIsUndoable(t *testing.T) {
 	c.True(gurps.IsTemplateChoiceContainer(clean), "the clean group must have become a choice container")
 }
 
-// TestToggleDisabledSkipsChoiceContainers verifies that a choice container can't be disabled from the list, since its
-// editor offers no way to enable it again, while one that is already disabled can still be enabled.
-func TestToggleDisabledSkipsChoiceContainers(t *testing.T) {
+// TestChoiceConversionWarningNamesWhatIsLost verifies that the question asked before a conversion that removes data
+// names each container with what it would lose, one to a line, followed, when a conversion to groups also takes
+// choices away, by a note saying so.
+func TestChoiceConversionWarningNamesWhatIsLost(t *testing.T) {
 	c := check.New(t)
-	choice := gurps.NewTraitChoiceContainer(nil, nil)
-	plain := gurps.NewTrait(nil, nil, false)
-	template := newTestTemplateWithTraits(choice, plain)
-	table := template.Traits.Table
+	var title, message string
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(askedTitle, askedMessage string) bool {
+		title, message = askedTitle, askedMessage
+		return false
+	})
+	first := gurps.NewTrait(nil, nil, true)
+	first.Name = "First"
+	first.SelfControl = selfctrl.CR12
+	second := gurps.NewTrait(nil, nil, true)
+	second.Name = "Second"
+	second.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
+	traits := newTestTemplateWithTraits(first, second).Traits.Table
+	traits.SetSelectionMap(map[tid.TID]bool{first.ID(): true, second.ID(): true})
+	traits.PerformCmd(traits, ConvertToChoiceContainerItemID)
+	c.Equal("Converting to a choice removes some data", title)
+	c.Equal("A choice can't hold the following, so it will be removed:\n"+
+		first.String()+": "+strings.Join(gurps.TemplateChoiceConversionLosses(first), ", ")+"\n"+
+		second.String()+": "+strings.Join(gurps.TemplateChoiceConversionLosses(second), ", "), message)
 
-	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true})
-	c.False(canToggleDisabled(table), "a choice alone must not offer to be disabled")
-
-	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true, plain.ID(): true})
-	c.True(canToggleDisabled(table), "the rest of the selection may still be toggled")
-	toggleDisabled(template, table)
-	c.False(choice.IsDisabled(), "the choice must be left enabled")
-	c.True(plain.IsDisabled(), "the plain trait must be disabled")
-
-	choice.SetDisabled(true)
-	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true})
-	c.True(canToggleDisabled(table), "a disabled choice must offer to be enabled")
-	toggleDisabled(template, table)
-	c.False(choice.IsDisabled(), "the disabled choice must be enabled")
+	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
+	backpack := gurps.NewEquipment(nil, nil, true)
+	backpack.Name = "Backpack"
+	backpack.BaseWeight = "3 lb"
+	equipment := newTestTemplateWithEquipment(choice, backpack).Equipment.Table
+	equipment.SetSelectionMap(map[tid.TID]bool{choice.ID(): true, backpack.ID(): true})
+	equipment.PerformCmd(equipment, ConvertToGroupContainerItemID)
+	c.Equal("Converting to a group removes some data", title)
+	c.Equal("A group can't hold the following, so it will be removed:\n"+
+		backpack.String()+": "+strings.Join(gurps.GroupConversionLosses(backpack), ", ")+"\n"+
+		"The choices will be removed as well.", message)
 }
 
 // TestChoiceConversionClosesEditors verifies that no editor is left open on a container whose kind has changed under

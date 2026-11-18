@@ -170,7 +170,8 @@ func TestEditorsShowNoSourceFields(t *testing.T) {
 	}
 }
 
-// TestSourceMenuEntries verifies what the source menu offers for the states a target's source may be in.
+// TestSourceMenuEntries verifies what the source menu offers for the states a target's source may be in, and that a
+// read-only editor offers no sync.
 func TestSourceMenuEntries(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -215,6 +216,16 @@ func TestSourceMenuEntries(t *testing.T) {
 	e, _ = buildEditorContent(sheet, choice, initTraitEditor)
 	c.Equal([]string{"ID: " + string(choice.ID())}, sourceMenuSummary(e.sourceMenuEntries()),
 		"a template choice container shows only its ID")
+
+	lib := gurps.NewTrait(nil, nil, false)
+	lib.Name = "Claws"
+	librarySheet, mismatched := newLibrarySourcedTrait(t, c, lib)
+	mismatched.Name = "Talons"
+	e, _ = buildEditorContent(librarySheet, mismatched, initTraitEditor)
+	c.NotNil(sourceMenuAction(e.sourceMenuEntries(), "Sync with Source"),
+		"precondition: a trait that differs from its source can be synced")
+	e.readOnly = true
+	c.Nil(sourceMenuAction(e.sourceMenuEntries(), "Sync with Source"), "but not from a read-only editor")
 }
 
 // TestSourceMenuMatchesWhatNoSheetPrepared verifies that the source menu compares a node with its library copy even
@@ -394,6 +405,31 @@ func TestEditorSyncThatOnlyRevertsPendingEdits(t *testing.T) {
 		"the pending change makes the editor's data differ from the library")()
 	c.Equal("B42", e.editorData.PageRef)
 	c.False(e.isModified(), "nothing is left to apply")
+}
+
+// TestEditorSyncOfAGrantsItemLeavesOutGrants verifies that syncing the editor of a grant's item leaves out the grants
+// the library's copy has, since a granted item grants nothing.
+func TestEditorSyncOfAGrantsItemLeavesOutGrants(t *testing.T) {
+	c := check.New(t)
+	lib := newGrantTestTrait("Night Vision", 0)
+	inner := gurps.NewGrant(feature.GrantTrait)
+	inner.SetItem(newGrantTestTrait("Dark Vision", 0), gurps.LibraryFile{})
+	lib.Features = gurps.Features{inner}
+	sheet, local := newLibrarySourcedTrait(t, c, lib)
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(lib, local.Source.LibraryFile)
+	g.Trait.Name = "Night Vision (old)"
+	features := gurps.Features{g}
+	owner := &grantItemOwner{
+		Rebuildable: sheet,
+		panel:       &featuresPanel{features: &features},
+		key:         g.Key(),
+		item:        g.Trait,
+	}
+	e, _ := buildEditorContent(owner, g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy), initTraitEditor)
+	requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source", "the item differs from its library copy")()
+	c.Equal("Night Vision", e.editorData.Name, "the sync brings the library's name across")
+	c.Equal(0, len(e.editorData.Features), "but not the library's grant")
 }
 
 // TestEditorSyncFollowsEquipmentKinds verifies that the editor syncs plain equipment and a physical container with each
@@ -1145,10 +1181,6 @@ func TestEditorDiscardAndSyncReachSubEditorsOfSubEditors(t *testing.T) {
 				_, isEditor := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
 				return isEditor
 			}
-			isModifierEditor := func(d unison.Dockable) bool {
-				_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
-				return isEditor
-			}
 			screen.Do(func() {
 				p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
 				p.editGrantedItem(grantAt(t, p, 0))
@@ -1156,7 +1188,7 @@ func TestEditorDiscardAndSyncReachSubEditorsOfSubEditors(t *testing.T) {
 			nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
 			screen.Do(func() { EditTraitModifier(nested, nested.editorData.Modifiers[0]) })
 			modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
-				isModifierEditor)
+				isTraitModifierEditor)
 			screen.Do(func() {
 				modifierEditor.editorData.Name = "Longer"
 				modifierEditor.MarkModified(nil)
@@ -1310,10 +1342,6 @@ func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Modifiers/Test" + gurps.TraitModifiersExt}
 	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
 		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
-	isChoiceEditor := func(d unison.Dockable) bool {
-		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
-		return isEditor
-	}
 	screen.Do(func() {
 		entity := sheet.Entity()
 		choice := gurps.NewTraitModifierChoice(entity, nil)
@@ -1327,7 +1355,8 @@ func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 		sheet.Rebuild(true)
 		EditTraitModifier(sheet, choice)
 	})
-	choiceEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isChoiceEditor)
+	choiceEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isTraitModifierEditor)
 	var popup *unison.Panel
 	var popupInView bool
 	screen.Do(func() {
@@ -1439,10 +1468,6 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	})
 	isWeaponEditor := func(d unison.Dockable) bool {
 		_, isEditor := d.AsPanel().Self.(*editor[*gurps.Weapon, *gurps.Weapon])
-		return isEditor
-	}
-	isModifierEditor := func(d unison.Dockable) bool {
-		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
 		return isEditor
 	}
 	// Opened as from the list of weapons, which holds the focus as the weapon's editor opens.
@@ -1576,13 +1601,13 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	c.True(focused, "precondition: the source button holds the focus")
 	c.False(listInView, "precondition: the list of weapons is out of view")
 	uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
-	uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isModifierEditor)
+	uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isTraitModifierEditor)
 	chooseSyncWithSource(t, screen, wnd, e)
 	var modifierEditors int
 	screen.Do(func() {
 		name = e.editorData.Name
 		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
-		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		modifierEditors = len(AllMatchingDockables(isTraitModifierEditor))
 		focused = wnd.CurrentFocus() == sourceButton.AsPanel()
 		hAfter, vAfter = e.scroll.Position()
 	})
@@ -1743,13 +1768,9 @@ func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 		local.Modifiers = []*gurps.TraitModifier{modifier}
 		gurps.AttachModifiers(local, local.Modifiers)
 	})
-	isModifierEditor := func(d unison.Dockable) bool {
-		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
-		return isEditor
-	}
 	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
 	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
-		isModifierEditor)
+		isTraitModifierEditor)
 	screen.Do(func() {
 		modifierEditor.editorData.Name = "Longer"
 		modifierEditor.MarkModified(nil)
@@ -1766,7 +1787,7 @@ func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 	var modifierEditors int
 	screen.Do(func() {
 		name = e.editorData.Name
-		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		modifierEditors = len(AllMatchingDockables(isTraitModifierEditor))
 		if len(e.editorData.Modifiers) == 1 {
 			modifierName = e.editorData.Modifiers[0].Name
 		}

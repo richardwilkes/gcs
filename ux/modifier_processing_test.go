@@ -125,30 +125,6 @@ func processModifiers[T gurps.Node[T]](rows []T, requirePicks bool) bool {
 		nil, nil)
 }
 
-// TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
-// hold modifiers. Handing it the modifiers themselves matches nothing, which is why its callers pass the rows that
-// carry the modifiers (see applyTransfer).
-func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
-	c := check.New(t)
-	prompts := captureModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	traitMod := gurps.NewTraitModifier(entity, nil, false)
-	traitMod.Name = "Trait Modifier"
-	processModifiers([]*gurps.TraitModifier{traitMod}, true)
-	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
-	equipmentMod.Name = "Equipment Modifier"
-	processModifiers([]*gurps.EquipmentModifier{equipmentMod}, true)
-	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
-
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Trait"
-	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	processModifiers([]*gurps.Trait{trait}, true)
-	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
-		"a trait must be prompted for with its own modifiers")
-}
-
 // TestModifierPromptsCountOnlyRowsWithModifiers verifies that a row without modifiers is neither prompted for nor
 // counted, so the count the prompts show is of the prompts the user will actually see.
 func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
@@ -396,7 +372,8 @@ func TestModifierPromptListHoldsTenRows(t *testing.T) {
 
 // TestPreconfiguredAsksOnlyAboutUnresolvedChoices verifies that a preconfigured trait is asked about the mandatory
 // modifier choices it has left without a pick, and about nothing else: not its other modifiers, not its optional
-// choices and not the mandatory choices it has already picked for.
+// choices, not the mandatory choices it has already picked for, and not a choice within an unresolved one apart from
+// that one.
 func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 	c := check.New(t)
 	prompts := captureModifierPrompts(t)
@@ -433,6 +410,15 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 	trait.Preconfigured = true
 	c.True(processModifiers([]*gurps.Trait{trait}, false))
 	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
+
+	*prompts = nil
+	inner := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})
+	inner.Name = "Inner"
+	inner.SetParent(open)
+	open.Children = append(open.Children, inner)
+	c.True(processModifiers([]*gurps.Trait{trait}, true))
+	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Open"}}}, *prompts,
+		"a choice within an unresolved one is shown along with it, not asked about again on its own")
 }
 
 // TestModifierSelectionTreatsChoicesByKind verifies the prompt asking which modifiers to enable: a modifier outside a
@@ -717,9 +703,9 @@ func TestModifierPromptPicksRandomly(t *testing.T) {
 }
 
 // TestRemainingModifierPromptsAreAnsweredRandomly verifies that once a prompt asks for the picks still to come to be
-// made at random, a modifier prompt that asks for one is answered rather than put up, with only its unmade picks
-// changed, and taken out of the count, while one that asks for none, as with a mandatory choice already made, is still
-// put up, as all are when picks aren't required.
+// made at random, a modifier prompt that asks for one, in the same list or a later one, is answered rather than put up,
+// with only its unmade picks changed, and taken out of the count, while one that asks for none, as with a mandatory
+// choice already made, is still put up, as all are when picks aren't required.
 func TestRemainingModifierPromptsAreAnsweredRandomly(t *testing.T) {
 	c := check.New(t)
 	newRows := func() (rows []*gurps.Trait, lastChoice, lastPlain *gurps.TraitModifier) {
@@ -763,4 +749,22 @@ func TestRemainingModifierPromptsAreAnsweredRandomly(t *testing.T) {
 	c.True(parts.promptForModifiers(promptOperation{}))
 	c.Equal([]string{"First (1 of 4)", "Optional (2 of 4)", "Made (3 of 4)", "Last (4 of 4)"}, asked,
 		"where no pick is required there is none to make")
+
+	// The first trait's prompt asks for the rest at random, which answers the equipment's prompt still to come.
+	asked = nil
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		asked = append(asked, fmt.Sprintf("%s (%d of %d)", info.name, info.step, info.steps))
+		return false, false
+	})
+	rows, _, _ = newRows()
+	item := gurps.NewEquipment(nil, nil, false)
+	item.Name = "Item"
+	item.Modifiers = []*gurps.EquipmentModifier{newEquipmentModifierChoiceFor(nil, []string{"Low", "High"})}
+	sheet := newTestSheetForTemplate(t)
+	parts = newApplyParts(applyPart[*gurps.Trait]{table: sheet.Traits.Table, rows: rows[:1]})
+	parts.equipment = applyPart[*gurps.Equipment]{table: sheet.CarriedEquipment.Table, rows: []*gurps.Equipment{item}}
+	parts.random.rnd = firstPick{}
+	c.True(parts.promptForModifiers(promptOperation{}))
+	c.Equal([]string{"First (1 of 2)"}, asked, "the equipment's prompt, in a later list, is answered rather than put up")
+	c.True(item.Modifiers[0].Children[0].Enabled(), "the equipment's pick was made")
 }

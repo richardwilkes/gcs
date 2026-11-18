@@ -17,10 +17,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 )
 
 const samplePath = "/Users/someone/Library/Application Support/com.trollworks.gcs/gcs_prefs.json"
 
+// TestElideMiddleKeepsTheMostThatFits verifies that text too wide for the width keeps as much of its start and end, cut
+// in its middle, as fits around an ellipsis, down to the ellipsis alone, while text that fits is left alone.
 func TestElideMiddleKeepsTheMostThatFits(t *testing.T) {
 	decoration := &unison.TextDecoration{Font: unison.FieldFont}
 	full := unison.NewText(samplePath, decoration)
@@ -203,7 +206,8 @@ func TestPathFieldHighlightsUnderThePointer(t *testing.T) {
 }
 
 // TestPathFieldClickCallbackMakesItAButton verifies that a path field given a click callback calls it for a click
-// that ends on the field, and for Space while it has the focus, which it must then be able to take, and not otherwise.
+// that ends on the field, for Space while it has the focus, which it must then be able to take, and for a screen
+// reader's press, and not otherwise.
 func TestPathFieldClickCallbackMakesItAButton(t *testing.T) {
 	c := check.New(t)
 	f := NewPathField(samplePath)
@@ -230,4 +234,13 @@ func TestPathFieldClickCallbackMakesItAButton(t *testing.T) {
 	c.Equal(2, clicks, "but acts only once")
 	c.False(f.KeyDownCallback(unison.KeyReturn, 0, false), "other keys are left to what holds the field")
 	c.Equal(2, clicks)
+
+	node := &accessibility.Node{}
+	f.Accessibility.Callback(node)
+	c.True(node.Actions.Has(accessibility.Press), "a screen reader is offered a press")
+	c.True(f.Accessibility.ActionCallback(accessibility.ActionRequest{Action: accessibility.Press}), "which is taken")
+	c.Equal(3, clicks, "and calls the callback")
+	c.False(f.Accessibility.ActionCallback(accessibility.ActionRequest{Action: accessibility.Focus}),
+		"other actions are left to the field")
+	c.Equal(3, clicks)
 }

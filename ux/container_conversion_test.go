@@ -103,11 +103,11 @@ func TestContainerConversionIsUndoableAsOneEdit(t *testing.T) {
 	c.True(plain.Container(), "redo must turn the note back into a container")
 	mgr.Undo()
 
-	// Now the other direction: both the plain note and the empty container are selected along with the container that
-	// has children, but only the empty container can become a plain note.
+	// Now the other direction, by the list's command: both the plain note and the empty container are selected along
+	// with the container that has children, but only the empty container can become a plain note.
 	table = sheet.Notes.Table
 	table.SetSelectionMap(map[tid.TID]bool{plain.ID(): true, empty.ID(): true, parent.ID(): true})
-	ConvertToNonContainer(sheet, table)
+	table.PerformCmd(table, ConvertToNonContainerItemID)
 	c.False(plain.Container(), "the plain note must remain a plain note")
 	c.False(empty.Container(), "the empty container must have become a plain note")
 	c.True(parent.Container(), "the container with children must not be converted")
@@ -130,9 +130,10 @@ func TestContainerConversionIsUndoableAsOneEdit(t *testing.T) {
 // item closes its editor first, and that undo brings back a group, not a physical container, even though the sheet is
 // checked for modification, and so written out, in between. Undo and redo each discard an editor opened on the row in
 // between, whose ID's kind the conversion changes, and redo brings back the legality class new equipment starts with.
+// Canceling the prompt of a modified editor open on the row cancels the conversion.
 func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	group := gurps.NewEquipmentGroup(entity, nil)
 	group.Name = "Kit"
@@ -142,16 +143,7 @@ func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 		sheet = NewSheet("test"+gurps.SheetExt, entity)
 		DisplayNewDockable(sheet)
 	})
-	editorsOpen := func() int {
-		var count int
-		screen.Do(func() {
-			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
-				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
-				return ok && e.target == group
-			}))
-		})
-		return count
-	}
+	editorsOpen := func() int { return equipmentEditorsOpenFor(screen, group) }
 	var mgr *unison.UndoManager
 	screen.Do(func() {
 		mgr = unison.UndoManagerFor(sheet.CarriedEquipment.Table)
@@ -183,6 +175,25 @@ func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c.False(group.Container(), "redo must convert the group again")
 	c.Equal("4", group.LegalityClass)
 	c.Equal(0, editorsOpen(), "redo must discard the editor opened on the group")
+
+	// The conversion is posted rather than run through Do, since the prompt about the editor's changes runs a modal
+	// loop that Do would wait on.
+	screen.Do(func() {
+		e := EditEquipment(sheet, group, true)
+		e.editorData.Name = "Toolkit"
+		e.MarkModified(nil)
+	})
+	screen.Post(func() {
+		table := sheet.CarriedEquipment.Table
+		table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
+		ConvertToContainer(sheet, table)
+	})
+	screen.Sync()
+	_, prompt := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseCancel)))
+	c.False(group.Container(), "canceling the prompt of the item's modified editor must leave the item alone")
+	c.Equal(1, editorsOpen(), "the item's editor must stay open")
+	screen.Do(func() { discardEditorsFor(map[tid.TID]bool{group.ID(): true}) })
 }
 
 // newTestTemplateWithEquipment returns a template dockable holding the equipment.

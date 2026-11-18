@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // TestTraitEditorShowsTheRangeOfAnOpenChoice verifies that a trait editor opened outside a sheet counts a mandatory
@@ -74,4 +75,64 @@ func TestTraitEditorLeavesOutInheritedModifiers(t *testing.T) {
 	e.editorData.Modifiers[0].Children[0].SetDisabled(false)
 	DeepSync(e)
 	c.Equal("20", pointCost.String())
+}
+
+// TestTraitEditorLevelFieldsFollowTheLevelsCheckBox verifies that the trait editor's level, cost per level and maximum
+// level fields can only be used while the trait has levels.
+func TestTraitEditorLevelFieldsFollowTheLevelsCheckBox(t *testing.T) {
+	c := check.New(t)
+	_, content := buildEditorContent(nil, gurps.NewTrait(nil, nil, false), initTraitEditor)
+	box := findCheckBoxTitled(content, "Levels")
+	if box == nil {
+		t.Fatal("the trait editor has no Levels check box")
+	}
+	fields := make(map[string]*unison.Panel)
+	for _, field := range uxtest.PanelsOfType[*DecimalField](content) {
+		if field.undoTitle == "Level" || field.undoTitle == "Cost Per Level" {
+			fields[field.undoTitle] = field.AsPanel()
+		}
+	}
+	for _, field := range uxtest.PanelsOfType[*StringField](content) {
+		if field.undoTitle == "Maximum Level" {
+			fields[field.undoTitle] = field.AsPanel()
+		}
+	}
+	c.Equal(3, len(fields), "precondition: the editor has the three level fields")
+	for title, field := range fields {
+		c.False(field.Enabled(), "%s starts out unusable", title)
+	}
+	for _, levels := range []bool{true, false} {
+		clickCheckBox(box, levels)
+		for title, field := range fields {
+			c.Equal(levels, field.Enabled(), "%s with levels %v", title, levels)
+		}
+	}
+}
+
+// TestTraitEditorShowsTheAdjustedMaximumLevel verifies that the trait editor's Adjusted Maximum Level shows nothing
+// while there is no maximum, and follows the maximum as it is typed.
+func TestTraitEditorShowsTheAdjustedMaximumLevel(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.CanLevel = true
+	e, content := buildEditorContent(nil, trait, initTraitEditor)
+	var maximum *StringField
+	for _, field := range uxtest.PanelsOfType[*StringField](content) {
+		if field.undoTitle == "Maximum Level" {
+			maximum = field
+		}
+	}
+	if maximum == nil {
+		t.Fatal("the trait editor has no Maximum Level field")
+	}
+	// Point Cost is the first of the editor's non-editable fields, and Adjusted Maximum Level the second.
+	shown := uxtest.PanelsOfType[*NonEditableField](content)
+	if len(shown) < 2 {
+		t.Fatal("the trait editor has no Adjusted Maximum Level field")
+	}
+	adjusted := shown[1]
+	c.Equal("", adjusted.String(), "no maximum")
+	maximum.SetText("3")
+	c.Equal("3", e.editorData.MaxLevels, "precondition: the field edits the maximum")
+	c.Equal("3", adjusted.String(), "the typed maximum")
 }

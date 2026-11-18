@@ -62,6 +62,25 @@ func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 	}
 }
 
+// Saving an edited markdown file writes the edited content back to it and clears the modified state, which is what the
+// hash over its content is for.
+func TestMarkdownDockableSaves(t *testing.T) {
+	c := check.New(t)
+	p := filepath.Join(t.TempDir(), "notes.md")
+	c.NoError(os.WriteFile(p, []byte("# Title\n"), 0o600))
+	dockable, err := NewMarkdownDockable(p, true, false)
+	c.NoError(err)
+	d, ok := dockable.(*MarkdownDockable)
+	c.True(ok)
+	d.content += "\nMore text.\n"
+	c.True(d.Modified())
+	c.True(d.save(false))
+	c.False(d.Modified(), "the content must not be reported as modified once it has been saved")
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	c.Equal("# Title\n\nMore text.\n", string(data))
+}
+
 // TestMarkdownDockableCaretReadsOnFromAnAnchor verifies that the keys moving the reading caret go on from the heading
 // ScrollToAnchor, or a click on a link to it, shows rather than scrolling the view back to the top of the document or
 // to the link.

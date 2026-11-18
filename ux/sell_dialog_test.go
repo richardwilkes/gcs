@@ -420,22 +420,12 @@ func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 			gems = newTradeTestItem(entity, "Gem", "100", fxp.Three, gurps.MoneyTag)
 			return []*gurps.Equipment{sword, knives, backpack, eagles, gems}
 		})
-	editorsOpenFor := func(items ...*gurps.Equipment) int {
-		var count int
-		screen.Do(func() {
-			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
-				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
-				return ok && slices.Contains(items, e.target)
-			}))
-		})
-		return count
-	}
 	screen.Do(func() {
 		for _, eqp := range []*gurps.Equipment{sword, knives, rope, eagles, gems} {
 			EditEquipment(sheet, eqp, true)
 		}
 	})
-	c.Equal(5, editorsOpenFor(sword, knives, rope, eagles, gems), "the editors must be open")
+	c.Equal(5, equipmentEditorsOpenFor(screen, sword, knives, rope, eagles, gems), "the editors must be open")
 
 	s := openSellTestDialog(t, screen, wnd, sheet, sword, knives, backpack)
 	s.replaceText(s.quantities[1], "1")
@@ -444,10 +434,11 @@ func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 		c.Equal([]string{"Small Knife ×1", "Silver Eagle ×17", "Gem ×3", "Copper Penny ×17"}, carriedSummary(sheet),
 			"the sword and the backpack are sold in full and one of the knives, and the eagles paid merge into those carried")
 	})
-	c.Equal(0, editorsOpenFor(sword, rope), "the editors of the sword and of the rope in the backpack are closed")
-	c.Equal(0, editorsOpenFor(knives), "the editor of the knives, one of which is sold, is closed")
-	c.Equal(0, editorsOpenFor(eagles), "the editor of the eagles the payout merges into is closed")
-	c.Equal(1, editorsOpenFor(gems), "the editor of money the sale doesn't touch stays open")
+	c.Equal(0, equipmentEditorsOpenFor(screen, sword, rope),
+		"the editors of the sword and of the rope in the backpack are closed")
+	c.Equal(0, equipmentEditorsOpenFor(screen, knives), "the editor of the knives, one of which is sold, is closed")
+	c.Equal(0, equipmentEditorsOpenFor(screen, eagles), "the editor of the eagles the payout merges into is closed")
+	c.Equal(1, equipmentEditorsOpenFor(screen, gems), "the editor of money the sale doesn't touch stays open")
 }
 
 // TestSellDialogClosesTheEditorOfAContainerTheSaleSplits checks that selling part of what a container with several
@@ -474,22 +465,12 @@ func TestSellDialogClosesTheEditorOfAContainerTheSaleSplits(t *testing.T) {
 			crate.Children = []*gurps.Equipment{torches}
 			return []*gurps.Equipment{box, crate}
 		})
-	editorsOpenFor := func(items ...*gurps.Equipment) int {
-		var count int
-		screen.Do(func() {
-			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
-				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
-				return ok && slices.Contains(items, e.target)
-			}))
-		})
-		return count
-	}
 	screen.Do(func() {
 		for _, eqp := range []*gurps.Equipment{box, crate} {
 			EditEquipment(sheet, eqp, true)
 		}
 	})
-	c.Equal(2, editorsOpenFor(box, crate), "the editors must be open")
+	c.Equal(2, equipmentEditorsOpenFor(screen, box, crate), "the editors must be open")
 
 	s := openSellTestDialog(t, screen, wnd, sheet, gem, torches)
 	s.replaceText(s.quantities[0], "1")
@@ -500,8 +481,39 @@ func TestSellDialogClosesTheEditorOfAContainerTheSaleSplits(t *testing.T) {
 			"the gem comes out of one box, which is split off, and a torch out of each crate")
 		c.Equal(fxp.One, torches.Quantity)
 	})
-	c.Equal(0, editorsOpenFor(box), "the editor of the box, whose quantity the split reduces, is closed")
-	c.Equal(1, editorsOpenFor(crate), "the editor of the crate, which the sale doesn't split, stays open")
+	c.Equal(0, equipmentEditorsOpenFor(screen, box),
+		"the editor of the box, whose quantity the split reduces, is closed")
+	c.Equal(1, equipmentEditorsOpenFor(screen, crate),
+		"the editor of the crate, which the sale doesn't split, stays open")
+}
+
+// TestSellDialogCarriesTheMoneyAnewUnlessMerging checks that once the merge checkbox is cleared, the money a sale pays
+// out is carried as a new item rather than merged into the matching money already carried, which is left alone, along
+// with the editor open on it.
+func TestSellDialogCarriesTheMoneyAnewUnlessMerging(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var sword, eagles *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
+			eagles = money.eagle.Clone(money.libFile, entity, nil, gurps.Reference)
+			eagles.Quantity = fxp.FromInteger(7)
+			return []*gurps.Equipment{sword, eagles}
+		})
+	screen.Do(func() { EditEquipment(sheet, eagles, true) })
+	c.Equal(1, equipmentEditorsOpenFor(screen, eagles), "the editor must be open")
+
+	s := openSellTestDialog(t, screen, wnd, sheet, sword)
+	screen.Click(screen.PanelCenter(s.merge))
+	screen.Do(func() { c.Equal(uncheck.Off, s.merge.State, "the click clears the checkbox") })
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		c.Equal([]string{"Silver Eagle ×7", "Silver Eagle ×10"}, carriedSummary(sheet),
+			"the sword is sold and the eagles paid are carried apart from those already carried")
+	})
+	c.Equal(1, equipmentEditorsOpenFor(screen, eagles), "the editor of the eagles the payout leaves alone stays open")
 }
 
 // TestSellDialogLeavesOutWhatIsSetToZero checks that any item is left out of the sale when its quantity is set to zero,
@@ -851,6 +863,40 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 			c.Equal(fxp.FromInteger(24), entity.ShoppingRecord[0].Exchanged)
 		}
 	})
+}
+
+// TestSellDialogSellsNothingWhenAnEditorStaysOpen checks that canceling the prompt an editor open on an item for sale
+// puts up as the sale closes it keeps the editor open and sells nothing.
+func TestSellDialogSellsNothingWhenAnEditorStaysOpen(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var knives *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Ten)
+			return []*gurps.Equipment{knives}
+		})
+	screen.Do(func() {
+		e := EditEquipment(sheet, knives, true)
+		e.editorData.Quantity = fxp.Two
+		e.MarkModified(nil)
+	})
+	s := openSellTestDialog(t, screen, wnd, sheet, knives)
+	screen.Click(screen.PanelCenter(s.sell))
+	_, prompt := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseCancel)))
+	var windows int
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "the prompt has been dismissed and the sale isn't shown again")
+	c.True(*s.done, "the sell command has finished")
+	screen.Do(func() {
+		c.Equal([]string{"Small Knife ×10"}, carriedSummary(sheet), "nothing is sold")
+		c.Equal(0, len(sheet.Entity().ShoppingRecord), "nothing is recorded")
+		c.False(sheet.undoMgr.CanUndo(), "there is nothing to undo")
+	})
+	c.Equal(1, equipmentEditorsOpenFor(screen, knives), "the editor stays open")
+	screen.Do(func() { discardEditorsFor(map[tid.TID]bool{knives.ID(): true}) })
 }
 
 // TestSellDialogTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates

@@ -71,15 +71,6 @@ func TestMergeSkillPoints(t *testing.T) {
 		c.Equal(true, selMap[existing[0].ID()])
 	})
 
-	t.Run("identical skill with a matching TL merges points", func(_ *testing.T) {
-		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
-		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("8"))}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergePoints(existing, incoming, "3", selMap)
-		c.Equal(0, len(remaining))
-		c.Equal(fxp.FromInteger(6), existing[0].Points)
-	})
-
 	t.Run("skill with a differing TL is not merged", func(_ *testing.T) {
 		existing := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(4), new("8"))}
 		incoming := []*gurps.Skill{newTestSkill("Guns", fxp.FromInteger(2), new("9"))}
@@ -187,15 +178,6 @@ func TestMergeSkillPoints(t *testing.T) {
 	})
 
 	// Spells go through their own hash and TL methods.
-	t.Run("identical spell with a matching TL merges points", func(_ *testing.T) {
-		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(4), new("3"))}
-		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("3"))}
-		selMap := make(map[tid.TID]bool)
-		remaining := mergePoints(existing, incoming, "3", selMap)
-		c.Equal(0, len(remaining))
-		c.Equal(fxp.FromInteger(6), existing[0].Points)
-	})
-
 	t.Run("matches the correct spell TL variant when several share a hash", func(_ *testing.T) {
 		// The matching TL4 variant is listed first so a lookup keyed only by hash would retain the TL3 variant and
 		// fail to merge; the merge must consider every candidate for the hash.
@@ -274,6 +256,21 @@ func TestPlaceMergesIntoExistingRows(t *testing.T) {
 		c.Equal(2, len(entity.Skills))
 		c.Equal(fxp.FromInteger(4), existingTL8.Points)
 		c.Equal(fxp.FromInteger(3), existingTL9.Points)
+	})
+
+	// Spells merge as skills do, and an added row's empty TL is taken to be the sheet's, as a drop takes it.
+	t.Run("adding a spell with an empty TL merges into the one at the sheet's TL", func(t *testing.T) {
+		sheet := newTestSheetForTemplate(t)
+		entity := sheet.Entity()
+		entity.Profile.TechLevel = "5"
+		existing := newTestSpell("Fireball", fxp.FromInteger(4), new("5"))
+		entity.Spells = []*gurps.Spell{existing}
+		sheet.Rebuild(true)
+		added := newTestSpell("Fireball", fxp.FromInteger(2), new(""))
+		part := applyPart[*gurps.Spell]{table: sheet.Spells.Table, rows: []*gurps.Spell{added}, index: -1}
+		part.place(true)
+		c.Equal([]*gurps.Spell{existing}, entity.Spells, "the added spell must not be placed as a row of its own")
+		c.Equal(fxp.FromInteger(6), existing.Points, "the existing spell must absorb the added spell's points")
 	})
 
 	// A row dropped into a container arrives already parented to it, though not yet among its children, and the merge

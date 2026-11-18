@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestBodyPanelNotesRefKeysAreUnique verifies that each hit location's notes field gets a reference key of its own,
@@ -81,73 +80,116 @@ func countLocations(body *gurps.Body) int {
 	return count
 }
 
+// TestBodyPanelHeadingFollowsTheBodyName verifies that the body block is named for the body, both when it is built
+// and as the name changes, and that a named body is given a heading of that name, which comes first and takes the
+// title strip, while an unnamed body has none, so that its border keeps the strip; a heading as well would push the
+// header row down a strip.
 func TestBodyPanelHeadingFollowsTheBodyName(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	body := gurps.FactoryBody()
-	entity.SheetSettings.BodyType = body
-	panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
-	c.Equal(role.Heading, panel.Children()[0].Accessibility.Role, "the heading comes first")
-	c.Equal(body.Name, panel.Children()[0].Accessibility.Name)
-	c.Equal(body.Name, panel.Accessibility.Name)
-	c.Equal(body.Name, panel.titledBorder.Title)
-
-	body.Name = "Custom"
-	panel.sync(true)
-	c.Equal(role.Heading, panel.Children()[0].Accessibility.Role, "the heading comes first after a rebuild")
-	c.Equal("Custom", panel.Children()[0].Accessibility.Name, "the heading follows the body's name")
-	c.Equal("Custom", panel.Accessibility.Name)
-	c.Equal("Custom", panel.titledBorder.Title)
+	for _, names := range [][]string{
+		{"Humanoid", "Custom", ""}, // Built with a heading, which is renamed and then removed.
+		{"", "Named", ""},          // Built without a heading, which is added and then removed.
+		{"Humanoid", "", "Custom"}, // Built with a heading, which is removed and then added again.
+	} {
+		t.Run(strings.Join(names, " to "), func(t *testing.T) {
+			c := check.New(t)
+			entity := gurps.NewEntity()
+			body := gurps.FactoryBody()
+			body.Name = names[0]
+			entity.SheetSettings.BodyType = body
+			panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
+			strip := panel.titledBorder.TitleHeight() + 1
+			for i, name := range names {
+				if i != 0 {
+					body.Name = name
+					panel.sync(true)
+				}
+				_, pref, _ := panel.Sizes(geom.Size{})
+				panel.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
+				panel.ValidateLayout()
+				c.Equal(name, panel.Accessibility.Name)
+				c.Equal(name, panel.titledBorder.Title)
+				if name == "" {
+					c.Nil(panel.heading, "an unnamed body has no heading")
+					c.Nil(blockHeading(panel.AsPanel()))
+					c.False(panel.titledBorder.HeadingInContent, "the border keeps the title strip")
+					c.Equal(strip, panel.titledBorder.Insets().Top)
+					c.Equal(panel.header.AsPanel(), panel.Children()[0], "the header row comes first")
+					c.Equal(strip, panel.header.FrameRect().Y, "the header row lies right under the title strip")
+					continue
+				}
+				if panel.heading == nil {
+					t.Fatalf("the body named %q has a heading", name)
+				}
+				c.Equal(panel.heading, blockHeading(panel.AsPanel()))
+				c.Equal(name, panel.heading.Accessibility.Name, "the heading follows the body's name")
+				c.True(panel.titledBorder.HeadingInContent, "the border leaves the title strip to the heading")
+				c.Equal(float32(1), panel.titledBorder.Insets().Top)
+				c.Equal(panel.heading, panel.Children()[0], "the heading comes first")
+				c.Equal(panel.header.AsPanel(), panel.Children()[1], "the header row follows it")
+				c.Equal(panel.titledBorder.TitleStrip(panel.FrameRect().Size), panel.heading.FrameRect())
+				c.Equal(strip, panel.header.FrameRect().Y, "the header row lies right under the title strip, as before")
+			}
+		})
+	}
 }
 
-// An unnamed body has no heading, so its border keeps the title strip; a heading as well would push the header row down
-// a strip.
-func TestBodyPanelWithoutANameHasNoHeading(t *testing.T) {
+// TestBodyPanelSubTableNameShowsAndHidesItsLocations verifies that a click on the name of a hit location with a
+// sub-table hides the sub-table's locations, which start out shown, and that another click shows them again.
+func TestBodyPanelSubTableNameShowsAndHidesItsLocations(t *testing.T) {
 	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
-	body := gurps.FactoryBody()
-	body.Name = ""
+	body := &gurps.Body{Name: "Test", Roll: gurps.Roller.Parse("1d")}
+	for _, id := range []string{"a", "b"} {
+		loc := gurps.NewHitLocation(entity, "")
+		loc.LocID = id
+		loc.Slots = 3
+		body.AddLocation(loc)
+	}
+	sub := &gurps.Body{Roll: gurps.Roller.Parse("1d")}
+	sub.SetOwningLocation(body.Locations[0])
+	body.Locations[0].SubTable = sub
+	for _, id := range []string{"x", "y"} {
+		loc := gurps.NewHitLocation(entity, "")
+		loc.LocID = id
+		loc.Slots = 3
+		sub.AddLocation(loc)
+	}
+	body.Update(entity)
 	entity.SheetSettings.BodyType = body
-	panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
-	strip := panel.titledBorder.TitleHeight() + 1
-	layOut := func() {
-		_, pref, _ := panel.Sizes(geom.Size{})
-		panel.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
-		panel.ValidateLayout()
-	}
-	verify := func(name string) {
-		t.Helper()
-		layOut()
-		c.Equal(name, panel.Accessibility.Name)
-		c.Equal(name, panel.titledBorder.Title)
-		if name == "" {
-			c.Nil(panel.heading, "an unnamed body has no heading")
-			c.Nil(blockHeading(panel.AsPanel()))
-			c.False(panel.titledBorder.HeadingInContent, "the border keeps the title strip")
-			c.Equal(strip, panel.titledBorder.Insets().Top)
-			c.Equal(panel.header.AsPanel(), panel.Children()[0], "the header row comes first")
-			c.Equal(strip, panel.header.FrameRect().Y, "the header row lies right under the title strip")
-			return
+	var panel *BodyPanel
+	screen.Do(func() {
+		sheet := NewSheet("test"+gurps.SheetExt, entity)
+		DisplayNewDockable(sheet)
+		if panels := uxtest.PanelsOfType[*BodyPanel](sheet.AsPanel()); len(panels) == 1 {
+			panel = panels[0]
 		}
-		if panel.heading == nil {
-			t.Fatal("a named body has a heading")
-		}
-		c.Equal(panel.heading, blockHeading(panel.AsPanel()))
-		c.Equal(name, panel.heading.Accessibility.Name)
-		c.True(panel.titledBorder.HeadingInContent, "the border leaves the title strip to the heading")
-		c.Equal(float32(1), panel.titledBorder.Insets().Top)
-		c.Equal(panel.heading, panel.Children()[0], "the heading comes first")
-		c.Equal(panel.header.AsPanel(), panel.Children()[1], "the header row follows it")
-		c.Equal(panel.titledBorder.TitleStrip(panel.FrameRect().Size), panel.heading.FrameRect())
-		c.Equal(strip, panel.header.FrameRect().Y, "the header row lies right under the title strip, as before")
+	})
+	if panel == nil {
+		t.Fatal("the sheet shows the body")
 	}
-	verify("")
-
-	body.Name = "Named"
-	panel.sync(true)
-	verify("Named")
-
-	body.Name = ""
-	panel.sync(true)
-	verify("")
+	// shown returns the reference keys of the notes fields the panel shows, one for each location it lists.
+	shown := func() []string {
+		var keys []string
+		screen.Do(func() {
+			for _, field := range uxtest.PanelsMatching(panel.AsPanel(), func(p *unison.Panel) bool {
+				return strings.HasPrefix(p.RefKey, "body:")
+			}) {
+				keys = append(keys, field.RefKey)
+			}
+		})
+		return keys
+	}
+	all := []string{"body:0", "body:0:0", "body:0:1", "body:1"}
+	c.Equal(all, shown(), "the sub-table's locations start out shown")
+	for _, want := range [][]string{{"body:0", "body:1"}, all} {
+		screen.Do(func() {
+			buttons := uxtest.PanelsOfType[*unison.Button](panel.AsPanel())
+			c.Equal(1, len(buttons), "only the location with the sub-table is a button")
+			if len(buttons) == 1 {
+				buttons[0].ClickCallback()
+			}
+		})
+		c.Equal(want, shown(), "a click on the location's name shows or hides its sub-table")
+	}
 }

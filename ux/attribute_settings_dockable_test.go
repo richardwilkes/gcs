@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -27,7 +26,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
 
@@ -225,9 +223,9 @@ func newTestAttributeSettingsDockableFor(defs *gurps.AttributeDefs) *attributeSe
 }
 
 // TestAttributeDefDragDropReorders verifies that dropping a dragged attribute definition moves it among the
-// definitions, renumbers them to match, posts a single undo edit, rebuilds the panels and clears the drag state; and
-// that a payload from another attribute editor, which is what a drag from another sheet's settings delivers, is
-// ignored.
+// definitions, renumbers them to match, posts a single undo edit, rebuilds the panels and clears the drag state.
+// TestAncestryDragDropIgnoresNoOpsAndForeignPayloads covers the payload of another editor, which rowDragState ignores
+// for every editor.
 func TestAttributeDefDragDropReorders(t *testing.T) {
 	c := check.New(t)
 	d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "iq"))
@@ -260,147 +258,6 @@ func TestAttributeDefDragDropReorders(t *testing.T) {
 	c.False(d.undoMgr.CanRedo(), "a drop is what was last done")
 	d.undoMgr.Undo()
 	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(d.model), "a no-op drop posted no edit, so undo reaches the real drop")
-
-	other := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx", "iq"))
-	initTestSettingsContent(&other.undoableSettingsDockable)
-	foreign := dragDataForRow(t, other.content.Children()[2])
-	beginDragOver(&d.rowDragState, d.content, 0)
-	d.dataDragDrop(geom.Point{}, foreign)
-	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(d.model), "another editor's payload is ignored")
-	c.Equal([]string{"st", "dx", "iq"}, attrDefIDs(other.model))
-	c.False(d.inDragOver)
-}
-
-// TestPoolThresholdDragDropReorders verifies that dropping a dragged pool threshold moves it within the thresholds of
-// the pool that owns it, undoably, leaving the definitions themselves in place.
-func TestPoolThresholdDragDropReorders(t *testing.T) {
-	c := check.New(t)
-	defs := testAttrDefs("st", "hp")
-	pool := defs.Set["hp"]
-	pool.Type = attribute.Pool
-	for _, state := range []string{"Reeling", "Collapse", "Dead"} {
-		pool.Thresholds = append(pool.Thresholds, &gurps.PoolThreshold{State: state})
-	}
-	d := newTestAttributeSettingsDockableFor(defs)
-	initTestSettingsContent(&d.undoableSettingsDockable)
-	expandAllAttributes(d)
-	pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
-	c.Equal(1, len(pools), "only the pool attribute has a threshold list")
-	rows := pools[0].Children()
-	c.Equal(3, len(rows))
-	dd := dragDataForRow(t, rows[2])
-	c.Equal("Pool Threshold Drag", dd.title)
-
-	beginDragOver(&d.rowDragState, pools[0].AsPanel(), 0)
-	d.dataDragDrop(geom.Point{}, dd)
-	c.Equal([]string{"Dead", "Reeling", "Collapse"}, thresholdStates(d.model.Set["hp"]))
-	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions keep their order")
-	c.False(d.inDragOver, "the drag state is cleared")
-	pools = uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
-	c.Equal(1, len(pools), "the panels are rebuilt")
-	c.Equal("Dead", uxtest.PanelsOfType[*thresholdSettingsPanel](pools[0].AsPanel())[0].threshold.State)
-
-	d.undoMgr.Undo()
-	c.Equal([]string{"Reeling", "Collapse", "Dead"}, thresholdStates(d.model.Set["hp"]), "undo restores the order")
-	c.False(d.undoMgr.CanUndo(), "the drop is a single edit")
-}
-
-// TestPoolThresholdAddAndDeleteAreUndoable verifies that adding a threshold to a pool and deleting one from it are each
-// recorded as a single undo edit of the whole set of definitions, that the rows are rebuilt to match after each step,
-// and that the guard against deleting the last threshold follows the count.
-func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
-	c := check.New(t)
-	defs := testAttrDefs("st", "hp")
-	pool := defs.Set["hp"]
-	pool.Type = attribute.Pool
-	pool.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", KeyPrefix: "r"}}
-	d := newTestAttributeSettingsDockableFor(defs)
-	initTestSettingsContent(&d.undoableSettingsDockable)
-	expandAllAttributes(d)
-	rows := uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
-	c.Equal(1, len(rows))
-	c.False(rows[0].deleteButton.Enabled(), "the last threshold may not be deleted")
-
-	rows[0].pool.addThreshold()
-	c.Equal(2, len(d.model.Set["hp"].Thresholds), "the threshold is added to the pool")
-	c.Equal("Undo Add Pool Threshold", d.undoMgr.UndoTitle())
-	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
-	c.Equal(2, len(rows), "the rows are rebuilt")
-	c.True(rows[0].deleteButton.Enabled(), "with two thresholds, either may be deleted")
-	c.True(rows[1].deleteButton.Enabled(), "with two thresholds, either may be deleted")
-	c.NotEqual("", rows[1].threshold.KeyPrefix, "the added threshold is given a target key prefix")
-	c.NotNil(d.targetMgr.Find(rows[1].threshold.KeyPrefix+"state"), "the added threshold's state field is registered")
-
-	d.undoMgr.Undo()
-	c.Equal([]string{"Reeling"}, thresholdStates(d.model.Set["hp"]), "undo removes the added threshold")
-	c.False(d.undoMgr.CanUndo(), "the add is a single edit")
-	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
-	c.Equal(1, len(rows))
-	c.False(rows[0].deleteButton.Enabled(), "undoing back to one threshold restores the guard")
-
-	d.undoMgr.Redo()
-	c.Equal(2, len(d.model.Set["hp"].Thresholds), "redo adds it back")
-	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
-	c.Equal(2, len(rows))
-
-	rows[0].pool.deleteThreshold(rows[0])
-	c.Equal(1, len(d.model.Set["hp"].Thresholds), "the threshold is deleted")
-	c.Equal("", d.model.Set["hp"].Thresholds[0].State, "the first threshold is the one deleted")
-	c.Equal("Undo Delete Pool Threshold", d.undoMgr.UndoTitle())
-	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
-	c.Equal(1, len(rows))
-	c.False(rows[0].deleteButton.Enabled(), "deleting down to one threshold restores the guard")
-
-	d.undoMgr.Undo()
-	c.Equal(2, len(d.model.Set["hp"].Thresholds), "undo restores the deleted threshold")
-	c.Equal("Reeling", d.model.Set["hp"].Thresholds[0].State, "in its original position")
-	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions are untouched throughout")
-}
-
-// TestAttributeTypeChangeIsUndoable verifies that changing an attribute's type through its popup is a single undo edit
-// of the whole set of definitions, so that undoing a change from a pool to a separator or to another type without
-// thresholds brings back what the change cleared: the thresholds, and for a separator the fields it has no use for.
-func TestAttributeTypeChangeIsUndoable(t *testing.T) {
-	for _, attrType := range []attribute.Type{attribute.PoolSeparator, attribute.Integer} {
-		t.Run(attrType.Key(), func(t *testing.T) {
-			c := check.New(t)
-			d := newTestAttributeSettingsDockable()
-			initTestSettingsContent(&d.undoableSettingsDockable)
-			expandAllAttributes(d)
-			fp := d.model.Set[gurps.FatiguePointsID]
-			c.Equal(attribute.Pool, fp.Type)
-			c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
-			before := fp.Clone()
-			beforeHash := gurps.Hash64(d.model)
-			rowsBefore := len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel()))
-
-			widgetFor[*Popup[attribute.Type]](t, d, fp.KeyPrefix+"type").Select(attrType)
-			fp = d.model.Set[gurps.FatiguePointsID]
-			c.Equal(attrType, fp.Type, "the popup writes the model")
-			if fp.IsSeparator() {
-				c.Equal("", fp.Base, "a separator has no base")
-			} else {
-				c.Equal(before.Base, fp.Base, "only a separator loses its base")
-			}
-			c.Nil(fp.Thresholds, "a type other than a pool has no thresholds")
-			c.Equal("Undo Attribute Type", d.undoMgr.UndoTitle())
-
-			d.undoMgr.Undo()
-			fp = d.model.Set[gurps.FatiguePointsID]
-			c.Equal(attribute.Pool, fp.Type, "undo restores the type")
-			c.Equal(before.FullName, fp.FullName, "undo restores the full name")
-			c.Equal(before.Base, fp.Base, "undo restores the base")
-			c.Equal(before.CostPerPoint, fp.CostPerPoint, "undo restores the cost per point")
-			c.Equal(thresholdStates(before), thresholdStates(fp), "undo restores the thresholds")
-			c.Equal(beforeHash, gurps.Hash64(d.model), "undo restores the definitions exactly")
-			c.False(d.undoMgr.CanUndo(), "the type change is a single edit")
-			c.Equal(rowsBefore, len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())),
-				"the panels are rebuilt from the restored definitions")
-
-			d.undoMgr.Redo()
-			c.Equal(attrType, d.model.Set[gurps.FatiguePointsID].Type, "redo changes the type again")
-		})
-	}
 }
 
 // TestThresholdFeaturesFollowAttributeEdits verifies that the features of a threshold name an attribute as the
@@ -592,6 +449,69 @@ func TestApplyingDefaultAttributesReportsTheChange(t *testing.T) {
 	c.Equal([]string{"Dex/A"}, difficulty(), "the same row must show the new name once the defaults are applied")
 }
 
+// TestApplyingSheetAttributesUpdatesTheSheet verifies that applying a sheet's attribute definitions gives the sheet a
+// copy of them, adds an attribute for each new definition, drops those whose definitions are gone, puts the rest in the
+// new order without losing what they hold, and has the sheet show the change.
+func TestApplyingSheetAttributesUpdatesTheSheet(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	entity.Attributes.Set[gurps.StrengthID].Adjustment = fxp.Two
+	var sheet *Sheet
+	screen.Do(func() {
+		sheet = NewSheet("test"+gurps.SheetExt, entity)
+		DisplayNewDockable(sheet)
+		ShowAttributeSettings(sheet)
+	})
+	d := uxtest.SoleEditor[*attributeSettingsDockable](t, screen, func(one unison.Dockable) bool {
+		s, ok := one.AsPanel().Self.(*attributeSettingsDockable)
+		return ok && s.owner == sheet
+	})
+	// shows reports whether one of the sheet's attribute blocks shows the attribute with the ID.
+	shows := func(id string) bool {
+		for _, panel := range uxtest.PanelsOfType[*AttrPanel](sheet.AsPanel()) {
+			if _, ok := panel.nameLabels[id]; ok {
+				return true
+			}
+		}
+		return false
+	}
+	var added string
+	screen.Do(func() {
+		c.True(shows("per"), "precondition: the sheet shows Per")
+		delete(d.model.Set, "per")
+		def := d.addAttributeDef()
+		def.Name = "Zest"
+		def.Type = attribute.Integer
+		def.Placement = attribute.Secondary
+		def.Base = "10"
+		added = def.DefID
+		c.True(d.moveAttributeDef(d.model.Set[gurps.IntelligenceID], 0), "precondition: IQ moves to the top")
+		d.apply()
+	})
+	screen.Do(func() {
+		attrs := entity.Attributes.Set
+		c.Nil(attrs["per"], "the attribute whose definition is gone is dropped")
+		c.False(shows("per"), "and the sheet no longer shows it")
+		if one := attrs[added]; one == nil {
+			c.NotNil(one, "a new definition is given an attribute")
+		} else {
+			c.True(one.AttributeDef() == entity.SheetSettings.Attributes.Set[added], "which belongs to the sheet")
+		}
+		c.True(shows(added), "and the sheet shows it")
+		for id, def := range d.model.Set {
+			if attr := attrs[id]; attr != nil {
+				c.Equal(def.Order, attr.Order, "%s takes the order of its definition", id)
+			}
+		}
+		st := attrs[gurps.StrengthID]
+		c.True(st != nil && st.Adjustment == fxp.Two, "an attribute kept keeps what it holds")
+		d.model.Set[gurps.DexterityID].Name = "Dex"
+		c.Equal("DX", entity.SheetSettings.Attributes.Set[gurps.DexterityID].Name,
+			"the sheet holds a copy of the definitions, which later edits leave alone")
+	})
+}
+
 // TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity verifies that applying the default attribute definitions
 // syncs the open templates and library lists, which show the default definitions' names, so that their columns and
 // rows are sized for the new names and redrawn with them, and leaves the open loot sheets, which show no attributes,
@@ -694,149 +614,6 @@ func toolbarButtonWithTip(t *testing.T, toolbar *unison.Panel, tip string) *unis
 }
 
 const toggleAttributesTip = "Expands/collapses all attribute definitions"
-
-// TestAttributeRowsStartCollapsedToTheirHeader verifies that every attribute's row is built collapsed: a drag handle, a
-// button column holding the delete button alone, and a header naming the definition by its ID, its name when it has
-// one, and its type, with none of its fields, nor the thresholds of a pool, nor the button that adds one, so that
-// nothing but deleting and rearranging can be done to a definition until its row is expanded.
-func TestAttributeRowsStartCollapsedToTheirHeader(t *testing.T) {
-	c := check.New(t)
-	defs := testAttrDefs("st", "hp", "sep", "nameless")
-	hp := defs.Set["hp"]
-	hp.Type = attribute.Pool
-	hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
-	sep := defs.Set["sep"]
-	sep.Type = attribute.PrimarySeparator
-	sep.Name = "Primary"
-	defs.Set["nameless"].Name = " "
-	d := newTestAttributeSettingsDockableFor(defs)
-	initTestSettingsContent(&d.undoableSettingsDockable)
-	rows := d.content.Children()
-	c.Equal(4, len(rows))
-	for i, want := range []string{
-		"st · ST · Integer", "hp · HP · Pool", "sep · Primary · Primary Separator", "nameless · Integer",
-	} {
-		parts := rows[i].Children()
-		c.Equal(3, len(parts), "row %d: a drag handle, the buttons and the content", i)
-		if len(parts) != 3 {
-			continue
-		}
-		_, isHandle := parts[0].Self.(*DragHandle)
-		c.True(isHandle, "row %d: the drag handle comes first", i)
-		buttons := uxtest.PanelsOfType[*unison.Button](parts[1])
-		c.Equal(1, len(buttons), "row %d: only the delete button is offered", i)
-		if len(buttons) == 1 {
-			c.Equal([]string{"Remove attribute"}, uxtest.LabelTexts(buttons[0].Tooltip), "row %d", i)
-		}
-		content := parts[2].Children()
-		c.Equal(1, len(content), "row %d: the content is the header alone", i)
-		if len(content) == 1 {
-			c.Equal(role.DisclosureTriangle, content[0].Accessibility.Role, "row %d: the header is a disclosure", i)
-			c.Equal(want, content[0].Accessibility.Name, "row %d: the header names the definition", i)
-		}
-	}
-	c.Nil(d.targetMgr.Find(defs.Set["st"].KeyPrefix+"id"), "no field of a collapsed row is registered")
-	c.Equal(0, len(uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())), "a collapsed pool shows no thresholds")
-	c.Equal(0, len(uxtest.PanelsOfType[*StringField](d.AsPanel())), "a collapsed row has no fields")
-}
-
-// TestAttributeRowHeaderTogglesTheRow verifies that a click on a row's header, Space, Return or Enter while it has the
-// focus, or a screen reader's press or request to expand or collapse it, expands the row to the definition's fields,
-// the add threshold button and the thresholds of a pool, and collapses it again, with the header saying which; that
-// the focus stays on the header, built anew with the row; and that none of it is an edit, to be undone or applied.
-func TestAttributeRowHeaderTogglesTheRow(t *testing.T) {
-	type act func(screen *unison.HeadlessScreen, header *unison.Panel, expand bool)
-	key := func(code unison.KeyCode) act {
-		return func(screen *unison.HeadlessScreen, _ *unison.Panel, _ bool) { screen.KeyPress(code, mod.None) }
-	}
-	ask := func(action func(expand bool) accessibility.Action) act {
-		return func(screen *unison.HeadlessScreen, header *unison.Panel, expand bool) {
-			node := screen.AccessibilityNodeFor(header)
-			if node == nil {
-				return
-			}
-			screen.PerformAccessibilityAction(accessibility.ActionRequest{Node: node.ID, Action: action(expand)})
-		}
-	}
-	for _, tc := range []struct {
-		name  string
-		act   act
-		focus bool // whether the focus is expected on the header afterward, as a key or an action leaves it
-	}{
-		{name: "click", act: func(screen *unison.HeadlessScreen, header *unison.Panel, _ bool) {
-			screen.Click(screen.PanelCenter(header))
-		}},
-		{name: "space", act: key(unison.KeySpace), focus: true},
-		{name: "return", act: key(unison.KeyReturn), focus: true},
-		{name: "enter", act: key(unison.KeyNumPadEnter), focus: true},
-		{name: "press", act: ask(func(_ bool) accessibility.Action { return accessibility.Press }), focus: true},
-		{name: "expand and collapse", act: ask(func(expand bool) accessibility.Action {
-			if expand {
-				return accessibility.Expand
-			}
-			return accessibility.Collapse
-		}), focus: true},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			c := check.New(t)
-			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-			screen.EnableAccessibility()
-			var d *attributeSettingsDockable
-			screen.Do(func() {
-				defs := testAttrDefs("st", "hp")
-				hp := defs.Set["hp"]
-				hp.Type = attribute.Pool
-				hp.Thresholds = []*gurps.PoolThreshold{{State: "Reeling"}}
-				d = newAttributeSettingsDockable(nil, defs)
-				d.TabTitle = "Attributes"
-				d.TabIcon = svg.Attributes
-				d.show()
-			})
-			var header *unison.Panel
-			screen.Do(func() {
-				header = attrRowHeader(t, d, "hp")
-				header.RequestFocus()
-				c.True(wnd.Focus() == header, "precondition: the header has the focus")
-			})
-			node := screen.AccessibilityNodeFor(header)
-			c.NotNil(node, "the header is described")
-			if node != nil {
-				c.True(node.Expandable && !node.Expanded, "the header is described as collapsed")
-			}
-			unchanged := func(when string) {
-				c.False(d.undoMgr.CanUndo(), "%s: nothing is undone", when)
-				c.False(d.Modified(), "%s: nothing is modified", when)
-				c.False(d.applyButton.Enabled(), "%s: there is nothing to apply", when)
-			}
-			for _, expand := range []bool{true, false} {
-				tc.act(screen, header, expand)
-				screen.Do(func() {
-					c.Equal(expand, attrRowExpanded(d, "hp"), "the row is expanded: %v", expand)
-					buttons := uxtest.PanelsOfType[*unison.Button](d.rows()[1].Children()[1])
-					pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
-					if expand {
-						c.Equal(2, len(buttons), "the threshold can be added to while the row is expanded")
-						c.Equal(1, len(pools), "the thresholds are shown while the row is expanded")
-					} else {
-						c.Equal(1, len(buttons), "only deletion is offered while the row is collapsed")
-						c.Equal(0, len(pools), "the thresholds are hidden while the row is collapsed")
-					}
-					header = attrRowHeader(t, d, "hp")
-					c.Equal("hp · HP · Pool", header.Accessibility.Name, "the header still names the definition")
-					if tc.focus {
-						c.True(wnd.Focus() == header, "the focus stays on the header; it is on %T", wnd.Focus())
-					}
-				})
-				node = screen.AccessibilityNodeFor(header)
-				c.NotNil(node, "the header is described")
-				if node != nil {
-					c.Equal(expand, node.Expanded, "the header is described as expanded: %v", expand)
-				}
-				unchanged(fmt.Sprintf("expanded %v", expand))
-			}
-		})
-	}
-}
 
 // TestAttributeRowExpansionSurvivesRebuildsButNotReplacement verifies that an expanded row stays expanded, and the
 // collapsed ones collapsed, when the content is rebuilt from the same definitions, as a type change, undo and redo,
@@ -1069,39 +846,6 @@ func TestUndoReachesAnEditMadeInACollapsedAttributeRow(t *testing.T) {
 					"the header names the definition as restored")
 			})
 		})
-	}
-}
-
-// TestAttributeRowHeaderNamesTheAttributeAsEdited verifies that a row's header follows the edits made in the row: to
-// the ID, to the name, including emptying it, which leaves it out, and to the type, and that undoing an edit does too.
-func TestAttributeRowHeaderNamesTheAttributeAsEdited(t *testing.T) {
-	c := check.New(t)
-	d := newTestAttributeSettingsDockableFor(testAttrDefs("st", "dx"))
-	initTestSettingsContent(&d.undoableSettingsDockable)
-	askAttrRow(t, d, "st", true)
-	prefix := d.model.Set["st"].KeyPrefix
-	for _, tc := range []struct {
-		name string
-		id   string // the ID the definition has after the edit
-		edit func()
-		want string
-	}{
-		{name: "id", id: "zz", want: "zz · ST · Integer", edit: func() {
-			widgetFor[*StringField](t, d, prefix+"id").SetText("zz")
-		}},
-		{name: "name", id: "zz", want: "zz · Zest · Integer", edit: func() {
-			widgetFor[*StringField](t, d, prefix+"name").SetText("Zest")
-		}},
-		{name: "no name", id: "zz", want: "zz · Integer", edit: func() {
-			widgetFor[*StringField](t, d, prefix+"name").SetText("")
-		}},
-		{name: "type", id: "zz", want: "zz · Decimal", edit: func() {
-			widgetFor[*Popup[attribute.Type]](t, d, prefix+"type").Select(attribute.Decimal)
-		}},
-		{name: "undo", id: "zz", want: "zz · Integer", edit: func() { d.undoMgr.Undo() }},
-	} {
-		tc.edit()
-		c.Equal(tc.want, attrRowHeader(t, d, tc.id).Accessibility.Name, "%s: the header follows the edit", tc.name)
 	}
 }
 

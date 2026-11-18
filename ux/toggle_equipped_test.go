@@ -17,9 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// TestToggleEquippedSkipsChoiceContainers verifies that a choice can't be unequipped from the list, since its editor
-// offers no way to equip it again.
-func TestToggleEquippedSkipsChoiceContainers(t *testing.T) {
+// TestToggleEquippedNeverUnequipsAChoice verifies that a choice can't be unequipped from the list, since its editor
+// offers no way to equip it again, while one left unequipped can still be equipped.
+func TestToggleEquippedNeverUnequipsAChoice(t *testing.T) {
 	c := check.New(t)
 	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
 	item := gurps.NewEquipment(nil, nil, false)
@@ -33,4 +33,11 @@ func TestToggleEquippedSkipsChoiceContainers(t *testing.T) {
 	toggleEquipped(template, table)
 	c.True(choice.Equipped, "the choice must be left equipped")
 	c.False(item.Equipped, "the item must be unequipped")
+
+	choice.Equipped = false
+	table = template.Equipment.Table
+	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true})
+	c.True(canToggleEquipped(table), "an unequipped choice must offer to be equipped")
+	toggleEquipped(template, table)
+	c.True(choice.Equipped, "the choice must be equipped")
 }
