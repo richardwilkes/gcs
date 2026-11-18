@@ -173,10 +173,10 @@ The toolbar above the attack editor gives you quick access to common actions:
 
 | Button                                                  | Name                | Description                                                        |
 |:--------------------------------------------------------|---------------------|--------------------------------------------------------------------|
-| ![help](images/icons/help.svg)                      | **Help**            | Opens this page from the User Guide.                               |
+| ![help](images/icons/help.svg)                          | **Help**            | Opens this page from the User Guide.                               |
 | 100%                                                    | **Scale**           | Adjusts the display size of the attack editor.                     |
-| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**   | Saves and closes the attack editor (`Ctrl+Return` / `Cmd+Return`). |
-| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes** | Exits without saving changes (`Escape`).                           |
+| ![apply changes](images/icons/applyChanges.svg)         | **Apply Changes**   | Saves and closes the attack editor (`Ctrl+Return` / `Cmd+Return`). |
+| ![discard changes](images/icons/discardChanges.svg)     | **Discard Changes** | Exits without saving changes (`Escape`).                           |
 
 ---
 
