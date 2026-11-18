@@ -289,6 +289,46 @@ func wrapMarkdownToView(scroll *unison.ScrollPanel, markdown *unison.Markdown) {
 	scroll.ContentView().FrameChangeCallback = func() { rewrapMarkdownToView(scroll, markdown) }
 }
 
+// wrapMarkdownToWidth keeps the markdown wrapped to the width it is sized for or laid out at, so that a layout sizing
+// it for a width gets the height its content takes at that width. It stands in for unison.NewMarkdown(true), which
+// wraps to the whole width of the markdown's parent, too wide for one sharing the parent with other columns, and only
+// after the parent has been laid out for the old wrapping, so the markdown must not be created with that. The content
+// gets all of the width, with no slop, so that a markdown given the width it asked for is not wrapped narrower.
+func wrapMarkdownToWidth(markdown *unison.Markdown) {
+	markdown.SetLayout(&markdownWidthLayout{Layout: markdown.Layout(), markdown: markdown})
+}
+
+// markdownWidthLayout is a markdown's own layout, wrapping the content afresh to each width it is sized for or laid out
+// at.
+type markdownWidthLayout struct {
+	unison.Layout
+	markdown *unison.Markdown
+}
+
+// LayoutSizes implements unison.Layout.
+func (l *markdownWidthLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	l.wrap(hint.Width)
+	return l.Layout.LayoutSizes(target, hint)
+}
+
+// PerformLayout implements unison.Layout.
+func (l *markdownWidthLayout) PerformLayout(target *unison.Panel) {
+	l.wrap(target.ContentRect(true).Width)
+	l.Layout.PerformLayout(target)
+}
+
+// wrap wraps the content to the width, which includes the markdown's border. A width that leaves no room, as that of a
+// markdown sized without a hint is, leaves the content as it is.
+func (l *markdownWidthLayout) wrap(width float32) {
+	if border := l.markdown.Border(); border != nil {
+		width -= border.Insets().Width()
+	}
+	// SetContentBytes takes a width below 1 to mean the parent's.
+	if width >= 1 {
+		l.markdown.SetContentBytes(l.markdown.ContentBytes(), width)
+	}
+}
+
 // rewrapMarkdownToView wraps the markdown afresh to fill the scroll panel's view (see markdownWidthInView) and lays the
 // scroll panel out again to fit, keeping what was at the top of the view there (see markdownSpot).
 func rewrapMarkdownToView(scroll *unison.ScrollPanel, markdown *unison.Markdown) {

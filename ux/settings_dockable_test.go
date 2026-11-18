@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
@@ -480,6 +481,15 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 		gurps.GlobalSettings().Sheet = s
 		cappedSheet.initContent(content)
 	}
+	describedSheet := &sheetSettingsDockable{}
+	describedSheet.Self = describedSheet
+	// A damage progression whose description wraps at the minimum width.
+	withProgressionDescription := func(content *unison.Panel) {
+		s := gurps.GlobalSettings().Sheet.Clone(nil)
+		s.DamageProgression = progression.Tbone1
+		gurps.GlobalSettings().Sheet = s
+		describedSheet.initContent(content)
+	}
 	pageRefs := &pageRefMappingsDockable{}
 	pageRefs.Self = pageRefs
 	uxtest.SwapForTest(t, &gurps.GlobalSettings().PageRefs, gurps.PageRefs{})
@@ -500,6 +510,11 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 		{name: "general settings", init: general.initContent, minSize: generalSettingsMinSize},
 		{name: "sheet settings", init: sheet.initContent, minSize: sheetSettingsMinSize},
 		{name: "sheet settings, with a skill level cap", init: withSkillLevelCap, minSize: sheetSettingsMinSize},
+		{
+			name:    "sheet settings, with a damage progression description",
+			init:    withProgressionDescription,
+			minSize: sheetSettingsMinSize,
+		},
 		{
 			name: "page reference mappings",
 			init: withPageRefs(

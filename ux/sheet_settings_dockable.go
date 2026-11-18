@@ -309,7 +309,12 @@ func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 func (d *sheetSettingsDockable) createDamageSection(content *unison.Panel) {
 	section := newSettingsSection(content, i18n.Text("Damage"), 2)
 	s := d.settings()
-	desc := unison.NewMarkdown(true)
+	desc := unison.NewMarkdown(false)
+	wrapMarkdownToWidth(desc)
+	desc.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
 	// The description sits under the popup with no label of its own, so it is named outright for the screen readers
 	// whose cursor moves into a document.
 	desc.Accessibility.Name = i18n.Text("Damage Progression Description")

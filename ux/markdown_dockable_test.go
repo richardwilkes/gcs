@@ -168,6 +168,24 @@ func TestMarkdownViewsWrapToTheirViewAtAnyScale(t *testing.T) {
 	}
 }
 
+// TestMarkdownWrapsToTheWidthItIsGiven verifies that a markdown kept wrapped to its width asks for the height its
+// content takes at the width it is sized for, and is wrapped to the width it is laid out at, whatever width it was last
+// sized for.
+func TestMarkdownWrapsToTheWidthItIsGiven(t *testing.T) {
+	c := check.New(t)
+	markdown := unison.NewMarkdown(false)
+	wrapMarkdownToWidth(markdown)
+	markdown.SetContent(strings.Repeat("Some text that runs on across the width. ", 10), 0)
+	_, narrow, _ := markdown.Sizes(geom.Size{Width: 200})
+	_, wide, _ := markdown.Sizes(geom.Size{Width: 600})
+	c.True(narrow.Width <= 200 && wide.Width > 200 && wide.Width <= 600 && wide.Height < narrow.Height,
+		"sized for a width, the content takes %v at 200 and %v at 600", narrow, wide)
+	markdown.SetFrameRect(geom.NewRect(0, 0, 200, narrow.Height))
+	markdown.ValidateLayout()
+	_, pref, _ := markdown.Sizes(geom.Size{})
+	c.Equal(narrow, pref, "laid out, the content is wrapped to its frame, not to the width it was last sized for")
+}
+
 // TestMarkdownViewsKeepTheirPlaceWhenRewrapped verifies that a markdown file and the User Guide keep the heading at the
 // top of their view there when they wrap their document afresh: at another scale, in a narrower view or, for the guide,
 // with its side bar toggled. A markdown file keeps it too when the scale or the view changes while it is being edited.
