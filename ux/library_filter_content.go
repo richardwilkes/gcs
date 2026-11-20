@@ -177,6 +177,7 @@ type libraryFilterView interface {
 	rebuild()
 	sheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts, fullRebuild bool)
 	listFiltersChanged(key string, source *listFilterPopup)
+	openStateSharer
 	focusFilter()
 	quickFilterText() string
 	setQuickFilterText(text string)
@@ -274,7 +275,7 @@ type libraryFilterParse[T gurps.Node[T]] struct {
 	inFile map[tid.TID]tid.TID
 	size   int64
 	// statted is true when the modification time and size were read, which makes the parse fit to be reused while the
-	// file stays as it is, even when reading the file failed.
+	// file stays as it is, even when its contents couldn't be parsed, though not when the file couldn't be read.
 	statted bool
 }
 
@@ -338,7 +339,7 @@ type libraryFilterContent[T gurps.Node[T]] struct {
 	cache map[libraryFilterCacheKey]*libraryFilterParse[T]
 	// lastLoad is the load begun last, while it is yet to be shown, for the next load to take over from.
 	lastLoad   *libraryFilterLoad[T]
-	inFile     []map[tid.TID]tid.TID // Parallel to decorator.files; see libraryFilterParse.inFile
+	parses     []*libraryFilterParse[T] // Parallel to decorator.files: what reading each file yielded
 	unreadable []libraryFilterFailure
 	widthsKey  string
 	gen        atomic.Int64 // Counts the loads, so that one that has been superseded is discarded
@@ -522,7 +523,7 @@ func parseLibraryFilterFile[T gurps.Node[T]](file *libraryFilterFile, previous *
 ) *libraryFilterParse[T] {
 	fi, err := os.Stat(file.fullPath)
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
+		if libraryFilterFileGone(file, err) {
 			return &libraryFilterParse[T]{} // Removed since it was listed; the next listing drops it
 		}
 		errs.Log(errs.NewWithCause("unable to read library file", err), "path", file.fullPath)
@@ -538,23 +539,39 @@ func parseLibraryFilterFile[T gurps.Node[T]](file *libraryFilterFile, previous *
 		}
 	}, func(panicErr error) { result.err = panicErr })
 	if result.err != nil {
-		if errors.Is(result.err, fs.ErrNotExist) {
+		if libraryFilterFileGone(file, result.err) {
 			return &libraryFilterParse[T]{}
 		}
 		result.rows = nil
+		// What kept the file from being read, unlike what kept its contents from being parsed, may pass without the
+		// file changing, as a lack of permission does.
+		var pathErr *fs.PathError
+		result.statted = !errors.As(result.err, &pathErr)
 		errs.Log(errs.NewWithCause("unable to read library file", result.err), "path", file.fullPath)
 	}
 	return result
 }
 
+// libraryFilterFileGone returns true if err, which reading the file returned, says that the file is gone, rather than
+// that it is a link to a file that is gone, which the listing keeps.
+func libraryFilterFileGone(file *libraryFilterFile, err error) bool {
+	if !errors.Is(err, fs.ErrNotExist) {
+		return false
+	}
+	_, err = os.Lstat(file.fullPath)
+	return errors.Is(err, fs.ErrNotExist)
+}
+
 // install shows the rows of the files, which the load l read, in file order, unless the view has gone away or another
 // load has begun since this one. When the files are those shown and none of them was read again, the rows shown are
 // left as they are. A file that couldn't be read contributes no rows and is reported in the footer. Rows that share an
-// ID with a row of a file before theirs are given new ones, since the table keys its filter and selection by ID. The
-// filters in force are applied to the new rows, or the sort, if any, when none is; the selection and scroll position
-// are kept, a selected row given a new ID staying selected; and the editors open on rows that are gone, even where a
-// file read again has a row with the same ID, are closed. The first rows shown size the columns, unless their widths
-// were saved before, to fit every row, whatever the filters in force let through.
+// ID with a row of a file before theirs are given new ones, since the table keys its filter and selection by ID, made
+// from the IDs they have in their files, whatever IDs an earlier load gave them, so that they turn only on the files
+// shown. The filters in force are applied to the new rows, or the sort, if any, when none is; the scroll position is
+// kept, and the selection follows each row by its place in its file (see libraryFilterRowKey), whatever ID the view
+// gives it; and the editors open on rows that are gone, even where a file read again has a row with the same ID, are
+// closed. The first rows shown size the columns, unless their widths were saved before, to fit every row, whatever the
+// filters in force let through.
 func (c *libraryFilterContent[T]) install(l *libraryFilterLoad[T], files []libraryFilterFile,
 	parsed []*libraryFilterParse[T],
 ) {
@@ -567,51 +584,39 @@ func (c *libraryFilterContent[T]) install(l *libraryFilterLoad[T], files []libra
 		c.updateStatus()
 		return
 	}
-	sel := c.table.CopySelectionMap()
-	moved := make(map[tid.TID]tid.TID) // The selected rows given new IDs, old to new
+	selected := c.selectedRowKeys()
+	sel := make(map[tid.TID]bool, len(selected))
 	cache := make(map[libraryFilterCacheKey]*libraryFilterParse[T], len(files))
-	inFile := make([]map[tid.TID]tid.TID, len(files))
 	rowFiles := make(map[T]int)
 	seen := make(map[tid.TID]bool)
 	var roots []T
 	c.unreadable = nil
 	for i, file := range files {
 		p := parsed[i]
-		key := file.cacheKey()
-		shown := c.cache[key] == p
 		if p.statted {
-			cache[key] = p
+			cache[file.cacheKey()] = p
 		}
 		if p.err != nil {
 			c.unreadable = append(c.unreadable, libraryFilterFailure{file: file, err: p.err})
 			continue
 		}
-		replaced := gurps.MakeRowIDsUnique(file.LibraryFile, seen, p.rows)
-		if shown {
-			// The rows are those shown, so a selected one given a new ID takes the selection with it. The rows of a file
-			// read again are new, and take the selection of the rows shown with their IDs.
-			for newID, oldID := range replaced {
-				if sel[oldID] {
-					moved[oldID] = newID
-				}
-			}
-		}
-		p.inFile = composeInFileIDs(p.inFile, replaced)
-		inFile[i] = p.inFile
+		restoreInFileIDs(p.rows, p.inFile)
+		p.inFile = gurps.MakeRowIDsUnique(file.LibraryFile, seen, p.rows)
 		roots = append(roots, p.rows...)
 		gurps.Traverse(func(row T) bool {
 			rowFiles[row] = i
 			return false
 		}, false, false, p.rows...)
-	}
-	for oldID := range moved {
-		delete(sel, oldID)
-	}
-	for _, newID := range moved {
-		sel[newID] = true
+		if len(selected) != 0 {
+			keyLibraryFilterRows(&files[i], p, func(row T, key libraryFilterRowKey) {
+				if selected[key] {
+					sel[row.ID()] = true
+				}
+			})
+		}
 	}
 	c.cache = cache
-	c.inFile = inFile
+	c.parses = parsed
 	c.decorator.files = files
 	c.decorator.rowFiles = rowFiles
 	c.rowCount = len(rowFiles)
@@ -658,29 +663,24 @@ func (c *libraryFilterContent[T]) showsParses(files []libraryFilterFile, parsed 
 	return true
 }
 
-// composeInFileIDs returns previous, which maps the IDs a file's rows were given to the IDs they have in the file,
-// updated for the rows replaced has since given new IDs, mapping their new IDs to their old ones.
-func composeInFileIDs(previous, replaced map[tid.TID]tid.TID) map[tid.TID]tid.TID {
-	if len(replaced) == 0 {
-		return previous
+// restoreInFileIDs gives each of the rows, at any depth, that inFile maps the ID of, the ID it has in its file (see
+// libraryFilterParse.inFile).
+func restoreInFileIDs[T gurps.Node[T]](rows []T, inFile map[tid.TID]tid.TID) {
+	if len(inFile) == 0 {
+		return
 	}
-	next := maps.Clone(previous)
-	if next == nil {
-		next = make(map[tid.TID]tid.TID, len(replaced))
-	}
-	for _, oldID := range replaced {
-		delete(next, oldID)
-	}
-	for newID, oldID := range replaced {
-		original := oldID
-		if earlier, ok := previous[oldID]; ok {
-			original = earlier
+	gurps.Traverse(func(row T) bool {
+		if original, ok := inFile[row.ID()]; ok {
+			if holder, isHolder := any(row).(interface {
+				AdjustSource(from gurps.LibraryFile, original gurps.SourcedID, mode gurps.CloneMode)
+			}); isHolder {
+				// A Copy takes the ID given, and the source given, which is the row's own.
+				holder.AdjustSource(gurps.LibraryFile{}, gurps.SourcedID{TID: original, Source: row.GetSource()},
+					gurps.Copy)
+			}
 		}
-		if newID != original {
-			next[newID] = original
-		}
-	}
-	return next
+		return false
+	}, false, false, rows...)
 }
 
 // closeEditorsOfGoneRows closes the editors opened from the view on rows it no longer shows. A row of a file read again
@@ -719,11 +719,55 @@ func (c *libraryFilterContent[T]) fileOf(row T) (libraryFilterFile, bool) {
 func (c *libraryFilterContent[T]) inFileID(row T) tid.TID {
 	id := row.ID()
 	if i, ok := c.decorator.rowFiles[row]; ok {
-		if original, replaced := c.inFile[i][id]; replaced {
+		if original, replaced := c.parses[i].inFile[id]; replaced {
 			return original
 		}
 	}
 	return id
+}
+
+// libraryFilterRowKey names a row of a library filter view by its file, the ID it has there and, since rows of one file
+// may share an ID, how many rows of the file before it share it too; unlike the ID the view gives it, none of these
+// turn on the other files shown.
+type libraryFilterRowKey struct {
+	file libraryFilterCacheKey
+	id   tid.TID
+	nth  int
+}
+
+// keyLibraryFilterRows calls fn with each of the rows, at any depth and in order, that reading the file yielded in p,
+// and its key.
+func keyLibraryFilterRows[T gurps.Node[T]](file *libraryFilterFile, p *libraryFilterParse[T],
+	fn func(row T, key libraryFilterRowKey),
+) {
+	fileKey := file.cacheKey()
+	counts := make(map[tid.TID]int)
+	gurps.Traverse(func(row T) bool {
+		id := row.ID()
+		if original, replaced := p.inFile[id]; replaced {
+			id = original
+		}
+		fn(row, libraryFilterRowKey{file: fileKey, id: id, nth: counts[id]})
+		counts[id]++
+		return false
+	}, false, false, p.rows...)
+}
+
+// selectedRowKeys returns the keys of the selected rows.
+func (c *libraryFilterContent[T]) selectedRowKeys() map[libraryFilterRowKey]bool {
+	sel := c.table.CopySelectionMap()
+	if len(sel) == 0 {
+		return nil
+	}
+	keys := make(map[libraryFilterRowKey]bool, len(sel))
+	for i := range c.decorator.files {
+		keyLibraryFilterRows(&c.decorator.files[i], c.parses[i], func(row T, key libraryFilterRowKey) {
+			if sel[row.ID()] {
+				keys[key] = true
+			}
+		})
+	}
+	return keys
 }
 
 // showInSourceFiles opens the list file each selected row came from and selects there the rows it came from (see
@@ -840,7 +884,7 @@ func (c *libraryFilterContent[T]) dispose() {
 	}
 	c.cache = nil
 	c.lastLoad = nil
-	c.inFile = nil
+	c.parses = nil
 	c.decorator.files = nil
 	c.decorator.rowFiles = nil
 	c.provider.SetRootData(nil)

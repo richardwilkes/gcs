@@ -234,11 +234,11 @@ func applyModifiersTo[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](
 			ID:       unison.NextUndoID(),
 			EditName: applyModifierAction.Title,
 			UndoFunc: func(e *unison.UndoEdit[*tablesUndoData]) {
-				setContainersOpen(opened, false)
+				setContainersOpen(tables[0], opened, false)
 				e.BeforeData.Apply()
 			},
 			RedoFunc: func(e *unison.UndoEdit[*tablesUndoData]) {
-				setContainersOpen(opened, true)
+				setContainersOpen(tables[0], opened, true)
 				e.AfterData.Apply()
 			},
 			AbsorbFunc: func(_ *unison.UndoEdit[*tablesUndoData], _ unison.Undoable) bool { return false },
@@ -258,7 +258,8 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 		selection[target.ID()] = true
 		for parent := target.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
 			if !parent.IsOpen() {
-				parent.SetOpen(true)
+				// Every table is synced below, so any of them can stand for the one showing the container.
+				setContainerOpen(liveTable(tables[0]), parent, true)
 				opened = append(opened, parent)
 			}
 		}

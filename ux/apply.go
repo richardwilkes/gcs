@@ -133,6 +133,8 @@ type applyPart[T gurps.Node[T]] struct {
 	index int
 	// placed holds the rows that were placed, which leaves out any that were merged into a row already present.
 	placed []T
+	// opened is set when place opened the parent, which is not part of the undo data (see setParentOpen).
+	opened bool
 	// asked holds the rows whose modifiers were answered from the template picker or at random, so aren't asked about
 	// again.
 	asked map[T]bool
@@ -152,6 +154,7 @@ type applyPartOps interface {
 	promptForModifiers(op promptOperation, count *modifierPromptCount, random *randomPicks) bool
 	promptForNameables(op promptOperation) bool
 	place(merge bool)
+	setParentOpen(open bool)
 	clearPreconfigured()
 	undoData() tableRestorer
 	refKey() string
@@ -362,7 +365,10 @@ func (p *applyPart[T]) place(merge bool) {
 		p.parent.SetChildren(siblings)
 		// Opened so that the rows show, since only rows that are showing can be selected, and the provider's own
 		// processing below works from the selection.
-		p.parent.SetOpen(true)
+		if !p.parent.IsOpen() {
+			setContainerOpen(p.table, p.parent, true)
+			p.opened = true
+		}
 	}
 	p.table.SyncToModel()
 	for _, one := range p.placed {
@@ -372,6 +378,14 @@ func (p *applyPart[T]) place(merge bool) {
 	provider.ProcessDropData(nil, p.table)
 	p.table.ScrollRowCellIntoView(p.table.LastSelectedRowIndex(), 0)
 	p.table.ScrollRowCellIntoView(p.table.FirstSelectedRowIndex(), 0)
+}
+
+// setParentOpen opens or closes the parent, if place opened it, ahead of a redo or an undo of the edit, as the move
+// commands do for the containers they open.
+func (p *applyPart[T]) setParentOpen(open bool) {
+	if p.opened {
+		setContainersOpen(p.table, []T{p.parent}, open)
+	}
 }
 
 func (p *applyPart[T]) clearPreconfigured() {
@@ -493,10 +507,16 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	changed.report()
 	if mgr != nil {
 		mgr.Add(&unison.UndoEdit[*applyUndoEditData]{
-			ID:         unison.NextUndoID(),
-			EditName:   editName,
-			UndoFunc:   func(e *unison.UndoEdit[*applyUndoEditData]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*applyUndoEditData]) { e.AfterData.Apply() },
+			ID:       unison.NextUndoID(),
+			EditName: editName,
+			UndoFunc: func(e *unison.UndoEdit[*applyUndoEditData]) {
+				parts.each(func(part applyPartOps) { part.setParentOpen(false) })
+				e.BeforeData.Apply()
+			},
+			RedoFunc: func(e *unison.UndoEdit[*applyUndoEditData]) {
+				parts.each(func(part applyPartOps) { part.setParentOpen(true) })
+				e.AfterData.Apply()
+			},
 			AbsorbFunc: func(_ *unison.UndoEdit[*applyUndoEditData], _ unison.Undoable) bool { return false },
 			BeforeData: before,
 			AfterData:  newApplyUndoEditData(sheet, parts, grantRows),

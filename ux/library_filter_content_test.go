@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -25,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
@@ -168,6 +170,10 @@ func TestLibraryFilterMergesFilesWithFileColumn(t *testing.T) {
 	betaRow = libraryFilterRowsByName(content.table)["Beta Skill"]
 	c.NotEqual(interloper.TID, betaRow.ID(), "the row read before is given another ID")
 	c.Equal(alpha.TID, content.inFileID(betaRow.Data()), "and still knows the ID it has in its file")
+
+	installLibraryFilterFiles(content, betaFile)
+	c.Equal(alpha.TID, libraryFilterRowsByName(content.table)["Beta Skill"].ID(),
+		"the row has the ID it has in its file again once no row before it has that ID")
 }
 
 // TestLibraryFilterKeepsRowsUntilLoad verifies that the view hands the table the same rows, at every depth, each time
@@ -242,7 +248,10 @@ func TestLibraryFilterQuickFilterSkipsFileColumn(t *testing.T) {
 
 // TestLibraryFilterReportsUnreadableFiles verifies that a file that can't be read leaves the rows of the others shown,
 // and is counted in the footer and named in its tooltip, while a file that is gone by the time it is read, which the
-// next listing of the libraries drops, is neither.
+// next listing of the libraries drops, is neither; that a file whose contents couldn't be parsed isn't read again while
+// it stays as it is, where one that couldn't be read is, since what kept it from being read, such as a lack of
+// permission, may pass without changing it; and that a link to a file that is gone, which the listing keeps, is
+// reported as unreadable.
 func TestLibraryFilterReportsUnreadableFiles(t *testing.T) {
 	c := check.New(t)
 	_, user := uxtest.UseTestLibraries(t, c)
@@ -257,35 +266,93 @@ func TestLibraryFilterReportsUnreadableFiles(t *testing.T) {
 	c.Equal([]string{"Good Skill"}, shownSkillNames(content.table), "the readable file's rows are shown")
 	c.True(strings.Contains(content.footer.String(), "1 file couldn't be read"),
 		"the footer counts the unreadable file alone: %q", content.footer.String())
-	var tip []string
-	if content.footer.Tooltip != nil {
-		tip = uxtest.LabelTexts(content.footer.Tooltip)
+	tipNames := func(file libraryFilterFile) bool {
+		var tip []string
+		if content.footer.Tooltip != nil {
+			tip = uxtest.LabelTexts(content.footer.Tooltip)
+		}
+		return slices.ContainsFunc(tip, func(text string) bool { return strings.Contains(text, file.Path) })
 	}
-	c.True(slices.ContainsFunc(tip, func(text string) bool { return strings.Contains(text, bad.Path) }),
-		"the footer's tooltip names the unreadable file: %q", tip)
-	c.False(slices.ContainsFunc(tip, func(text string) bool { return strings.Contains(text, gone.Path) }),
-		"the footer's tooltip doesn't name the file that is gone: %q", tip)
+	c.True(tipNames(bad), "the footer's tooltip names the unreadable file")
+	c.False(tipNames(gone), "the footer's tooltip doesn't name the file that is gone")
+
+	flaky := writeLibraryFilterTestSkills(c, user, "Skills/Flaky.skl", newTestSkill("Flaky Skill", fxp.One, nil))
+	failing := true // Changed only between loads, which read on goroutines of their own.
+	var lock sync.Mutex
+	reads := make(map[string]int)
+	parse := content.parse
+	content.parse = func(file libraryFilterFile) ([]*gurps.Skill, error) {
+		lock.Lock()
+		reads[file.Path]++
+		lock.Unlock()
+		if failing && file.Path == flaky.Path {
+			return nil, errs.NewWithCause(file.fullPath,
+				&fs.PathError{Op: "open", Path: file.fullPath, Err: fs.ErrPermission})
+		}
+		return parse(file)
+	}
+	installLibraryFilterFiles(content, bad, flaky, good)
+	c.True(strings.Contains(content.footer.String(), "2 files couldn't be read"),
+		"the footer counts the file that couldn't be read: %q", content.footer.String())
+	failing = false
+	installLibraryFilterFiles(content, bad, flaky, good)
+	c.Equal([]string{"Flaky Skill", "Good Skill"}, shownSkillNames(content.table),
+		"the file that couldn't be read is read again, though it hasn't changed")
+	c.Equal(0, reads[bad.Path], "the file that couldn't be parsed isn't read again while it hasn't changed")
+
+	dangling := writeLibraryFilterTestSkills(c, user, "Skills/Dangling.skl")
+	c.NoError(os.Remove(dangling.fullPath))
+	if err := os.Symlink(filepath.Join(filepath.Dir(dangling.fullPath), "Missing.skl"), dangling.fullPath); err != nil {
+		t.Skipf("unable to make a link: %v", err)
+	}
+	installLibraryFilterFiles(content, dangling, good)
+	c.True(strings.Contains(content.footer.String(), "1 file couldn't be read"),
+		"the footer counts the link to a file that is gone: %q", content.footer.String())
+	c.True(tipNames(dangling), "the footer's tooltip names the link to a file that is gone")
 }
 
 // TestLibraryFilterSelectionStaysWithReIDedRow verifies that a selected row given a new ID, because a file joining the
-// view ahead of its own has a row with its ID, stays selected, rather than the selection passing to that other row.
+// view ahead of its own has a row with its ID, stays selected, rather than the selection passing to that other row,
+// whether or not its own file is read again in the same load, and without spreading to a row of its own file that has
+// the ID it has there.
 func TestLibraryFilterSelectionStaysWithReIDedRow(t *testing.T) {
 	c := check.New(t)
-	master, user := uxtest.UseTestLibraries(t, c)
-	_, content := newTestLibraryFilter(t)
-	kept := newTestSkill("Kept", fxp.One, nil)
-	keptFile := writeLibraryFilterTestSkills(c, user, "Skills/Kept.skl", kept)
-	installLibraryFilterFiles(content, keptFile)
-	content.table.SelectAll()
+	for _, one := range []struct {
+		name      string
+		readAgain bool
+		twin      bool
+	}{
+		{name: "file kept as it was"},
+		{name: "file read again", readAgain: true},
+		{name: "file kept as it was, with a twin", twin: true},
+		{name: "file read again, with a twin", readAgain: true, twin: true},
+	} {
+		master, user := uxtest.UseTestLibraries(t, c)
+		_, content := newTestLibraryFilter(t)
+		kept := newTestSkill("Kept", fxp.One, nil)
+		skills := []*gurps.Skill{kept}
+		if one.twin {
+			twin := newTestSkill("Twin", fxp.One, nil)
+			twin.TID = kept.TID
+			skills = []*gurps.Skill{twin, kept}
+		}
+		keptFile := writeLibraryFilterTestSkills(c, user, "Skills/Kept.skl", skills...)
+		installLibraryFilterFiles(content, keptFile)
+		content.table.SetSelectionMap(map[tid.TID]bool{libraryFilterRowsByName(content.table)["Kept"].ID(): true})
+		if one.readAgain {
+			kept.LocalNotes = "Changed" // The file's size changes with it, so it is read again.
+			writeLibraryFilterTestSkills(c, user, keptFile.Path, skills...)
+		}
 
-	joined := newTestSkill("Joined", fxp.One, nil)
-	joined.TID = kept.TID
-	installLibraryFilterFiles(content, writeLibraryFilterTestSkills(c, master, "Skills/Joined.skl", joined), keptFile)
-	selected := make([]string, 0, 1)
-	for _, row := range content.table.SelectedRows(false) {
-		selected = append(selected, row.Data().Name)
+		joined := newTestSkill("Joined", fxp.One, nil)
+		joined.TID = kept.TID
+		installLibraryFilterFiles(content, writeLibraryFilterTestSkills(c, master, "Skills/Joined.skl", joined), keptFile)
+		selected := make([]string, 0, 1)
+		for _, row := range content.table.SelectedRows(false) {
+			selected = append(selected, row.Data().Name)
+		}
+		c.Equal([]string{"Kept"}, selected, "%s: the row given a new ID stays selected", one.name)
 	}
-	c.Equal([]string{"Kept"}, selected, "the row given a new ID stays selected")
 }
 
 // TestLibraryFilterSizesColumnsToEveryRow verifies that the first rows a view shows size its columns, when none were

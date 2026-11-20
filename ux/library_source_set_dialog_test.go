@@ -116,7 +116,7 @@ func TestSourceSetChecklist(t *testing.T) {
 		},
 		{
 			name:    "the entries are normalized",
-			entries: []gurps.LibraryFile{entry(u, "Top.skl"), entry(u, `Skills\A.skl`), entry(u, "Top.skl")},
+			entries: []gurps.LibraryFile{entry(u, "Top.skl"), entry(u, "Skills/./A.skl"), entry(u, "Top.skl")},
 			toggles: []gurps.LibraryFile{entry(m, "Basic.skl")},
 			want:    []gurps.LibraryFile{entry(u, "Skills/A.skl"), entry(u, "Top.skl"), entry(m, "Basic.skl")},
 		},

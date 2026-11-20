@@ -324,6 +324,24 @@ func closeLibrarySettings(lib *library.Library) {
 	}
 }
 
+// librarySettingsFolderRenamed has the path of each open Library Settings view, whether its library's or one typed in
+// and not yet applied, follow the folder renamed from oldPath to newPath when it is that folder or lies within it,
+// since applying the old path would put that folder back empty. Any other path is left as it is.
+func librarySettingsFolderRenamed(oldPath, newPath string) {
+	for _, dockable := range AllDockables() {
+		d, ok := dockable.AsPanel().Self.(*librarySettingsDockable)
+		if !ok {
+			continue
+		}
+		if rel, err := filepath.Rel(oldPath, d.path); err == nil && filepath.IsLocal(rel) {
+			d.path = filepath.Join(newPath, rel)
+			d.pathField.syncFromValue()
+		}
+		// Its library may have moved with the folder, which changes whether the view holds a change to apply.
+		d.updateToolbar()
+	}
+}
+
 func (d *librarySettingsDockable) apply() bool {
 	wnd := d.Window()
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed

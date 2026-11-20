@@ -462,7 +462,7 @@ func sortListFilters(filters []*ListFilter) {
 // that aren't recognized are kept, since a newer version of GCS may have written them.
 func (s *Settings) ensureListFiltersValidity() {
 	for key, filters := range s.ListFilters {
-		seen := make(map[string]bool)
+		var seen []string
 		disableable := disableableFilterFields(key)
 		filters = slices.DeleteFunc(filters, func(f *ListFilter) bool {
 			if f == nil {
@@ -470,11 +470,11 @@ func (s *Settings) ensureListFiltersValidity() {
 			}
 			f.EnsureValidity()
 			dropUnusedIncludeDisabled(f.Root, disableable)
-			lowered := strings.ToLower(f.Name)
-			if lowered == "" || seen[lowered] {
+			sameName := func(name string) bool { return strings.EqualFold(name, f.Name) }
+			if f.Name == "" || slices.ContainsFunc(seen, sameName) {
 				return true
 			}
-			seen[lowered] = true
+			seen = append(seen, f.Name)
 			return false
 		})
 		s.SetListFiltersFor(key, filters)

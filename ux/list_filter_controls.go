@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -159,6 +160,21 @@ func (f *listFilterControls[T]) toggleNotes() {
 		return
 	}
 	if toggleNotes(f) {
+		f.table.SyncToModel()
+	}
+}
+
+// syncSharedOpenStates implements openStateSharer.
+func (f *listFilterControls[T]) syncSharedOpenStates(origin *unison.Panel, ids map[tid.TID]bool) {
+	if f.table.AsPanel() == origin {
+		return
+	}
+	shown := false
+	gurps.Traverse(func(row T) bool {
+		shown = ids[row.ID()]
+		return shown
+	}, false, false, f.provider.RootData()...)
+	if shown {
 		f.table.SyncToModel()
 	}
 }

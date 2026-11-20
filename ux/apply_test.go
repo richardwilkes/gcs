@@ -374,7 +374,8 @@ func dragged(table *unison.Table[*Node[*gurps.Trait]]) *unison.TableDragData[*No
 
 // TestDropOnSheetIsAppliedWhereItLanded verifies that a drop onto a sheet goes through the same application as a copy,
 // with the rows ending up where they were dropped -- here, inside a closed container, ahead of the row already there,
-// the container being opened to show them selected -- and that the whole of it can be undone in one step.
+// the container being opened to show them selected -- and that the whole of it, the opening included, can be undone in
+// one step and redone.
 func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -420,6 +421,12 @@ func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	group = entity.Traits[len(entity.Traits)-1]
 	c.Equal(1, len(group.Children), "undo must take the dropped row back out")
 	c.Equal("Existing", group.Children[0].Name)
+	c.False(group.IsOpen(), "undo must close the container the drop opened")
+
+	sheet.undoMgr.Redo()
+	group = entity.Traits[len(entity.Traits)-1]
+	c.Equal(2, len(group.Children), "redo must put the dropped row back")
+	c.True(group.IsOpen(), "redo must open the container again so that the dropped row is showing")
 }
 
 // TestDropOnSheetWithCanceledPickerLeavesSheetUntouched verifies that canceling the template choices of rows dropped

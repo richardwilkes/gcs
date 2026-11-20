@@ -74,17 +74,19 @@ func (s Source) IsZero() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
 }
 
-// MarshalJSONTo implements json.MarshalerTo. It normalizes the path to forward slashes so that sources are always
-// written in a platform-independent form.
+// MarshalJSONTo implements json.MarshalerTo. It writes the path with slash separators (see filepath.ToSlash), so that
+// sources are written in a platform-independent form while a backslash in a file name on another platform is kept.
 func (s Source) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type alias Source
 	a := alias(s)
-	a.Path = strings.ReplaceAll(a.Path, "\\", "/")
+	a.Path = filepath.ToSlash(a.Path)
 	return json.MarshalEncode(enc, &a)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom. It normalizes the path to forward slashes so that sources written
-// on Windows, with backslash separators, remain usable on other platforms.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. It makes the path slash-separated (see filepath.ToSlash).
+// Elsewhere than on Windows, the backslash separators older versions of GCS for Windows wrote are kept, since a
+// backslash may be part of a file name there, and are resolved when the library file is looked up (see
+// SrcMatcher.prepareHashesFor).
 func (s *Source) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	type alias Source
 	var a alias
@@ -92,7 +94,7 @@ func (s *Source) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return err
 	}
 	*s = Source(a)
-	s.Path = strings.ReplaceAll(s.Path, "\\", "/")
+	s.Path = filepath.ToSlash(s.Path)
 	return nil
 }
 
@@ -147,8 +149,14 @@ func (sm *SrcMatcher) prepareHashesFor(libFile LibraryFile) {
 	if sm.libHashes == nil {
 		sm.libHashes = make(map[LibraryFile]libSrcData)
 	}
-	p := filepath.Join(lib.Path(false), filepath.FromSlash(libFile.Path))
+	root := lib.Path(false)
+	p := filepath.Join(root, filepath.FromSlash(libFile.Path))
 	stat, err := os.Stat(p)
+	if err != nil && filepath.Separator != '\\' && strings.Contains(libFile.Path, `\`) {
+		// The path may have the backslash separators older versions of GCS for Windows wrote.
+		p = filepath.Join(root, strings.ReplaceAll(libFile.Path, `\`, "/"))
+		stat, err = os.Stat(p)
+	}
 	if err != nil {
 		delete(sm.libHashes, libFile)
 		return

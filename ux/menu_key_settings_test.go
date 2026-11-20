@@ -188,6 +188,25 @@ func TestMenuKeyApplyBindingTakesKeyFromOtherBindings(t *testing.T) {
 	c.Equal(copyKey.String(), buttonTitle(pasteRow.keyButton), "the row given the key shows it")
 }
 
+// TestMenuKeyFreedKeyReturnsToItsFactoryBinding verifies that a binding whose factory key the user gave another binding
+// shows no key, and that its row shows the factory key again once that other binding lets the key go.
+func TestMenuKeyFreedKeyReturnsToItsFactoryBinding(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	g := gurps.GlobalSettings()
+	restoreKeyBindings(t, "save", "add.as.grant")
+	saveKey := gurps.FactoryKeyBinding("save")
+	c.False(saveKey.IsZero(), "the test needs a binding with a default key")
+	g.KeyBindings.Set("add.as.grant", saveKey) // As if chosen before Save had the key
+	g.KeyBindings.MakeCurrent()
+	d := newTestMenuKeySettingsDockable()
+	c.Equal("None", buttonTitle(d.rows["save"].keyButton), "the factory key the user gave another binding isn't used")
+
+	d.applyBinding(d.rows["add.as.grant"], unison.KeyBinding{})
+	c.Equal(saveKey, g.KeyBindings.Current("save"), "the factory key is used once freed")
+	c.Equal(saveKey.String(), buttonTitle(d.rows["save"].keyButton), "and its row shows it")
+}
+
 // TestClassifyCapturedKey verifies which key presses the capture dialog takes as the new combination, which it waits
 // through, and which it leaves to the dialog itself.
 func TestClassifyCapturedKey(t *testing.T) {

@@ -20,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -186,6 +187,47 @@ func TestLibraryFilterReloadsChangedFilesOnly(t *testing.T) {
 	screen.Sync()
 	screen.Do(func() {
 		c.True(slices.Equal(before, content.table.RootRows()), "a listing that changes nothing leaves the rows shown")
+	})
+}
+
+// TestLibraryFilterAwaitingWindowHearsOfListing verifies that a view waiting for its first rows before taking a window
+// of its own still hears of the Library Explorer's listing when it arrives during the wait, and so shows its rows.
+func TestLibraryFilterAwaitingWindowHearsOfListing(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	isolateLibraryFilterSettings(t)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, []dgroup.Group{dgroup.Libraries})
+	writeLibraryFilterTestSkills(c, gurps.GlobalSettings().Libraries.User(), "Skills/A.skl",
+		newTestSkill("Apple", fxp.One, nil))
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	reloadNavigator(t, screen, n)
+	listed := false // Read and written on the UI thread only
+	listing := libraryFilterListing
+	uxtest.SwapForTest(t, &libraryFilterListing, func() *navigatorListing {
+		if !listed {
+			return nil // The Library Explorer is still scanning the libraries.
+		}
+		return listing()
+	})
+
+	var d *LibraryFilterDockable
+	screen.Do(func() {
+		d = openLibraryFilter(librarySkillsKey, nil, false)
+		listed = true
+		libraryFilterListingChanged()
+	})
+	t.Cleanup(func() {
+		screen.Do(func() { d.AttemptClose() })
+		d.waitForLoads()
+	})
+	content := skillLibraryFilterContent(t, d)
+	awaitLibraryFilter(t, screen, "the view's window", func() bool { return d.Window() != nil })
+	d.waitForLoads()
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal([]string{"Apple"}, shownSkillNames(content.table),
+			"the view shows the rows of the listing that arrived while it waited")
 	})
 }
 

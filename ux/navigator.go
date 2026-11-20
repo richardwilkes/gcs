@@ -496,20 +496,55 @@ func (n *Navigator) renameSelection() {
 			Workspace.ErrorHandler(i18n.Text("Unable to rename:\n%s", oldPath), err)
 			return
 		}
-		n.fixupFavoritePath(row, newPath)
+		n.fixupLibraryRelativePaths(row, newPath)
+		if row.IsDirectory() {
+			moveLibrariesWithin(oldPath, newPath)
+			librarySettingsFolderRenamed(oldPath, newPath)
+		}
 		n.adjustBackingFilePath(row, oldPath, newPath)
 		n.reloadAndSelect(newPath, row.Parent())
 	}
 }
 
-func (n *Navigator) fixupFavoritePath(row *NavigatorNode, newPath string) {
-	if row.IsFile() || row.IsDirectory() {
-		// Favorites are library-relative and slash-separated, as row.path is, and a rename keeps the parent.
+// fixupLibraryRelativePaths carries the favorites and the library filter source sets that name the renamed row, or
+// anything within it, over to its new path in every library listing the row: its own and any other whose folder holds
+// the row, lying within the folder of the row's library or holding it.
+func (n *Navigator) fixupLibraryRelativePaths(row *NavigatorNode, newPath string) {
+	if !row.IsFile() && !row.IsDirectory() {
+		return
+	}
+	// Favorites and source set entries are library-relative and slash-separated, as row.path is, and a rename keeps the
+	// parent.
+	rename := func(lib *library.Library, oldRelPath string) {
 		newRelPath := filepath.Base(newPath)
-		if i := strings.LastIndexByte(row.path, '/'); i != -1 {
-			newRelPath = row.path[:i+1] + newRelPath
+		if i := strings.LastIndexByte(oldRelPath, '/'); i != -1 {
+			newRelPath = oldRelPath[:i+1] + newRelPath
 		}
-		row.library.RenameFavorite(row.path, newRelPath)
+		lib.RenameFavorite(oldRelPath, newRelPath)
+		libraryFilterPathRenamed(lib.Key(), oldRelPath, newRelPath)
+	}
+	rename(row.library, row.path)
+	oldPath := row.Path()
+	for _, lib := range gurps.GlobalSettings().Libraries.List() {
+		if lib.Key() == row.library.Key() {
+			continue
+		}
+		if rel, err := filepath.Rel(lib.Path(false), oldPath); err == nil && rel != "." && filepath.IsLocal(rel) {
+			rename(lib, filepath.ToSlash(rel))
+		}
+	}
+}
+
+// moveLibrariesWithin points each library whose folder is the renamed folder at oldPath, or lies within it, at where
+// that folder now is, since the next reload would otherwise watch, and so re-create, its old folder empty. Its
+// favorites and source set entries are relative to its folder, so they need no change.
+func moveLibrariesWithin(oldPath, newPath string) {
+	for _, lib := range gurps.GlobalSettings().Libraries.List() {
+		if rel, err := filepath.Rel(oldPath, lib.Path(false)); err == nil && filepath.IsLocal(rel) {
+			if err = lib.SetPath(filepath.Join(newPath, rel)); err != nil {
+				reportUIError(i18n.Text("Unable to update library location"), err)
+			}
+		}
 	}
 }
 
@@ -659,8 +694,10 @@ func (n *Navigator) contextMenu(_ geom.Point) unison.Menu {
 			cm.InsertSeparator(-1, true)
 		}
 	}
-	cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
-	cm.InsertSeparator(-1, true)
+	if slices.ContainsFunc(sel, func(row *NavigatorNode) bool { return !row.IsFavorites() }) {
+		cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
+		cm.InsertSeparator(-1, true)
+	}
 	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
 	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
 	cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
@@ -712,6 +749,8 @@ func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.
 	return nil
 }
 
+// newShowNodeOnDiskMenuItem returns the Show on Disk item for the selected rows, which passes over the Favorites row,
+// since it has no place on disk of its own.
 func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
 	useID := *id
 	*id++
@@ -719,6 +758,9 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 		func(_ unison.MenuItem) {
 			m := make(map[string]struct{})
 			for _, node := range sel {
+				if node.IsFavorites() {
+					continue
+				}
 				p := node.Path()
 				if node.IsFile() {
 					p = filepath.Dir(p)

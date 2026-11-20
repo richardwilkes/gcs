@@ -38,7 +38,8 @@ type Workspace struct {
 	// session stops puts back a library folder that the removal of the test's temporary directories, which hold the
 	// libraries, has just taken away, and the removal then fails.
 	Setup func(t testing.TB, wnd *unison.Window)
-	// AllDockables lists every open dockable, whether in the workspace or in a window of its own.
+	// AllDockables lists every open dockable, whether in the workspace, in a window of its own, or waiting to be given
+	// one.
 	AllDockables func() []unison.Dockable
 }
 

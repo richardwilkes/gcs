@@ -10,12 +10,16 @@
 package ux
 
 import (
+	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/unison"
 )
 
 // fakeDiscloser stands in for a list in the toggle tests, recording every state it is put in.
@@ -152,6 +156,122 @@ func TestTableDockableToggles(t *testing.T) {
 	second.LocalNotes = ""
 	c.Equal(0, dockable.FirstNoteState(), "with no note anywhere there is nothing to report")
 	dockable.toggleNotes() // Nothing to act on; must not panic or change anything.
+}
+
+// TestOpenStateChangesReachOtherViews verifies that opening or closing containers and notes in one view brings the
+// other views showing rows with the same IDs, whose open states are kept with them, into line, as a library filter view
+// and the list of a file it shows do: the list shows what a container the view opened holds and sizes a row for the
+// note the view hid. The edits in a list that open a container to show what they put in it, and undoing and redoing
+// them, which close and open it again, do so as well, here for the list of a copy of the file.
+func TestOpenStateChangesReachOtherViews(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+	box := newTestSkillContainer("Box", newTestSkill("Inside", fxp.One, nil))
+	box.SetOpen(false)
+	noted := newTestSkill("Noted", fxp.One, nil)
+	noted.LocalNotes = "A note\nof three\nlines"
+	file := writeLibraryFilterTestSkills(c, gurps.GlobalSettings().Libraries.User(), "Skills/X.skl", box, noted)
+	d := openTestLibraryFilter(t, screen, &gurps.LibrarySourceSet{Entries: []gurps.LibraryFile{file.LibraryFile}})
+	content := skillLibraryFilterContent(t, d)
+	var list *TableDockable[*gurps.Skill]
+	screen.Do(func() {
+		one, _ := OpenFile(file.fullPath, gurps.PageInfo{})
+		if opened, ok := one.(*TableDockable[*gurps.Skill]); ok {
+			list = opened
+		}
+	})
+	if list == nil {
+		t.Fatal("the file must open as a list of skills")
+	}
+
+	screen.Do(func() {
+		c.Equal([]string{"Box", "Noted"}, shownSkillNames(list.table), "the list starts with the container closed")
+		content.toggleHierarchy()
+	})
+	screen.Sync()
+	var height float32
+	screen.Do(func() {
+		c.Equal([]string{"Box", "Inside", "Noted"}, shownSkillNames(list.table),
+			"the list shows what the container the view opened holds")
+		height = list.table.RowHeights()[list.table.LastRowIndex()]
+		content.toggleNotes()
+	})
+	screen.Sync()
+	screen.Do(func() {
+		c.True(list.table.RowHeights()[list.table.LastRowIndex()] < height,
+			"the list's row is no taller than the note the view hid leaves it")
+	})
+
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialListLocked, false)
+	first := gurps.NewTrait(nil, nil, false)
+	first.Name = "First"
+	container := newTestContainer("Box", false)
+	var lists []*TableDockable[*gurps.Trait]
+	for _, name := range []string{"X" + gurps.TraitsExt, "Y" + gurps.TraitsExt} {
+		path := filepath.Join(t.TempDir(), name)
+		c.NoError(gurps.SaveTraits([]*gurps.Trait{first, container}, path))
+		screen.Do(func() {
+			one, _ := OpenFile(path, gurps.PageInfo{})
+			if opened, ok := one.(*TableDockable[*gurps.Trait]); ok {
+				lists = append(lists, opened)
+			}
+		})
+	}
+	if len(lists) != 2 {
+		t.Fatal("both files must open as lists of traits")
+	}
+	edited, other := lists[0], lists[1]
+	var mgr *unison.UndoManager
+	screen.Do(func() { mgr = unison.UndoManagerFor(edited.table) })
+	otherShowsContents := func(shows bool, what string) {
+		t.Helper()
+		screen.Sync()
+		want := []string{"First", "Box"}
+		if shows {
+			want = append(want, "Box Child")
+		}
+		names := make([]string, 0, len(want))
+		screen.Do(func() {
+			for i := range other.table.LastRowIndex() + 1 {
+				names = append(names, other.table.RowFromIndex(i).Data().Name)
+			}
+		})
+		c.Equal(want, names, what)
+	}
+	undoAndRedo := func(edit string) {
+		t.Helper()
+		screen.Do(mgr.Undo)
+		otherShowsContents(false, "undoing "+edit+" closes the container in the other list")
+		screen.Do(mgr.Redo)
+		otherShowsContents(true, "redoing "+edit+" opens the container in the other list again")
+		screen.Do(mgr.Undo)
+	}
+
+	screen.Do(func() {
+		edited.table.SetSelectionMap(map[tid.TID]bool{first.ID(): true})
+		MoveSelection(edited.table, MoveIntoContainer)
+	})
+	otherShowsContents(true, "Move Into Container opens the container in the other list")
+	undoAndRedo("Move Into Container")
+
+	screen.Do(func() {
+		modifier := gurps.NewTraitModifier(nil, nil, false)
+		modifier.Name = "Fine"
+		target := edited.table.RootRows()[1].Data().Children[0]
+		c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Trait]]{edited.table}, []*gurps.Trait{target},
+			[]*gurps.TraitModifier{modifier}, gurps.LibraryFile{}))
+	})
+	otherShowsContents(true, "applying a modifier to a row in the container opens it in the other list")
+	undoAndRedo("applying a modifier")
+
+	screen.Do(func() {
+		c.True(applyDrop(&unison.TableDragData[*Node[*gurps.Trait]]{Table: other.table, Rows: other.table.RootRows()[:1]},
+			edited.table, edited.table.RootRows()[1], 0))
+	})
+	otherShowsContents(true, "a drop into the container opens it in the other list")
+	undoAndRedo("a drop into the container")
 }
 
 // TestTableDockableTogglesReachNestedRows verifies that a list dockable's hierarchy and note buttons reach the rows

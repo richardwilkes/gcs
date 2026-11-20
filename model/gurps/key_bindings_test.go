@@ -64,3 +64,27 @@ func TestKeyBindingsWriteOnlyOverrides(t *testing.T) {
 	c.NoError(jio.Unmarshal(data, &loaded))
 	c.Equal(map[string]unison.KeyBinding{"copy": custom}, loaded.data)
 }
+
+// TestKeyBindingsOverrideWinsOverFactoryKey verifies that a factory binding is not applied when the user has given its
+// key to another action, as happens when a new version adds or changes a default, so that no two actions share a key.
+func TestKeyBindingsOverrideWinsOverFactoryKey(t *testing.T) {
+	c := check.New(t)
+	saved := factoryBindings
+	t.Cleanup(func() { factoryBindings = saved })
+	factoryBindings = make(map[string]*Binding)
+	key := unison.KeyBinding{KeyCode: unison.KeyL, Modifiers: mod.Command}
+	calculators := &unison.Action{Title: "Calculators"}
+	filter := &unison.Action{Title: "New Library Filter", KeyBinding: key}
+	RegisterKeyBinding("calculators", calculators)
+	RegisterKeyBinding("filter", filter)
+	b := &KeyBindings{data: map[string]unison.KeyBinding{"calculators": key}}
+	b.MakeCurrent()
+	c.Equal(key, calculators.KeyBinding, "the user's binding is applied")
+	c.Equal(unison.KeyBinding{}, filter.KeyBinding, "a factory binding whose key the user gave another action is not")
+	c.Equal(unison.KeyBinding{}, b.Current("filter"), "and isn't reported as current")
+
+	b.data["calculators"] = unison.KeyBinding{KeyCode: unison.KeyK, Modifiers: mod.Command}
+	b.MakeCurrent()
+	c.Equal(key, filter.KeyBinding, "the factory binding applies once its key is free")
+	c.Equal(key, b.Current("filter"))
+}

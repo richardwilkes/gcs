@@ -69,10 +69,11 @@ type CellCache struct {
 	unused      bool // The panel hasn't been asked for since it was built.
 }
 
-// letGo drops the panel, which leaves the cache matching nothing.
+// letGo drops the panel, which leaves the cache matching nothing and held by no pool.
 func (c *CellCache) letGo() {
 	c.Panel = nil
 	c.Data = nil
+	c.turn = 0
 }
 
 // Matches returns true if the panel was built for the given width, data and notes disclosure, and with the fonts in
@@ -580,9 +581,14 @@ func (n *Node[T]) IsOpen() bool {
 }
 
 // SetOpen implements unison.TableRowData. It only records the state: every caller, in unison and here, syncs the table
-// itself once it has set all the rows it means to, so syncing here as well would rebuild the table once per row.
+// itself once it has set all the rows it means to, so syncing here as well would rebuild the table once per row. The
+// other views showing a row with its ID are synced later (see openStateChanged).
 func (n *Node[T]) SetOpen(open bool) {
+	was := n.data.IsOpen()
 	n.data.SetOpen(open)
+	if n.data.IsOpen() != was {
+		openStateChanged(n.table, n.ID())
+	}
 }
 
 // Data returns the underlying data object. A nil node returns the zero value.
@@ -787,6 +793,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			key := n.noteKey()
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
 			n.table.SyncToModel()
+			openStateChanged(n.table, n.ID())
 		}
 		if baseline-size > 0 {
 			button.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: baseline - size}))

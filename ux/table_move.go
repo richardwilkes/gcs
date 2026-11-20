@@ -126,11 +126,11 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	var othersAfter []tableRestorer
 	undo := beginTableUndo(table, dir.Title(),
 		func() {
-			setContainersOpen(opened, false)
+			setContainersOpen(table, opened, false)
 			restoreGrantRowLists(othersBefore)
 		},
 		func() {
-			setContainersOpen(opened, true)
+			setContainersOpen(table, opened, true)
 			restoreGrantRowLists(othersAfter)
 		})
 	if dir == MoveDown || dir == MoveIntoContainer {
@@ -157,7 +157,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 			if container, ok = moveIntoNextSibling(provider, item); ok && !container.IsOpen() {
 				// Opened so that the row doesn't vanish from view -- and out of the selection, which can only hold rows
 				// that are showing -- the moment it is moved.
-				container.SetOpen(true)
+				setContainerOpen(table, container, true)
 				opened = append(opened, container)
 			}
 		}
@@ -199,9 +199,12 @@ func selectionToMove[T gurps.Node[T]](table *unison.Table[*Node[T]]) (provider T
 	return provider, items, table.CopySelectionMap(), true
 }
 
-func setContainersOpen[T gurps.Node[T]](containers []T, open bool) {
+// setContainersOpen opens or closes the containers ahead of an undo or redo of an edit of the table, whose putting the
+// data back then syncs the table now showing it (see liveTable).
+func setContainersOpen[T gurps.Node[T]](table *unison.Table[*Node[T]], containers []T, open bool) {
+	table = liveTable(table)
 	for _, container := range containers {
-		container.SetOpen(open)
+		setContainerOpen(table, container, open)
 	}
 }
 

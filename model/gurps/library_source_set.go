@@ -12,6 +12,7 @@ package gurps
 import (
 	"cmp"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -60,18 +61,19 @@ func (s *LibrarySourceSet) Clone() *LibrarySourceSet {
 	return &LibrarySourceSet{Name: s.Name, Entries: slices.Clone(s.Entries)}
 }
 
-// NormalizeLibrarySourceEntries returns a new list of the entries with each path made slash-separated and clean, and ""
-// for a whole library. Entries without a library, with an absolute path or with one that leads out of its library are
-// dropped, as are duplicates and entries another one covers. The rest are sorted by library, then naturally by path.
+// NormalizeLibrarySourceEntries returns a new list of the entries with each path made slash-separated (see
+// filepath.ToSlash) and clean, and "" for a whole library. Entries without a library, with an absolute path or with one
+// that leads out of its library are dropped, as are duplicates and entries another one covers. The rest are sorted by
+// library, then naturally by path.
 func NormalizeLibrarySourceEntries(entries []LibraryFile) []LibraryFile {
 	var unique []LibraryFile
 	for _, entry := range entries {
-		entry.Path = path.Clean(strings.ReplaceAll(entry.Path, `\`, "/"))
+		entry.Path = path.Clean(filepath.ToSlash(entry.Path))
 		if entry.Path == "." {
 			entry.Path = ""
 		}
-		if entry.Library == "" || path.IsAbs(entry.Path) || entry.Path == ".." || strings.HasPrefix(entry.Path, "../") ||
-			slices.Contains(unique, entry) {
+		if entry.Library == "" || path.IsAbs(entry.Path) || filepath.VolumeName(entry.Path) != "" || entry.Path == ".." ||
+			strings.HasPrefix(entry.Path, "../") || slices.Contains(unique, entry) {
 			continue
 		}
 		unique = append(unique, entry)
@@ -95,6 +97,28 @@ func RekeyLibraryEntries(entries []LibraryFile, oldKey, newKey string) {
 			entries[i].Library = newKey
 		}
 	}
+}
+
+// RenameLibraryEntries moves each of the entries in the library that is the file or folder at oldPath, or lies within
+// it, to the same place at newPath, and returns true if it moved any. Both paths are library-relative and
+// slash-separated.
+func RenameLibraryEntries(entries []LibraryFile, library, oldPath, newPath string) bool {
+	moved := false
+	for i := range entries {
+		entry := &entries[i]
+		if entry.Library != library {
+			continue
+		}
+		if entry.Path == oldPath {
+			entry.Path = newPath
+		} else if after, ok := strings.CutPrefix(entry.Path, oldPath+"/"); ok {
+			entry.Path = newPath + "/" + after
+		} else {
+			continue
+		}
+		moved = true
+	}
+	return moved
 }
 
 // LibrarySourceSetsFor returns the source sets for the list type with the given key, sorted by name. The slice is a
@@ -195,23 +219,39 @@ func (s *Settings) RekeyLibrarySourceSets(oldKey, newKey string) {
 	}
 }
 
+// RenameLibrarySourcePaths does what RenameLibraryEntries does to the entries of every source set, normalizing the
+// entries of each set it changes (see NormalizeLibrarySourceEntries), since newPath may already have been there, and
+// returns true if it changed any.
+func (s *Settings) RenameLibrarySourcePaths(library, oldPath, newPath string) bool {
+	changed := false
+	for _, sets := range s.LibraryFilter.Sets {
+		for _, set := range sets {
+			if set != nil && RenameLibraryEntries(set.Entries, library, oldPath, newPath) {
+				set.Entries = NormalizeLibrarySourceEntries(set.Entries)
+				changed = true
+			}
+		}
+	}
+	return changed
+}
+
 // ensureLibrarySourceSetsValidity drops the source sets that can't be used -- nil entries, sets without a name, and
 // later sets that duplicate an earlier one's name -- trims the names of the rest, normalizes their entries and keeps
 // each list sorted. Keys that aren't recognized are kept, since a newer version of GCS may have written them. The map
 // of the last sets used is made ready for use; a name in it that no set has is kept, standing for all files.
 func (s *Settings) ensureLibrarySourceSetsValidity() {
 	for key, sets := range s.LibraryFilter.Sets {
-		seen := make(map[string]bool)
+		var seen []string
 		sets = slices.DeleteFunc(sets, func(set *LibrarySourceSet) bool {
 			if set == nil {
 				return true
 			}
 			set.Name = strings.TrimSpace(set.Name)
-			lowered := strings.ToLower(set.Name)
-			if lowered == "" || seen[lowered] {
+			sameName := func(name string) bool { return strings.EqualFold(name, set.Name) }
+			if set.Name == "" || slices.ContainsFunc(seen, sameName) {
 				return true
 			}
-			seen[lowered] = true
+			seen = append(seen, set.Name)
 			set.Entries = NormalizeLibrarySourceEntries(set.Entries)
 			return false
 		})

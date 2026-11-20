@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -30,6 +31,50 @@ type noteDiscloser interface {
 	FirstNoteState() int
 	// ApplyNoteState shows or hides every note.
 	ApplyNoteState(closed bool)
+}
+
+// sharedOpenStatesKey is the client data key under which a table holds the IDs of the rows whose open states it changed
+// that the other views are yet to be brought into line with (see openStateChanged).
+const sharedOpenStatesKey = "shared_open_states"
+
+// openStateSharer is a list view whose rows can have the IDs of those another view shows, as a library list and a
+// library filter view showing its file do, and with them the open states of their children and notes, which are kept
+// in the settings by ID (see gurps.IsClosed).
+type openStateSharer interface {
+	// syncSharedOpenStates syncs the view's table, unless it is origin, when it shows a row with one of the IDs.
+	syncSharedOpenStates(origin *unison.Panel, ids map[tid.TID]bool)
+}
+
+// openStateChanged records that the open state of the children or note of the row with the ID was changed through the
+// table, which syncs itself. Once the event being handled is done, each other view showing a row with any of the IDs
+// the table recorded meanwhile (see openStateSharer) is synced once.
+func openStateChanged(table unison.Paneler, id tid.TID) {
+	panel := table.AsPanel()
+	data := panel.ClientData()
+	ids, ok := data[sharedOpenStatesKey].(map[tid.TID]bool)
+	if !ok {
+		ids = make(map[tid.TID]bool)
+		data[sharedOpenStatesKey] = ids
+		unison.InvokeTask(func() {
+			delete(panel.ClientData(), sharedOpenStatesKey)
+			for _, d := range AllDockables() {
+				if sharer, isSharer := d.AsPanel().Self.(openStateSharer); isSharer {
+					sharer.syncSharedOpenStates(panel, ids)
+				}
+			}
+		})
+	}
+	ids[id] = true
+}
+
+// setContainerOpen opens or closes the container for an edit of the table, which syncs itself, and has the other views
+// showing it brought into line if that changed its state (see openStateChanged).
+func setContainerOpen[T gurps.Node[T]](table *unison.Table[*Node[T]], container T, open bool) {
+	was := container.IsOpen()
+	container.SetOpen(open)
+	if container.IsOpen() != was {
+		openStateChanged(table, container.ID())
+	}
 }
 
 // toggleHierarchy opens every container of the disclosers when the first one found among them is closed, and closes
@@ -140,6 +185,7 @@ func applyNoteState[T gurps.Node[T]](n *Node[T], closed bool) {
 	if n.hasNote() {
 		if key := n.noteKey(); gurps.IsClosed(key) != closed {
 			gurps.SetClosedState(key, closed)
+			openStateChanged(n.table, n.ID())
 		}
 	}
 	if n.CanHaveChildren() {

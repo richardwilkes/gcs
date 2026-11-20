@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -31,6 +32,7 @@ var (
 	_ listFilterObserver           = &LibraryFilterDockable{}
 	_ gurps.SheetSettingsResponder = &LibraryFilterDockable{}
 	_ boundsDeferredDockable       = &LibraryFilterDockable{}
+	_ openStateSharer              = &LibraryFilterDockable{}
 )
 
 // libraryFilterBoundsWait is how long a library filter view that is to have a window of its own waits for its first
@@ -220,6 +222,27 @@ func (d *LibraryFilterDockable) rekeyUnsavedSet(oldKey, newKey string) {
 	}
 }
 
+// libraryFilterPathRenamed brings the source sets into line with the file or folder at oldPath in the library with the
+// key now being at newPath, both library-relative and slash-separated: the saved sets, which are then saved if that
+// changed them, and the unsaved sets of the open views. The views find their files again once the Library Explorer has
+// listed the libraries anew.
+func libraryFilterPathRenamed(key, oldPath, newPath string) {
+	for _, d := range allLibraryFilters() {
+		d.renameInUnsavedSet(key, oldPath, newPath)
+	}
+	if gurps.GlobalSettings().RenameLibrarySourcePaths(key, oldPath, newPath) {
+		saveGlobalSettings()
+	}
+}
+
+// renameInUnsavedSet does what gurps.RenameLibraryEntries does to the entries of the view's unsaved set, if it has one,
+// normalizing them afterward if that changed them, since newPath may already have been there.
+func (d *LibraryFilterDockable) renameInUnsavedSet(key, oldPath, newPath string) {
+	if d.adHoc && d.set != nil && gurps.RenameLibraryEntries(d.set.Entries, key, oldPath, newPath) {
+		d.set.Entries = gurps.NormalizeLibrarySourceEntries(d.set.Entries)
+	}
+}
+
 // resolveAndLoad resolves the set against the Library Explorer's listing and has the content load the files it
 // covers, which reads only those that changed since they were last read, even when they are the files it covered last
 // time, since nothing may have been watching them change. Until there is a listing, the footer says the view is waiting
@@ -298,7 +321,7 @@ func libraryFilterPathChanged(fullPath string) {
 	}
 }
 
-// allLibraryFilters returns the open library filter views.
+// allLibraryFilters returns the open library filter views, those waiting for a window among them.
 func allLibraryFilters() []*LibraryFilterDockable {
 	var list []*LibraryFilterDockable
 	for _, one := range AllDockables() {
@@ -374,6 +397,11 @@ func (d *LibraryFilterDockable) isReadOnly() bool {
 // listFiltersChanged implements listFilterObserver.
 func (d *LibraryFilterDockable) listFiltersChanged(key string, source *listFilterPopup) {
 	d.content.listFiltersChanged(key, source)
+}
+
+// syncSharedOpenStates implements openStateSharer.
+func (d *LibraryFilterDockable) syncSharedOpenStates(origin *unison.Panel, ids map[tid.TID]bool) {
+	d.content.syncSharedOpenStates(origin, ids)
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.

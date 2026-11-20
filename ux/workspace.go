@@ -47,6 +47,10 @@ var Workspace struct {
 	ErrorHandler func(msg string, err error)
 }
 
+// dockablesAwaitingWindows holds the Dockables placeInWindow is to give windows of their own once their bounds are
+// known, which neither a dock nor a window holds meanwhile.
+var dockablesAwaitingWindows []unison.Dockable
+
 // KeyedDockable extends unison.Dockable to require a DockKey() method, used for restoring the dock layout.
 type KeyedDockable interface {
 	unison.Dockable
@@ -401,7 +405,8 @@ func workspaceWillClose() {
 	saveGlobalSettings()
 }
 
-// AllDockables returns all Dockables, whether in the workspace or in a separate window.
+// AllDockables returns all Dockables, whether in the workspace, in a separate window, or waiting to be given one (see
+// placeInWindow).
 func AllDockables() []unison.Dockable {
 	var all []unison.Dockable
 	// There is no dock until the workspace has been set up.
@@ -418,7 +423,20 @@ func AllDockables() []unison.Dockable {
 			}
 		}
 	}
+	for _, d := range dockablesAwaitingWindows {
+		// One placed by some other means while it waited is already listed.
+		if !slices.Contains(all, d) {
+			all = append(all, d)
+		}
+	}
 	return all
+}
+
+// stopAwaitingWindow takes the Dockable out of dockablesAwaitingWindows.
+func stopAwaitingWindow(dockable unison.Dockable) {
+	dockable = resolveDockable(dockable)
+	dockablesAwaitingWindows = slices.DeleteFunc(dockablesAwaitingWindows,
+		func(one unison.Dockable) bool { return one == dockable })
 }
 
 // AllMatchingDockables returns all Dockables that 'matcher' returns true for.
@@ -587,11 +605,15 @@ func resolveDockable(dockable unison.Dockable) unison.Dockable {
 
 // placeInWindow gives the Dockable a window of its own. A Dockable whose bounds aren't known yet gets its window once
 // they are (see boundsDeferredDockable), and nil is returned. Nothing is shown for the Dockable in the meantime, which
-// is why the wait a boundsDeferredDockable permits is a short one.
+// is why the wait a boundsDeferredDockable permits is a short one, but AllDockables lists it.
 func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
 	dockable = resolveDockable(dockable)
 	if deferred, ok := dockable.(boundsDeferredDockable); ok && !deferred.BoundsKnown() {
+		if !slices.Contains(dockablesAwaitingWindows, dockable) {
+			dockablesAwaitingWindows = append(dockablesAwaitingWindows, dockable)
+		}
 		deferred.WhenBoundsKnown(func() {
+			stopAwaitingWindow(dockable)
 			if dockable.AsPanel().Window() != nil {
 				// It was given a window by some other means while the wait was on, so there is nothing left to do.
 				return
@@ -1002,6 +1024,8 @@ func UpdateTitleForDockable(d unison.Dockable) {
 
 // AttemptCloseForDockable attempts to close a dockable.
 func AttemptCloseForDockable(d unison.Dockable) bool {
+	// A dockable closed while awaiting its window never gets the callback placeInWindow left it, which would do this.
+	stopAwaitingWindow(d)
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		closeTab(dc, d)
 		return true

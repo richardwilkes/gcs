@@ -10,6 +10,7 @@
 package gurps_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -47,7 +48,8 @@ func TestLibraryFileCovers(t *testing.T) {
 
 // TestSettingsLibrarySourceSetHelpers verifies the settings-level bookkeeping for source sets: the ordering a user
 // sees, the copies that keep callers from reaching into the stored list, lookups by identity and name, the pruning and
-// normalizing that EnsureValidity does, rekeying a library, and the round trip through a settings file.
+// normalizing that EnsureValidity does, rekeying a library, renaming a file or folder, and the round trip through a
+// settings file.
 func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 	c := check.New(t)
 	const key = "spl"
@@ -95,7 +97,6 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 
 	// EnsureValidity prunes what can't be used, keeps what it doesn't recognize and normalizes the entries.
 	keep := &gurps.LibrarySourceSet{Name: " Keep ", Entries: []gurps.LibraryFile{
-		{Library: "lib", Path: `Magic\Fire`},
 		{Library: "lib", Path: "Magic/Fire/Basic.spl"},
 		{Library: "lib", Path: "Spells/../Magic/Fire"},
 		{Library: "lib", Path: "../Outside.spl"},
@@ -114,11 +115,14 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 	s.LibraryFilter.Sets = map[string][]*gurps.LibrarySourceSet{
 		key:      {nil, keep, {Name: "  "}, {Name: "keep"}},
 		"adq":    {nil, {Name: ""}},
+		"skl":    {{Name: "izmir"}, {Name: "İzmir"}},
 		"future": {future},
 	}
 	s.EnsureValidity()
 	c.Equal([]string{"Keep"}, sourceSetNames(s.LibrarySourceSetsFor(key)),
 		"nil, unnamed and duplicate-named sets are dropped")
+	c.Equal([]string{"izmir", "İzmir"}, sourceSetNames(s.LibrarySourceSetsFor("skl")),
+		"names are duplicates only when LibrarySourceSetNameInUse would say so")
 	c.Equal([]gurps.LibraryFile{
 		{Library: "lib", Path: "item9.spl"},
 		{Library: "lib", Path: "Item10.spl"},
@@ -126,6 +130,20 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 		{Library: "lib", Path: "Magic/Fire"},
 		{Library: "other", Path: ""},
 	}, keep.Entries, "entries are cleaned, sorted, and dropped when unusable, repeated or covered by another")
+	odd := `Odd\Name.spl`
+	if runtime.GOOS == "windows" {
+		odd = "Odd/Name.spl"
+	}
+	c.Equal([]gurps.LibraryFile{{Library: "lib", Path: odd}},
+		gurps.NormalizeLibrarySourceEntries([]gurps.LibraryFile{{Library: "lib", Path: `Odd\Name.spl`}}),
+		"a backslash separates the names in a path only on Windows, and is part of a name elsewhere")
+	drive := []gurps.LibraryFile{{Library: "lib", Path: "C:x.skl"}, {Library: "lib", Path: `C:\Lib\x.skl`}}
+	want := drive
+	if runtime.GOOS == "windows" {
+		want = nil
+	}
+	c.Equal(want, gurps.NormalizeLibrarySourceEntries(drive),
+		"a drive letter makes a path lead out of its library only on Windows, and is part of a name elsewhere")
 	_, exists := s.LibraryFilter.Sets["adq"]
 	c.False(exists, "a key left with nothing usable is deleted")
 	c.Equal([]string{"From a newer GCS"}, sourceSetNames(s.LibrarySourceSetsFor("future")),
@@ -138,6 +156,28 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 		"entries now covered by a whole-library entry are dropped")
 	c.Equal([]gurps.LibraryFile{{Library: "lib", Path: "New.spl"}}, future.Entries,
 		"the sets of every list type are rekeyed")
+
+	// Renaming a file or folder reaches every set, moving the entries for it and within it, but not those of another
+	// library or of a folder whose name begins with its own, and normalizes the entries it moved.
+	moved := &gurps.Settings{}
+	folder := &gurps.LibrarySourceSet{Name: "Folder", Entries: []gurps.LibraryFile{
+		{Library: "lib", Path: "Arcane"},
+		{Library: "lib", Path: "Magic Items"},
+		{Library: "lib", Path: "Magic/Fire/Basic.spl"},
+		{Library: "other", Path: "Magic"},
+	}}
+	exact := &gurps.LibrarySourceSet{Name: "Exact", Entries: []gurps.LibraryFile{{Library: "lib", Path: "Magic"}}}
+	moved.AddLibrarySourceSet(key, folder)
+	moved.AddLibrarySourceSet("skl", exact)
+	c.True(moved.RenameLibrarySourcePaths("lib", "Magic", "Arcane"), "a rename that moves entries says so")
+	c.Equal([]gurps.LibraryFile{
+		{Library: "lib", Path: "Arcane"},
+		{Library: "lib", Path: "Magic Items"},
+		{Library: "other", Path: "Magic"},
+	}, folder.Entries, "an entry within the folder moves with it, and is dropped once another entry covers it")
+	c.Equal([]gurps.LibraryFile{{Library: "lib", Path: "Arcane"}}, exact.Entries,
+		"the sets of every list type follow the rename")
+	c.False(moved.RenameLibrarySourcePaths("lib", "Magic", "Arcane"), "a rename that moves no entry says so")
 
 	// The sets and the last ones used are written to, and read back from, a settings file.
 	source := &gurps.Settings{}

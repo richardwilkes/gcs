@@ -790,15 +790,22 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 
 // TestRenamingAFavoriteFileKeepsItAFavorite verifies that renaming a favorite file renames its favorite to match, both
 // within a folder, where the favorite is slash-separated while the path on disk is separated for the OS, and at the top
-// of a library kept at the root of a volume, whose path on disk already ends in a separator.
+// of a library kept at the root of a volume, whose path on disk already ends in a separator; and that another library
+// listing the file, whose folder lies within that of the file's library or holds it, has its favorite and source set
+// entry for the file renamed as well.
 func TestRenamingAFavoriteFileKeepsItAFavorite(t *testing.T) {
 	c := check.New(t)
+	isolateLibraryFilterSettings(t)
 	dir := t.TempDir()
+	libraries := gurps.GlobalSettings().Libraries
 	for _, one := range []struct {
-		name    string
-		libPath string
-		row     string
-		renamed string
+		name         string
+		libPath      string
+		row          string
+		renamed      string
+		otherPath    string // The folder of another library listing the file, if any
+		otherRow     string // The file's path within that library
+		otherRenamed string
 	}{
 		{
 			name:    "within a folder",
@@ -812,13 +819,49 @@ func TestRenamingAFavoriteFileKeepsItAFavorite(t *testing.T) {
 			row:     "a" + gurps.SheetExt,
 			renamed: "b" + gurps.SheetExt,
 		},
+		{
+			name:         "listed by a library within a folder of the library",
+			libPath:      dir,
+			row:          "sub/a" + gurps.SheetExt,
+			renamed:      "sub/b" + gurps.SheetExt,
+			otherPath:    filepath.Join(dir, "sub"),
+			otherRow:     "a" + gurps.SheetExt,
+			otherRenamed: "b" + gurps.SheetExt,
+		},
+		{
+			name:         "listed by a library whose folder holds the library",
+			libPath:      filepath.Join(dir, "sub"),
+			row:          "a" + gurps.SheetExt,
+			renamed:      "b" + gurps.SheetExt,
+			otherPath:    dir,
+			otherRow:     "sub/a" + gurps.SheetExt,
+			otherRenamed: "sub/b" + gurps.SheetExt,
+		},
 	} {
 		lib := library.NewLibrary("Test", "acct", "", "repo", one.libPath)
 		lib.ToggleFavorite(one.row)
+		var other *library.Library
+		var set *gurps.LibrarySourceSet
+		if one.otherPath != "" {
+			other = library.NewLibrary("Other", "acct", "", "other", one.otherPath)
+			other.ToggleFavorite(one.otherRow)
+			libraries.Store(other.Key(), other)
+			t.Cleanup(func() { libraries.Remove(other.Key()) })
+			set = &gurps.LibrarySourceSet{
+				Name:    one.name,
+				Entries: []gurps.LibraryFile{{Library: other.Key(), Path: one.otherRow}},
+			}
+			gurps.GlobalSettings().AddLibrarySourceSet(librarySkillsKey, set)
+		}
 		row := NewFileNode(lib, one.row, nil)
 		n := &Navigator{}
-		n.fixupFavoritePath(row, renamedPath(row.Path(), "b"))
+		n.fixupLibraryRelativePaths(row, renamedPath(row.Path(), "b"))
 		c.Equal([]string{one.renamed}, lib.Favorites(), one.name)
+		if other != nil {
+			c.Equal([]string{one.otherRenamed}, other.Favorites(), "%s: the other library's favorite", one.name)
+			c.Equal([]gurps.LibraryFile{{Library: other.Key(), Path: one.otherRenamed}}, set.Entries,
+				"%s: the other library's source set entry", one.name)
+		}
 	}
 }
 
@@ -1569,11 +1612,13 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 	}
 }
 
-// TestRenameCarriesFavoritesAndOpenFilesAlong drives Rename for a folder and a file of a library, each a favorite with
-// a file open from it: each is renamed on disk, its favorite follows it, as does the file open from it, while a file
-// open from a folder whose name begins with the renamed folder's stays where it is, and the renamed row ends up the
-// only one selected.
-func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
+// TestRenameCarriesReferencesAlong drives Rename for a folder and a file of a library, each a favorite and an entry of
+// a saved source set and of an open view's unsaved one, with a file open from it: each is renamed on disk, and its
+// favorite, its source set entries and the file open from it follow it, as do the other libraries whose folders are
+// the renamed folder or lie within it and the paths, applied or not, of Library Settings views that are or lie within
+// it, while a file open from, an entry for, and a typed path naming a folder whose name begins with the renamed
+// folder's stay where they are, and the renamed row ends up the only one selected.
+func TestRenameCarriesReferencesAlong(t *testing.T) {
 	c := check.New(t)
 	// Every row starts out disclosed, so that the rows renamed below show.
 	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
@@ -1586,6 +1631,7 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 		c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
 		c.NoError(gurps.NewEntity().Save(p))
 	}
+	c.NoError(os.MkdirAll(filepath.Join(dir, "sub", "deep"), 0o750))
 	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
 	lib.ToggleFavorite("sub")
 	lib.ToggleFavorite("top" + gurps.SheetExt)
@@ -1596,6 +1642,62 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 	screen.Do(func() { n = Workspace.Navigator })
 	stopNavigatorWatches(t, screen, n)
 	reloadNavigator(t, screen, n)
+	// Libraries whose folders are the folder renamed below and one within it, with where each folder must be once it is
+	// renamed. They are stored once the navigator has watched the libraries, so that no watch holds their folders open
+	// while Rename moves them.
+	inner := []struct {
+		lib     *library.Library
+		renamed string
+	}{
+		{library.NewLibrary("At", "acct", "", "at", filepath.Join(dir, "sub")), filepath.Join(dir, "renamed")},
+		{
+			library.NewLibrary("Within", "acct", "", "within", filepath.Join(dir, "sub", "deep")),
+			filepath.Join(dir, "renamed", "deep"),
+		},
+	}
+	for _, one := range inner {
+		libraries.Store(one.lib.Key(), one.lib)
+		t.Cleanup(func() { libraries.Remove(one.lib.Key()) })
+	}
+	// Library Settings views: the At library's as opened, and the Within and Test libraries' with a path typed in, with
+	// the path each must hold once the folder is renamed and whether it must then hold a change to apply.
+	settingsViews := []struct {
+		lib      *library.Library
+		typed    string
+		path     string
+		modified bool
+	}{
+		{lib: inner[0].lib, path: inner[0].renamed},
+		{lib: inner[1].lib, typed: filepath.Join(dir, "sub2"), path: filepath.Join(dir, "sub2"), modified: true},
+		{
+			lib:      lib,
+			typed:    filepath.Join(dir, "sub", "other"),
+			path:     filepath.Join(dir, "renamed", "other"),
+			modified: true,
+		},
+	}
+	settings := make([]*librarySettingsDockable, len(settingsViews))
+	for i, one := range settingsViews {
+		screen.Do(func() { ShowLibrarySettings(one.lib) })
+		settings[i] = uxtest.SoleEditor[*librarySettingsDockable](t, screen, func(d unison.Dockable) bool {
+			s, ok := d.AsPanel().Self.(*librarySettingsDockable)
+			return ok && s.library == one.lib
+		})
+		if one.typed != "" {
+			screen.Do(func() { settings[i].pathField.SetText(one.typed) })
+		}
+	}
+	entries := func(paths ...string) []gurps.LibraryFile {
+		list := make([]gurps.LibraryFile, 0, len(paths))
+		for _, p := range paths {
+			list = append(list, gurps.LibraryFile{Library: lib.Key(), Path: p})
+		}
+		return list
+	}
+	view := openTestLibraryFilter(t, screen,
+		&gurps.LibrarySourceSet{Entries: entries("sub", "sub2", "top"+gurps.SheetExt)})
+	saved := &gurps.LibrarySourceSet{Name: "Saved", Entries: entries("sub", "sub2", "top"+gurps.SheetExt)}
+	screen.Do(func() { gurps.GlobalSettings().AddLibrarySourceSet(librarySkillsKey, saved) })
 	sheets := make(map[string]*Sheet)
 	screen.Do(func() {
 		for _, p := range []string{inFolder, inSibling, top} {
@@ -1622,6 +1724,7 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 		open      string // The file open from the row
 		moved     string // Where that file must be once the row is renamed
 		favorites []string
+		sources   []string // The paths of the source sets' entries once the row is renamed
 	}{
 		{
 			name:      "folder",
@@ -1631,6 +1734,7 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 			open:      inFolder,
 			moved:     filepath.Join(dir, "renamed", "a"+gurps.SheetExt),
 			favorites: []string{"renamed", "top" + gurps.SheetExt},
+			sources:   []string{"renamed", "sub2", "top" + gurps.SheetExt},
 		},
 		{
 			name:      "file",
@@ -1640,6 +1744,7 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 			open:      top,
 			moved:     filepath.Join(dir, "moved"+gurps.SheetExt),
 			favorites: []string{"moved" + gurps.SheetExt, "renamed"},
+			sources:   []string{"moved" + gurps.SheetExt, "renamed", "sub2"},
 		},
 	} {
 		var found bool
@@ -1686,12 +1791,46 @@ func TestRenameCarriesFavoritesAndOpenFilesAlong(t *testing.T) {
 		slices.Sort(favorites)
 		c.Equal(one.favorites, favorites, "the favorite must follow the renamed %s", one.name)
 		c.Equal(one.moved, backingPath(one.open), "the file open from the renamed %s must follow it", one.name)
+		var savedEntries, unsavedEntries []gurps.LibraryFile
+		var missing int
+		screen.Do(func() {
+			savedEntries = slices.Clone(saved.Entries)
+			unsavedEntries = slices.Clone(view.set.Entries)
+			missing = len(view.missing)
+		})
+		c.Equal(entries(one.sources...), savedEntries, "the saved source set must follow the renamed %s", one.name)
+		c.Equal(entries(one.sources...), unsavedEntries, "the view's unsaved source set must follow the renamed %s",
+			one.name)
+		c.Equal(0, missing, "the view must find every source once the %s is renamed", one.name)
 		var selected []string
 		screen.Do(func() { selected = n.SelectedPaths() })
 		c.Equal([]string{one.renamed}, selected, "the renamed %s must end up the only row selected", one.name)
 	}
 	c.Equal(inSibling, backingPath(inSibling),
 		"a file open from a folder whose name begins with the renamed folder's must stay where it is")
+	for _, one := range inner {
+		c.Equal(one.renamed, one.lib.Path(false), "the %s library must follow the renamed folder", one.lib.Data().Title)
+	}
+	for i, one := range settingsViews {
+		var held, text string
+		var modified bool
+		screen.Do(func() {
+			held = settings[i].path
+			text = settings[i].pathField.Text()
+			modified = settings[i].modified()
+		})
+		title := one.lib.Data().Title
+		c.Equal(one.path, held, "the path in the %s library's settings", title)
+		c.Equal(one.path, text, "the path shown in the %s library's settings", title)
+		c.Equal(one.modified, modified, "whether the %s library's settings hold a change to apply", title)
+	}
+	screen.Do(func() {
+		for _, one := range settingsViews {
+			closeLibrarySettings(one.lib)
+		}
+	})
+	_, err := os.Stat(filepath.Join(dir, "sub"))
+	c.True(os.IsNotExist(err), "the renamed folder must not be put back for the libraries that were in it")
 	for _, sheet := range sheets {
 		uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 	}
@@ -1891,7 +2030,8 @@ func TestNavigatorSearchOffersMatches(t *testing.T) {
 }
 
 // TestNavigatorContextMenuHeadless verifies that shift+F10 opens the library navigator's menu for the selected file,
-// and that it opens nothing while nothing is selected.
+// and that it opens nothing while nothing is selected; and that Show on Disk, which the Favorites row has no place on
+// disk for, isn't offered for that row alone and passes over it in a selection that includes it.
 func TestNavigatorContextMenuHeadless(t *testing.T) {
 	c := check.New(t)
 	// Every library row starts out disclosed, so that the file put in the user library below is a row of its own.
@@ -1925,6 +2065,41 @@ func TestNavigatorContextMenuHeadless(t *testing.T) {
 	c.True(slices.Contains(titles, cloneSheetAction.Title), "the menu for a sheet must offer %q; it offers %v",
 		cloneSheetAction.Title, titles)
 	closeContextMenu(c, screen, wnd)
+
+	var favoritesSelected bool
+	screen.Do(func() {
+		n.table.ClearSelection()
+		n.table.SelectByIndex(0)
+		sel := n.table.SelectedRows(false)
+		favoritesSelected = len(sel) == 1 && sel[0].IsFavorites()
+	})
+	c.True(favoritesSelected, "the Favorites row must be the selection")
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	titles = contextMenuTitles(t, screen, wnd)
+	c.False(slices.Contains(titles, showOnDisk), "the menu for the Favorites row must not offer %q; it offers %v",
+		showOnDisk, titles)
+	closeContextMenu(c, screen, wnd)
+
+	screen.Do(func() {
+		n.ApplySelectedPaths([]string{sheetPath})
+		n.table.SelectByIndex(0)
+	})
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	var item *unison.Panel
+	screen.Do(func() {
+		for _, one := range uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd)) {
+			if node := screen.AccessibilityNodeFor(one); node != nil && node.Name == showOnDisk {
+				item = one
+			}
+		}
+	})
+	if item == nil {
+		t.Fatalf("the menu for the Favorites row and the sheet must offer %q", showOnDisk)
+	}
+	screen.OpenedURLs() // Forgets any earlier requests.
+	screen.Click(screen.PanelCenter(item))
+	c.Equal([]string{user.Path(false)}, screen.OpenedURLs(),
+		"Show on Disk shows the sheet's folder alone, passing over the Favorites row")
 
 	screen.Do(func() {
 		n.table.ClearSelection()

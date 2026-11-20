@@ -1260,11 +1260,14 @@ func TestSettingsListFilterHelpers(t *testing.T) {
 	s.ListFilters = map[string][]*gurps.ListFilter{
 		key:      {nil, gurps.NewListFilter("Keep"), gurps.NewListFilter("  "), gurps.NewListFilter("keep")},
 		"spl":    {nil, gurps.NewListFilter(""), {Name: "  ", Root: gurps.NewFilterGroup(nil)}},
+		"skl":    {gurps.NewListFilter("izmir"), gurps.NewListFilter("İzmir")},
 		"future": {gurps.NewListFilter("From a newer GCS")},
 	}
 	s.EnsureValidity()
 	c.Equal([]string{"Keep"}, listFilterNames(s.ListFiltersFor(key)),
 		"nil, unnamed and duplicate-named filters are dropped")
+	c.Equal([]string{"izmir", "İzmir"}, listFilterNames(s.ListFiltersFor("skl")),
+		"names are duplicates only when ListFilterNameInUse would say so")
 	_, exists = s.ListFilters["spl"]
 	c.False(exists, "a key left with nothing usable is deleted")
 	c.Equal([]string{"From a newer GCS"}, listFilterNames(s.ListFiltersFor("future")),

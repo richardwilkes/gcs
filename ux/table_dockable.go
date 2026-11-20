@@ -37,6 +37,7 @@ var (
 	_ listFilterObserver           = &TableDockable[*gurps.Trait]{}
 	_ gurps.SheetSettingsResponder = &TableDockable[*gurps.Trait]{}
 	_ readOnlyView                 = &TableDockable[*gurps.Trait]{}
+	_ openStateSharer              = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -348,6 +349,7 @@ func (d *TableDockable[T]) selectRowsByID(ids map[tid.TID]bool) int {
 				if !parent.IsOpen() {
 					// The open state is kept in the settings rather than in the list, so this doesn't modify the list.
 					parent.SetOpen(true)
+					openStateChanged(d.table, parent.ID())
 					opened = true
 				}
 			}

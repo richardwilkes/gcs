@@ -147,15 +147,11 @@ func (b *KeyBindings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// MakeCurrent applies these key bindings to the current key bindings set.
+// MakeCurrent applies these key bindings, as Current reports them, to the current key bindings set.
 func (b *KeyBindings) MakeCurrent() {
 	var actions []*unison.Action
 	for k, v := range factoryBindings {
-		current, ok := b.data[k]
-		if !ok {
-			current = v.KeyBinding
-		}
-		if v.Action.KeyBinding != current {
+		if current := b.effective(k, v); v.Action.KeyBinding != current {
 			v.Action.KeyBinding = current
 			actions = append(actions, v.Action)
 		}
@@ -177,15 +173,29 @@ func (b *KeyBindings) MakeCurrent() {
 	}
 }
 
-// Current returns the binding for the given ID, or a zero KeyBinding if the ID isn't registered.
+// Current returns the binding for the given ID, or a zero KeyBinding if the ID isn't registered. An ID without an
+// override has no binding while another ID's override has its factory key, so that a user's choice of key wins over a
+// factory binding added or changed after it was made.
 func (b *KeyBindings) Current(id string) unison.KeyBinding {
 	if f, ok := factoryBindings[id]; ok {
-		if c, ok2 := b.data[id]; ok2 {
-			return c
-		}
-		return f.KeyBinding
+		return b.effective(id, f)
 	}
 	return unison.KeyBinding{}
+}
+
+// effective returns the current binding (see Current) of the registered ID with the given factory binding.
+func (b *KeyBindings) effective(id string, factory *Binding) unison.KeyBinding {
+	if current, ok := b.data[id]; ok {
+		return current
+	}
+	if !factory.KeyBinding.IsZero() {
+		for k, v := range b.data {
+			if _, registered := factoryBindings[k]; registered && v == factory.KeyBinding {
+				return unison.KeyBinding{}
+			}
+		}
+	}
+	return factory.KeyBinding
 }
 
 // Set the binding for the given ID.

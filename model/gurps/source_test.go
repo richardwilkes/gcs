@@ -14,7 +14,9 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -30,36 +32,46 @@ import (
 	"github.com/richardwilkes/toolbox/v2/uti"
 )
 
-// TestSourcePathSeparatorNormalization verifies that source paths are stored and round-tripped with forward slashes.
-// See issue #1005: backslash paths written on Windows could not be located on other platforms, so the library source
-// match status showed a question mark.
+// TestSourcePathSeparatorNormalization verifies that a backslash in a source path is written and read as a slash on
+// Windows, where it can only be a separator, and kept elsewhere, where it can be part of a file name. A path written
+// with backslash separators by older versions of GCS for Windows must still find its library file everywhere (see
+// issue #1005, where such sources showed as missing on other platforms).
 func TestSourcePathSeparatorNormalization(t *testing.T) {
 	c := check.New(t)
-
-	// A path loaded with backslash separators is normalized to forward slashes.
-	const windowsAuthored = `{"id":"a","source":{"library":"Master Library","path":"Basic Set\\Basic Set Traits.adq","id":"x"}}`
-	var loaded SourcedID
-	c.NoError(jio.Unmarshal([]byte(windowsAuthored), &loaded), "backslash path should load")
-	c.Equal("Basic Set/Basic Set Traits.adq", loaded.Source.Path, "path should be normalized on load")
-
-	// An already-normalized path is left unchanged on load.
-	const unixAuthored = `{"id":"a","source":{"library":"Master Library","path":"Basic Set/Basic Set Traits.adq","id":"x"}}`
-	var loaded2 SourcedID
-	c.NoError(jio.Unmarshal([]byte(unixAuthored), &loaded2), "forward-slash path should load")
-	c.Equal("Basic Set/Basic Set Traits.adq", loaded2.Source.Path, "forward-slash path should be unchanged")
-
-	// A source carrying a backslash path in memory is always written out with forward slashes.
-	inMemory := SourcedID{
-		TID: "a",
-		Source: Source{
-			LibraryFile: LibraryFile{Library: "Master Library", Path: `Basic Set\Basic Set Traits.adq`},
-			TID:         "x",
-		},
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, TraitsExt)
+	odd := `Odd\Name.adq`
+	if runtime.GOOS == "windows" {
+		odd = "Odd/Name.adq"
 	}
-	data, err := jio.Marshal(&inMemory)
-	c.NoError(err, "source should marshal")
-	c.False(strings.Contains(string(data), `\`), "marshaled output must not contain backslashes")
-	c.True(strings.Contains(string(data), "Basic Set/Basic Set Traits.adq"), "marshaled output should use forward slashes")
+	for _, one := range []struct {
+		path string
+		want string
+	}{
+		{"Basic Set/Basic Set Traits.adq", "Basic Set/Basic Set Traits.adq"},
+		{`Odd\Name.adq`, odd},
+	} {
+		data, err := jio.Marshal(&SourcedID{
+			TID:    "a",
+			Source: Source{LibraryFile: LibraryFile{Library: "Master Library", Path: one.path}, TID: "x"},
+		})
+		c.NoError(err, "source should marshal")
+		c.Contains(string(data), `"path":`+strconv.Quote(one.want), "%q is written as %q", one.path, one.want)
+		var loaded SourcedID
+		c.NoError(jio.Unmarshal(data, &loaded), "source should unmarshal")
+		c.Equal(one.want, loaded.Source.Path, "the path written is the one read back")
+	}
+
+	lib := NewTrait(nil, nil, false)
+	libFile := LibraryFile{Library: "Test Library", Path: "Basic Set/Basic Set Traits" + TraitsExt}
+	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
+	c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+	c.NoError(SaveTraits([]*Trait{lib}, p))
+	var legacy SourcedID
+	c.NoError(jio.Unmarshal(fmt.Appendf(nil, `{"id":"a","source":{"library":%q,"path":%q,"id":"x"}}`, libFile.Library,
+		strings.ReplaceAll(libFile.Path, "/", `\`)), &legacy), "a source written on Windows should load")
+	state, _ := MatchSource(lib.Clone(legacy.Source.LibraryFile, nil, nil, Reference))
+	c.Equal(srcstate.Matched, state, "a source written with backslash separators finds its library file")
 }
 
 // unmatchedOwner is a data owner without a source matcher, as an equipment list file is.

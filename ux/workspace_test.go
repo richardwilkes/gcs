@@ -504,6 +504,48 @@ func TestDockUnDockMovesADockableBetweenTheWorkspaceAndAWindow(t *testing.T) {
 	uxtest.CloseEditorWithoutPrompt(t, screen, d)
 }
 
+// TestDockableAwaitingItsWindowIsOpen verifies that a dockable waiting to be given a window of its own, as a PDF's view
+// does until its document has loaded or failed to, is among the open dockables until it is closed, and once only when
+// it has its window: opening its file again finds it rather than opening a second view.
+func TestDockableAwaitingItsWindowIsOpen(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	global := gurps.GlobalSettings()
+	uxtest.SwapForTest(t, &global.OpenInWindow, []dgroup.Group{dgroup.PDFs})
+	uxtest.SwapForTest(t, &global.General.ExternalPDFCmdLine, "")
+	// There is no such file, so each view's wait ends with its failure to load, which spares the test any rendering.
+	path := filepath.Join(t.TempDir(), "Missing.pdf")
+	occurrences := func(d unison.Dockable) int {
+		count := 0
+		for _, one := range AllDockables() {
+			if one == d {
+				count++
+			}
+		}
+		return count
+	}
+	var next unison.Dockable
+	screen.Do(func() {
+		first, _ := OpenFile(path, gurps.PageInfo{})
+		c.True(first.AsPanel().Window() == nil, "the view waits for its document before taking a window")
+		again, wasOpen := OpenFile(path, gurps.PageInfo{})
+		c.True(wasOpen && again == first, "opening the file again finds the view awaiting its window")
+		closer, ok := first.(unison.TabCloser)
+		c.True(ok && closer.AttemptClose(), "the view closes while awaiting its window")
+		c.Equal(0, occurrences(first), "a view closed while awaiting its window is no longer open")
+		var reopened bool
+		next, reopened = OpenFile(path, gurps.PageInfo{})
+		c.False(reopened, "opening the file once its view has closed opens a new one")
+	})
+	view, ok := next.(*PDFDockable)
+	if !ok {
+		t.Fatal("the file must open as a PDF")
+	}
+	awaitLibraryFilter(t, screen, "the view's window", func() bool { return view.Window() != nil })
+	screen.Do(func() { c.Equal(1, occurrences(view), "a view given its window is open once") })
+	uxtest.CloseEditorWithoutPrompt(t, screen, view)
+}
+
 // dockContainerCount returns the number of containers in the document dock.
 func dockContainerCount() int {
 	count := 0

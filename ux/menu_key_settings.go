@@ -397,21 +397,18 @@ func conflictWarning(id string, keyBinding unison.KeyBinding) string {
 }
 
 // applyBinding sets the row's binding to the key combination, taking it from any other bindings that have it, and
-// updates the rows of all of them.
+// updates every row, since the key the binding had may now go back to a binding it was the factory key of (see
+// gurps.KeyBindings.Current).
 func (d *menuKeySettingsDockable) applyBinding(row *menuKeyRow, keyBinding unison.KeyBinding) {
 	g := gurps.GlobalSettings()
-	others := conflictingBindings(row.binding.ID, keyBinding)
-	for _, other := range others {
+	for _, other := range conflictingBindings(row.binding.ID, keyBinding) {
 		g.KeyBindings.Set(other.ID, unison.KeyBinding{})
 	}
 	g.KeyBindings.Set(row.binding.ID, keyBinding)
 	g.KeyBindings.MakeCurrent()
-	for _, other := range others {
-		if otherRow, ok := d.rows[other.ID]; ok { // Only the rows the filter lets through exist
-			otherRow.refresh()
-		}
+	for _, one := range d.rows { // Only the rows the filter lets through exist
+		one.refresh()
 	}
-	row.refresh()
 }
 
 // resetBinding restores the row's binding to its factory default, which it takes from any other binding that has it.
