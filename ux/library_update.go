@@ -61,7 +61,8 @@ documents from the library are open.`))
 	// the progress dialog is up (by an update check, a watch event from another library, or a library rooted inside
 	// this one, whose watch sees the extraction) re-watches every library, after which each batch of extraction events
 	// would start a rebuild that the next batch cancels. Suspending abandons the in-flight build and holds rebuilds off
-	// until the update is over; the one rebuild owed is folded into finishLibraryUpdate's reload.
+	// until the update is over; the one rebuild owed is folded into finishLibraryUpdate's reload. The library filter
+	// views hold off reading their files for as long (see libraryFilterHeld).
 	Workspace.Navigator.suspendContentCachePrewarm()
 	defer Workspace.Navigator.resumeContentCachePrewarm()
 

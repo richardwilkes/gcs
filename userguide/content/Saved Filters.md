@@ -4,8 +4,9 @@ A **saved filter** is a named set of conditions that narrows a library list to t
 _Cheap Advantages_ could show only the traits tagged `Advantage` that cost 10 points or less.
 
 Saved filters belong to a list type (traits, trait modifiers, skills, spells, equipment, equipment modifiers or
-notes), and every library list of that type offers them. They are stored in your GCS settings, not in your libraries,
-so they are available whichever library file you open.
+notes), and every library list of that type offers them, as does every [Library Filter](Library%20Filter) view of that
+type. They are stored in your GCS settings, not in your libraries, so they are available whichever library file you
+open.
 
 ## Using a saved filter
 

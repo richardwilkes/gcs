@@ -340,6 +340,9 @@ func (d *librarySettingsDockable) apply() bool {
 	oldKey := d.library.Key()
 	d.library.Configure(d.config)
 	libs.Rekey(oldKey, d.library)
+	if newKey := d.library.Key(); newKey != oldKey {
+		libraryFilterLibraryRekeyed(oldKey, newKey)
+	}
 	if err := d.library.SetPath(d.path); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)
 	}

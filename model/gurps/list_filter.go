@@ -548,19 +548,25 @@ func NewMergedListFilter(name string, all bool, sources []*ListFilter) *ListFilt
 	return f
 }
 
-var numberedListFilterName = regexp.MustCompile(` \(\d+\)$`)
+var numberedName = regexp.MustCompile(` \(\d+\)$`)
 
 // UniqueListFilterName returns name if no saved filter for the list type with the given key has it, and otherwise the
 // name with the lowest number after it, as in "Name (2)", that none has. A number the name already ends with is
 // replaced.
 func (s *Settings) UniqueListFilterName(key, name string) string {
+	return uniqueNumberedName(name, func(one string) bool { return s.ListFilterNameInUse(key, one, nil) })
+}
+
+// uniqueNumberedName returns name, trimmed, if inUse reports it isn't in use, and otherwise the name with the lowest
+// number after it, as in "Name (2)", that isn't. A number the name already ends with is replaced.
+func uniqueNumberedName(name string, inUse func(name string) bool) string {
 	name = strings.TrimSpace(name)
-	if !s.ListFilterNameInUse(key, name, nil) {
+	if !inUse(name) {
 		return name
 	}
-	base := numberedListFilterName.ReplaceAllString(name, "")
+	base := numberedName.ReplaceAllString(name, "")
 	for i := 2; ; i++ {
-		if candidate := fmt.Sprintf("%s (%d)", base, i); !s.ListFilterNameInUse(key, candidate, nil) {
+		if candidate := fmt.Sprintf("%s (%d)", base, i); !inUse(candidate) {
 			return candidate
 		}
 	}

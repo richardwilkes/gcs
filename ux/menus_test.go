@@ -205,6 +205,7 @@ func TestMenuBarStructure(t *testing.T) {
 		"Open Detail Editor",
 		"Open Page Reference",
 		"Open Each Page Reference",
+		"Show in Source File",
 		"---",
 		"Move",
 		"Adjust",
@@ -288,7 +289,8 @@ func TestMenuBarStructure(t *testing.T) {
 
 	view := bar.Menu(ViewMenuID)
 	titles = menuItemTitles(view)
-	c.Equal([]string{"Default Scale", "Scale Up", "Scale Down", "Scale To", "---", "Calculators"}, titles[:6],
+	c.Equal([]string{"Default Scale", "Scale Up", "Scale Down", "Scale To", "---", "New Library Filter", "Calculators"},
+		titles[:7],
 		"View menu, up to the separator macOS adds ahead of the items the system contributes")
 	c.Equal([]string{
 		"25% Scale",

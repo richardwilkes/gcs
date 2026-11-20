@@ -155,6 +155,8 @@ const (
 	BuyEquipmentItemID
 	BuySelectedEquipmentItemID
 	ShoppingRecordItemID
+	NewLibraryFilterItemID
+	ShowInSourceFileItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID
@@ -355,6 +357,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 		openEditorAction,
 		openOnePageReferenceAction,
 		openEachPageReferenceAction,
+		showInSourceFileAction,
 		nil,
 	)
 	m.InsertMenu(-1, s.newActionMenu(
@@ -470,7 +473,7 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 		scale500Action,
 		scale600Action,
 	))
-	s.appendActions(m, nil, calculatorAction)
+	s.appendActions(m, nil, newLibraryFilterAction, calculatorAction)
 	platformViewMenuAddition(m)
 	return m
 }

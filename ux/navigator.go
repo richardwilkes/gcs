@@ -71,6 +71,7 @@ type Navigator struct {
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*library.MonitorToken
 	listLibraries             librariesLister // A field so that tests can hold a walk back
+	listing                   *navigatorListing
 	afterReload               []func()
 	deepSearch                map[string]bool
 	contentCache              map[string]*contentCacheEntry
@@ -643,6 +644,7 @@ func (n *Navigator) contextMenu(_ geom.Point) unison.Menu {
 			break
 		}
 	}
+	appendLibraryFilterMenuItems(f, cm, &id, sel)
 	if len(sel) == 1 && sel[0].IsFile() {
 		p := sel[0].Path()
 		switch filepath.Ext(p) {
@@ -734,11 +736,12 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 // watchCallback is what the filesystem watches on the libraries report each change to, on the UI thread. Whatever the
 // change, the deep search content cache entry for the path is dropped so that a search re-reads the file. The path
 // arrives named the way the library names it (see Library.Watch), which is also how NavigatorNode.Path() names it, so
-// it is the cache key as is. A change that may have altered the tree is followed by a reload; a plain write to a file's
-// contents does not need one, and a file arriving in pieces would otherwise restart the reload's cache rebuild on every
-// piece.
+// it is the cache key as is. The library filter views that show the file are told of the change too. A change that may
+// have altered the tree is followed by a reload; a plain write to a file's contents does not need one, and a file
+// arriving in pieces would otherwise restart the reload's cache rebuild on every piece.
 func (n *Navigator) watchCallback(_ *library.Library, fullPath string, what notify.Event) {
 	n.invalidateContentCacheEntry(fullPath)
+	libraryFilterPathChanged(fullPath)
 	if what&^notify.Write != 0 {
 		n.EventuallyReload()
 	}
@@ -822,13 +825,14 @@ func (n *Navigator) startWalk() {
 }
 
 // applyListing takes over the watches a walk of the libraries established and rebuilds the rows from what it listed,
-// keeping the rows that were disclosed and selected so by their place in the tree (see placeKey), then has the deep
-// search content cache rebuilt and the matches on offer found again, and runs what was to follow the reload. Which rows
-// were disclosed is carried over only once the rows have come from a walk before: until then they are the bare rows
-// newNavigator starts with, which know nothing of the folders beneath the libraries, and the open state each row keeps
-// of its own (see IsOpen) is what is wanted. A reload asked for while the walk ran is made last; the walk counts as in
-// flight until then, so that a reload asked for by what runs here is owed along with it rather than starting a walk
-// beside it. Must be called on the UI thread.
+// keeping the rows that were disclosed and selected so by their place in the tree (see placeKey), and keeps the listing
+// for the library filter views, which are told of it. It then has the deep search content cache rebuilt and the
+// matches on offer found again, and runs what was to follow the reload. Which rows were disclosed is carried over only
+// once the rows have come from a walk before: until then they are the bare rows newNavigator starts with, which know
+// nothing of the folders beneath the libraries, and the open state each row keeps of its own (see IsOpen) is what is
+// wanted. A reload asked for while the walk ran is made last; the walk counts as in flight until then, so that a reload
+// asked for by what runs here is owed along with it rather than starting a walk beside it. Must be called on the UI
+// thread.
 func (n *Navigator) applyListing(listing *navigatorListing, tokens []*library.MonitorToken, afterward []func()) {
 	n.tokens = tokens // The watches were all stopped when the walk started, and nothing has watched since
 	if n.Window() == nil {
@@ -841,6 +845,7 @@ func (n *Navigator) applyListing(listing *navigatorListing, tokens []*library.Mo
 		disclosed = n.disclosedPlaces()
 	}
 	n.listed = true
+	n.listing = listing
 	selection := n.selectedPlaces()
 	n.table.SetRootRows(n.rowsFor(listing))
 	if disclosed != nil {
@@ -849,6 +854,7 @@ func (n *Navigator) applyListing(listing *navigatorListing, tokens []*library.Mo
 	n.table.SyncToModel()
 	n.applySelectedPlaces(selection)
 	n.table.SizeColumnsToFit(true)
+	libraryFilterListingChanged()
 	n.prewarmContentCache()
 	n.refreshSearch()
 	for _, f := range afterward {
@@ -859,6 +865,12 @@ func (n *Navigator) applyListing(listing *navigatorListing, tokens []*library.Mo
 		n.reloadAgain = false
 		n.startWalk()
 	}
+}
+
+// libraryListing returns the listing the rows were last built from, or nil until the first walk of the libraries has
+// returned.
+func (n *Navigator) libraryListing() *navigatorListing {
+	return n.listing
 }
 
 // rowsFor returns the rows for what a walk of the libraries listed: the Favorites row, then a row for each library,

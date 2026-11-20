@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -842,4 +843,101 @@ func TestSyncRefusesIncompatibleKinds(t *testing.T) {
 	c.True(noteContainer.Container(), "and stays a note container")
 	state, _ = MatchSource(noteContainer)
 	c.Equal(srcstate.Matched, state, "the synced note container matches its source")
+}
+
+// TestStampLibrarySource verifies that a Reference clone of stamped rows made without a library file gets the same
+// sources, for the rows, the rows beneath them and their modifiers, as a Reference clone of the unstamped rows made
+// with the file they came from, and that a row already sourced elsewhere keeps its source.
+func TestStampLibrarySource(t *testing.T) {
+	c := check.New(t)
+	from := LibraryFile{Library: "lib", Path: "Traits/Basic.adq"}
+	parent := NewTrait(nil, nil, true)
+	child := NewTrait(nil, parent, false)
+	child.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
+	parent.Children = []*Trait{child}
+	elsewhere := Source{Library: "other", Path: "Other.adq", TID: tid.MustNewTID(kinds.Trait)}
+	sourced := NewTrait(nil, nil, false)
+	sourced.Source = elsewhere
+	rows := []*Trait{parent, sourced}
+	unstamped := cloneTraitRows(rows, LibraryFile{}, Copy)
+	StampLibrarySource(from, rows)
+	c.Equal(elsewhere, sourced.Source, "a row with a source of its own keeps it")
+	c.Equal(traitRowSources(cloneTraitRows(unstamped, from, Reference)),
+		traitRowSources(cloneTraitRows(rows, LibraryFile{}, Reference)),
+		"a clone of the stamped rows has the sources a clone of the unstamped ones made with their file has")
+}
+
+// TestMakeRowIDsUnique verifies that each row, at any depth, whose ID was already seen gets a new, unseen ID of the
+// same kind, the same one on every run, while the other rows keep theirs, no source changes, and every ID ends up seen.
+func TestMakeRowIDsUnique(t *testing.T) {
+	c := check.New(t)
+	from := LibraryFile{Library: "lib", Path: "Traits/Basic.adq"}
+	parent := NewTrait(nil, nil, true)
+	collidingChild := NewTrait(nil, parent, false)
+	parent.Children = []*Trait{collidingChild, NewTrait(nil, parent, false)}
+	// The repeat has the parent's ID, so the ID first derived for it is the one the parent was just given.
+	repeat := NewTrait(nil, nil, true)
+	repeat.TID = parent.TID
+	rows := []*Trait{parent, NewTrait(nil, nil, false), repeat}
+	StampLibrarySource(from, rows)
+	earlier := map[tid.TID]bool{parent.TID: true, collidingChild.TID: true}
+	run := func() (copied []*Trait, seen map[tid.TID]bool, replaced map[tid.TID]tid.TID) {
+		copied = cloneTraitRows(rows, LibraryFile{}, Copy)
+		seen = maps.Clone(earlier)
+		return copied, seen, MakeRowIDsUnique(from, seen, copied)
+	}
+	first, seen, replaced := run()
+	second, _, _ := run()
+	original := traitRowIDs(rows)
+	ids := traitRowIDs(first)
+	c.Equal(ids, traitRowIDs(second), "the same rows get the same IDs on every run")
+	c.Equal(len(ids), len(slices.Compact(slices.Sorted(slices.Values(ids)))), "every row has an ID of its own")
+	c.Equal(traitRowSources(rows), traitRowSources(first), "no source changes")
+	c.Equal(3, len(replaced), "each replaced ID is reported")
+	for i, id := range ids {
+		c.True(seen[id], "row %d's ID is recorded as seen", i)
+		if i == 2 || i == 3 {
+			c.Equal(original[i], id, "row %d, whose ID wasn't seen, keeps it", i)
+			continue
+		}
+		c.True(tid.IsValid(id), "row %d gets a valid ID", i)
+		c.True(tid.IsKind(id, original[i][0]), "row %d gets an ID of the same kind", i)
+		c.False(earlier[id], "row %d gets an ID that wasn't seen before", i)
+		c.Equal(original[i], replaced[id], "row %d's new ID is reported with its original", i)
+	}
+	c.Nil(MakeRowIDsUnique(from, make(map[tid.TID]bool), cloneTraitRows(rows[:2], LibraryFile{}, Copy)),
+		"nothing is reported when nothing collides")
+}
+
+// cloneTraitRows returns a clone of each of the rows, made from the library file with the given mode.
+func cloneTraitRows(rows []*Trait, from LibraryFile, mode CloneMode) []*Trait {
+	clones := make([]*Trait, len(rows))
+	for i, row := range rows {
+		clones[i] = row.Clone(from, nil, nil, mode)
+	}
+	return clones
+}
+
+// traitRowIDs returns the ID of each of the rows and each row beneath them, in traversal order.
+func traitRowIDs(rows []*Trait) []tid.TID {
+	var ids []tid.TID
+	Traverse(func(row *Trait) bool {
+		ids = append(ids, row.ID())
+		return false
+	}, false, false, rows...)
+	return ids
+}
+
+// traitRowSources returns the source of each of the rows, each row beneath them and each of their modifiers, in
+// traversal order.
+func traitRowSources(rows []*Trait) []Source {
+	var sources []Source
+	Traverse(func(row *Trait) bool {
+		sources = append(sources, row.GetSource())
+		for _, mod := range row.Modifiers {
+			sources = append(sources, mod.GetSource())
+		}
+		return false
+	}, false, false, rows...)
+	return sources
 }

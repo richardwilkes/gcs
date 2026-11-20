@@ -99,6 +99,7 @@ var (
 	newEquipmentModifierAction          *unison.Action
 	newEquipmentModifierChoiceAction    *unison.Action
 	newEquipmentModifiersLibraryAction  *unison.Action
+	newLibraryFilterAction              *unison.Action
 	newMarkdownFileAction               *unison.Action
 	newMeleeWeaponAction                *unison.Action
 	newNameGeneratorAction              *unison.Action
@@ -157,6 +158,7 @@ var (
 	sellEquipmentAction                 *unison.Action
 	shoppingRecordAction                *unison.Action
 	showAsPagesAction                   *unison.Action
+	showInSourceFileAction              *unison.Action
 	syncWithSourceAction                *unison.Action
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
@@ -413,6 +415,12 @@ func registerActions() {
 	newEquipmentModifiersLibraryAction = registerLibraryAction("new.eqm.lib", NewEquipmentModifiersLibraryItemID,
 		i18n.Text("New Equipment Modifiers Library"), "Equipment Modifiers"+gurps.EquipmentModifiersExt,
 		NewEquipmentModifierTableDockable)
+	newLibraryFilterAction = registerKeyBindableAction("new.library_filter", &unison.Action{
+		ID:              NewLibraryFilterItemID,
+		Title:           i18n.Text("New Library Filter"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyL, Modifiers: mod.OSMenuCommand()},
+		ExecuteCallback: func(_ *unison.Action, _ any) { NewLibraryFilter() },
+	})
 	newMarkdownFileAction = registerKeyBindableAction("new.markdown", &unison.Action{
 		ID:    NewMarkdownFileItemID,
 		Title: i18n.Text("New Markdown File"),
@@ -527,12 +535,9 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.OSMenuCommand()})
 	saveAsAction = registerFocusAction("save_as", SaveAsItemID, i18n.Text("Save As…"),
 		unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.Shift | mod.OSMenuCommand()})
-	scale25Action = registerFocusAction("scale.25", Scale25ItemID, i18n.Text("25% Scale"),
-		unison.KeyBinding{KeyCode: unison.KeyQ, Modifiers: mod.OSMenuCommand() | mod.Option})
-	scale50Action = registerFocusAction("scale.50", Scale50ItemID, i18n.Text("50% Scale"),
-		unison.KeyBinding{KeyCode: unison.KeyH, Modifiers: mod.OSMenuCommand() | mod.Option})
-	scale75Action = registerFocusAction("scale.75", Scale75ItemID, i18n.Text("75% Scale"),
-		unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: mod.OSMenuCommand() | mod.Option})
+	scale25Action = registerFocusAction("scale.25", Scale25ItemID, i18n.Text("25% Scale"), unison.KeyBinding{})
+	scale50Action = registerFocusAction("scale.50", Scale50ItemID, i18n.Text("50% Scale"), unison.KeyBinding{})
+	scale75Action = registerFocusAction("scale.75", Scale75ItemID, i18n.Text("75% Scale"), unison.KeyBinding{})
 	scale100Action = registerFocusAction("scale.100", Scale100ItemID, i18n.Text("100% Scale"),
 		unison.KeyBinding{KeyCode: unison.Key1, Modifiers: mod.OSMenuCommand()})
 	scale200Action = registerFocusAction("scale.200", Scale200ItemID, i18n.Text("200% Scale"),
@@ -569,6 +574,9 @@ func registerActions() {
 		},
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
+	showInSourceFileAction = registerFocusAction("show.source_file", ShowInSourceFileItemID,
+		i18n.Text("Show in Source File"),
+		unison.KeyBinding{KeyCode: unison.KeyI, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	syncWithSourceAction = registerFocusAction("clear.sync", SyncWithSourceItemID, i18n.Text("Sync with Source"),
 		unison.KeyBinding{})
 	swapDefaultsAction = registerFocusAction("swap.defaults", SwapDefaultsItemID, i18n.Text("Swap Defaults"),

@@ -35,7 +35,7 @@ Once tags are added, you can use them to quickly group or search items across yo
 ## Using tags in libraries
 
 The **Tag Filter** dropdown on a library list's toolbar, labeled **Any Tag** until a tag is chosen, lets you filter
-content by tag.
+content by tag. A [Library Filter](Library%20Filter) view has the same dropdown, to filter many lists at once.
 
 <img src="images/screenshots/tagFilterPopup.png" alt="The Tag Filter dropdown" width="340">
 

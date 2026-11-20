@@ -15,13 +15,15 @@ It includes:
 - **File:** Create new sheets, templates, libraries, and other files (**File > New**), open, save, export, or print.
 - **Edit:** Undo, redo, cut, copy, paste, duplicate, delete, select all, and jump to the search or filter field.
 - **Insert:** Add new traits, skills, spells, equipment, notes, and attacks to the document you're working on.
-- **Item:** Act on the selected items: open the detail editor, open page references, move, adjust, or convert items,
-  toggle their state, apply modifiers, copy them to a sheet or template, and sync them with their library source.
+- **Item:** Act on the selected items: open the detail editor, open page references, show them in their source file,
+  move, adjust, or convert items, toggle their state, apply modifiers, copy them to a sheet or template, and sync them
+  with their library source.
 - **Sheet:** Commands for the active character sheet, such as applying a template, organizing traits, buying and
   selling equipment, showing the sheet as pages, and the sheet's own settings, attributes, body type, and layout.
 - **Settings:** General settings, colors, fonts, menu keys, saved filters, the defaults for new sheets, and page
   reference mappings. See [General Settings](General%20Settings) and the other pages under **Customization**.
-- **View:** Scale the active document up or down, and open the [Calculators](Calculator).
+- **View:** Scale the active document up or down, and open a [Library Filter](Library%20Filter) or the
+  [Calculators](Calculator).
 - **Window:** Manage how windows and tabs are arranged, including undocking a tab into its own window.
 - **Help:** Open the User Guide, check for updates, read the release notes, and visit the GCS website.
 

@@ -62,9 +62,17 @@ type CellCache struct {
 	// Data is the data the panel was built from. The panel may change it: a check cell flips Checked as it is
 	// clicked, and back should the click be refused, so that the panel goes on matching the model and is kept.
 	Data        *gurps.CellData
+	PanelStamp  uint64 // The stamp (see cellPanelEpoch) the panel was built at.
+	turn        uint64 // The cellPanelPool turn the panel was last used in; 0 while no pool holds it.
 	Width       float32
 	NotesClosed bool
-	PanelStamp  uint64 // The stamp (see cellPanelEpoch) the panel was built at.
+	unused      bool // The panel hasn't been asked for since it was built.
+}
+
+// letGo drops the panel, which leaves the cache matching nothing.
+func (c *CellCache) letGo() {
+	c.Panel = nil
+	c.Data = nil
 }
 
 // Matches returns true if the panel was built for the given width, data and notes disclosure, and with the fonts in
@@ -83,21 +91,95 @@ type cellStamp struct {
 	sync    uint64
 }
 
+// keptCellData is a cell's data as derived from the model at a cellStamp, along with the lowercased text a search looks
+// in for it, which is made from it the first time the cell is searched.
+type keptCellData struct {
+	data     gurps.CellData
+	search   string
+	at       cellStamp
+	version  uint32 // Counts the changes to the data, off a page, which the sizes kept go by; see cellSizes.
+	searched bool
+}
+
+// cellSizeBasis is what the sizes a row keeps for a cell were measured for, besides the width: the data shown, by the
+// count of its changes, whether its notes were closed and the fonts in use (see cellPanelEpoch).
+type cellSizeBasis struct {
+	panelStamp  uint64
+	version     uint32
+	notesClosed bool
+}
+
+// fittedCellSize is the preferred size of a cell at a width.
+type fittedCellSize struct {
+	size  geom.Size
+	width float32
+}
+
+// cellSizes holds the preferred sizes a table measured for a cell of a row that isn't on a page: its natural size and
+// its sizes at the two widths it was most recently measured at, newest first. They are good for as long as the basis
+// they were measured for holds.
+type cellSizes struct {
+	basis      cellSizeBasis
+	natural    geom.Size
+	fitted     [2]fittedCellSize
+	fitCount   uint8
+	hasNatural bool
+}
+
+// kept returns the size kept for the width, which is 0 or less for the natural size.
+func (s *cellSizes) kept(basis cellSizeBasis, width float32) (geom.Size, bool) {
+	if s.basis != basis {
+		return geom.Size{}, false
+	}
+	if width <= 0 {
+		return s.natural, s.hasNatural
+	}
+	for i := range s.fitCount {
+		if s.fitted[i].width == width {
+			return s.fitted[i].size, true
+		}
+	}
+	return geom.Size{}, false
+}
+
+// keep records the size measured for the width, dropping those measured for another basis.
+func (s *cellSizes) keep(basis cellSizeBasis, width float32, size geom.Size) {
+	if s.basis != basis {
+		*s = cellSizes{basis: basis}
+	}
+	if width <= 0 {
+		s.natural = size
+		s.hasNatural = true
+		return
+	}
+	s.fitted[1] = s.fitted[0]
+	s.fitted[0] = fittedCellSize{size: size, width: width}
+	s.fitCount = min(s.fitCount+1, uint8(len(s.fitted)))
+}
+
 // nodeCell is what a row keeps for one of its columns: the cell's data, derived from the model once per change
 // reported to the display and per sync (see cellStamp), the panels built from it for the widths the table asks for,
 // and the widths the page reference columns are sized by. Each derived value is stamped with the cellStamp it was
-// derived at; the panels are kept for as long as they match the data (see CellCache.Matches).
+// derived at; the panels are kept for as long as they match the data (see CellCache.Matches). Off a page, the sizes
+// the table measured are kept as well, and the panels only while in recent use (see Node.ColumnCell).
 type nodeCell struct {
-	display       gurps.CellData // The data for display, with the page's display preferences applied.
-	plain         gurps.CellData // The data for sorting and searching, without them; the same as display off a page.
-	displayAt     cellStamp
-	plainAt       cellStamp
+	display       keptCellData  // The data for display, with the page's display preferences applied.
+	plain         keptCellData  // The data for sorting and searching, without them; the same as display off a page.
 	unconstrained *CellCache    // The panel built at its natural size, which the sizing passes ask for.
 	fitted        [4]*CellCache // The panels built for the most recent widths, newest first; see ColumnCell.
+	sizes         cellSizes
 	refWidth      float32
 	collapsed     float32
 	refWidthAt    cellStamp
 	collapsedAt   cellStamp
+}
+
+// extraColumnModel is implemented by a table model that supplies the data of columns of its own, whose IDs are
+// negative so that they can't be taken for one of a node type's own columns.
+type extraColumnModel[T gurps.Node[T]] interface {
+	// extraCellData fills in the data for the row's cell in the column with the given ID, reporting false, having
+	// changed nothing, when the column isn't one of the model's own.
+	extraCellData(columnID int, row T, data *gurps.CellData) bool
 }
 
 // Node represents a row in a table.
@@ -229,11 +311,12 @@ func (n *Node[T]) Children() []*Node[T] {
 	return n.children
 }
 
-// SetChildren implements unison.TableRowData.
+// SetChildren implements unison.TableRowData. The children that were this row's already keep their nodes, and with
+// them what they built for their cells, as when a sort reorders them; the rest get new ones beneath this row.
 func (n *Node[T]) SetChildren(children []*Node[T]) {
 	if n.data.Container() {
 		n.data.SetChildren(ExtractNodeDataFromList(children))
-		n.children = nil
+		n.children = nodesFor(n.table, n, n.data.NodeChildren(), n.children, n.forPage, n.reuse)
 	}
 }
 
@@ -252,20 +335,10 @@ func (n *Node[T]) currentCellStamp() cellStamp {
 // lossy and would tie rows whose real values differ. Searching asks both ways (see columnContains), so that a row is
 // found by the value the user sees as well as by the exact value. The data is derived from the model once per change
 // reported to the display and per sync (see cellStamp) rather than on every call, since deriving it can be costly and
-// the table asks for it several times per sync and once per draw.
+// the table asks for it several times per sync and once per draw. A column with a negative ID is first offered to the
+// table's model (see extraColumnModel).
 func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
-	c := n.cell(col)
-	forPage := n.forPage && forDisplay
-	data, at := &c.plain, &c.plainAt
-	if forPage {
-		data, at = &c.display, &c.displayAt
-	}
-	if stamp := n.currentCellStamp(); *at != stamp {
-		*data = gurps.CellData{ForPage: forPage}
-		n.data.CellData(n.table.Columns[col].ID, data)
-		*at = stamp
-	}
-	result := *data
+	result := n.currentCellData(col, forDisplay).data
 	// A row a filter shows only as context for a match beneath it is dimmed like a disabled row, so the matches stand
 	// out. Sorting and matching don't see the dimming, and it isn't kept, since the filter can change without a
 	// change being reported.
@@ -273,6 +346,36 @@ func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
 		result.Dim = true
 	}
 	return result
+}
+
+// currentCellData returns what the row keeps of the cell's data, deriving it from the model first when it is out of
+// date.
+func (n *Node[T]) currentCellData(col int, forDisplay bool) *keptCellData {
+	c := n.cell(col)
+	forPage := n.forPage && forDisplay
+	kept := &c.plain
+	if forPage {
+		kept = &c.display
+	}
+	if stamp := n.currentCellStamp(); kept.at != stamp {
+		previous, version := kept.data, kept.version
+		*kept = keptCellData{data: gurps.CellData{ForPage: forPage}}
+		if id := n.table.Columns[col].ID; id >= 0 || !n.extraCellData(id, &kept.data) {
+			n.data.CellData(id, &kept.data)
+		}
+		if !n.forPage && kept.data != previous {
+			version++
+		}
+		kept.version = version
+		kept.at = stamp
+	}
+	return kept
+}
+
+// extraCellData has the table's model fill in the data for the column with the given ID, reporting whether it did.
+func (n *Node[T]) extraCellData(columnID int, data *gurps.CellData) bool {
+	m, ok := n.table.Model.(extraColumnModel[T])
+	return ok && m.extraCellData(columnID, n.data, data)
 }
 
 // CellDataForSort implements unison.TableRowData.
@@ -299,17 +402,19 @@ func (n *Node[T]) CellDataForAccessibility(col int) string {
 // page list asks for the cells of the column that takes the excess width at up to four: the table is sized to its
 // preferred width, rounded up to whole pixels, before the layout gives it back its own, and the columns are sized
 // for each, before and after the page reference columns take their share of the excess (see sizePageTableColumns).
+//
+// Off a page, where a table may show far more rows than are ever in view, the panels are kept only while in recent use
+// (see cellPanelPool), and one built just to be measured not at all (see KeepCellSize).
 func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
 	data := n.cellData(col, true)
 	width := n.table.CellWidth(row, col)
-	// The notes disclosure button is part of the panel, so a panel built while the notes were closed can't serve
-	// once they are open, whether or not the data changed.
-	notesClosed := data.Type == cell.Text && data.Secondary != "" && gurps.IsClosed(n.noteKey())
+	notesClosed := n.notesClosed(&data)
 	selected = selected || indirectlySelected
 	c := n.cell(col)
 	if width <= 0 {
 		if c.unconstrained.Matches(width, &data, notesClosed) {
 			applyInkRecursively(c.unconstrained.Panel.AsPanel(), foreground, background, selected)
+			n.usedCellPanel(c.unconstrained)
 			return c.unconstrained.Panel
 		}
 		c.unconstrained = n.buildCell(&data, width, notesClosed, foreground, background, selected)
@@ -318,6 +423,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 	for _, cached := range c.fitted {
 		if cached.Matches(width, &data, notesClosed) {
 			applyInkRecursively(cached.Panel.AsPanel(), foreground, background, selected)
+			n.usedCellPanel(cached)
 			return cached.Panel
 		}
 	}
@@ -327,16 +433,109 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, se
 	return built.Panel
 }
 
+// notesClosed returns true if the cell showing the data has notes that are closed. The notes disclosure button is part
+// of the cell's panel, so a panel built while the notes were closed can't serve once they are open, whether or not the
+// data changed.
+func (n *Node[T]) notesClosed(data *gurps.CellData) bool {
+	return data.Type == cell.Text && data.Secondary != "" && gurps.IsClosed(n.noteKey())
+}
+
 // buildCell builds the panel for the cell from a copy of the data, which the panel keeps (see CellCache.Data).
 func (n *Node[T]) buildCell(data *gurps.CellData, width float32, notesClosed bool, foreground, background unison.Ink, selected bool) *CellCache {
 	kept := new(gurps.CellData)
 	*kept = *data
-	return &CellCache{
+	built := &CellCache{
 		Panel:       n.CellFromCellData(kept, width, foreground, background, selected),
 		Data:        kept,
 		Width:       width,
 		NotesClosed: notesClosed,
 		PanelStamp:  currentCellPanelStamp(),
+		unused:      true,
+	}
+	if !n.forPage && !cellMayResize(kept) {
+		cellPanelPoolFor(n.table).use(built)
+	}
+	return built
+}
+
+// usedCellPanel notes that the panel is in use, for the pool holding it, if any.
+func (n *Node[T]) usedCellPanel(c *CellCache) {
+	c.unused = false
+	if c.turn != 0 {
+		cellPanelPoolFor(n.table).use(c)
+	}
+}
+
+// cellMayResize returns true if the panel of a cell showing the data may change size once built, as the notes of one do
+// when an image they show arrives late. The size of such a cell isn't kept, and its panel always is.
+func cellMayResize(data *gurps.CellData) bool {
+	switch data.Type {
+	case cell.Markdown:
+		return markdownMayShowImage(data.Primary)
+	case cell.Text:
+		return markdownMayShowImage(data.Secondary)
+	default:
+		return false
+	}
+}
+
+// markdownMayShowImage returns true if the Markdown text holds what may be an image, in Markdown or in HTML.
+func markdownMayShowImage(text string) bool {
+	if strings.Contains(text, "![") {
+		return true
+	}
+	for {
+		i := strings.IndexByte(text, '<')
+		if i < 0 || len(text)-i < 4 {
+			return false
+		}
+		if strings.EqualFold(text[i+1:i+4], "img") {
+			return true
+		}
+		text = text[i+1:]
+	}
+}
+
+// KeptCellSize implements unison.TableRowCellSizes. The sizes of the cells of a row on a page aren't kept: its panels
+// are, which the table measures.
+func (n *Node[T]) KeptCellSize(_, col int, width float32) (size geom.Size, kept bool) {
+	if n.forPage {
+		return geom.Size{}, false
+	}
+	data := n.currentCellData(col, true)
+	return n.cell(col).sizes.kept(n.cellSizeBasis(data), width)
+}
+
+// KeepCellSize implements unison.TableRowCellSizes. The panel the table measured is let go if it was built for that,
+// since a table measures every row it shows but draws only those in view, which build theirs again.
+func (n *Node[T]) KeepCellSize(_, col int, width float32, size geom.Size) {
+	if n.forPage {
+		return
+	}
+	data := n.currentCellData(col, true)
+	if cellMayResize(&data.data) {
+		return
+	}
+	c := n.cell(col)
+	c.sizes.keep(n.cellSizeBasis(data), width, size)
+	if width <= 0 {
+		if c.unconstrained != nil && c.unconstrained.unused {
+			cellPanelPoolFor(n.table).release(c.unconstrained)
+			c.unconstrained = nil
+		}
+	} else if built := c.fitted[0]; built != nil && built.unused {
+		cellPanelPoolFor(n.table).release(built)
+		copy(c.fitted[:], c.fitted[1:])
+		c.fitted[len(c.fitted)-1] = nil
+	}
+}
+
+// cellSizeBasis returns what a size measured now for the cell holding the data is good for.
+func (n *Node[T]) cellSizeBasis(data *keptCellData) cellSizeBasis {
+	return cellSizeBasis{
+		panelStamp:  currentCellPanelStamp(),
+		version:     data.version,
+		notesClosed: n.notesClosed(&data.data),
 	}
 }
 
@@ -397,9 +596,14 @@ func (n *Node[T]) Data() T {
 
 // Match returns true if the text is present in the node. The text must already have been lowercased by the caller.
 func (n *Node[T]) Match(text string) bool {
+	return n.matchColumns(text, nil)
+}
+
+// matchColumns is Match leaving out the columns whose IDs skip, when given, returns true for.
+func (n *Node[T]) matchColumns(text string, skip func(columnID int) bool) bool {
 	if text != "" {
 		for i := range n.table.Columns {
-			if n.columnContains(i, text) {
+			if (skip == nil || !skip(n.table.Columns[i].ID)) && n.columnContains(i, text) {
 				return true
 			}
 		}
@@ -412,15 +616,19 @@ func (n *Node[T]) Match(text string) bool {
 // page as well as by the exact value behind it, which is what the cell's tooltip shows. Off a page the two are the
 // same, so the display rendering is not computed a second time.
 func (n *Node[T]) columnContains(col int, text string) bool {
-	data := n.cellData(col, false)
-	if strings.Contains(strings.ToLower(data.ForSort()), text) {
-		return true
+	return strings.Contains(n.searchText(col, false), text) ||
+		(n.forPage && strings.Contains(n.searchText(col, true), text))
+}
+
+// searchText returns the lowercased text a search looks in for the cell. It is kept with the data it is made from,
+// since lowercasing every cell of a long list is most of what each character typed into the list's filter would cost.
+func (n *Node[T]) searchText(col int, forDisplay bool) string {
+	kept := n.currentCellData(col, forDisplay)
+	if !kept.searched {
+		kept.search = strings.ToLower(kept.data.ForSort())
+		kept.searched = true
 	}
-	if !n.forPage {
-		return false
-	}
-	data = n.cellData(col, true)
-	return strings.Contains(strings.ToLower(data.ForSort()), text)
+	return kept.search
 }
 
 // CellFromCellData creates a new panel for the given cell data.
@@ -634,13 +842,17 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		}
 	}
 	if tooltip := labelCellTooltip(c); tooltip != "" {
-		var workingDir string
-		if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
-			if wdStr, ok2 := wd.(string); ok2 {
-				workingDir = wdStr
+		if c.PlainTooltip {
+			p.Tooltip = newWrappedTooltip(tooltip)
+		} else {
+			var workingDir string
+			if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
+				if wdStr, ok2 := wd.(string); ok2 {
+					workingDir = wdStr
+				}
 			}
+			p.Tooltip = newMarkdownTooltip(tooltip, workingDir)
 		}
-		p.Tooltip = newMarkdownTooltip(tooltip, workingDir)
 	}
 	return p
 }

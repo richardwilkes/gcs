@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -260,6 +261,29 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.CheckOpened("loot sheet", func() { newLootSheetAction.Execute(nil) })
 	audit.CheckOpened("traits library", func() { newTraitsLibraryAction.Execute(nil) })
 	audit.CheckOpened("equipment library", func() { newEquipmentLibraryAction.Execute(nil) })
+	// The library filter is checked with a row, so that the cells of its File column are described too.
+	isolateLibraryFilterSettings(t)
+	c.NoError(gurps.SaveSkills([]*gurps.Skill{newTestSkill("Audit Library Skill", fxp.One, nil)},
+		filepath.Join(gurps.GlobalSettings().Libraries.User().Path(true), "Audit"+gurps.SkillsExt)))
+	var navigator *Navigator
+	screen.Do(func() { navigator = Workspace.Navigator })
+	reloadNavigator(t, screen, navigator)
+	if d, isOne := audit.Open(func() { openLibraryFilter(librarySkillsKey, nil, false) }).(*LibraryFilterDockable); isOne {
+		t.Cleanup(d.waitForLoads)
+		awaitLibraryFilter(t, screen, "the library filter's rows", func() bool {
+			return d.content.hasInstalled() && skillLibraryFilterContent(t, d).table.LastRowIndex() == 0
+		})
+		audit.Check("library filter", d)
+	} else {
+		t.Error("the library filter did not open")
+	}
+	// The source set editor is checked with an entry that can't be found, so that its heading is described too.
+	checkDialog("source set editor", func() {
+		key := librarySkillsKey
+		showLibrarySourceSetDialog("Audit", &key, &gurps.LibrarySourceSet{Entries: []gurps.LibraryFile{
+			{Library: gurps.GlobalSettings().Libraries.User().Key(), Path: "Gone"},
+		}}, nil)
+	})
 	audit.CheckOpened("markdown file", func() { newMarkdownFileAction.Execute(nil) })
 	audit.CheckOpened("user guide", func() { showUserGuide(userguide.HomePage, "") })
 

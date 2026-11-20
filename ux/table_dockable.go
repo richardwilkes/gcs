@@ -11,7 +11,7 @@ package ux
 
 import (
 	"hash"
-	"strings"
+	"maps"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -40,23 +42,16 @@ var (
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
 type TableDockable[T gurps.Node[T]] struct {
 	fileBackedPanel
-	undoMgr          *unison.UndoManager
-	provider         TableProvider[T]
-	hierarchyButton  *unison.Button
-	noteToggleButton *unison.Button
-	filterField      *unison.Field
-	filterBanner     *filterBanner
-	savedFilters     *listFilterPopup
-	selectedFilter   *gurps.ListFilter
-	tagFilter        *listTagFilterPopup
-	scroll           *unison.ScrollPanel
-	tableHeader      *unison.TableHeader[*Node[T]]
-	table            *unison.Table[*Node[T]]
-	lockButton       *unison.Button
-	lockButtonGroup  *unison.Group
-	scaleField       *PercentageField
-	scale            int
-	locked           bool
+	listFilterControls[T]
+	undoMgr         *unison.UndoManager
+	filterBanner    *filterBanner
+	scroll          *unison.ScrollPanel
+	tableHeader     *unison.TableHeader[*Node[T]]
+	lockButton      *unison.Button
+	lockButtonGroup *unison.Group
+	scaleField      *PercentageField
+	scale           int
+	locked          bool
 	// lockedUndoMgr records the scale changes made while the list is locked, and scaleAtLock is the scale field's state
 	// when it was locked (see applyLocked).
 	lockedUndoMgr *unison.UndoManager
@@ -68,35 +63,19 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
 		undoMgr:      unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
-		provider:     provider,
 		filterBanner: newFilterBanner(),
 		scroll:       unison.NewScrollPanel(),
 		tableHeader:  header,
-		table:        table,
 		scale:        gurps.GlobalSettings().General.InitialListUIScale,
 	}
+	d.initListFilterControls(table, provider, nil, func(filtered bool, _ int) { d.showFilterBanner(filtered) })
 	d.Self = d
 	d.initFileEditor(d, filePath, extension, saver, d)
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.table.SyncToModel()
 	d.table.SizeColumnsToFit(true)
-	if columnSizing, ok := gurps.GlobalSettings().ColumnSizing[filePath]; ok {
-		needSync := false
-		for id, width := range columnSizing {
-			if id != -1 {
-				if i := d.table.ColumnIndexForID(id); i != -1 {
-					if d.table.Columns[i].Current != width {
-						d.table.Columns[i].Current = width
-						needSync = true
-					}
-				}
-			}
-		}
-		if needSync {
-			d.table.SyncToModel()
-		}
-	}
+	applySavedColumnWidths(d.table, filePath)
 
 	InstallTableDropSupport(d.table, d.provider)
 
@@ -159,23 +138,9 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
-	// The hierarchy and note buttons are kept so they can be disabled while a filter is applied (see toggleHierarchy
-	// and toggleNotes).
-	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
-	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
-	d.hierarchyButton.ClickCallback = d.toggleHierarchy
-
-	d.noteToggleButton = unison.NewSVGButton(svg.NotesToggle)
-	d.noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
-	d.noteToggleButton.ClickCallback = d.toggleNotes
-
 	sizeToFitButton := unison.NewSVGButton(svg.SizeToFit)
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
-
-	// The quick filter is always in play: what is typed here narrows what the saved filter and the chosen tags let
-	// through when either is in force, and is all that filters the list otherwise.
-	d.filterField = NewToolbarSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
 
 	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -184,37 +149,8 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.lockButton, d.lockButtonGroup = newLatchingButton(svg.Lock, i18n.Text("Lock against changes"), d.toggleLocked)
 	setLatched(d.lockButton, d.lockButtonGroup, d.locked)
 	toolbar.AddChild(d.lockButton)
-	toolbar.AddChild(d.hierarchyButton)
-	toolbar.AddChild(d.noteToggleButton)
-	toolbar.AddChild(sizeToFitButton)
-	toolbar.AddChild(d.filterField)
-	// The weapon and conditional modifier providers have no filter key, since their lists are never shown in a list
-	// dockable, so they get no saved filter popup.
-	if key := d.provider.FilterKey(); key != "" {
-		d.savedFilters = newListFilterPopup(listFilterPopupSpec{
-			key:     key,
-			fields:  filterFieldInfos(d.provider.FilterFields(), func() []T { return d.provider.RootData() }),
-			current: func() *gurps.ListFilter { return d.selectedFilter },
-			choose:  d.chooseFilter,
-		})
-		d.tagFilter = newListTagFilterPopup(listTagFilterPopupSpec{
-			tags: func() []string {
-				return gurps.ListFilterTags(d.selectedFilter, d.provider.FilterFields(), d.provider.RootData())
-			},
-			changed: func() { d.applyFilter() },
-			save:    d.saveTagFilter,
-		})
-		toolbar.AddChild(d.tagFilter.popup)
-		toolbar.AddChild(d.savedFilters.popup)
-	}
-	layout := FinishToolbarLayout(toolbar)
-	if d.savedFilters != nil {
-		toolbar.SetLayout(&compactingToolbarLayout{
-			FlexLayout: layout,
-			buttons:    []*filterPopupButton{d.tagFilter.button, d.savedFilters.button},
-			changed:    d.savedFilters.syncTooltip,
-		})
-	}
+	d.addListFilterControls(toolbar, sizeToFitButton)
+	d.finishListFilterToolbar(toolbar, nil, nil)
 	return toolbar
 }
 
@@ -299,60 +235,10 @@ func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
 // can be opened again with the same ones.
 func (d *TableDockable[T]) AttemptClose() bool {
 	if AttemptSaveForDockable(d) {
-		d.preserveColumns()
+		saveColumnWidths(d.table, d.BackingFilePath())
 		return AttemptCloseForDockable(d)
 	}
 	return false
-}
-
-func (d *TableDockable[T]) preserveColumns() {
-	m := make(map[int]float32, len(d.table.Columns))
-	m[-1] = gurps.ToColumnCutoff(time.Now().Unix())
-	for _, col := range d.table.Columns {
-		m[col.ID] = col.Current
-	}
-	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
-}
-
-// FirstDisclosureState implements hierarchyDiscloser.
-func (d *TableDockable[T]) FirstDisclosureState() (open, exists bool) {
-	return firstTableDisclosureState(d.table)
-}
-
-// SetDisclosureState implements hierarchyDiscloser.
-func (d *TableDockable[T]) SetDisclosureState(open bool) {
-	setTableDisclosureState(d.table, open)
-}
-
-// FirstNoteState implements noteDiscloser.
-func (d *TableDockable[T]) FirstNoteState() int {
-	return firstTableNoteState(d.table)
-}
-
-// ApplyNoteState implements noteDiscloser.
-func (d *TableDockable[T]) ApplyNoteState(closed bool) {
-	applyTableNoteState(d.table, closed)
-}
-
-// toggleHierarchy opens or closes every container in the table. It does nothing while a filter is applied, when its
-// button is disabled: the filtered view shows every container it keeps as open whatever its own open state, so the
-// toggle would have nothing to show for it until the filter was cleared.
-func (d *TableDockable[T]) toggleHierarchy() {
-	if d.table.IsFiltered() {
-		return
-	}
-	toggleHierarchy(d)
-}
-
-// toggleNotes shows or hides every note in the table. It is gated on the filter the same way toggleHierarchy is, since
-// it would reach the notes of the rows the filter is hiding as well as those in view.
-func (d *TableDockable[T]) toggleNotes() {
-	if d.table.IsFiltered() {
-		return
-	}
-	if toggleNotes(d) {
-		d.table.SyncToModel()
-	}
 }
 
 func (d *TableDockable[T]) sizeToFit() {
@@ -362,49 +248,81 @@ func (d *TableDockable[T]) sizeToFit() {
 
 // Rebuild implements Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
-	invalidateDisplayData()
-	gurps.DiscardGlobalResolveCache()
-	h, v := d.scroll.Position()
-	sel := d.table.CopySelectionMap()
-	d.dropUnofferedTags()
-	// The filter stays in force across a rebuild, and applying it syncs the table itself, so sync here only when it
-	// didn't. Syncing first regardless would measure every row of the stale filtered set only to throw that away.
-	if !d.applyFilter() {
-		d.table.SyncToModel()
-	}
-	d.table.SetSelectionMap(sel)
+	d.rebuildKeepingView(d.scroll)
 	UpdateTitleForDockable(d)
-	d.scroll.SetPosition(h, v)
 }
 
-// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A library list has no entity of its own and shows what
-// the default sheet settings call for, such as the default attribute names, so only a change to those -- reported with
-// a nil entity -- concerns it, and a change to the default block layout or body type, neither of which it has any part
-// in, does not. A change that can't alter the columns or the rows, reported without a full rebuild, leaves the rows in
-// place: each cell derives its data afresh once the change has been reported and keeps its panel when that data is
-// unchanged (see Node.ColumnCell), so only the row heights have to be settled again. A library list builds its rows
-// anew on every sync (see rowReuse), so syncing it for such a change would build every cell anew, which a keystroke in
-// the global sheet settings would then cost for every open list. A filter in force is applied over again, since what
-// it keeps can turn on the settings, as a weight does on the default units.
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder.
 func (d *TableDockable[T]) SheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts,
 	fullRebuild bool,
+) {
+	listSheetSettingsUpdated(d.table, d.Rebuild, entity, parts, fullRebuild)
+}
+
+// listSheetSettingsUpdated brings a library list's table in line with a change to the sheet settings, calling rebuild
+// when its rows have to be built anew. A library list has no entity of its own and shows what the default sheet
+// settings call for, such as the default attribute names, so only a change to those -- reported with a nil entity --
+// concerns it, and a change to the default block layout or body type, neither of which it has any part in, does not. A
+// change that can't alter the columns or the rows, reported without a full rebuild, leaves the rows in place: each cell
+// derives its data afresh once the change has been reported and keeps its panel when that data is unchanged (see
+// Node.ColumnCell), so only the row heights have to be settled again. A library list builds its rows anew on every
+// sync (see rowReuse), so syncing it for such a change would build every cell anew, which a keystroke in the global
+// sheet settings would then cost for every open list. A filter in force is applied over again, since what it keeps can
+// turn on the settings, as a weight does on the default units.
+func listSheetSettingsUpdated[T gurps.Node[T]](table *unison.Table[*Node[T]], rebuild func(full bool),
+	entity *gurps.Entity, parts gurps.SheetSettingsParts, fullRebuild bool,
 ) {
 	if entity != nil || parts&(gurps.SheetSettingsGeneralPart|gurps.SheetSettingsAttributesPart) == 0 {
 		return
 	}
-	if fullRebuild || d.table.IsFiltered() {
-		d.Rebuild(fullRebuild)
+	if fullRebuild || table.IsFiltered() {
+		rebuild(fullRebuild)
 		return
 	}
 	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
-	d.table.SyncRowHeights()
-	_, pref, _ := d.table.Sizes(geom.Size{})
-	rect := d.table.FrameRect()
+	table.SyncRowHeights()
+	_, pref, _ := table.Sizes(geom.Size{})
+	rect := table.FrameRect()
 	rect.Size = pref
-	d.table.SetFrameRect(rect)
-	d.table.MarkForLayoutRecursivelyUpward()
-	d.table.MarkForRedraw()
+	table.SetFrameRect(rect)
+	table.MarkForLayoutRecursivelyUpward()
+	table.MarkForRedraw()
+}
+
+// applySavedColumnWidths gives the table's columns the widths saved for the key by saveColumnWidths, syncing the table
+// when that changes any of them, and reports whether there were saved widths.
+func applySavedColumnWidths[T gurps.Node[T]](table *unison.Table[*Node[T]], key string) bool {
+	columnSizing, ok := gurps.GlobalSettings().ColumnSizing[key]
+	if !ok {
+		return false
+	}
+	needSync := false
+	for id, width := range columnSizing {
+		if id != -1 {
+			if i := table.ColumnIndexForID(id); i != -1 {
+				if table.Columns[i].Current != width {
+					table.Columns[i].Current = width
+					needSync = true
+				}
+			}
+		}
+	}
+	if needSync {
+		table.SyncToModel()
+	}
+	return true
+}
+
+// saveColumnWidths saves the widths of the table's columns under the key, along with the time they were saved, which
+// takes the slot of column ID -1.
+func saveColumnWidths[T gurps.Node[T]](table *unison.Table[*Node[T]], key string) {
+	m := make(map[int]float32, len(table.Columns))
+	m[-1] = gurps.ToColumnCutoff(time.Now().Unix())
+	for _, col := range table.Columns {
+		m[col.ID] = col.Current
+	}
+	gurps.GlobalSettings().ColumnSizing[key] = m
 }
 
 // Hash writes this object's contents into the hasher.
@@ -417,80 +335,52 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	gurps.HashJSON(h, data)
 }
 
-// chooseFilter puts the given saved filter in force, or drops the current one when f is nil. The quick filter's text is
-// left alone, since it narrows the list on top of the saved filter. The chosen tags are dropped when another saved
-// filter is chosen, and otherwise kept as long as the filter still offers them.
-func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
-	if d.tagFilter != nil && f != d.selectedFilter {
-		d.tagFilter.clear()
-	}
-	d.selectedFilter = f
-	d.dropUnofferedTags()
-	d.applyFilter()
-}
-
-// dropUnofferedTags drops the chosen tags the list no longer offers. With no tag chosen there is nothing to drop, and
-// the tag filter gathers the tags afresh when its menu is opened, so the list isn't gathered from here for nothing.
-func (d *TableDockable[T]) dropUnofferedTags() {
-	if d.tagFilter != nil && len(d.tagFilter.selected) != 0 {
-		d.tagFilter.rebuildItems()
-	}
-}
-
-// saveTagFilter puts up the editor for a new saved filter that requires what the saved filter in force does and the
-// chosen tags as well.
-func (d *TableDockable[T]) saveTagFilter() {
-	d.savedFilters.newFilter(gurps.NewCombinedListFilter(d.selectedFilter, d.tagFilter.chosenTags()))
-}
-
-// listFiltersChanged implements listFilterObserver.
-func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopup) {
-	if d.savedFilters != nil && d.savedFilters != source && d.savedFilters.spec.key == key {
-		d.savedFilters.refresh()
-	}
-}
-
-// applyFilter applies the saved filter in force, requiring the chosen tags as well, and the quick filter's text
-// together, showing a row only when it passes both, and reports whether the table was synced to its model, which
-// unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. The hierarchy is kept so
-// a matching row is seen beneath the containers that hold it; a container shown only for that reason is dimmed (see
-// Node.cellData).
-func (d *TableDockable[T]) applyFilter() (synced bool) {
-	if d.filterField == nil {
+// selectRowsByID selects exactly the rows with the given IDs that the list holds, opening the containers above them,
+// and scrolls the first of them into view, returning how many it found. A filter that hides any of them is cleared
+// first (the quick filter's text, the chosen tags and the saved filter).
+func (d *TableDockable[T]) selectRowsByID(ids map[tid.TID]bool) int {
+	sel := make(map[tid.TID]bool)
+	opened := false
+	gurps.Traverse(func(one T) bool {
+		if id := one.ID(); ids[id] {
+			sel[id] = true
+			for parent := one.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
+				if !parent.IsOpen() {
+					// The open state is kept in the settings rather than in the list, so this doesn't modify the list.
+					parent.SetOpen(true)
+					opened = true
+				}
+			}
+		}
 		return false
+	}, false, false, d.provider.RootData()...)
+	if len(sel) == 0 {
+		d.table.ClearSelection()
+		return 0
 	}
-	// The table's filter is told which rows to drop, so each of these rejects the rows that fail its filter.
-	var saved, quick func(row *Node[T]) bool
-	var tags []string
-	if d.tagFilter != nil {
-		tags = d.tagFilter.chosenTags()
-	}
-	if d.selectedFilter != nil || len(tags) != 0 {
-		// The fields are looked up once here rather than once per row.
-		m := gurps.NewListFilterMatcher(gurps.NewCombinedListFilter(d.selectedFilter, tags), d.provider.FilterFields())
-		saved = func(row *Node[T]) bool { return !m(row.Data()) }
-	}
-	if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
-		// Match looks at every column, the tags column included.
-		quick = func(row *Node[T]) bool { return !row.Match(text) }
-	}
-	var f func(row *Node[T]) bool
 	switch {
-	case saved != nil && quick != nil:
-		f = func(row *Node[T]) bool { return saved(row) || quick(row) }
-	case saved != nil:
-		f = saved
-	case quick != nil:
-		f = quick
-	case !d.table.IsFiltered():
-		return false
+	case d.table.IsFiltered():
+		// A filter shows every container it keeps as open, so the containers just opened change nothing it shows. Its
+		// context rows count as shown.
+		hidden := maps.Clone(sel)
+		for i := range d.table.LastRowIndex() + 1 {
+			delete(hidden, d.table.RowFromIndex(i).ID())
+		}
+		if len(hidden) != 0 {
+			d.clearFilters() // Clearing the filter syncs the table.
+		}
+	case opened:
+		d.table.SyncToModel()
 	}
-	d.table.ApplyHierarchicalFilter(f)
-	filtered := d.table.IsFiltered()
-	d.hierarchyButton.SetEnabled(!filtered)
-	d.noteToggleButton.SetEnabled(!filtered)
-	d.showFilterBanner(filtered)
-	return true
+	d.table.SetSelectionMap(sel)
+	if row := d.table.FirstSelectedRowIndex(); row != -1 {
+		// Opening containers only invalidated the layout, so without this the scroll range would still end where the
+		// table used to.
+		d.table.ValidateScrollRoot()
+		d.table.RequestFocus()
+		d.table.ScrollRowIntoView(row)
+	}
+	return len(sel)
 }
 
 // showFilterBanner puts the banner between the toolbar and the table, or takes it away again, and has the dockable

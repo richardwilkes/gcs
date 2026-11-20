@@ -102,6 +102,9 @@ type CellData struct {
 	UnresolvedChoice string
 	// ChoiceRequired is true for a mandatory modifier choice on a sheet that has yet to be made.
 	ChoiceRequired bool
+	// PlainTooltip is true when Tooltip is plain text rather than Markdown, which takes far less time to build a
+	// tooltip for. It is set only where nothing else adds to the tooltip.
+	PlainTooltip bool
 	// GrantedBy says which grant put the node on the sheet, and is empty for a node no grant put there.
 	GrantedBy string
 	// Grants says what the grants the node carries did, and is empty for a node that carries none.

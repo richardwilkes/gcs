@@ -49,6 +49,7 @@
   - [Export Templates](Export%20Templates)
 - **Advanced Tools**
   - [Calculators](Calculator)
+  - [Library Filter](Library%20Filter)
   - [Loot Sheets](Loot%20Sheets)
   - [Page References](Page%20References)
   - [Saved Filters](Saved%20Filters)

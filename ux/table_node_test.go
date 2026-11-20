@@ -822,12 +822,13 @@ func newCellCacheTestSheet(t *testing.T, c check.Checker, name string) (*gurps.T
 
 // TestNodeKeepsCellDataUntilAChangeIsReported verifies that a row derives its cell data once per reported change
 // rather than on every call, which is what spares a draw or a sizing pass the cost of the model, and that reporting a
-// change is all it takes for the next call to show it.
+// change is all it takes for the next call to show it, and for a search to look in it.
 func TestNodeKeepsCellDataUntilAChangeIsReported(t *testing.T) {
 	c := check.New(t)
 	trait, row, col := newCellCacheTestSheet(t, c, "Before")
 	before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
 	c.True(slices.Contains(uxtest.LabelTexts(before), "Before"), "the cell must show the trait's name")
+	c.True(row.Match("before"), "a search must find the trait by its name")
 
 	trait.Name = "After"
 	again := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
@@ -838,6 +839,73 @@ func TestNodeKeepsCellDataUntilAChangeIsReported(t *testing.T) {
 	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
 	c.True(after != before, "once a change is reported, the cell must be built afresh")
 	c.True(slices.Contains(uxtest.LabelTexts(after), "After"), "and must show the new name")
+	c.True(row.Match("after"), "a search must find the trait by its new name")
+	c.False(row.Match("before"), "and no longer by the name it had")
+}
+
+// TestNodeOffAPageKeepsCellSizesNotTheirPanels verifies that a row of a list, which may be one of tens of thousands the
+// table measures while drawing few, keeps the size the table measured for a cell rather than the panel built to be
+// measured, that a panel asked for again, as one being drawn is, is kept, that nothing is kept of a size once what the
+// cell shows, whether its notes are closed or the fonts have changed, nor of one that an image arriving late may change,
+// and that a row on a page keeps its panels as before, and no sizes.
+func TestNodeOffAPageKeepsCellSizesNotTheirPanels(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	row := d.table.RowFromIndex(0)
+	col := d.table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+	width := d.table.CellWidth(0, col)
+	c.True(width > 0, "the cell must have a width to fit")
+	size, kept := row.KeptCellSize(0, col, width)
+	c.True(kept, "the size the table measured must be kept")
+	c.True(row.cells[col].unconstrained == nil && row.cells[col].fitted[0] == nil,
+		"the panels built to be measured must not be kept")
+	panel := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false)
+	_, pref, _ := panel.AsPanel().Sizes(geom.NewSize(width, 0))
+	c.Equal(pref, size, "the size kept must be the one the cell's panel has")
+	c.True(row.ColumnCell(0, col, unison.Black, unison.White, false, false, false) == panel,
+		"a panel asked for again must be kept")
+
+	key := row.noteKey()
+	t.Cleanup(func() { gurps.SetClosedState(key, false) })
+	trait := row.Data()
+	for _, one := range []struct {
+		change func()
+		name   string
+		stays  bool
+	}{
+		{name: "a report that changed nothing", change: invalidateDisplayData, stays: true},
+		{name: "a note", change: func() {
+			trait.LocalNotes = "A note"
+			invalidateDisplayData()
+		}},
+		{name: "closing the note", change: func() { gurps.SetClosedState(key, true) }},
+		{name: "a change of fonts", change: invalidateCellPanels},
+	} {
+		row.KeepCellSize(0, col, width, size)
+		_, kept = row.KeptCellSize(0, col, width)
+		c.True(kept, "the size must be kept until %s", one.name)
+		one.change()
+		_, kept = row.KeptCellSize(0, col, width)
+		c.Equal(one.stays, kept, "whether the size is kept after %s", one.name)
+	}
+
+	trait.LocalNotes = "![late](late.png)"
+	invalidateDisplayData()
+	gurps.SetClosedState(key, false)
+	row.KeepCellSize(0, col, width, size)
+	_, kept = row.KeptCellSize(0, col, width)
+	c.False(kept, "the size of a cell whose notes may show an image must not be kept")
+
+	_, pageRow, pageCol := newCellCacheTestSheet(t, c, "Trait")
+	pageCell := &pageRow.cells[pageCol]
+	pageWidth := pageRow.table.CellWidth(0, pageCol)
+	measured := pageCell.unconstrained
+	if pageWidth > 0 {
+		measured = pageCell.fitted[0]
+	}
+	c.True(measured != nil && measured.Panel != nil, "a row on a page must keep the panel built to measure its cell")
+	_, kept = pageRow.KeptCellSize(0, pageCol, pageWidth)
+	c.False(kept, "and must keep no size for it")
 }
 
 // TestCellKeepsPanelsForFourWidths verifies that a cell keeps the panels built for four widths, since a sync of a page
@@ -1162,6 +1230,32 @@ func TestMovedRowGetsANewNodeWithTheRightParent(t *testing.T) {
 	c.Equal(0, len(rowA.Children()), "A's row must no longer hold the child")
 }
 
+// TestNodeSetChildrenKeepsNodesOfChildrenThatStay verifies that a row given its children in another order, as a sort
+// gives them, keeps their nodes, and with them the panels built for their cells, while a child from elsewhere gets a
+// node of its own beneath the row.
+func TestNodeSetChildrenKeepsNodesOfChildrenThatStay(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	box := newTestContainer("Box", true)
+	second := gurps.NewTrait(nil, box, false)
+	second.Name = "Second"
+	box.Children = append(box.Children, second)
+	outsider := gurps.NewTrait(nil, nil, false)
+	outsider.Name = "Outsider"
+	dockable := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{box, outsider})
+	roots := dockable.table.RootRows()
+	boxRow, outsiderRow := roots[0], roots[1]
+	kids := slices.Clone(boxRow.Children())
+	c.Equal(2, len(kids), "the container must start out with two children")
+
+	boxRow.SetChildren([]*Node[*gurps.Trait]{outsiderRow, kids[1], kids[0]})
+	now := boxRow.Children()
+	c.Equal(3, len(now))
+	c.True(now[1] == kids[1] && now[2] == kids[0], "the children that stayed must keep their nodes, in the new order")
+	c.True(now[0] != outsiderRow && now[0].Data() == outsider && now[0].Parent() == boxRow,
+		"the child from elsewhere must get a node of its own beneath the row")
+}
+
 // TestNodeSetOpenLeavesSyncToCaller verifies that setting a row's open state only records it: the table shows the same
 // rows until the caller syncs it. Every caller syncs once after setting every row it means to, so a sync from SetOpen
 // itself would rebuild the table once per container, which made toggling the hierarchy of a large list take seconds.
@@ -1375,6 +1469,51 @@ func TestEquipmentRowsMatchDisplayedAndExactText(t *testing.T) {
 	node, _ = newEquipmentTable(t, false)
 	c.False(node.Match(roundedWeightText), "off the page, there is no rounded rendering to match")
 	c.True(node.Match("7.5127"), "off the page, the exact weight still matches")
+}
+
+// extraColumnTestID is the ID of the column extraColumnTestProvider supplies.
+const extraColumnTestID = -2
+
+// extraColumnTestProvider is a trait provider with a column of its own, which names the library each trait is from.
+type extraColumnTestProvider struct {
+	TableProvider[*gurps.Trait]
+}
+
+var _ extraColumnModel[*gurps.Trait] = &extraColumnTestProvider{}
+
+func (p *extraColumnTestProvider) extraCellData(columnID int, row *gurps.Trait, data *gurps.CellData) bool {
+	if columnID != extraColumnTestID {
+		return false
+	}
+	data.Primary = "Library of " + row.Name
+	return true
+}
+
+// TestNodeTakesExtraColumnsFromTheModel verifies that the data of a column with a negative ID comes from a table model
+// that supplies it (see extraColumnModel), for display and sorting alike, that a negative ID the model declines, such as
+// gurps.PageRefCellAlias, still goes to the row's own data, and that matchColumns leaves out the columns it is told to
+// skip, while Match searches them all.
+func TestNodeTakesExtraColumnsFromTheModel(t *testing.T) {
+	c := check.New(t)
+	trait := newFilterTestTrait("Alertness")
+	trait.PageRef = "B34"
+	list := &traitListProvider{}
+	list.SetTraitList([]*gurps.Trait{trait})
+	table := newProviderTable[*gurps.Trait](&extraColumnTestProvider{TableProvider: NewTraitsProvider(list, false)})
+	ids := []int{gurps.TraitDescriptionColumn, gurps.PageRefCellAlias, extraColumnTestID}
+	table.Columns = make([]unison.ColumnInfo, len(ids))
+	for i, id := range ids {
+		table.Columns[i].ID = id
+	}
+	row := table.RootRows()[0]
+
+	c.Equal("Library of Alertness", row.cellData(2, true).Primary, "the model supplies the data of its own column")
+	c.Equal("Library of Alertness", row.CellDataForSort(2), "and the rows sort by it")
+	c.Equal("B34", row.cellData(1, true).Primary, "a negative ID the model declines goes to the row's own data")
+	c.True(row.Match("library"), "Match searches the model's column too")
+	skip := func(columnID int) bool { return columnID == extraColumnTestID }
+	c.False(row.matchColumns("library", skip), "a skipped column is left out of the search")
+	c.True(row.matchColumns("alert", skip), "the columns not skipped are still searched")
 }
 
 // TestInsertItemsSyncsTheSheetOnlyOnce verifies that inserting items into a sheet's list, an edit that used to report

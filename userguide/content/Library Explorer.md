@@ -23,6 +23,9 @@ To open a file:
 
 - Double-click it. The file opens in the **Document Workspace** as its own tab.
 
+To search the items of many lists at once, select the files, folders, or libraries, right-click, and select **Open in
+Library Filter**. See [Library Filter](Library%20Filter).
+
 ## Favorites
 
 If you use a file or folder often, mark it as a **Favorite** so it's always at the top of the Library Explorer.
@@ -83,14 +86,14 @@ and to lock it against changes:
 
 <img src="images/screenshots/toolbar-library.png" alt="Library list toolbar" width="1158">
 
-| Button                                               | Name                                                  | Description                                                                                                                   |
-|:-----------------------------------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| 100%                                                 | **Scale**                                             | Change the display size of the list.                                                                                          |
+| Button                                           | Name                                                  | Description                                                                                                                   |
+|:-------------------------------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| 100%                                             | **Scale**                                             | Change the display size of the list.                                                                                          |
 | ![lock](images/icons/lock.svg)                   | **Lock against changes**                              | Lock the list so that nothing changes it until you select the button again. See **Locking a list** below.                     |
 | ![toggle expansion](images/icons/expand.svg)     | **Opens/closes all hierarchical rows**                | Show or hide all items within containers at once.                                                                             |
 | ![toggle notes](images/icons/openCloseNotes.svg) | **Opens/closes all embedded notes**                   | Show or hide all embedded notes.                                                                                              |
 | ![size to fit](images/icons/sizeToFit.svg)       | **Sets the width of each column to fit its contents** | Resize every column to fit what it holds.                                                                                     |
-| N/A                                                  | **Quick Filter**                                      | Type to show only the rows whose text, in any column including the tags, contains what you type.                              |
+| N/A                                              | **Quick Filter**                                      | Type to show only the rows whose text, in any column including the tags, contains what you type.                              |
 | **Any Tag** ![tag](images/icons/tag.svg)         | **Tag Filter**                                        | Show only the items carrying the chosen [tags](Tags). Shift-click, or `Ctrl`-click (`Cmd`-click on macOS), to choose several. |
 | **No Filter** ![filter](images/icons/filter.svg) | **Saved Filters**                                     | Choose a [saved filter](Saved%20Filters) to narrow the list by any of its fields, or create, edit, and delete saved filters.  |
 
@@ -181,10 +184,10 @@ The toolbar above the Library Explorer gives you quick access to common actions 
 
 <img src="images/screenshots/toolbar-libraryExplorer.png" alt="Library Explorer toolbar" width="428">
 
-| Button                                              | Name                                   | Description                                                                                                                |
-|-----------------------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| Button                                          | Name                                   | Description                                                                                                                |
+|-------------------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | ![Help](images/icons/help.svg)                  | **Help**                               | Open this page from the User Guide.                                                                                        |
-| 100%                                                | **Scale**                              | Change the text size in the Library Explorer.                                                                              |
+| 100%                                            | **Scale**                              | Change the text size in the Library Explorer.                                                                              |
 | ![toggle expansion](images/icons/expand.svg)    | **Opens/closes all hierarchical rows** | Show or hide all folders at once.                                                                                          |
 | ![Add library](images/icons/add.svg)            | **Add Library**                        | Add a library from a folder on your computer or a GitHub repository.                                                       |
 | ![Update](images/icons/download.svg)            | **Update**                             | Replace the selected library with its latest release.                                                                      |
@@ -195,14 +198,14 @@ The toolbar above the Library Explorer gives you quick access to common actions 
 | ![Delete](images/icons/delete.svg)              | **Delete**                             | Permanently delete the selected files or folders from your computer, or remove an added library from the list.             |
 | ![Favorite](images/icons/favorite.svg)          | **Toggle Favorite**                    | Add or remove the selected files and folders from Favorites.                                                               |
 | ![Software update](images/icons/download.svg)   | **Software Update Available**          | Appears only when a new version of GCS is available. See [Installing and Updating GCS](Installing%20and%20Updating%20GCS). |
-| N/A                                                 | **Search**                             | Find files by name, or by their contents with **Deep search** turned on.                                                   |
+| N/A                                             | **Search**                             | Find files by name, or by their contents with **Deep search** turned on.                                                   |
 
 ## File types
 
 Each file type in GCS has its own extension and icon. Here’s what you’ll see in the Library Explorer:
 
-| File type               | Icon                                                              | Extension(s)                                    | Description                                                                                                                                          |
-|-------------------------|-------------------------------------------------------------------|-------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| File type               | Icon                                                          | Extension(s)                                    | Description                                                                                                                                          |
+|-------------------------|---------------------------------------------------------------|-------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Character Sheet**     | ![Character Sheet](images/icons/gcsSheet.svg)                 | `.gcs`                                          | Complete characters you build and play. See [Character Sheet Overview](Character%20Sheet%20Overview).                                                |
 | **Character Template**  | ![Template](images/icons/gcsTemplate.svg)                     | `.gct`                                          | Templates you can reuse for new characters. See [Character templates](Character%20Templates).                                                        |
 | **Loot Sheet**          | ![loot](images/icons/loot.svg)                                | `.loot`                                         | Lists to track [Loot](Loot%20Sheets) obtained during play.                                                                                           |

@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"maps"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 )
@@ -79,7 +81,7 @@ func visibleTraitNames(d *TableDockable[*gurps.Trait]) []string {
 }
 
 // TestTableDockableRebuildKeepsFilter verifies that a rebuild puts the rows it produced back through the filter, rather
-// than showing everything again.
+// than showing everything again, and measures the rows the filter shows again.
 func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	c := check.New(t)
 	d := newFilterTestTraitDockable(t)
@@ -100,6 +102,12 @@ func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	d.Rebuild(false)
 	c.True(d.table.IsFiltered(), "the filter must still be in force after a rebuild")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the rebuilt rows must be filtered the same way")
+
+	// A row the filter goes on showing is measured again, though the table keeps row heights from one filter to the next.
+	height := d.table.RowHeights()[0]
+	d.provider.RootData()[2].LocalNotes = "A note\nof three\nlines"
+	d.Rebuild(false)
+	c.True(d.table.RowHeights()[0] > height, "the row must be as tall as the note it was given makes it")
 
 	// A newly added trait that matches has to show up after a rebuild.
 	d.provider.SetRootData(append(d.provider.RootData(), newFilterTestTrait("Furry Coat", "Physical")))
@@ -425,6 +433,85 @@ func TestTableDockableFilterKeepsHierarchy(t *testing.T) {
 	c.False(d.table.IsFiltered(), "emptying the quick filter must show everything")
 	c.Equal(2, d.table.LastRowIndex()+1, "the closed container must hide its children again")
 	c.False(container.IsOpen(), "the container must still be closed")
+}
+
+// TestTableDockableSelectRowsByID verifies that selectRowsByID selects exactly the rows with the given IDs that the list
+// holds, which is none of them when it holds none, opening the closed containers above them without modifying the list,
+// locked or not, and that a filter hiding any of them is cleared -- the quick filter's text, the chosen tags and the
+// saved filter -- while one showing them all, if only as context, is left in force.
+func TestTableDockableSelectRowsByID(t *testing.T) {
+	for _, one := range []struct {
+		name string
+		text string
+		// saved puts a saved filter and a tag in force as well, both hiding the container's child.
+		saved  bool
+		locked bool
+		hides  bool
+		// context asks for the container, which the filter shows only as context, rather than its child.
+		context bool
+		// absent asks for no row the list holds.
+		absent bool
+	}{
+		{name: "an unfiltered list"},
+		{name: "a list holding none of the rows", absent: true},
+		{name: "a filter hiding the row is cleared", text: "combat", saved: true, hides: true},
+		{name: "a locked list is no different", text: "combat", saved: true, locked: true, hides: true},
+		{name: "a filter showing the row is kept", text: "child"},
+		{name: "a filter showing the row as context is kept", text: "child", context: true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			registerKeyBindingsOnce.Do(func() { registerActions() })
+			uxtest.SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+			uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+			mental := newContainsFilter("Mental", "tags", "mental")
+			gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), mental)
+			container := newTestContainer("Exotic", false)
+			target := container.Children[0]
+			if one.context {
+				target = container
+			}
+			d := NewTraitTableDockable("test"+gurps.TraitsExt,
+				[]*gurps.Trait{container, newFilterTestTrait("Combat Reflexes", "Mental")})
+			if one.saved {
+				d.savedFilters.selectFilter(mental)
+				chooseTag(t, d, "mental", 0)
+			}
+			d.filterField.SetText(one.text)
+			d.table.SelectByIndex(0)
+			d.setLocked(one.locked)
+			want := make(map[tid.TID]bool)
+			if !one.absent {
+				want[target.ID()] = true
+			}
+			ids := maps.Clone(want)
+			ids[newFilterTestTrait("Elsewhere").ID()] = true
+
+			c.Equal(len(want), d.selectRowsByID(ids), "only the rows the list holds are counted")
+			c.Equal(want, d.table.CopySelectionMap(), "exactly the rows the list holds must be selected")
+			c.False(d.Modified(), "opening containers must not modify the list")
+			if !one.absent {
+				for parent := target.Parent(); parent != nil; parent = parent.Parent() {
+					c.True(parent.IsOpen(), "the containers above the row must be opened")
+				}
+				shown := false
+				for i := range d.table.LastRowIndex() + 1 {
+					shown = shown || d.table.RowFromIndex(i).Data() == target
+				}
+				c.True(shown, "the row must be shown")
+			}
+			if one.hides {
+				c.False(d.table.IsFiltered(), "the filter hiding the row must be cleared")
+				c.Equal("", d.filterField.Text(), "the quick filter must be emptied")
+				c.Equal([]string{"Any Tag"}, checkedTags(d), "the chosen tags must be dropped")
+				c.Nil(d.selectedFilter, "the saved filter must be dropped")
+				c.Equal("No Filter", d.savedFilters.popup.Text(), "the saved filter popup must show that")
+			} else {
+				c.Equal(one.text != "", d.table.IsFiltered(), "a filter showing the row must be left in force")
+				c.Equal(one.text, d.filterField.Text(), "the quick filter must keep its text")
+			}
+		})
+	}
 }
 
 // filterTestTraits returns the three traits newFilterTestTraitDockable fills its list with, failing the test unless

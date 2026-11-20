@@ -260,6 +260,10 @@ var (
 	rangedWeaponData string
 	RangedWeapon     = unison.MustSVGFromContentString(rangedWeaponData)
 
+	//go:embed refresh.svg
+	refreshData string
+	Refresh     = unison.MustSVGFromContentString(refreshData)
+
 	//go:embed release_notes.svg
 	releaseNotesData string
 	ReleaseNotes     = unison.MustSVGFromContentString(releaseNotesData)

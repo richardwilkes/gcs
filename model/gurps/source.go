@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"maps"
@@ -22,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -382,5 +385,68 @@ func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, mode Clon
 		s.Source = Source{LibraryFile: from, TID: original.TID}
 	} else {
 		s.Source = original.Source
+	}
+}
+
+// sourcedIDHolder is implemented by the nodes that embed a SourcedID, as every kind of row a library list holds does.
+type sourcedIDHolder interface {
+	sourcedID() *SourcedID
+}
+
+func (s *SourcedID) sourcedID() *SourcedID {
+	return s
+}
+
+// StampLibrarySource gives each of the rows, and each row beneath them, that has no library source of its own
+// (Source.Library == "") the source Source{LibraryFile: from, TID: its own ID} -- exactly what AdjustSource gives a
+// Reference clone made from that file -- so that a later Reference clone made with an empty LibraryFile still ends up
+// with the right source.
+func StampLibrarySource[T Node[T]](from LibraryFile, rows []T) {
+	Traverse(func(row T) bool {
+		if holder, ok := any(row).(sourcedIDHolder); ok {
+			sid := holder.sourcedID()
+			sid.AdjustSource(from, *sid, Reference)
+		}
+		return false
+	}, false, false, rows...)
+}
+
+// MakeRowIDsUnique gives each of the rows, and each row beneath them, whose ID is already in seen a new ID of the same
+// kind, derived from the library file and the old ID so that it is the same on every run, and records every ID it keeps
+// or creates in seen. It returns the replaced IDs, new to original, or nil when none were replaced. Sources are left
+// alone, so a row stamped by StampLibrarySource beforehand still refers to the ID it has in its file.
+func MakeRowIDsUnique[T Node[T]](from LibraryFile, seen map[tid.TID]bool, rows []T) map[tid.TID]tid.TID {
+	var replaced map[tid.TID]tid.TID
+	Traverse(func(row T) bool {
+		id := row.ID()
+		if holder, ok := any(row).(sourcedIDHolder); ok && seen[id] {
+			original := id
+			id = derivedRowID(from, original, seen)
+			holder.sourcedID().TID = id
+			if replaced == nil {
+				replaced = make(map[tid.TID]tid.TID)
+			}
+			replaced[id] = original
+		}
+		seen[id] = true
+		return false
+	}, false, false, rows...)
+	return replaced
+}
+
+// derivedRowID returns an ID of the same kind as id that isn't in seen, made from a hash of the library file, id and
+// the number of IDs tried before it, so that the same arguments always yield the same ID.
+func derivedRowID(from LibraryFile, id tid.TID, seen map[tid.TID]bool) tid.TID {
+	for attempt := 0; ; attempt++ {
+		h := sha256.New()
+		xhash.StringWithLen(h, from.Library)
+		xhash.StringWithLen(h, from.Path)
+		xhash.StringWithLen(h, id)
+		xhash.Num64(h, attempt)
+		// A TID is its kind followed by 12 bytes in unpadded, URL-safe base64, as tid.NewTID makes them.
+		derived := tid.TID(base64.RawURLEncoding.AppendEncode([]byte{tidKind(id)}, h.Sum(nil)[:12]))
+		if !seen[derived] {
+			return derived
+		}
 	}
 }
