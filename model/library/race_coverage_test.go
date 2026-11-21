@@ -18,7 +18,8 @@ import "testing"
 // The build tag keeps the wrapper out of plain builds, where these tests already run directly.
 //
 // When adding a test that involves concurrency — spawning goroutines itself or starting a library watch — list it here
-// as well so the race pass covers it.
+// as well so the race pass covers it, or, if it exists only on Linux, in platformRaceTests in
+// race_coverage_linux_test.go.
 func TestRace(t *testing.T) {
 	t.Run("LibraryWatchCreatesPath", TestLibraryWatchCreatesPath)
 	t.Run("LibraryConcurrentAccess", TestLibraryConcurrentAccess)
@@ -48,4 +49,5 @@ func TestRace(t *testing.T) {
 	t.Run("LibrariesRekeyNeverLeavesTheLibraryAbsent", TestLibrariesRekeyNeverLeavesTheLibraryAbsent)
 	t.Run("LibrariesMasterAndUserOnlyReadWhenPresent", TestLibrariesMasterAndUserOnlyReadWhenPresent)
 	t.Run("LibrariesMasterAndUserCreateOnce", TestLibrariesMasterAndUserCreateOnce)
+	platformRaceTests(t)
 }

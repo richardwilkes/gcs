@@ -428,7 +428,9 @@ func (l *Library) CleanupFavorites() {
 // Establishing a watch creates the library's directory if it is missing, as Path(true) does, since a directory that
 // does not exist cannot be watched. The same goes for the watches SetPath re-establishes on the new path. On Windows
 // and Linux, another program moving the directory, or one holding it, elsewhere is reported as a change to Path(), and
-// only a watch established afresh is sure to watch a directory put in its place.
+// only a watch established afresh is sure to watch a directory put in its place. On Linux, changes within a directory
+// the user cannot read go unreported, and so, until a watch is established afresh, do changes within a directory put
+// later inside one that holds such a directory.
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }

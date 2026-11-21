@@ -36,7 +36,8 @@ var folderMoves = struct {
 	// is logged only once, since the watches are established afresh on every reload of the navigator.
 	initLogged bool
 	// limitLogged is true once a failure to watch a folder because the user is at fs.inotify.max_user_watches has
-	// been logged, which, for the same reason, is logged only once.
+	// been logged, here or by watchTree, or watchTree has logged that it can't tell, which, for the same reason, is
+	// logged only once.
 	limitLogged bool
 	// watches holds the watches told of the moves of the folder each inotify watch descriptor watches.
 	watches map[int32]map[*movesWatch]bool

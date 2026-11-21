@@ -53,7 +53,8 @@ const nestsWatches = keepsStoppedWatches || runtime.GOOS == xos.MacOS
 // time that goroutine spends descheduled, but a generous one costs only a few kilobytes.
 const eventBufferSize = 1024
 
-// notifyWatch is notify.Watch, held in a variable so that tests can hold up a hand-over (see handOver).
+// notifyWatch is notify.Watch, held in a variable so that tests can hold up a hand-over (see handOver) or have it leave
+// folders unwatched (see watchTree).
 var notifyWatch = notify.Watch
 
 type monitor struct {
@@ -381,7 +382,7 @@ func (w *watchedFolders) handOver(m *monitor, form string) (release func(), err 
 // handOverLocked is handOver without the hold, for a caller that holds handOverLock where lockHandOver takes it.
 func (w *watchedFolders) handOverLocked(m *monitor, form string) error {
 	failed := w.handing(m, form)
-	if err := notifyWatch(form+"/...", m.events, watchedEvents); err != nil {
+	if err := watchTree(form, m.events); err != nil {
 		failed()
 		return err
 	}
