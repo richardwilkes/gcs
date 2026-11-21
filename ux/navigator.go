@@ -11,6 +11,8 @@ package ux
 
 import (
 	"bytes"
+	"errors"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -492,17 +494,56 @@ func (n *Navigator) renameSelection() {
 		if !ok {
 			return
 		}
-		if err := os.Rename(oldPath, newPath); err != nil {
+		var err error
+		if row.IsDirectory() {
+			err = renameFolder(oldPath, newPath)
+		} else {
+			err = os.Rename(oldPath, newPath)
+		}
+		if err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to rename:\n%s", oldPath), err)
+			if row.IsDirectory() {
+				n.Reload() // Watches the libraries renameFolder stopped watching again
+			}
 			return
 		}
 		n.fixupLibraryRelativePaths(row, newPath)
 		if row.IsDirectory() {
-			moveLibrariesWithin(oldPath, newPath)
 			librarySettingsFolderRenamed(oldPath, newPath)
 		}
 		n.adjustBackingFilePath(row, oldPath, newPath)
 		n.reloadAndSelect(newPath, row.Parent())
+	}
+}
+
+// libraryWatchLock is held while a walk of the libraries watches a library or a symlinked folder of one, and while
+// renameFolder runs, so that no watch is established within the folder being renamed from before its watches are
+// stopped until the libraries within it point at where it went: watching a library at its old path would put the old
+// folder back (see library.Library.Watch), and on Windows a watch within the folder keeps it from being renamed.
+var libraryWatchLock sync.Mutex
+
+// renameFolder renames the folder at oldPath to newPath and points the libraries whose folders are that folder or lie
+// within it at where it went, first stopping the watches of the libraries that watch that folder or one within it, so
+// the navigator must be reloaded afterward whether or not the rename is made. On Windows, the platform watcher may hold
+// a handle open on such a folder, which keeps any folder holding it from being renamed, until it is told to let go (see
+// library.StopWatchesWithin). It lets go on a goroutine of its own, so when a folder was let go of, a rename refused
+// there is retried for a while.
+func renameFolder(oldPath, newPath string) error {
+	libraryWatchLock.Lock()
+	defer libraryWatchLock.Unlock()
+	released := library.StopWatchesWithin(oldPath)
+	deadline := time.Now().Add(time.Second)
+	for {
+		err := os.Rename(oldPath, newPath)
+		if err == nil {
+			moveLibrariesWithin(oldPath, newPath)
+			return nil
+		}
+		if !released || runtime.GOOS != xos.WindowsOS || !errors.Is(err, fs.ErrPermission) ||
+			time.Now().After(deadline) {
+			return err
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -836,11 +877,12 @@ func (n *Navigator) Reload() {
 
 // startWalk stops the library watches, then watches the libraries afresh and lists them on a background goroutine,
 // after which the rows are rebuilt from the listing on the UI thread; see Reload. The watches are established on that
-// goroutine, since on Linux the native filesystem monitoring watches each folder on its own, so that watching a library
-// reads every folder in it. They are stopped here, since that reads nothing, and Library.SetPath, which restarts the
-// watches it finds on the UI thread, would bring back one stopped on another goroutine meanwhile. Whatever is to follow
-// the reload (see reloadAndSelect) is taken along to run once those rows are in, so that it finds what was made before
-// the reload was asked for.
+// goroutine, each under libraryWatchLock, since on Linux the native filesystem monitoring watches each folder on its
+// own, so that watching a library reads every folder in it. They are stopped here, since that reads nothing, and
+// Library.SetPath, which restarts the watches it finds on the UI thread, would bring back one stopped on another
+// goroutine meanwhile. Once the libraries are listed, the platform watcher is told to let go of the folders it no
+// longer watches (see library.ReleaseStoppedWatches). Whatever is to follow the reload (see reloadAndSelect) is taken
+// along to run once those rows are in, so that it finds what was made before the reload was asked for.
 func (n *Navigator) startWalk() {
 	n.stopWatches()
 	settings := gurps.GlobalSettings()
@@ -853,15 +895,20 @@ func (n *Navigator) startWalk() {
 	n.walks.Go(func() {
 		tokens := make([]*library.MonitorToken, 0, len(libs))
 		for _, lib := range libs {
+			libraryWatchLock.Lock()
 			tokens = append(tokens, lib.Watch(n.watchCallback, true))
+			libraryWatchLock.Unlock()
 		}
 		listing := list(libs, groupContainers, func(lib *library.Library, dirPath string) {
+			libraryWatchLock.Lock()
+			defer libraryWatchLock.Unlock()
 			for _, token := range tokens {
 				if token.Library() == lib {
 					token.AddSubPath(dirPath)
 				}
 			}
 		})
+		library.ReleaseStoppedWatches()
 		unison.InvokeTask(func() { n.applyListing(listing, tokens, afterward) })
 	})
 }

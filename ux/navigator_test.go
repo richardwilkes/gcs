@@ -15,8 +15,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -30,6 +32,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/rjeczalik/notify"
@@ -1612,6 +1615,191 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 	}
 }
 
+// TestRenameFolderReportsARefusalAtOnceWhenNoWatchWasReleased verifies that renameFolder returns Windows' refusal to
+// rename a folder holding an open file without retrying it, since only a released watch's handle can go away by itself.
+func TestRenameFolderReportsARefusalAtOnceWhenNoWatchWasReleased(t *testing.T) {
+	if runtime.GOOS != xos.WindowsOS {
+		t.Skip("only Windows refuses to rename a folder holding an open file")
+	}
+	c := check.New(t)
+	dir := t.TempDir()
+	held := filepath.Join(dir, "held")
+	c.NoError(os.MkdirAll(held, 0o750))
+	p := filepath.Join(held, "open.txt")
+	c.NoError(os.WriteFile(p, nil, 0o600))
+	f, err := os.Open(p)
+	c.NoError(err)
+	defer func() { c.NoError(f.Close()) }()
+	start := time.Now()
+	c.HasError(renameFolder(held, filepath.Join(dir, "renamed")), "a folder holding an open file must not be renamed")
+	elapsed := time.Since(start)
+	c.True(elapsed < 500*time.Millisecond, "no watch was released, so the refusal must not be retried; took %v", elapsed)
+}
+
+// TestRenameFolderLetsGoOfTheWatchesWithinIt verifies that renameFolder renames a folder holding one that a library
+// watches, or that the platform watcher stopped watching without letting go of it, wherever that library's own folder
+// is: a symlinked folder of a library outside the renamed folder, one of a library within it, and a folder a library
+// was moved away from.
+func TestRenameFolderLetsGoOfTheWatchesWithinIt(t *testing.T) {
+	if runtime.GOOS != xos.WindowsOS {
+		t.Skip("only Windows refuses to rename a folder holding a watched one")
+	}
+	watch := func(t *testing.T, lib *library.Library) *library.MonitorToken {
+		token := lib.Watch(func(*library.Library, string, notify.Event) {}, false)
+		t.Cleanup(token.Stop)
+		return token
+	}
+	// watchThroughSymlink watches the library, following a symlink in its folder to the folder at target.
+	watchThroughSymlink := func(t *testing.T, lib *library.Library, target string) {
+		c := check.New(t)
+		c.NoError(os.MkdirAll(target, 0o750))
+		c.NoError(os.MkdirAll(lib.Path(false), 0o750))
+		if err := os.Symlink(target, filepath.Join(lib.Path(false), "link")); err != nil {
+			t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
+		}
+		watch(t, lib).AddSubPath("link")
+	}
+	for _, one := range []struct {
+		name string
+		// setup establishes watches within dir, whose "sub" folder is then renamed.
+		setup func(t *testing.T, dir string)
+	}{
+		{
+			name: "symlinked folder of a library outside it",
+			setup: func(t *testing.T, dir string) {
+				watchThroughSymlink(t, library.NewLibrary("Outside", "acct", "", "outside", filepath.Join(dir, "lib")),
+					filepath.Join(dir, "sub", "target"))
+			},
+		},
+		{
+			name: "symlinked folder of a library within it",
+			setup: func(t *testing.T, dir string) {
+				watchThroughSymlink(t, library.NewLibrary("Within", "acct", "", "within", filepath.Join(dir, "sub", "lib")),
+					filepath.Join(dir, "sub", "target"))
+			},
+		},
+		{
+			name: "folder a library was moved away from",
+			setup: func(t *testing.T, dir string) {
+				lib := library.NewLibrary("Moved", "acct", "", "moved", filepath.Join(dir, "sub", "old"))
+				watch(t, lib)
+				check.New(t).NoError(lib.SetPath(filepath.Join(dir, "elsewhere")))
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			one.setup(t, dir)
+			c.NoError(renameFolder(filepath.Join(dir, "sub"), filepath.Join(dir, "renamed")))
+		})
+	}
+}
+
+// TestRenameFolderMovesItsLibrariesAheadOfAWalk verifies that renameFolder points a library whose folder lies within
+// the renamed folder at where it went before a walk of the libraries in flight watches it, since watching it at its old
+// path would put the old folder back, empty. A stop of the library's watch, held up by a callback of the test's, holds
+// back both the walk, as it is about to watch the library, and the library's move.
+func TestRenameFolderMovesItsLibrariesAheadOfAWalk(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+	dir := t.TempDir()
+	oldPath := filepath.Join(dir, "folder")
+	newPath := filepath.Join(dir, "renamed")
+	lib := library.NewLibrary("Within", "acct", "", "within", filepath.Join(oldPath, "lib"))
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	entered := make(chan struct{})
+	gate := make(chan struct{})
+	var once sync.Once
+	token := lib.Watch(func(*library.Library, string, notify.Event) {
+		once.Do(func() { close(entered) })
+		<-gate
+	}, false)
+	c.NoError(os.WriteFile(filepath.Join(oldPath, "lib", "a.txt"), nil, 0o600))
+	select {
+	case <-entered:
+	case <-time.After(10 * time.Second):
+		t.Fatal("the watch never reported the change")
+	}
+	stopped := make(chan struct{})
+	go func() {
+		token.Stop() // Holds the library's monitor until the callback returns
+		close(stopped)
+	}()
+	time.Sleep(100 * time.Millisecond) // Lets the stop take hold of the monitor
+	screen.Do(n.Reload)
+	time.Sleep(100 * time.Millisecond) // Lets the walk reach the library, where it waits on the stop
+	var err error
+	c.True(screen.Post(func() { err = renameFolder(oldPath, newPath) }))
+	// Without the walk in its way, the folder is renamed while the stop still holds up the library's move.
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if _, statErr := os.Stat(newPath); statErr == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	close(gate)
+	<-stopped
+	screen.Do(func() {}) // Returns once the rename posted above has run
+	awaitNavigatorWalk(t, screen, n)
+	c.NoError(err)
+	_, err = os.Stat(oldPath)
+	c.True(os.IsNotExist(err), "the walk must not put the renamed folder back")
+	c.Equal(filepath.Join(newPath, "lib"), lib.Path(false), "the library must follow the renamed folder")
+	stopNavigatorWatches(t, screen, n)
+}
+
+// TestReloadLetsGoOfTheFoldersNoLongerWatched verifies that once a reload has watched the libraries afresh, other
+// programs can rename a folder holding one the platform watcher no longer watches: that of a library removed, and that
+// of a library whose folder lies within another's, which the platform watcher watches in its place.
+func TestReloadLetsGoOfTheFoldersNoLongerWatched(t *testing.T) {
+	if runtime.GOOS != xos.WindowsOS {
+		t.Skip("only Windows keeps a folder open after it is no longer watched")
+	}
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+	dir := t.TempDir()
+	removed := library.NewLibrary("Removed", "acct", "", "removed", filepath.Join(dir, "removed holder", "lib"))
+	// The navigator watches the libraries in title order, so the Inner library's folder is watched before the Outer
+	// library's, which holds it.
+	inner := library.NewLibrary("Inner", "acct", "", "inner", filepath.Join(dir, "outer", "inner holder", "lib"))
+	outer := library.NewLibrary("Outer", "acct", "", "outer", filepath.Join(dir, "outer"))
+	libraries := gurps.GlobalSettings().Libraries
+	for _, lib := range []*library.Library{removed, inner, outer} {
+		libraries.Store(lib.Key(), lib)
+		t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	}
+	reloadNavigator(t, screen, n)
+	screen.Do(func() {
+		// As the navigator's Delete removes a library
+		libraries.Remove(removed.Key())
+		removed.StopAllWatches()
+	})
+	reloadNavigator(t, screen, n)
+	for _, holder := range []string{filepath.Join(dir, "removed holder"), filepath.Join(dir, "outer", "inner holder")} {
+		// The platform watcher closes its handles on a goroutine of its own, so the rename is retried for a while.
+		deadline := time.Now().Add(2 * time.Second)
+		for {
+			err := os.Rename(holder, holder+" renamed")
+			if err == nil || time.Now().After(deadline) {
+				c.NoError(err, "the folder holding the one no longer watched must be renamed")
+				break
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	stopNavigatorWatches(t, screen, n) // Waits out the reload the rename within the Outer library asks for
+}
+
 // TestRenameCarriesReferencesAlong drives Rename for a folder and a file of a library, each a favorite and an entry of
 // a saved source set and of an open view's unsaved one, with a file open from it: each is renamed on disk, and its
 // favorite, its source set entries and the file open from it follow it, as do the other libraries whose folders are
@@ -1638,20 +1826,16 @@ func TestRenameCarriesReferencesAlong(t *testing.T) {
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
 	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	var n *Navigator
-	screen.Do(func() { n = Workspace.Navigator })
-	stopNavigatorWatches(t, screen, n)
-	reloadNavigator(t, screen, n)
 	// Libraries whose folders are the folder renamed below and one within it, with where each folder must be once it is
-	// renamed. They are stored once the navigator has watched the libraries, so that no watch holds their folders open
-	// while Rename moves them.
+	// renamed. The navigator watches the libraries in title order, so the Deep library's folder is watched before the
+	// folders holding it, which on Windows leaves a handle open on it until the platform watcher is told to let go.
 	inner := []struct {
 		lib     *library.Library
 		renamed string
 	}{
-		{library.NewLibrary("At", "acct", "", "at", filepath.Join(dir, "sub")), filepath.Join(dir, "renamed")},
+		{library.NewLibrary("Sub", "acct", "", "at", filepath.Join(dir, "sub")), filepath.Join(dir, "renamed")},
 		{
-			library.NewLibrary("Within", "acct", "", "within", filepath.Join(dir, "sub", "deep")),
+			library.NewLibrary("Deep", "acct", "", "within", filepath.Join(dir, "sub", "deep")),
 			filepath.Join(dir, "renamed", "deep"),
 		},
 	}
@@ -1659,7 +1843,11 @@ func TestRenameCarriesReferencesAlong(t *testing.T) {
 		libraries.Store(one.lib.Key(), one.lib)
 		t.Cleanup(func() { libraries.Remove(one.lib.Key()) })
 	}
-	// Library Settings views: the At library's as opened, and the Within and Test libraries' with a path typed in, with
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+	reloadNavigator(t, screen, n)
+	// Library Settings views: the Sub library's as opened, and the Deep and Test libraries' with a path typed in, with
 	// the path each must hold once the folder is renamed and whether it must then hold a change to apply.
 	settingsViews := []struct {
 		lib      *library.Library

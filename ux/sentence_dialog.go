@@ -13,6 +13,7 @@ import (
 	"runtime"
 
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -75,7 +76,7 @@ func (c *sentenceDialogContent) UndoManager() *unison.UndoManager {
 // dialogMenuTakesUndoKeys is true where the menu bar takes the key bindings of Undo and Redo while a dialog is up, as
 // macOS's does, matching them by the character a key types. Elsewhere a dialog has no menu bar, so it takes them
 // itself.
-var dialogMenuTakesUndoKeys = runtime.GOOS == "darwin"
+var dialogMenuTakesUndoKeys = runtime.GOOS == xos.MacOS
 
 // rowCloser is a panel of rows, one of which may be open, such as a sentenceRows.
 type rowCloser interface {

@@ -47,7 +47,9 @@ func TestRace(t *testing.T) {
 	t.Run("PDFQueueStickyPriority", TestPDFQueueStickyPriority)
 	t.Run("PDFQueueUserSignalBeatsContinuations", TestPDFQueueUserSignalBeatsContinuations)
 	t.Run("PrewarmWithNoDeepSearchPathsRefreshesSearch", TestPrewarmWithNoDeepSearchPathsRefreshesSearch)
+	t.Run("ReloadLetsGoOfTheFoldersNoLongerWatched", TestReloadLetsGoOfTheFoldersNoLongerWatched)
 	t.Run("ReloadWalksTheLibrariesOffTheUIThread", TestReloadWalksTheLibrariesOffTheUIThread)
+	t.Run("RenameFolderMovesItsLibrariesAheadOfAWalk", TestRenameFolderMovesItsLibrariesAheadOfAWalk)
 	t.Run("SearchReadsMissingContentInTheBackground", TestSearchReadsMissingContentInTheBackground)
 	t.Run("SupersededCacheBuildHandsEntriesToItsSuccessor", TestSupersededCacheBuildHandsEntriesToItsSuccessor)
 }

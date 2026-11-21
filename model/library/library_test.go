@@ -29,6 +29,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/rjeczalik/notify"
 )
 
@@ -272,6 +273,125 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 	awaitChange(t, events, "new.gcs")
 }
 
+// TestLibrarySetPathWatchesAFolderHoldingAnotherLibrary verifies that a library moved to a folder holding one that holds
+// another library's folder is watched there, whether that one is its old folder or that of a library whose watch was
+// stopped, which the platform watcher goes on watching for the other's sake.
+func TestLibrarySetPathWatchesAFolderHoldingAnotherLibrary(t *testing.T) {
+	skipIfWatchEventsTripCheckptr(t)
+	for _, one := range []struct {
+		name    string
+		stopped bool
+	}{
+		{name: "its old folder"},
+		{name: "a stopped library's folder", stopped: true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			root := filepath.Join(dir, "root")
+			held := filepath.Join(root, "outer")
+			ignore := func(*Library, string, notify.Event) {}
+			from := held
+			var stopped *MonitorToken
+			if one.stopped {
+				from = filepath.Join(dir, "elsewhere")
+				stopped = NewLibrary("Stopped", "someone", "", "stopped", held).Watch(ignore, false)
+			}
+			moved := NewLibrary("Moved", "someone", "", "moved", from)
+			token, events := watchForChanges(moved)
+			defer token.Stop()
+			defer NewLibrary("Inner", "someone", "", "inner", filepath.Join(held, "inner")).Watch(ignore, false).Stop()
+			if stopped != nil {
+				stopped.Stop()
+			}
+			c.NoError(moved.SetPath(root))
+			created := filepath.Join(root, "new.gcs")
+			c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
+			c.Equal(created, awaitChange(t, events, "new.gcs"))
+		})
+	}
+}
+
+// TestLibraryWatchOutlivesTheWatchOfALibraryWithinIt verifies that a library goes on reporting the changes in its
+// folder once the watch of a library within it is stopped, whichever was watched first. On Windows and macOS,
+// rjeczalik/notify stops watching the outer folder along with the last watch within it, though on Windows only once it
+// has reported a change or two there, so several changes are made.
+func TestLibraryWatchOutlivesTheWatchOfALibraryWithinIt(t *testing.T) {
+	skipIfWatchEventsTripCheckptr(t)
+	for _, innerFirst := range []bool{false, true} {
+		t.Run(fmt.Sprintf("inner first %v", innerFirst), func(t *testing.T) {
+			dir := filepath.Join(t.TempDir(), "outer")
+			outer := NewLibrary("Outer", "someone", "", "outer", dir)
+			inner := NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "inner"))
+			var innerToken *MonitorToken
+			if innerFirst {
+				innerToken = inner.Watch(func(*Library, string, notify.Event) {}, false)
+			}
+			token, events := watchForChanges(outer)
+			defer token.Stop()
+			if !innerFirst {
+				innerToken = inner.Watch(func(*Library, string, notify.Event) {}, false)
+			}
+			innerToken.Stop()
+			for i := range 4 {
+				name := fmt.Sprintf("%d.gcs", i)
+				check.New(t).NoError(os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o600))
+				awaitChange(t, events, name)
+			}
+		})
+	}
+}
+
+// TestLibraryWatchWaitsOnNoUnrelatedWatch verifies that stopping the watch of a library that neither holds nor lies
+// within another, and, where no folder is ever released, establishing one, finishes while another goroutine holds
+// watchLock, as one does while it watches a library. StopAllWatches and SetPath run on the UI thread, and on Linux
+// handing a library's folder to the platform watcher reads every folder in it.
+func TestLibraryWatchWaitsOnNoUnrelatedWatch(t *testing.T) {
+	for _, one := range []struct {
+		name    string
+		applies bool
+		// prepare readies the library and returns what must not wait on watchLock.
+		prepare func(t *testing.T, lib *Library) func()
+	}{
+		{
+			name:    "stop",
+			applies: true,
+			prepare: func(_ *testing.T, lib *Library) func() {
+				lib.Watch(func(*Library, string, notify.Event) {}, false)
+				return lib.StopAllWatches
+			},
+		},
+		{
+			name:    "watch",
+			applies: !keepsStoppedWatches,
+			prepare: func(t *testing.T, lib *Library) func() {
+				t.Cleanup(lib.StopAllWatches)
+				return func() { lib.Watch(func(*Library, string, notify.Event) {}, false) }
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			if !one.applies {
+				t.Skip("a folder may have to be released first, which watchLock guards")
+			}
+			op := one.prepare(t, NewLibrary("Lib", "someone", "", "lib", filepath.Join(t.TempDir(), "lib")))
+			watchLock.Lock()
+			done := make(chan struct{})
+			go func() {
+				op()
+				close(done)
+			}()
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+				t.Error("it must not wait for another goroutine to let go of watchLock")
+			}
+			watchLock.Unlock()
+			<-done
+		})
+	}
+}
+
 // TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
 // root sync or otherwise. The caller has just scanned the library, so such an event is redundant, and a callback that
 // rescans and re-establishes its watches on every event (as the library navigator does) would never settle. Restarting
@@ -404,7 +524,451 @@ func TestLibraryWatchReportsPathsAsTheLibraryNamesThem(t *testing.T) {
 		c.NoError(os.WriteFile(created, []byte("{}"), 0o600))
 		c.Equal(created, awaitChange(t, events, "new.gcs"))
 	})
+
+	// On Windows, rjeczalik/notify keeps its handle on a folder whose watch was stopped until something changes there,
+	// and takes it back when the folder's path is watched again. Another program that moves the folder meanwhile takes
+	// the handle along, so the folder in its place, whether a new watch makes it or the program does, must not be
+	// watched through it, be it the library's own or a symlinked one within it.
+	for _, one := range []struct {
+		name     string
+		replaced bool
+		linked   bool
+	}{
+		{name: "folder moved while not watched"},
+		{name: "folder moved while not watched, replaced", replaced: true},
+		{name: "symlinked folder moved while not watched, replaced", replaced: true, linked: true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			p := filepath.Join(dir, "lib")
+			lib := NewLibrary("Test", "someone", "", "repo", p)
+			watched, reported := p, p
+			if one.linked {
+				watched = filepath.Join(dir, "target")
+				reported = filepath.Join(p, "linked")
+				c.NoError(os.MkdirAll(p, 0o750))
+				c.NoError(os.Mkdir(watched, 0o750))
+				if err := os.Symlink(watched, reported); err != nil {
+					t.Skipf("unable to create a symlink here: %v", err)
+				}
+			}
+			watch := func() (*MonitorToken, <-chan string) {
+				token, events := watchForChanges(lib)
+				if one.linked {
+					token.AddSubPath("linked")
+				}
+				return token, events
+			}
+			token, _ := watch()
+			token.Stop()
+			c.NoError(os.Rename(watched, filepath.Join(dir, "moved")))
+			if one.replaced {
+				c.NoError(os.Mkdir(watched, 0o750))
+			}
+
+			token, events := watch()
+			defer token.Stop()
+			c.NoError(os.WriteFile(filepath.Join(watched, "new.gcs"), []byte("{}"), 0o600))
+			c.Equal(filepath.Join(reported, "new.gcs"), awaitChange(t, events, "new.gcs"))
+		})
+	}
+
+	// On Windows and Linux, the platform watcher watches a folder through a handle, which follows the folder wherever
+	// another program moves it, along with the folders within it, leaving the folder put in its place unwatched. The
+	// move is reported as a change to the library's folder, or the symlinked one within it, for the watch to be
+	// established afresh. On Windows, a folder holding one the platform watcher watches through a handle of its own
+	// can't be renamed.
+	for _, one := range []struct {
+		name    string
+		applies bool
+		replace bool
+		// setup watches a library within dir, returning the changes it reports, the path through which another program
+		// then moves the folder, and the path the move must be reported under.
+		setup func(t *testing.T, dir string) (events <-chan string, from, reported string)
+	}{
+		{
+			name:    "its own folder",
+			applies: runtime.GOOS == xos.WindowsOS || runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				p := filepath.Join(dir, "lib")
+				token, events := watchForChanges(NewLibrary("Test", "someone", "", "repo", p))
+				t.Cleanup(token.Stop)
+				return events, p, p
+			},
+		},
+		{
+			name:    "its own folder, through its short name",
+			applies: runtime.GOOS == xos.WindowsOS,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				p := filepath.Join(dir, "library with a long name")
+				token, events := watchForChanges(NewLibrary("Test", "someone", "", "repo", p))
+				t.Cleanup(token.Stop)
+				short := filepath.Base(shortPath(p))
+				if short == filepath.Base(p) {
+					t.Skip("the volume gives folders no short names")
+				}
+				return events, filepath.Join(dir, short), p
+			},
+		},
+		{
+			name:    "a symlinked folder within it",
+			applies: runtime.GOOS == xos.WindowsOS || runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				p := filepath.Join(dir, "lib")
+				target := filepath.Join(dir, "target")
+				link := filepath.Join(p, "linked")
+				c := check.New(t)
+				c.NoError(os.MkdirAll(p, 0o750))
+				c.NoError(os.Mkdir(target, 0o750))
+				if err := os.Symlink(target, link); err != nil {
+					t.Skipf("unable to create a symlink here: %v", err)
+				}
+				token, events := watchForChanges(NewLibrary("Test", "someone", "", "repo", p))
+				t.Cleanup(token.Stop)
+				token.AddSubPath("linked")
+				return events, target, link
+			},
+		},
+		{
+			name:    "a folder holding it",
+			applies: runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				holder := filepath.Join(dir, "holder")
+				p := filepath.Join(holder, "lib")
+				token, events := watchForChanges(NewLibrary("Test", "someone", "", "repo", p))
+				t.Cleanup(token.Stop)
+				return events, holder, p
+			},
+		},
+		{
+			name:    "the folder of a stopped library holding it",
+			applies: runtime.GOOS == xos.WindowsOS || runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				outer := filepath.Join(dir, "outer")
+				p := filepath.Join(outer, "inner")
+				outerToken := NewLibrary("Outer", "someone", "", "outer", outer).Watch(func(*Library, string, notify.Event) {},
+					false)
+				token, events := watchForChanges(NewLibrary("Inner", "someone", "", "inner", p))
+				t.Cleanup(token.Stop)
+				outerToken.Stop()
+				return events, outer, p
+			},
+		},
+		{
+			name:    "its own folder, watched apart from the stopped library's holding it",
+			applies: runtime.GOOS == xos.WindowsOS || runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				outer := filepath.Join(dir, "outer")
+				p := filepath.Join(outer, "inner")
+				ignore := func(*Library, string, notify.Event) {}
+				outerToken := NewLibrary("Outer", "someone", "", "outer", outer).Watch(ignore, false)
+				token, events := watchForChanges(NewLibrary("Inner", "someone", "", "inner", p))
+				t.Cleanup(token.Stop)
+				within := NewLibrary("Within", "someone", "", "within", filepath.Join(p, "within")).Watch(ignore, false)
+				outerToken.Stop()
+				// The platform watcher goes on watching the outer folder for the libraries within it until the watch of
+				// the innermost is stopped, which has the library holding that one watched afresh.
+				within.Stop()
+				ReleaseStoppedWatches()
+				awaitPlatformWatcher(dir) // Until the outer folder is let go of, its handle would report the move
+				return events, p, p
+			},
+		},
+		{
+			name:    "its own folder, handed over while the library holding it is stopped",
+			applies: runtime.GOOS == xos.WindowsOS || runtime.GOOS == xos.LinuxOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				c := check.New(t)
+				outer := filepath.Join(dir, "outer")
+				p := filepath.Join(outer, "inner")
+				c.NoError(os.MkdirAll(p, 0o750))
+				outerLib := NewLibrary("Outer", "someone", "", "outer", outer)
+				outerLib.Watch(func(*Library, string, notify.Event) {}, false)
+				// The outer library's watch is stopped while the inner one's folder is being handed over.
+				form := reportedForm(p)
+				entered := make(chan struct{})
+				proceed := make(chan struct{})
+				original := notifyWatch
+				notifyWatch = func(path string, ch chan<- notify.EventInfo, what ...notify.Event) error {
+					if path == form+"/..." {
+						close(entered)
+						<-proceed
+					}
+					return original(path, ch, what...)
+				}
+				var token *MonitorToken
+				watched := make(chan struct{})
+				go func() {
+					token, events = watchForChanges(NewLibrary("Inner", "someone", "", "inner", p))
+					close(watched)
+				}()
+				<-entered
+				stopped := make(chan struct{})
+				go func() {
+					outerLib.StopAllWatches()
+					close(stopped)
+				}()
+				select {
+				case <-stopped:
+				case <-time.After(500 * time.Millisecond): // The stop may wait for the hand-over
+				}
+				close(proceed)
+				<-watched
+				<-stopped
+				notifyWatch = original
+				t.Cleanup(token.Stop)
+				// Lets go of any handle the platform watcher kept on the outer folder once it stopped watching it, which
+				// would report the move.
+				c.NoError(touchFolder(outer, func() { awaitPlatformWatcher(dir) }))
+				return events, p, p
+			},
+		},
+		{
+			name:    "its own folder, rewatched while the library holding it is stopped",
+			applies: runtime.GOOS == xos.WindowsOS,
+			replace: true,
+			setup: func(t *testing.T, dir string) (events <-chan string, from, reported string) {
+				outer := filepath.Join(dir, "outer")
+				p := filepath.Join(outer, "inner")
+				outerLib := NewLibrary("Outer", "someone", "", "outer", outer)
+				outerLib.Watch(func(*Library, string, notify.Event) {}, false)
+				token, events := watchForChanges(NewLibrary("Inner", "someone", "", "inner", p))
+				t.Cleanup(token.Stop)
+				// The outer library's watch is stopped while both are watched afresh, as for a release (see
+				// releaseMovedFolder).
+				stopped := make(chan struct{})
+				unlockWatches := lockWatches()
+				rewatchLocked(platformWatches.watchingOver(reportedForm(outer)), func() {
+					go func() {
+						outerLib.StopAllWatches()
+						close(stopped)
+					}()
+					select {
+					case <-stopped:
+					case <-time.After(500 * time.Millisecond): // The stop may wait for the rewatch
+					}
+				})
+				unlockWatches()
+				<-stopped
+				// Lets go of any handle the platform watcher kept on the outer folder once it stopped watching it, which
+				// would report the move.
+				check.New(t).NoError(touchFolder(outer, func() { awaitPlatformWatcher(dir) }))
+				return events, p, p
+			},
+		},
+	} {
+		t.Run("moved while watched: "+one.name, func(t *testing.T) {
+			if !one.applies {
+				t.Skip("the platform watcher reports this move itself, or the move can't be made")
+			}
+			c := check.New(t)
+			dir := t.TempDir()
+			events, from, reported := one.setup(t, dir)
+			c.NoError(os.Rename(from, filepath.Join(dir, "moved")))
+			if one.replace {
+				c.NoError(os.Mkdir(from, 0o750))
+			}
+			c.Equal(reported, awaitChange(t, events, filepath.Base(reported)))
+		})
+	}
 }
+
+// TestReleaseStoppedWatchesLetsGoOfTheFolders verifies that, once the stopped watches are released, a folder holding
+// one the platform watcher no longer watches can be renamed. On Windows, rjeczalik/notify otherwise keeps its handle on
+// such a folder open until something changes within it, whether it stopped watching the folder because the library's
+// watch was stopped, because a library holding it came to be watched after it, or, for a library holding another, once
+// the watch it kept on the outer folder for the inner library's sake was stopped too. A folder another program renamed
+// once its watch was stopped takes the handle along, so the folder holding it is the one that must be renamed. A folder
+// within a library's that holds another library, which the platform watcher watches through the outer folder, must not
+// be kept from being renamed by a watch for the inner library's moves (see watchedFolders.entries) either, whichever
+// was watched first, and even once the outer library's watch is stopped, when the platform watcher goes on watching
+// the outer folder for the sake of a library within it.
+func TestReleaseStoppedWatchesLetsGoOfTheFolders(t *testing.T) {
+	if runtime.GOOS != xos.WindowsOS {
+		t.Skip("only Windows keeps a folder open after it is no longer watched")
+	}
+	skipIfWatchEventsTripCheckptr(t)
+	watch := func(t *testing.T, lib *Library) *MonitorToken {
+		token := lib.Watch(func(*Library, string, notify.Event) {}, false)
+		t.Cleanup(token.Stop)
+		return token
+	}
+	for _, one := range []struct {
+		name string
+		// setup establishes and stops watches within dir, returning the folder that must then be renamed.
+		setup func(t *testing.T, dir string) string
+	}{
+		{
+			name: "stopped",
+			setup: func(t *testing.T, dir string) string {
+				watch(t, NewLibrary("Lib", "someone", "", "lib", filepath.Join(dir, "holder", "lib"))).Stop()
+				return filepath.Join(dir, "holder")
+			},
+		},
+		{
+			name: "renamed by another program once stopped",
+			setup: func(t *testing.T, dir string) string {
+				p := filepath.Join(dir, "holder", "lib")
+				watch(t, NewLibrary("Lib", "someone", "", "lib", p)).Stop()
+				check.New(t).NoError(os.Rename(p, filepath.Join(dir, "holder", "moved")))
+				return filepath.Join(dir, "holder")
+			},
+		},
+		{
+			name: "renamed by another program once stopped, with another folder put in its place",
+			setup: func(t *testing.T, dir string) string {
+				c := check.New(t)
+				p := filepath.Join(dir, "holder", "lib")
+				watch(t, NewLibrary("Lib", "someone", "", "lib", p)).Stop()
+				c.NoError(os.Rename(p, filepath.Join(dir, "holder", "moved")))
+				c.NoError(os.Mkdir(p, 0o750))
+				return filepath.Join(dir, "holder")
+			},
+		},
+		{
+			name: "renamed by another program within a library watched once stopped",
+			setup: func(t *testing.T, dir string) string {
+				outer := filepath.Join(dir, "outer")
+				p := filepath.Join(outer, "lib")
+				watch(t, NewLibrary("Lib", "someone", "", "lib", p)).Stop()
+				watch(t, NewLibrary("Outer", "someone", "", "outer", outer))
+				check.New(t).NoError(os.Rename(p, filepath.Join(outer, "moved")))
+				return outer
+			},
+		},
+		{
+			name: "moved by another program out of a folder then removed once stopped",
+			setup: func(t *testing.T, dir string) string {
+				c := check.New(t)
+				p := filepath.Join(dir, "holder", "lib")
+				watch(t, NewLibrary("Lib", "someone", "", "lib", p)).Stop()
+				other := filepath.Join(dir, "other")
+				c.NoError(os.MkdirAll(other, 0o750))
+				c.NoError(os.Rename(p, filepath.Join(other, "moved")))
+				c.NoError(os.Remove(filepath.Join(dir, "holder")))
+				return other
+			},
+		},
+		{
+			name: "covered by a library watched after it",
+			setup: func(t *testing.T, dir string) string {
+				watch(t, NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "outer", "holder", "x", "inner")))
+				watch(t, NewLibrary("Outer", "someone", "", "outer", filepath.Join(dir, "outer")))
+				return filepath.Join(dir, "outer", "holder")
+			},
+		},
+		{
+			name: "covered by a library watched before it",
+			setup: func(t *testing.T, dir string) string {
+				watch(t, NewLibrary("Outer", "someone", "", "outer", filepath.Join(dir, "outer")))
+				watch(t, NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "outer", "holder", "x", "inner")))
+				return filepath.Join(dir, "outer", "holder")
+			},
+		},
+		{
+			name: "covered by a library whose watch was then stopped",
+			setup: func(t *testing.T, dir string) string {
+				outer := watch(t, NewLibrary("Outer", "someone", "", "outer", filepath.Join(dir, "outer")))
+				watch(t, NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "outer", "holder", "x", "inner")))
+				ReleaseStoppedWatches()
+				outer.Stop()
+				return filepath.Join(dir, "outer", "holder")
+			},
+		},
+		{
+			name: "covered by a library whose watch was stopped while another within it was watched",
+			setup: func(t *testing.T, dir string) string {
+				outer := watch(t, NewLibrary("Outer", "someone", "", "outer", filepath.Join(dir, "outer")))
+				watch(t, NewLibrary("Other", "someone", "", "other", filepath.Join(dir, "outer", "other")))
+				outer.Stop()
+				watch(t, NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "outer", "holder", "x", "inner")))
+				return filepath.Join(dir, "outer", "holder")
+			},
+		},
+		{
+			name: "stopped after the library holding it",
+			setup: func(t *testing.T, dir string) string {
+				inner := watch(t, NewLibrary("Inner", "someone", "", "inner", filepath.Join(dir, "holder", "outer", "inner")))
+				outer := watch(t, NewLibrary("Outer", "someone", "", "outer", filepath.Join(dir, "holder", "outer")))
+				ReleaseStoppedWatches()
+				outer.Stop()
+				ReleaseStoppedWatches()
+				inner.Stop()
+				return filepath.Join(dir, "holder")
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			holder := one.setup(t, t.TempDir())
+			ReleaseStoppedWatches()
+			// The platform watcher closes its handles on a goroutine of its own, so the rename is retried for a while.
+			deadline := time.Now().Add(2 * time.Second)
+			for {
+				err := os.Rename(holder, holder+" renamed")
+				if err == nil || time.Now().After(deadline) {
+					c.NoError(err, "the folder holding the watched one must be renamed")
+					break
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+		})
+	}
+}
+
+// TestStopWatchesWithinReportsFoldersJustLetGoOf verifies that StopWatchesWithin reports a folder within the one given
+// that was let go of moments before, since the platform watcher closes its handle on a goroutine of its own afterward,
+// and the navigator retries a rename refused meanwhile only when told one was let go of.
+func TestStopWatchesWithinReportsFoldersJustLetGoOf(t *testing.T) {
+	skipIfWatchEventsTripCheckptr(t) // The release makes a change in the folder the platform watcher still holds
+	c := check.New(t)
+	dir := t.TempDir()
+	NewLibrary("Lib", "someone", "", "lib", filepath.Join(dir, "holder", "lib")).
+		Watch(func(*Library, string, notify.Event) {}, false).Stop()
+	ReleaseStoppedWatches()
+	c.True(StopWatchesWithin(filepath.Join(dir, "holder")), "the folder within was let go of moments before")
+}
+
+// TestMonitorPassesOverReleaseFiles verifies that a watch does not report the file a release makes and removes (see
+// releaseFolder). The navigator reloads on each change reported, and the walk of a reload releases the folders of the
+// libraries within others, so reporting it would have the navigator reload over and over.
+func TestMonitorPassesOverReleaseFiles(t *testing.T) {
+	c := check.New(t)
+	root := filepath.Join(string(filepath.Separator), "lib")
+	m := newMonitor(&Library{})
+	var reported []string
+	m.tokens = []*MonitorToken{{
+		monitor:  m,
+		root:     root,
+		watched:  map[string]string{root: root},
+		callback: func(_ *Library, fullPath string, _ notify.Event) { reported = append(reported, fullPath) },
+	}}
+	m.queue = xos.NewTaskQueue(&xos.TaskQueueConfig{Workers: 1})
+	m.events = make(chan notify.EventInfo, 2)
+	m.done = make(chan bool)
+	go m.listenForEvents()
+	kept := filepath.Join(root, "a.gcs")
+	m.events <- fakeEvent(filepath.Join(root, releaseFilePrefix+"1234"))
+	m.events <- fakeEvent(kept)
+	close(m.events)
+	<-m.done
+	m.queue.Shutdown() // Returns once the events handed to the queue have been delivered
+	c.Equal([]string{kept}, reported, "only the change to something other than a release file is reported")
+}
+
+// fakeEvent is a notify.EventInfo for the creation of the file at the path it names.
+type fakeEvent string
+
+func (e fakeEvent) Event() notify.Event { return notify.Create }
+func (e fakeEvent) Path() string        { return string(e) }
+func (e fakeEvent) Sys() any            { return nil }
 
 func TestLibraryJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
@@ -1250,7 +1814,7 @@ func (t *redirectingTransport) RoundTrip(req *http.Request) (*http.Response, err
 // never enable -race, so no shipped binary carries the check.
 func skipIfWatchEventsTripCheckptr(t *testing.T) {
 	t.Helper()
-	if raceEnabled && runtime.GOOS == "windows" {
+	if raceEnabled && runtime.GOOS == xos.WindowsOS {
 		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
 	}
 }

@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 const minRequirementsPath = "cmd/min_requirements.sh"
@@ -72,7 +73,7 @@ func TestExtractArchivesMountsDMG(t *testing.T) {
 // by platform and the other builders still verify it, so the emulated runtime is skipped rather than retried.
 func shellHarnessBash(t *testing.T) string {
 	t.Helper()
-	if runtime.GOOS == "windows" && runtime.GOARCH == "arm64" {
+	if runtime.GOOS == xos.WindowsOS && runtime.GOARCH == "arm64" {
 		t.Skip("bash on windows/arm64 runs under x64 emulation and intermittently crashes")
 	}
 	bash, err := exec.LookPath("bash")

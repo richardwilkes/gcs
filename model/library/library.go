@@ -341,10 +341,13 @@ func (l *Library) SetPath(newPath string) error {
 	// The monitor must not be touched while the library lock is held, since establishing a watch calls back into
 	// Path(), which needs the library lock itself.
 	m := l.obtainMonitor()
-	tokens := m.stop()
-	l.lock.Lock()
-	l.data.PathOnDisk = p
-	l.lock.Unlock()
+	// The path is changed before the stopped watch can be established again, so that one established by another
+	// goroutine before the tokens are restarted watches the new path.
+	tokens := m.stop(func() {
+		l.lock.Lock()
+		l.data.PathOnDisk = p
+		l.lock.Unlock()
+	})
 	l.refreshVersionOnDisk()
 	for _, token := range tokens {
 		m.startWatch(token, true)
@@ -423,14 +426,16 @@ func (l *Library) CleanupFavorites() {
 // wherever those resolve to on disk -- so it can be compared directly with paths built from Path().
 //
 // Establishing a watch creates the library's directory if it is missing, as Path(true) does, since a directory that
-// does not exist cannot be watched. The same goes for the watches SetPath re-establishes on the new path.
+// does not exist cannot be watched. The same goes for the watches SetPath re-establishes on the new path. On Windows
+// and Linux, another program moving the directory, or one holding it, elsewhere is reported as a change to Path(), and
+// only a watch established afresh is sure to watch a directory put in its place.
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }
 
 // StopAllWatches that were previously established.
 func (l *Library) StopAllWatches() {
-	l.obtainMonitor().stop()
+	l.obtainMonitor().stop(nil)
 }
 
 // obtainMonitor returns the monitor for this library, creating it if needed. The library lock must not be held when

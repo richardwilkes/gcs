@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // TestLibraryFileCovers verifies that an entry covers the whole of its library when its path is empty, and otherwise
@@ -131,7 +132,7 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 		{Library: "other", Path: ""},
 	}, keep.Entries, "entries are cleaned, sorted, and dropped when unusable, repeated or covered by another")
 	odd := `Odd\Name.spl`
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == xos.WindowsOS {
 		odd = "Odd/Name.spl"
 	}
 	c.Equal([]gurps.LibraryFile{{Library: "lib", Path: odd}},
@@ -139,7 +140,7 @@ func TestSettingsLibrarySourceSetHelpers(t *testing.T) {
 		"a backslash separates the names in a path only on Windows, and is part of a name elsewhere")
 	drive := []gurps.LibraryFile{{Library: "lib", Path: "C:x.skl"}, {Library: "lib", Path: `C:\Lib\x.skl`}}
 	want := drive
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == xos.WindowsOS {
 		want = nil
 	}
 	c.Equal(want, gurps.NormalizeLibrarySourceEntries(drive),

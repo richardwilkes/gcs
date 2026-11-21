@@ -30,6 +30,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
 // TestSourcePathSeparatorNormalization verifies that a backslash in a source path is written and read as a slash on
@@ -41,7 +42,7 @@ func TestSourcePathSeparatorNormalization(t *testing.T) {
 	isolateUnownedSrcMatcher(t)
 	registerTestFileTypes(t, TraitsExt)
 	odd := `Odd\Name.adq`
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == xos.WindowsOS {
 		odd = "Odd/Name.adq"
 	}
 	for _, one := range []struct {
