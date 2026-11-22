@@ -58,7 +58,9 @@ type AttributeDefData struct {
 	Base                 string              `json:"base,omitzero"`
 	CostPerPoint         fxp.Int             `json:"cost_per_point,omitzero"`
 	CostAdjPercentPerSM  fxp.Int             `json:"cost_adj_percent_per_sm,omitzero"`
-	Thresholds           []*PoolThreshold    `json:"thresholds,omitempty"`
+	// Increasing has a pool count up from its value rather than down from it; see Attribute.Current.
+	Increasing bool             `json:"increasing,omitzero"`
+	Thresholds []*PoolThreshold `json:"thresholds,omitempty"`
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
@@ -84,8 +86,9 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		a.Base = ExprToScript(legacy.AttributeBase)
 	}
 	if a.Type != attribute.Pool && a.Type != attribute.PoolRef {
-		// Only the pool types keep thresholds, as with a copy; see Clone.
+		// Only the pool types keep thresholds and count up, as with a copy; see Clone.
 		a.Thresholds = nil
+		a.Increasing = false
 	}
 	a.Thresholds = slices.DeleteFunc(a.Thresholds, func(one *PoolThreshold) bool { return one == nil })
 	for _, threshold := range a.Thresholds {
@@ -94,7 +97,7 @@ func (a *AttributeDef) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// Clone returns a copy of this AttributeDef. Thresholds are only carried over for the pool types.
+// Clone returns a copy of this AttributeDef. Thresholds and Increasing are only carried over for the pool types.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
 	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
@@ -106,6 +109,7 @@ func (a *AttributeDef) Clone() *AttributeDef {
 		}
 	} else {
 		clone.Thresholds = nil
+		clone.Increasing = false
 	}
 	return &clone
 }
@@ -268,6 +272,7 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, a.Base)
 	xhash.Num64(h, a.CostPerPoint)
 	xhash.Num64(h, a.CostAdjPercentPerSM)
+	xhash.Bool(h, a.Increasing)
 	hashList(h, a.Thresholds)
 }
 

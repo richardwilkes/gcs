@@ -21,6 +21,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
@@ -1713,6 +1714,187 @@ func TestNewEntityFromFileDropsNullPointsRecords(t *testing.T) {
 	c.Equal(1, len(e.PointsRecord), "the null entry is dropped and the points need no reconciliation")
 	if len(e.PointsRecord) == 1 {
 		c.Equal(fxp.FromInteger(150), e.PointsRecord[0].Points)
+	}
+}
+
+// TestNewEntityFromFileMatchesAttributesToDefs verifies that a sheet file's attributes are matched to the attribute
+// definitions the sheet ends up with, whether those come from the file or, when it has none, from the global settings:
+// each definition gets an attribute, an attribute without a definition is dropped, and the rest keep their values.
+func TestNewEntityFromFileMatchesAttributesToDefs(t *testing.T) {
+	for _, one := range []struct {
+		name     string
+		settings string
+	}{
+		{name: "no settings"},
+		{
+			name: "settings",
+			settings: `"settings": {"attributes": [
+		{"id": "st", "type": "integer", "name": "ST", "base": "10"},
+		{"id": "extra", "type": "integer", "name": "Extra", "base": "10"}
+	]},`,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			data := fmt.Appendf(nil, `{
+	"version": %d,
+	%s
+	"attributes": [{"attr_id": "st", "adj": 2}, {"attr_id": "gone", "adj": 1}]
+}`, jio.CurrentDataVersion, one.settings)
+			c.NoError(os.WriteFile(filepath.Join(dir, "match.gcs"), data, 0o600))
+			e, err := NewEntityFromFile(os.DirFS(dir), "match.gcs")
+			c.NoError(err)
+			if err != nil {
+				return
+			}
+			for attrID := range e.SheetSettings.Attributes.Set {
+				c.NotNil(e.Attributes.Set[attrID], "%s has an attribute", attrID)
+			}
+			c.Nil(e.Attributes.Set["gone"], "an attribute without a definition is dropped")
+			if attr := e.Attributes.Set["st"]; attr != nil {
+				c.Equal(fxp.Two, attr.Adjustment, "an attribute with a definition keeps its adjustment")
+			}
+		})
+	}
+}
+
+// TestNewEntityFromFileRewrapsOnlyItsOwnBodyType verifies that the hit location descriptions of the body type a sheet
+// file older than version 4 holds are rewrapped, but not those of the global body type a file without settings is
+// given.
+func TestNewEntityFromFileRewrapsOnlyItsOwnBodyType(t *testing.T) {
+	const long = "An attack that misses by 1 hits the torso instead, and only some attacks can target this location."
+	body := `"name":"Test","roll":"3d","locations":[{"id":"arm","choice_name":"Arm","table_name":"Arm","slots":1,` +
+		`"description":"` + long + `"}]`
+	global := loadTestBody(check.New(t), `{"version":4,`+body+`}`)
+	if global == nil {
+		return
+	}
+	settings := GlobalSettings()
+	prevBody := settings.Sheet.BodyType
+	settings.Sheet.BodyType = global
+	SyncGlobalSheetSettings()
+	t.Cleanup(func() {
+		settings.Sheet.BodyType = prevBody
+		SyncGlobalSheetSettings()
+	})
+	for _, one := range []struct {
+		name      string
+		version   int
+		settings  string
+		rewrapped bool
+	}{
+		{name: "no settings", version: 3},
+		{name: "settings", version: 3, settings: `"settings": {"body_type": {` + body + `}},`, rewrapped: true},
+		{name: "settings at version 4", version: 4, settings: `"settings": {"body_type": {` + body + `}},`},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			dir := t.TempDir()
+			data := fmt.Appendf(nil, `{"version": %d, %s "profile": {"name": "Plain"}}`, one.version, one.settings)
+			c.NoError(os.WriteFile(filepath.Join(dir, "wrap.gcs"), data, 0o600))
+			e, err := NewEntityFromFile(os.DirFS(dir), "wrap.gcs")
+			c.NoError(err)
+			if err != nil {
+				return
+			}
+			loc := e.SheetSettings.BodyType.LookupLocationByID(e, "arm")
+			c.NotNil(loc, "the location is loaded")
+			if loc == nil {
+				return
+			}
+			c.Equal(long, strings.ReplaceAll(loc.Description, "\n", " "), "the location keeps its description")
+			c.Equal(one.rewrapped, strings.Contains(loc.Description, "\n"), "the description is rewrapped")
+		})
+	}
+}
+
+// TestEntityAttributesHoldWholeNumbersUnlessDecimal verifies that an attribute that doesn't allow decimals, a pool of
+// either type or an integer attribute, makes whole the adjustment a sheet file gives it with a fraction, and a pool its
+// damage too, keeping the maximum the sheet showed even when its base holds a fraction, while its point cost and
+// current value no longer count the fraction, as does a decimal attribute the sheet's settings turn into one that
+// doesn't allow decimals, while a decimal attribute keeps its fractions.
+func TestEntityAttributesHoldWholeNumbersUnlessDecimal(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	data := fmt.Appendf(nil, `{
+	"version": %d,
+	"settings": {"attributes": [
+		{"id": "pool", "type": "pool", "name": "Pool", "base": "10", "cost_per_point": 2},
+		{"id": "ref", "type": "pool_ref", "name": "Ref", "base": "10", "cost_per_point": 2},
+		{"id": "half", "type": "pool", "name": "Half", "base": "10.5", "cost_per_point": 2},
+		{"id": "int", "type": "integer", "name": "Int", "base": "10", "cost_per_point": 2},
+		{"id": "inthalf", "type": "integer", "name": "IntHalf", "base": "10.5", "cost_per_point": 2},
+		{"id": "dec", "type": "decimal", "name": "Dec", "base": "10", "cost_per_point": 2},
+		{"id": "dechalf", "type": "decimal", "name": "DecHalf", "base": "10.5", "cost_per_point": 2},
+		{"id": "decref", "type": "decimal_ref", "name": "DecRef", "base": "10", "cost_per_point": 2}
+	]},
+	"attributes": [
+		{"attr_id": "pool", "adj": 0.5, "damage": 2.5},
+		{"attr_id": "ref", "adj": -0.5, "damage": 2.5},
+		{"attr_id": "half", "adj": 1.5},
+		{"attr_id": "int", "adj": 0.5},
+		{"attr_id": "inthalf", "adj": 1.5},
+		{"attr_id": "dec", "adj": 0.5},
+		{"attr_id": "dechalf", "adj": 1.5},
+		{"attr_id": "decref", "adj": 0.5}
+	]
+}`, jio.CurrentDataVersion)
+	c.NoError(os.WriteFile(filepath.Join(dir, "whole.gcs"), data, 0o600))
+	e, err := NewEntityFromFile(os.DirFS(dir), "whole.gcs")
+	c.NoError(err)
+	if err != nil {
+		return
+	}
+	for _, one := range []struct {
+		id         string
+		adjustment fxp.Int
+		damage     fxp.Int
+		maximum    fxp.Int
+		current    fxp.Int
+	}{
+		{id: "pool", adjustment: 0, damage: fxp.Two, maximum: fxp.Ten, current: fxp.Eight},
+		{id: "ref", adjustment: -fxp.One, damage: fxp.Two, maximum: fxp.Nine, current: fxp.Seven},
+		{id: "half", adjustment: fxp.Two, maximum: fxp.Twelve, current: fxp.Twelve},
+		{id: "int", adjustment: 0, maximum: fxp.Ten, current: fxp.Ten},
+		{id: "inthalf", adjustment: fxp.Two, maximum: fxp.Twelve, current: fxp.Twelve},
+		{id: "dec", adjustment: fxp.Half, maximum: fxp.Ten + fxp.Half, current: fxp.Ten + fxp.Half},
+		{id: "decref", adjustment: fxp.Half, maximum: fxp.Ten + fxp.Half, current: fxp.Ten + fxp.Half},
+	} {
+		attr := e.Attributes.Set[one.id]
+		if attr == nil {
+			c.NotNil(attr, "%s is loaded", one.id)
+			continue
+		}
+		c.Equal(one.adjustment, attr.Adjustment, "%s: adjustment", one.id)
+		c.Equal(one.damage, attr.Damage, "%s: damage", one.id)
+		c.Equal(one.maximum, attr.Maximum(), "%s: maximum", one.id)
+		c.Equal(one.current, attr.Current(), "%s: current", one.id)
+		c.Equal(one.adjustment.Mul(fxp.Two), attr.PointCost(), "%s: point cost", one.id)
+	}
+
+	changes := []struct {
+		id         string
+		to         attribute.Type
+		adjustment fxp.Int
+		maximum    fxp.Int
+	}{
+		{id: "dec", to: attribute.Pool, adjustment: 0, maximum: fxp.Ten},
+		{id: "dechalf", to: attribute.Pool, adjustment: fxp.Two, maximum: fxp.Twelve},
+		{id: "decref", to: attribute.Integer, adjustment: 0, maximum: fxp.Ten},
+	}
+	for _, one := range changes {
+		e.SheetSettings.Attributes.Set[one.id].Type = one.to
+	}
+	e.Recalculate()
+	for _, one := range changes {
+		attr := e.Attributes.Set[one.id]
+		if attr == nil {
+			c.NotNil(attr, "%s is loaded", one.id)
+			continue
+		}
+		c.Equal(one.adjustment, attr.Adjustment, "%s turned %s: adjustment", one.id, one.to)
+		c.Equal(one.maximum, attr.Maximum(), "%s turned %s: maximum", one.id, one.to)
 	}
 }
 

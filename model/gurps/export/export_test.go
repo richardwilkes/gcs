@@ -340,6 +340,17 @@ func TestExportAttributeKinds(t *testing.T) {
 		"{{range .Attributes.Pools}}<{{.ID}}:{{.Current}}/{{.Maximum}}>{{end}}"))
 }
 
+// TestExportPoolDirection verifies that the template export tells a pool that counts up from one that counts down, so
+// that a template can word each as the sheet does.
+func TestExportPoolDirection(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.SheetSettings.Attributes.Set[gurps.FatiguePointsID].Increasing = true
+	entity.Attributes.Set[gurps.FatiguePointsID].Damage = fxp.Two
+	c.Equal("<fp:12 from 10><hp:10 of 10>", runTemplateExport(t, c, entity, "GCS Text Template v1\n"+
+		"{{range .Attributes.Pools}}<{{.ID}}:{{.Current}} {{if .Increasing}}from{{else}}of{{end}} {{.Maximum}}>{{end}}"))
+}
+
 // TestExportTraitPrereqContradiction verifies that the template export carries what the trait table shows for traits
 // caught in a contradiction among the prerequisites the sheet enforces: a trait whose own prerequisites are unmet has
 // the contradiction explained within its unsatisfied reason, and one whose own prerequisites are met has it explained

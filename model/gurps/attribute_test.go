@@ -202,6 +202,55 @@ func TestAttributeCurrentCarriesThresholdEffects(t *testing.T) {
 	}
 }
 
+// TestAttributePoolCountsDownOrUp verifies that a pool's current value is its value less its damage, at the first
+// threshold it lies at or below, while that of one that counts up is its value plus its damage, at the last threshold it
+// lies at or above, with none below the first, and that "$id" gives a threshold the pool's value either way.
+func TestAttributePoolCountsDownOrUp(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		state      string
+		base       string
+		damage     fxp.Int
+		current    fxp.Int
+		increasing bool
+	}{
+		{"High", "10", 0, fxp.Ten, false},
+		{"Mid", "10", fxp.Four, fxp.Six, false},
+		{"Low", "10", fxp.Nine, fxp.One, false},
+		{"", "1", 0, fxp.One, true},
+		{"Low", "1", fxp.Two, fxp.Three, true},
+		{"Low", "1", fxp.Four, fxp.Five, true},
+		{"Mid", "1", fxp.Five, fxp.Six, true},
+		{"High", "1", fxp.Six, fxp.Seven, true},
+		{"High", "1", fxp.FromInteger(20), fxp.FromInteger(21), true},
+	} {
+		e := NewEntity()
+		def := &AttributeDef{
+			DefID:      "pool",
+			Type:       attribute.Pool,
+			Name:       "Pool",
+			Base:       one.base,
+			Increasing: one.increasing,
+		}
+		for _, threshold := range [][2]string{{"Low", "3"}, {"Mid", "6"}, {"High", "$pool + 6"}} {
+			t := NewPoolThreshold()
+			t.State, t.Value = threshold[0], threshold[1]
+			def.Thresholds = append(def.Thresholds, t)
+		}
+		e.SheetSettings.Attributes.Set[def.DefID] = def
+		attr := NewAttribute(e, def.DefID, len(e.Attributes.Set))
+		attr.Damage = one.damage
+		e.Attributes.Set[def.DefID] = attr
+		e.Recalculate()
+		var state string
+		if threshold := attr.CurrentThreshold(); threshold != nil {
+			state = threshold.State
+		}
+		c.Equal(one.current, attr.Current(), "increasing %t, damage %v: current", one.increasing, one.damage)
+		c.Equal(one.state, state, "increasing %t, damage %v: state", one.increasing, one.damage)
+	}
+}
+
 // TestAttributeCurrentOfStandInReadsCurrents verifies that the current value of an attribute standing in for Striking
 // ST, Lifting ST, Throwing ST, Dodge or Move rests on the current values of the attributes its base reads as "$id",
 // other than a pool's, which is what it has left, but not on those that their own bases read, and, for one standing in
@@ -375,7 +424,9 @@ func TestAttributeBonusTooltipThresholdSources(t *testing.T) {
 }
 
 // TestAttributeSetMaximum verifies that setting an attribute's maximum sets its adjustment to what the maximum lacks
-// once the base and the bonus the attribute has are counted.
+// once the base and the bonus the attribute has are counted, and that an attribute that holds whole numbers takes no
+// fraction of one, which its maximum would hide while its point cost counted it, nor a fraction of a level when its
+// base holds one.
 func TestAttributeSetMaximum(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -386,4 +437,24 @@ func TestAttributeSetMaximum(t *testing.T) {
 	c.Equal(fxp.Three, st.Adjustment)
 	e.Recalculate()
 	c.Equal(fxp.Fifteen, st.Maximum())
+
+	hp := e.Attributes.Set[HitPointsID]
+	hp.SetMaximum(hp.Maximum() + fxp.Half)
+	c.Equal(fxp.Int(0), hp.Adjustment, "a pool holds whole numbers")
+	c.Equal(fxp.Int(0), hp.PointCost(), "so it costs nothing")
+
+	e.SheetSettings.Attributes.Set[HitPointsID].Base = "$st / 2" // 7.5, which shows as 7
+	e.Recalculate()
+	hp.SetMaximum(fxp.Nine)
+	c.Equal(fxp.Two, hp.Adjustment, "a pool whose base holds a fraction takes whole levels")
+	e.Recalculate()
+	c.Equal(fxp.Nine, hp.Maximum(), "which give it the maximum asked for")
+
+	e.SheetSettings.Attributes.Set["will"].Base = "10.5"
+	e.Recalculate()
+	will := e.Attributes.Set["will"]
+	will.SetMaximum(fxp.Twelve)
+	c.Equal(fxp.Two, will.Adjustment, "as does an integer attribute whose base holds a fraction")
+	e.Recalculate()
+	c.Equal(fxp.Twelve, will.Maximum(), "which give it the maximum asked for too")
 }

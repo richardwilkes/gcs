@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -29,7 +30,8 @@ var _ Hashable = &Attribute{}
 type AttributeData struct {
 	AttrID     string  `json:"attr_id"`
 	Adjustment fxp.Int `json:"adj"`
-	Damage     fxp.Int `json:"damage,omitzero"`
+	// Damage is what a pool has lost or, for one that counts up, gained; see Attribute.Current.
+	Damage fxp.Int `json:"damage,omitzero"`
 }
 
 // Attribute holds the current state of an AttributeDef.
@@ -110,7 +112,8 @@ func (a *Attribute) AttributeDef() *AttributeDef {
 	return a.Entity.SheetSettings.Attributes.Set[a.AttrID]
 }
 
-// Maximum returns the maximum value of a pool or the adjusted attribute value for other types.
+// Maximum returns the maximum value of a pool, the value a pool that counts up starts from, or the adjusted attribute
+// value for other types.
 func (a *Attribute) Maximum() fxp.Int {
 	return a.maximumWithBonus(a.bonus())
 }
@@ -143,13 +146,23 @@ func (a *Attribute) maximumWithBonus(bonus fxp.Int) fxp.Int {
 	return maximum
 }
 
-// SetMaximum sets the maximum value.
+// SetMaximum sets the maximum value. An attribute that doesn't allow decimals takes a whole adjustment, even when its
+// base is not whole, and drops a fraction given it, since its maximum would hide it while its point cost counted it;
+// see Entity.makeAdjustmentsWhole.
 func (a *Attribute) SetMaximum(value fxp.Int) {
-	if a.Maximum() == value {
+	def := a.AttributeDef()
+	if def == nil || def.IsSeparator() {
 		return
 	}
-	if def := a.AttributeDef(); def != nil && !def.IsSeparator() {
-		a.Adjustment = value - (def.BaseValue(a) + a.Bonus)
+	if !def.AllowsDecimal() {
+		value = value.Floor()
+	}
+	if a.Maximum() != value {
+		base := def.BaseValue(a) + a.Bonus
+		if !def.AllowsDecimal() {
+			base = base.Floor()
+		}
+		a.Adjustment = value - base
 	}
 }
 
@@ -212,17 +225,18 @@ func (a *Attribute) NameMatches(name string) bool {
 	return strings.EqualFold(def.Name, name) || strings.EqualFold(def.FullName, name)
 }
 
-// Current returns the current value. That of a pool is its maximum less the damage taken. That of any other attribute
-// is its maximum with the amounts the pools' current thresholds give it added, then multiplied by each multiplier given
-// it in turn, rounded to whole after each unless the attribute allows decimals and stands in for neither Dodge nor
-// Move, which the sheet uses as whole numbers; see Entity.processThresholdFeatures.
-// That of one standing in for Striking ST, Lifting ST or Throwing ST then takes the bonuses ST is given under the same
-// limitation, as the ST the sheet works out without it does, so that it is the ST in use; see Entity.limitedStrength.
-// Scripts read it as "$id.current"; "$id", the attributes derived from it and its point cost use the maximum, except
-// that the current value of an attribute standing in for Striking ST, Lifting ST, Throwing ST, Dodge or Move starts
-// from its base with each attribute other than a pool the base reads as "$id" giving its current value, as the value
-// the sheet works out without such an attribute starts from the current value of ST, Basic Speed or Basic Move; see
-// baseReadsCurrents. A pool's current value is what it has left, so the base reads its maximum there still.
+// Current returns the current value. That of a pool is its maximum less what it has lost or, for one that counts up,
+// the value it starts from plus what it has gained. That of any other attribute is its maximum with the amounts the
+// pools' current thresholds give it added, then multiplied by each multiplier given it in turn, rounded to whole after
+// each unless the attribute allows decimals and stands in for neither Dodge nor Move, which the sheet uses as whole
+// numbers; see Entity.processThresholdFeatures. That of one standing in for Striking ST, Lifting ST or Throwing ST then
+// takes the bonuses ST is given under the same limitation, as the ST the sheet works out without it does, so that it is
+// the ST in use; see Entity.limitedStrength. Scripts read it as "$id.current"; "$id", the attributes derived from it
+// and its point cost use the maximum, except that the current value of an attribute standing in for Striking ST,
+// Lifting ST, Throwing ST, Dodge or Move starts from its base with each attribute other than a pool the base reads as
+// "$id" giving its current value, as the value the sheet works out without such an attribute starts from the current
+// value of ST, Basic Speed or Basic Move; see baseReadsCurrents. A pool's current value tracks what it has lost or
+// gained, so the base reads its maximum there still.
 func (a *Attribute) Current() fxp.Int {
 	return a.currentWith(a.bonus(), false, true)
 }
@@ -237,6 +251,9 @@ func (a *Attribute) currentWith(bonus fxp.Int, forPrereqs, limitedAmounts bool) 
 		return 0
 	}
 	if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
+		if def.Increasing {
+			return a.maximumWithBonus(bonus) + a.Damage
+		}
 		return a.maximumWithBonus(bonus) - a.Damage
 	}
 	var value fxp.Int
@@ -345,9 +362,17 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	return t
 }
 
-// thresholdFor returns the first of the definition's thresholds that the given current value of the pool lies at or
-// below, or nil if there is none.
+// thresholdFor returns the threshold of the definition that the given current value of the pool puts it at, or nil if
+// there is none: the first it lies at or below or, for a pool that counts up, the last it lies at or above.
 func (a *Attribute) thresholdFor(def *AttributeDef, cur fxp.Int) *PoolThreshold {
+	if def.Increasing {
+		for _, t := range slices.Backward(def.Thresholds) {
+			if cur >= t.Threshold(a) {
+				return t
+			}
+		}
+		return nil
+	}
 	for _, t := range def.Thresholds {
 		if cur <= t.Threshold(a) {
 			return t

@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // The reference key suffixes, after the definition's target key prefix, of the widgets of an attribute's row that the
@@ -245,6 +246,13 @@ func (p *attrDefSettingsPanel) addFields(content *unison.Panel) {
 	}
 
 	if p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef {
+		content.AddChild(unison.NewPanel())
+		countsUp := NewCheckBox(p.dockable.targetMgr, p.def.KeyPrefix+"increasing", i18n.Text("Counts up from its value"),
+			func() check.Enum { return check.FromBool(p.def.Increasing) },
+			func(state check.Enum) { p.def.Increasing = state == check.On })
+		countsUp.Tooltip = newWrappedTooltip(i18n.Text("The pool starts at its value and counts up from there, for something that builds up, such as stress, rather than down from it as HP and FP do. Its state is that of the highest threshold it has reached."))
+		content.AddChild(countsUp)
+
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
@@ -334,19 +342,32 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 }
 
 // applyAttributeType changes the attribute's type in a single undo edit of the whole set of definitions, since the
-// change may add a threshold, drop the thresholds of a type that has none, as copying the definitions would (see
-// gurps.AttributeDef.Clone), or clear the fields a separator has no use for, all of which undoing it must bring back.
+// change may add a threshold, drop the thresholds of a type that has none and clear its counting up, as copying the
+// definitions would (see gurps.AttributeDef.Clone), clear the fields a separator has no use for, including its
+// placement, which would otherwise leave it hidden with no way to show it, or give a pool the automatic placement it
+// alone is shown with (see gurps.AttributeDef.Kind) in place of a primary or secondary one, all of which undoing it
+// must bring back.
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 	p.dockable.editStructure(i18n.Text("Attribute Type"), func() {
 		p.def.Type = attrType
 		if p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef {
 			p.def.Thresholds = nil
-		} else if len(p.def.Thresholds) == 0 {
-			threshold := gurps.NewPoolThreshold()
-			threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
-			p.def.Thresholds = append(p.def.Thresholds, threshold)
+			p.def.Increasing = false
+		} else {
+			if len(p.def.Thresholds) == 0 {
+				threshold := gurps.NewPoolThreshold()
+				threshold.KeyPrefix = p.dockable.targetMgr.NextPrefix()
+				p.def.Thresholds = append(p.def.Thresholds, threshold)
+			}
+			if p.def.Placement != attribute.Hidden {
+				p.def.Placement = attribute.Automatic
+			}
+			p.def.PlacementWhenPresent = attribute.Automatic
 		}
 		if p.def.IsSeparator() {
+			p.def.Placement = attribute.Automatic
+			p.def.PlacementWhenPresent = attribute.Automatic
+			p.def.PlacementTrait = ""
 			p.def.FullName = ""
 			p.def.Base = ""
 			p.def.CostPerPoint = 0

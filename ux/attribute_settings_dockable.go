@@ -360,18 +360,7 @@ func (d *attributeSettingsDockable) apply() {
 	} else {
 		entity = d.owner.Entity()
 		entity.SheetSettings.Attributes = d.model.Clone()
-		for attrID, def := range entity.SheetSettings.Attributes.Set {
-			if attr, exists := entity.Attributes.Set[attrID]; exists {
-				attr.Order = def.Order
-			} else {
-				entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
-			}
-		}
-		for attrID := range entity.Attributes.Set {
-			if _, exists := d.model.Set[attrID]; !exists {
-				delete(entity.Attributes.Set, attrID)
-			}
-		}
+		entity.MatchAttributesToDefs()
 	}
 	notifySheetSettingsUpdated(entity, gurps.SheetSettingsAttributesPart, true)
 }

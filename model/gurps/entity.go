@@ -480,13 +480,15 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	// running on a background goroutine (the deep search content cache) while the UI thread mutates the live settings.
 	if e.SheetSettings == nil {
 		e.SheetSettings = globalSheetSettingsClone(e)
+	} else if e.Version < noNeedForRewrapVersion {
+		// Only the file's own body type can need rewrapping, not the global one cloned in its absence.
+		e.SheetSettings.BodyType.Rewrap()
 	}
 	if e.Attributes == nil {
 		e.Attributes = NewAttributes(e)
 	}
-	if e.Version < noNeedForRewrapVersion {
-		e.SheetSettings.BodyType.Rewrap()
-	}
+	// A file may hold attributes without their definitions, or definitions without some of their attributes.
+	e.MatchAttributesToDefs()
 	e.PointsRecord = slices.DeleteFunc(e.PointsRecord, func(rec *PointsRecord) bool { return rec == nil })
 	var total fxp.Int
 	for _, rec := range e.PointsRecord {
@@ -642,7 +644,9 @@ func (e *Entity) Recalculate() {
 
 // recalculate is Recalculate with the cap on the passes all of its rounds make between them given rather than fixed,
 // and returns how many passes they made. Recalculate gives it maxRecalculationPassesInAll; a test may give it less to
-// see the rounds stopped short.
+// see the rounds stopped short. A recalculation that finds a fraction in the adjustment of an attribute that doesn't
+// allow decimals makes it whole and is made again under a cap of its own, whose passes are counted too; see
+// makeAdjustmentsWhole.
 func (e *Entity) recalculate(passBudget int) int {
 	if e == nil {
 		return 0
@@ -659,6 +663,7 @@ func (e *Entity) recalculate(passBudget int) int {
 	}()
 	e.reconcileGrants()
 	e.EnsureAttachments()
+	e.dropPoolDamageFractions()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
 	Traverse(func(t *Trait) bool {
@@ -687,6 +692,12 @@ func (e *Entity) recalculate(passBudget int) int {
 			"defaults, features and scripts at once", "name", e.Profile.Name)
 	}
 	e.unsettled = contradicted
+	if e.makeAdjustmentsWhole() {
+		// The attributes' maximums are as they were but their point costs are not, so the sheet is recalculated again.
+		// That finds every adjustment whole, so this recurses once at most.
+		made += e.recalculate(passBudget)
+		state = e.derivedState(len(before))
+	}
 	e.derivedStateChanged = !slices.Equal(before, state)
 	return made
 }
@@ -993,6 +1004,33 @@ func (e *Entity) EnsureAttachments() {
 	SetDataOwnerAll(e, e.CarriedEquipment)
 	SetDataOwnerAll(e, e.OtherEquipment)
 	SetDataOwnerAll(e, e.Notes)
+}
+
+// dropPoolDamageFractions drops any fraction from what each pool has lost or gained, since a pool holds whole numbers
+// but a sheet file may give it one; see makeAdjustmentsWhole for the adjustments.
+func (e *Entity) dropPoolDamageFractions() {
+	for _, attr := range e.Attributes.Set {
+		if def := attr.AttributeDef(); def != nil && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
+			attr.Damage = attr.Damage.Floor()
+		}
+	}
+}
+
+// makeAdjustmentsWhole replaces the fractional adjustment of each attribute that doesn't allow decimals, which a sheet
+// file or a change of its type from a decimal one may leave, with its maximum less the rounded-down sum of its base and
+// bonus, as SetMaximum sets it, and returns whether it replaced any. Being whole, the new adjustment leaves the
+// maximum, the rounded-down sum of base, adjustment and bonus, as it is. The base and bonus are final only once the
+// passes are over, so it runs after them; see recalculate.
+func (e *Entity) makeAdjustmentsWhole() bool {
+	changed := false
+	for _, attr := range e.Attributes.Set {
+		if def := attr.AttributeDef(); def != nil && !def.IsSeparator() && !def.AllowsDecimal() &&
+			attr.Adjustment != attr.Adjustment.Floor() {
+			attr.Adjustment = attr.Maximum() - (def.BaseValue(attr) + attr.Bonus).Floor()
+			changed = true
+		}
+	}
+	return changed
 }
 
 // processFeatures collects the features in effect and records what they do to the attributes, the size modifier and

@@ -36,6 +36,25 @@ func NewAttributes(entity *Entity) *Attributes {
 	return a
 }
 
+// MatchAttributesToDefs gives the entity an attribute for each of its attribute definitions that has none, drops the
+// attributes whose definition is gone, and gives the rest the order of their definitions. Whatever replaces the
+// entity's attribute definitions must call it.
+func (e *Entity) MatchAttributesToDefs() {
+	defs := e.SheetSettings.Attributes.Set
+	for attrID, def := range defs {
+		if attr, exists := e.Attributes.Set[attrID]; exists {
+			attr.Order = def.Order
+		} else {
+			e.Attributes.Set[attrID] = NewAttribute(e, attrID, def.Order)
+		}
+	}
+	for attrID := range e.Attributes.Set {
+		if _, exists := defs[attrID]; !exists {
+			delete(e.Attributes.Set, attrID)
+		}
+	}
+}
+
 // MarshalJSONTo implements json.MarshalerTo.
 func (a *Attributes) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, a.List())

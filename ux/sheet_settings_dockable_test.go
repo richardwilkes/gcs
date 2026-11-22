@@ -129,8 +129,9 @@ func flipCheckboxOptions(s *gurps.SheetSettings) {
 // settings file into them, puts the new settings in place and tells the open sheets once that every part changed, with
 // a full rebuild, though the settings differ only in the options shown as checkboxes, or a sheet's only in a skill
 // level cap, which no checkbox shows: sync() shows the new settings in the dockable's own widgets without telling the
-// sheets, and assigning a CheckBox's State is not a click. A file read afterward without settings of its own takes on
-// the new defaults, and a file that can't be loaded changes nothing.
+// sheets, and assigning a CheckBox's State is not a click. A sheet is left with an attribute for each of the new
+// attribute definitions, in their order, and no others. A file read afterward without settings of its own takes on the
+// new defaults, and a file that can't be loaded changes nothing.
 func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
 	reset := func(_ *testing.T, d *sheetSettingsDockable, _ *gurps.SheetSettings) error {
 		d.reset()
@@ -148,6 +149,9 @@ func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
 		name     string
 		defaults bool // the defaults are replaced rather than a sheet's settings
 		capOnly  bool // the sheet's settings differ from the defaults only in holding a skill level cap
+		// The sheet's attribute definitions lack one of the defaults', hold one the defaults lack, and order the rest
+		// otherwise, and its attributes match them.
+		ownAttrs bool
 		replace  func(t *testing.T, d *sheetSettingsDockable, want *gurps.SheetSettings) error
 		fails    bool
 	}{
@@ -155,6 +159,8 @@ func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
 		{name: "loading a sheet's", replace: load},
 		{name: "resetting a sheet's that differ only in a cap", capOnly: true, replace: reset},
 		{name: "loading a sheet's that differ only in a cap", capOnly: true, replace: load},
+		{name: "resetting a sheet's with attributes of its own", ownAttrs: true, replace: reset},
+		{name: "loading a sheet's with attributes of its own", ownAttrs: true, replace: load},
 		{name: "resetting the defaults", defaults: true, replace: reset},
 		{name: "loading the defaults", defaults: true, replace: load},
 		{
@@ -184,6 +190,15 @@ func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
 					flipCheckboxOptions(p.entity.SheetSettings) // Back to the defaults.
 					p.entity.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{newTestSkillLevelCap("Stealth", 12)}
 				}
+				if one.ownAttrs {
+					defs := p.entity.SheetSettings.Attributes
+					delete(defs.Set, "per")
+					defs.Set["zest"] = testAttrDef("zest", "Zest", 0)
+					for _, def := range defs.Set {
+						def.Order = -def.Order
+					}
+					p.entity.Attributes = gurps.NewAttributes(p.entity)
+				}
 				owner, entity = p, p.entity
 				want = gurps.GlobalSettings().Sheet
 			}
@@ -201,6 +216,18 @@ func TestSheetSettingsReplacingThemNotifiesSheets(t *testing.T) {
 			c.Equal([]*gurps.Entity{entity}, recorder.entities, "the change is reported once, for the settings replaced")
 			c.Equal([]gurps.SheetSettingsParts{gurps.SheetSettingsAllParts}, recorder.parts, "as one to every part")
 			c.Equal([]bool{true}, recorder.updates, "with a full rebuild, since column visibility may have changed")
+			if entity != nil {
+				defOrders := make(map[string]int)
+				for id, def := range entity.SheetSettings.Attributes.Set {
+					defOrders[id] = def.Order
+				}
+				attrOrders := make(map[string]int)
+				for id, attr := range entity.Attributes.Set {
+					attrOrders[id] = attr.Order
+				}
+				c.Equal(defOrders, attrOrders,
+					"the sheet holds an attribute for each of the new definitions, in their order, and no others")
+			}
 			if one.defaults {
 				var read gurps.Entity
 				read.DiscardCaches()

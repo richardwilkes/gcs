@@ -259,32 +259,48 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 						a.AddChild(unison.NewPanel())
 					}
 
+					increasing := def.Increasing
+					joiner, valueTitle := i18n.Text("of"), i18n.Text("Point Pool Maximum")
+					valueName := i18n.Text("Maximum %s", def.ResolveFullName())
+					if increasing {
+						joiner, valueTitle = i18n.Text("from"), i18n.Text("Point Pool Starting Value")
+						valueName = i18n.Text("Starting %s", def.ResolveFullName())
+					}
+					minValue, maxValue := poolCurrentLimits(increasing, attr.Maximum())
 					var currentField *DecimalField
 					currentField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":cur",
 						i18n.Text("Point Pool Current"), func() fxp.Int {
 							if currentField != nil {
-								currentField.SetMinMax(currentField.Min(), attr.Maximum())
+								currentField.SetMinMax(poolCurrentLimits(poolCountsUp(attr), attr.Maximum()))
 							}
 							return attr.Current()
 						},
-						func(v fxp.Int) { attr.Damage = (attr.Maximum() - v).Max(0) }, fxp.Min, attr.Maximum(), true)
-					// The fields of a pool row sit on either side of the word "of", with the pool's name only after
-					// both of them, so each is named outright.
+						func(v fxp.Int) {
+							if poolCountsUp(attr) {
+								attr.Damage = (v - attr.Maximum()).Max(0)
+							} else {
+								attr.Damage = (attr.Maximum() - v).Max(0)
+							}
+						}, minValue, maxValue, true)
+					refuseFractions(currentField)
+					// The fields of a pool row sit on either side of the word "of", or "from" for a pool that counts
+					// up, with the pool's name only after both of them, so each is named outright.
 					currentField.Accessibility.Name = i18n.Text("Current %s", def.ResolveFullName())
 					a.AddChild(currentField)
 
-					a.AddChild(NewPageLabel(i18n.Text("of")))
+					a.AddChild(NewPageLabel(joiner))
 
 					var maximumField unison.Paneler
 					if def.Type == attribute.Pool {
-						field := NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
-							i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
+						field := NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max", valueTitle,
+							func() fxp.Int { return attr.Maximum() },
 							func(v fxp.Int) {
 								attr.SetMaximum(v)
-								currentField.SetMinMax(currentField.Min(), v)
+								currentField.SetMinMax(poolCurrentLimits(poolCountsUp(attr), v))
 								currentField.Sync()
 							}, fxp.Min, fxp.Max, true)
-						field.Accessibility.Name = i18n.Text("Maximum %s", def.ResolveFullName())
+						refuseFractions(field)
+						field.Accessibility.Name = valueName
 						maximumField = field
 					} else {
 						maximumField = NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
@@ -372,6 +388,23 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field.OnBackgroundInk = dimmedTextColor
 	field.SetTitle(field.Text.String())
 	return field
+}
+
+// poolCountsUp returns true if the pool counts up from its value. A pool's row asks each time rather than keeping what
+// its definition said when it was built, since a change to the definition reaches the row's fields before the panel
+// rebuilds the row (see DeepSync), and those fields would otherwise write the new current value back the old way.
+func poolCountsUp(attr *gurps.Attribute) bool {
+	def := attr.AttributeDef()
+	return def != nil && def.Increasing
+}
+
+// poolCurrentLimits returns the range the sheet lets a pool's current value take, given the pool's value: no higher
+// than it or, for a pool that counts up, no lower.
+func poolCurrentLimits(increasing bool, value fxp.Int) (minValue, maxValue fxp.Int) {
+	if increasing {
+		return value, fxp.Max
+	}
+	return fxp.Min, value
 }
 
 // showCurrentWhileIdle has a field that edits the maximum of a non-pool attribute show the attribute's current value,

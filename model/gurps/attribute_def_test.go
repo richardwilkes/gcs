@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -135,18 +136,36 @@ func TestAttributeDefsWithNullRows(t *testing.T) {
 	c.Equal(Hash64(defs), Hash64(defs.Clone()), "hash of clone matches")
 }
 
-// TestAttributeDefThresholdsOnlyForPools pins that a definition read from a file keeps thresholds for the pool types
-// alone, as a copy of it does, so that whether a loaded definition has them never depends on whether it was copied.
-func TestAttributeDefThresholdsOnlyForPools(t *testing.T) {
+// TestAttributeDefPoolSettingsOnlyForPools pins that a definition read from a file keeps its thresholds and its counting
+// up for the pool types alone, as a copy of one does, so that whether a definition has them never depends on whether it
+// was loaded or copied, and that a pool's counting up is written out and hashed.
+func TestAttributeDefPoolSettingsOnlyForPools(t *testing.T) {
 	c := check.New(t)
 	for _, typ := range attribute.Types {
 		var def AttributeDef
-		c.NoError(jio.Unmarshal([]byte(`{"id":"x","type":"`+typ.Key()+`","name":"X","thresholds":[{"state":"Low"}]}`),
-			&def))
+		c.NoError(jio.Unmarshal([]byte(`{"id":"x","type":"`+typ.Key()+
+			`","name":"X","increasing":true,"thresholds":[{"state":"Low"}]}`), &def))
 		pool := typ == attribute.Pool || typ == attribute.PoolRef
-		c.Equal(pool, len(def.Thresholds) != 0, "%s: loaded", typ.Key())
-		c.Equal(pool, len(def.Clone().Thresholds) != 0, "%s: copied", typ.Key())
+		c.Equal(pool, len(def.Thresholds) != 0, "%s: thresholds loaded", typ.Key())
+		c.Equal(pool, def.Increasing, "%s: counting up loaded", typ.Key())
+		data, err := jio.Marshal(&def)
+		c.NoError(err)
+		c.Equal(pool, strings.Contains(string(data), `"increasing"`), "%s: counting up saved in %s", typ.Key(), data)
+
+		built := &AttributeDef{
+			DefID:      "x",
+			Type:       typ,
+			Increasing: true,
+			Thresholds: []*PoolThreshold{NewPoolThreshold()},
+		}
+		copied := built.Clone()
+		c.Equal(pool, len(copied.Thresholds) != 0, "%s: thresholds copied", typ.Key())
+		c.Equal(pool, copied.Increasing, "%s: counting up copied", typ.Key())
 	}
+	down := &AttributeDef{DefID: "x", Type: attribute.Pool}
+	up := down.Clone()
+	up.Increasing = true
+	c.NotEqual(Hash64(down), Hash64(up), "counting up changes the hash")
 }
 
 // TestNamelessAttributeNamedByFullNameOrID pins that a defined attribute with no name, as one just added in the

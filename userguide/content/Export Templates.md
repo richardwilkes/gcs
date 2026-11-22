@@ -806,6 +806,9 @@ A point pool, such as HP or FP. See [Point Pools](Point%20pools).
 - `.Maximum` (Number)
 - `.Name` (string)
 - `.Points` (Number)
+- Added in GCS v5.62:
+  - `.Increasing` (boolean) — True for a pool that counts up from `.Maximum`, the value it starts from, rather than
+    down from it
 
 ## RangedWeapon
 

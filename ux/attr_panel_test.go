@@ -554,6 +554,95 @@ func TestAttrPanelPoolStateListsThresholdFeatures(t *testing.T) {
 		"a threshold with no state is named as tooltips name it")
 }
 
+// TestAttrPanelPoolRowFollowsItsDirection verifies that a pool's row reads "of" between its current value and its
+// maximum and keeps the current value at or below the maximum, while that of a pool that counts up reads "from" between
+// its current value and the value it starts from and keeps the current value at or above that, with both fields
+// refusing a fraction and the second named for what it holds, that a change to the pool's value, made in that field
+// or, for a display-only pool, by its base, carries the current value and its limit with it, and that a change of the
+// pool's direction keeps what it has lost or gained.
+func TestAttrPanelPoolRowFollowsItsDirection(t *testing.T) {
+	for _, one := range []struct {
+		name       string
+		joiner     string
+		valueName  string
+		threeAway  string
+		beyond     string
+		moved      string
+		typ        attribute.Type
+		increasing bool
+	}{
+		{name: "down", typ: attribute.Pool, joiner: "of", valueName: "Maximum Pool", threeAway: "7", beyond: "12", moved: "9"},
+		{name: "up", typ: attribute.Pool, joiner: "from", valueName: "Starting Pool", threeAway: "13", beyond: "8", moved: "15", increasing: true},
+		{name: "display-only down", typ: attribute.PoolRef, joiner: "of", threeAway: "7", beyond: "12", moved: "9"},
+		{name: "display-only up", typ: attribute.PoolRef, joiner: "from", threeAway: "13", beyond: "8", moved: "15", increasing: true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			e := gurps.NewEntity()
+			def := &gurps.AttributeDef{
+				DefID:      "pool",
+				Type:       one.typ,
+				Name:       "Pool",
+				Base:       "10",
+				Increasing: one.increasing,
+				Order:      1000,
+			}
+			e.SheetSettings.Attributes.Set["pool"] = def
+			attr := gurps.NewAttribute(e, "pool", 1000)
+			e.Attributes.Set["pool"] = attr
+			e.Recalculate()
+			panel := NewPointPoolsPanel(e, NewTargetMgr(unison.NewPanel()))
+			root := newPageUndoRoot()
+			root.AddChild(panel)
+			current, ok := refKeySelf(panel.AsPanel(), panel.prefix+"pool:cur").(*DecimalField)
+			if !ok {
+				t.Fatal("the row has a field for the current value")
+			}
+			children := panel.Children()
+			i := slices.Index(children, current.AsPanel())
+			c.Equal([]string{one.joiner}, uxtest.LabelTexts(children[i+1]), "the word between the fields")
+			c.False(current.RuneTypedCallback('.'), "a pool holds whole numbers, so its current value refuses a decimal point")
+
+			current.SetText(one.threeAway)
+			c.Equal(fxp.Three, attr.Damage, "the current value is three away from the pool's value")
+			current.SetText(one.beyond)
+			c.Equal(fxp.Int(0), attr.Damage, "a current value on the other side of the pool's value is brought back to it")
+
+			current.SetText(one.threeAway)
+			if one.typ == attribute.Pool {
+				value, isField := panel.valueFields["pool"].(*DecimalField)
+				if !isField {
+					t.Fatal("the row has a field for the pool's value")
+				}
+				c.Equal(one.valueName, value.Accessibility.Name)
+				c.False(value.RuneTypedCallback('.'), "a pool holds whole numbers, so its value refuses a decimal point")
+				value.SetText("12")
+			} else {
+				def.Base = "12"
+				e.Recalculate()
+				DeepSync(root)
+			}
+			c.Equal(fxp.Twelve, attr.Maximum())
+			c.Equal(fxp.Three, attr.Damage, "a change to the pool's value leaves what it has lost or gained alone")
+			c.Equal(one.moved, current.Text(), "so the current value moves with it")
+			limit := current.Max()
+			if one.increasing {
+				limit = current.Min()
+			}
+			c.Equal(fxp.Twelve, limit, "as does the limit on the current value")
+
+			// The attribute settings put copies of the definitions in place, and a sync reaches the row's fields before
+			// the panel rebuilds the row.
+			defs := e.SheetSettings.Attributes.Clone()
+			defs.Set["pool"].Increasing = !one.increasing
+			e.SheetSettings.Attributes = defs
+			e.Recalculate()
+			DeepSync(root)
+			c.Equal(fxp.Three, attr.Damage, "a change of direction keeps what the pool has lost or gained")
+		})
+	}
+}
+
 // TestAttrPanelSeparatorShowsAndHidesItsSection verifies that a click on a separator's button hides the attributes that
 // follow it, which start out shown, and that another click shows them again.
 func TestAttrPanelSeparatorShowsAndHidesItsSection(t *testing.T) {

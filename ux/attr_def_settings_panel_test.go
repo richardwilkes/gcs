@@ -27,7 +27,8 @@ import (
 
 // TestAttributeTypeChangeIsUndoable verifies that changing an attribute's type through its popup is a single undo edit
 // of the whole set of definitions, so that undoing a change from a pool to a separator or to another type without
-// thresholds brings back what the change cleared: the thresholds, and for a separator the fields it has no use for.
+// thresholds brings back what the change cleared: the thresholds and the counting up, which only a pool is offered, and
+// for a separator the fields it has no use for.
 func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 	for _, attrType := range []attribute.Type{attribute.PoolSeparator, attribute.Integer} {
 		t.Run(attrType.Key(), func(t *testing.T) {
@@ -38,6 +39,8 @@ func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 			fp := d.model.Set[gurps.FatiguePointsID]
 			c.Equal(attribute.Pool, fp.Type)
 			c.True(len(fp.Thresholds) > 1, "the factory FP has several thresholds")
+			clickCheckBox(widgetFor[*CheckBox](t, d, fp.KeyPrefix+"increasing"), true)
+			c.True(fp.Increasing, "the check box writes the model")
 			before := fp.Clone()
 			beforeHash := gurps.Hash64(d.model)
 			rowsBefore := len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel()))
@@ -51,6 +54,9 @@ func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 				c.Equal(before.Base, fp.Base, "only a separator loses its base")
 			}
 			c.Nil(fp.Thresholds, "a type other than a pool has no thresholds")
+			c.False(fp.Increasing, "nor does it count up")
+			c.NotNil(d.targetMgr.Find(fp.KeyPrefix+"type"), "the row stays expanded")
+			c.Nil(d.targetMgr.Find(fp.KeyPrefix+"increasing"), "counting up is offered for a pool alone")
 			c.Equal("Undo Attribute Type", d.undoMgr.UndoTitle())
 
 			d.undoMgr.Undo()
@@ -60,8 +66,9 @@ func TestAttributeTypeChangeIsUndoable(t *testing.T) {
 			c.Equal(before.Base, fp.Base, "undo restores the base")
 			c.Equal(before.CostPerPoint, fp.CostPerPoint, "undo restores the cost per point")
 			c.Equal(thresholdStates(before), thresholdStates(fp), "undo restores the thresholds")
+			c.True(fp.Increasing, "undo restores the counting up")
 			c.Equal(beforeHash, gurps.Hash64(d.model), "undo restores the definitions exactly")
-			c.False(d.undoMgr.CanUndo(), "the type change is a single edit")
+			c.Equal("Undo Counts up from its value", d.undoMgr.UndoTitle(), "the type change is a single edit")
 			c.Equal(rowsBefore, len(uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())),
 				"the panels are rebuilt from the restored definitions")
 
@@ -407,6 +414,63 @@ func TestAttributePlacementHiddenUnlessATraitIsPresent(t *testing.T) {
 	placement(st).Select(attribute.Primary)
 	c.Equal(attribute.Primary, st.Placement)
 	c.Nil(d.targetMgr.Find(st.KeyPrefix+"placement_trait"), "another placement asks for no trait")
+}
+
+// TestAttributeTypeChangeKeepsAnOfferedPlacement verifies that an attribute whose type changes is left with a placement
+// its new type offers: a pool, which is offered automatic placement and hiding alone, and is shown automatically when
+// revealed, loses any other, and a separator, which is offered none, is shown, while a placement the new type offers is
+// kept. Undoing the change brings the placement back.
+func TestAttributeTypeChangeKeepsAnOfferedPlacement(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		from        attribute.Placement
+		typ         attribute.Type
+		placement   attribute.Placement
+		whenPresent attribute.Placement
+		trait       string
+	}{
+		{
+			name: "primary to pool", from: attribute.Primary, typ: attribute.Pool, placement: attribute.Automatic,
+			whenPresent: attribute.Automatic, trait: "Magery",
+		},
+		{
+			name: "secondary to display-only pool", from: attribute.Secondary, typ: attribute.PoolRef,
+			placement: attribute.Automatic, whenPresent: attribute.Automatic, trait: "Magery",
+		},
+		{
+			name: "hidden to pool", from: attribute.Hidden, typ: attribute.Pool, placement: attribute.Hidden,
+			whenPresent: attribute.Automatic, trait: "Magery",
+		},
+		{
+			name: "hidden to separator", from: attribute.Hidden, typ: attribute.PrimarySeparator,
+			placement: attribute.Automatic, whenPresent: attribute.Automatic,
+		},
+		{
+			name: "secondary to decimal", from: attribute.Secondary, typ: attribute.Decimal,
+			placement: attribute.Secondary, whenPresent: attribute.Secondary, trait: "Magery",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			defs := testAttrDefs("st")
+			st := defs.Set["st"]
+			st.Placement = tc.from
+			st.PlacementTrait = "Magery"
+			st.PlacementWhenPresent = attribute.Secondary
+			d := newTestAttributeSettingsDockableFor(defs)
+			initTestSettingsContent(&d.undoableSettingsDockable)
+			expandAllAttributes(d)
+			widgetFor[*Popup[attribute.Type]](t, d, d.model.Set["st"].KeyPrefix+"type").Select(tc.typ)
+			def := d.model.Set["st"]
+			c.Equal(tc.typ, def.Type, "the popup writes the model")
+			c.Equal(tc.placement, def.Placement, "the placement")
+			c.Equal(tc.whenPresent, def.PlacementWhenPresent, "the placement when revealed")
+			c.Equal(tc.trait, def.PlacementTrait, "the trait that reveals it")
+
+			d.undoMgr.Undo()
+			c.Equal(tc.from, d.model.Set["st"].Placement, "undo restores the placement")
+		})
+	}
 }
 
 // TestAttributeTypeChangeToAPoolGivesItAThreshold verifies that an attribute made a pool is given a threshold to edit,

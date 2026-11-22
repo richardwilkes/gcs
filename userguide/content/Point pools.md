@@ -3,9 +3,12 @@
 The **Point Pools block** tracks your current and total **Hit Points (HP)** and **Fatigue Points (FP)** ([B16](B16)).
 You can also create custom pools for other resources your character uses.
 
-Each pool follows this format: `[current]` of `[total]` points `[STATE]`.
+Each pool follows this format: `[current]` of `[total]` points `[STATE]`. A pool that
+[counts up](#pools-that-count-up) reads `[current]` from `[starting value]` points `[STATE]` instead.
 
 ## Tracking HP and FP
+
+A pool holds whole numbers, so neither of its fields accepts a fraction.
 
 To set your total points:
 
@@ -46,17 +49,32 @@ To edit or add a pool:
 3. Fill in the fields in the form (see table below).
 4. On the Attributes toolbar, select **Apply Changes** ![apply changes](images/icons/applyChanges.svg) to save.
 
-A pool's maximum is editable on the sheet unless its **Attribute Type** is **Pool (Display Only for Maximum)**, in which
-case only the current value can be changed. Pools can be hidden with the **Placement** setting, just like other
-attributes. See [Attributes](Attributes) for details about each field.
+A pool's maximum, or the starting value of one that counts up, is editable on the sheet unless its **Attribute Type** is
+**Pool (Display Only for Maximum)**, in which case only the current value can be changed. Pools can be hidden with the
+**Placement** setting, just like other attributes. See [Attributes](Attributes) for details about each field.
 
 > [!NOTE]
 > You can also add point pools from other games by importing their attribute options. See [Attributes](Attributes) for
 > details.
 
+### Pools that count up
+
+A pool normally starts at its maximum and counts down, as HP and FP do. For something that builds up instead, such as
+stress, corruption, or a spell tally, select **Counts up from its value** in the pool's fields. Such a pool:
+
+- Starts at its value, which is its **Base Value** plus any points bought and bonuses, and can't be taken below it on
+  the sheet. Scripts read that value as `$id` and the current one as `$id.current`.
+- Reads `[current]` from `[starting value]` on the sheet.
+- Is at the highest threshold its current value has reached, and has no state below the first one. Its thresholds are
+  still listed from lowest to highest.
+
+Changing whether a pool counts up keeps what the character has lost or gained: a pool 3 points below its maximum
+becomes one 3 points above its starting value.
+
 ## Pool Thresholds
 
-You can add thresholds to show how effects change as your pool decreases.
+You can add thresholds to show how effects change as your pool decreases, or as it increases for a pool that
+[counts up](#pools-that-count-up).
 
 To add a point threshold:
 
@@ -64,12 +82,12 @@ To add a point threshold:
 
 Each threshold includes the following fields:
 
-| Field           | Description                                                                                                                                                                       |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **State**       | The effect name, such as _Reeling_ or _Rested_.                                                                                                                                   |
-| **Threshold**   | The number (or script) that triggers the effect. This uses variables like `$hp` and expressions like `Math.ceil($hp / 3) - 1`. Thresholds must be ordered from lowest to highest. |
-| **Features**    | What changes while the pool is at this threshold. See **Threshold features** below.                                                                                               |
-| **Explanation** | Notes about what this threshold means and other effects. Supports [Markdown](Markdown%20Guide) and scripts.                                                                       |
+| Field           | Description                                                                                                                                                                                                                                                                                                                            |
+|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **State**       | The effect name, such as _Reeling_ or _Rested_.                                                                                                                                                                                                                                                                                        |
+| **Threshold**   | The number (or script) that triggers the effect. This uses variables like `$hp` and expressions like `Math.ceil($hp / 3) - 1`. Thresholds must be ordered from lowest to highest. A pool is at the first threshold its current value is at or below, and one that counts up is at the last threshold its current value is at or above. |
+| **Features**    | What changes while the pool is at this threshold. See **Threshold features** below.                                                                                                                                                                                                                                                    |
+| **Explanation** | Notes about what this threshold means and other effects. Supports [Markdown](Markdown%20Guide) and scripts.                                                                                                                                                                                                                            |
 
 ### Threshold features
 

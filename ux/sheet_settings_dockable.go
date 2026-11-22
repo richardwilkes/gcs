@@ -820,6 +820,7 @@ func (d *sheetSettingsDockable) reset() {
 	if d.owner != nil {
 		entity := d.owner.Entity()
 		entity.SheetSettings = gurps.GlobalSettings().Sheet.Clone(entity)
+		entity.MatchAttributesToDefs()
 	} else {
 		gurps.GlobalSettings().Sheet = gurps.FactorySheetSettings()
 	}
@@ -908,6 +909,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		entity := d.owner.Entity()
 		entity.SheetSettings = s
 		s.SetOwningEntity(entity)
+		entity.MatchAttributesToDefs()
 	} else {
 		gurps.GlobalSettings().Sheet = s
 	}

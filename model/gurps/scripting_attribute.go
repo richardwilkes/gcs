@@ -69,7 +69,8 @@ func newScriptAttribute(r *goja.Runtime, attr *Attribute) *goja.Object {
 	m["valueOf"] = func() goja.Value {
 		return r.ToValue(func(_ goja.FunctionCall) goja.Value {
 			id := attr.AttrID
-			// A pool's current value is what it has left, which no threshold alters, so its maximum is read still.
+			// A pool's current value tracks what it has lost or gained, which no threshold alters, so its maximum is
+			// read still.
 			if attr.Entity != nil && attr.Entity.scriptReadsCurrents() {
 				if def := attr.AttributeDef(); def == nil || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
 					id += ".current"
