@@ -182,6 +182,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -190,6 +193,35 @@ jobs:
           pattern: gcs-*
           merge-multiple: true
 
+      # The release notes travel in the tag: the message of an annotated tag becomes the body of the release, so the
+      # release is published once, already carrying its notes. Such a tag is made with
+      #   git tag -a vX.Y.Z --cleanup=whitespace -F RELEASE_NOTES.md
+      # where --cleanup keeps git from discarding every line that starts with `#`, the Markdown headings among them. A
+      # lightweight tag has no message, which leaves the file written here empty.
+      - name: Fetch tag message
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ref=$(gh api "repos/$GH_REPO/git/ref/tags/$GITHUB_REF_NAME" --jq '.object.type + " " + .object.sha')
+          if [ "${ref%% *}" = tag ]; then
+            gh api "repos/$GH_REPO/git/tags/${ref#* }" --jq .message > "$RUNNER_TEMP/tag_message"
+          else
+            : > "$RUNNER_TEMP/tag_message"
+          fi
+
+      # The message of a signed tag ends with its signature, and RELEASE_NOTES.md starts with a title. Neither belongs
+      # in the body of the release, nor do the blank lines ahead of the first note.
+      - name: Extract release notes
+        run: |
+          awk '
+            /^-----BEGIN (PGP|SSH) SIGNATURE-----$/ || /^-----BEGIN (PGP|SIGNED) MESSAGE-----$/ { exit }
+            !body && (/^[ \t\r]*$/ || /^# Release Notes[ \t\r]*$/) { next }
+            { body = 1; print }
+          ' "$RUNNER_TEMP/tag_message" > "$RUNNER_TEMP/release_notes.md"
+
+      # Publishing is what notifies those watching the repository, so a release whose tag supplied no notes is left as
+      # a draft, to be given its notes and published by hand, rather than announced with generated ones.
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -201,4 +233,10 @@ jobs:
             echo "no release assets were downloaded" >&2
             exit 1
           fi
-          gh release create "$GITHUB_REF_NAME" "${files[@]}" --generate-notes
+          notes="$RUNNER_TEMP/release_notes.md"
+          if [ -s "$notes" ]; then
+            gh release create "$GITHUB_REF_NAME" "${files[@]}" --title "$GITHUB_REF_NAME" --notes-file "$notes"
+          else
+            gh release create "$GITHUB_REF_NAME" "${files[@]}" --draft --generate-notes
+            echo "::warning::$GITHUB_REF_NAME has no release notes in its tag, so its release was left as a draft"
+          fi

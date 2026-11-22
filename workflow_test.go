@@ -125,21 +125,13 @@ func TestExtractWorkflowRunSteps(t *testing.T) {
 func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 	c := check.New(t)
 	bash := shellHarnessBash(t)
-	steps, err := extractWorkflowRunSteps(releaseWorkflowPath)
-	c.NoError(err)
-	var script string
-	for _, step := range steps {
-		if step.name == "Determine version" {
-			script = step.script
-		}
-	}
-	c.NotEqual("", script, "the release workflow has no \"Determine version\" step")
+	script := releaseWorkflowScript(c, "Determine version")
 
 	// The checks below are only meaningful if a command smuggled in by the version leaves a trace this test can see, so
 	// first confirm that one substituted directly into the shell -- what the step used to do -- runs and is noticed.
 	// Without this, the assertions that follow could pass simply because nothing was ever going to be detected.
 	dir := t.TempDir()
-	_, err = runShellScript(bash, dir, `version="x"; touch pwned; echo ""`+"\n"+`echo "version=$version" >> "$GITHUB_OUTPUT"`, nil)
+	_, err := runShellScript(bash, dir, `version="x"; touch pwned; echo ""`+"\n"+`echo "version=$version" >> "$GITHUB_OUTPUT"`, nil)
 	c.NoError(err)
 	_, err = os.Stat(filepath.Join(dir, "pwned"))
 	c.NoError(err, "the injection payload is inert, so the checks below prove nothing")
@@ -192,6 +184,50 @@ func TestReleaseWorkflowVersionStepResistsInjection(t *testing.T) {
 	}
 }
 
+// TestReleaseWorkflowExtractsNotesFromTagMessage runs the release workflow's "Extract release notes" script exactly as
+// it is committed. What the script leaves in the notes file is published as the body of the release, so neither the
+// signature that ends a signed tag's message nor the title that heads RELEASE_NOTES.md may reach it, and a message
+// holding nothing else has to leave it empty, which is what makes the release a draft.
+func TestReleaseWorkflowExtractsNotesFromTagMessage(t *testing.T) {
+	c := check.New(t)
+	bash := shellHarnessBash(t)
+	script := releaseWorkflowScript(c, "Extract release notes")
+	const notes = "## Bug Fixes\n\n- A fix.\n"
+	for _, tc := range []struct {
+		name    string
+		message string
+		want    string
+	}{
+		{name: "lightweight tag"},
+		{name: "notes", message: notes, want: notes},
+		{name: "title", message: "\n# Release Notes\n\n" + notes, want: notes},
+		{name: "title alone", message: "# Release Notes\n\n"},
+		{
+			name:    "PGP signature",
+			message: notes + "-----BEGIN PGP SIGNATURE-----\n\nabc=\n-----END PGP SIGNATURE-----\n",
+			want:    notes,
+		},
+		{
+			name:    "SSH signature",
+			message: notes + "-----BEGIN SSH SIGNATURE-----\nabc=\n-----END SSH SIGNATURE-----\n",
+			want:    notes,
+		},
+		{
+			name:    "X.509 signature",
+			message: notes + "-----BEGIN SIGNED MESSAGE-----\nabc=\n-----END SIGNED MESSAGE-----\n",
+			want:    notes,
+		},
+	} {
+		dir := t.TempDir()
+		c.NoError(os.WriteFile(filepath.Join(dir, "tag_message"), []byte(tc.message), 0o600), tc.name)
+		_, err := runShellScript(bash, dir, script, []string{"RUNNER_TEMP=" + dir})
+		c.NoError(err, tc.name)
+		data, err := os.ReadFile(filepath.Join(dir, "release_notes.md"))
+		c.NoError(err, tc.name)
+		c.Equal(tc.want, strings.ReplaceAll(string(data), "\r\n", "\n"), tc.name)
+	}
+}
+
 // TestBuildScriptRefusesDistWithoutRelease pins down the contract the release workflow's "Determine version" step
 // depends on: `build.sh -d` has no built-in default version and refuses to run without GCS_RELEASE. The trailing -h is
 // what keeps this cheap and safe -- argument processing is a single ordered pass, so -d either aborts first or, if the
@@ -203,6 +239,20 @@ func TestBuildScriptRefusesDistWithoutRelease(t *testing.T) {
 	out, err := cmd.CombinedOutput()
 	c.HasError(err, "build.sh -d accepted an empty GCS_RELEASE")
 	c.Contains(string(out), "GCS_RELEASE must be set")
+}
+
+// releaseWorkflowScript returns the script of the release workflow's step with the given name.
+func releaseWorkflowScript(c check.Checker, name string) string {
+	steps, err := extractWorkflowRunSteps(releaseWorkflowPath)
+	c.NoError(err)
+	var script string
+	for _, step := range steps {
+		if step.name == name {
+			script = step.script
+		}
+	}
+	c.NotEqual("", script, "the release workflow has no \""+name+"\" step")
+	return script
 }
 
 // runShellScript runs a workflow step's script in dir with the given extra environment, then returns the value the
