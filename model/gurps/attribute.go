@@ -101,7 +101,7 @@ func (a *Attribute) ID() string {
 
 // SetID sets the ID, sanitizing it in the process, so the stored value may differ from what was passed in.
 func (a *Attribute) SetID(value string) {
-	a.AttrID = SanitizeID(value, false, ReservedIDs...)
+	a.AttrID = SanitizeID(value, false, ReservedIDsForNew...)
 }
 
 // AttributeDef looks up the AttributeDef this Attribute references from the Entity. May return nil.

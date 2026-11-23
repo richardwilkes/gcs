@@ -68,17 +68,19 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 				// What grants give the spell as edited counts, as it does on the sheet once the edits are applied.
 				points := e.target.PointsWithGrants(e.editorData, gurps.AdjustedPointsForNonContainerSpell(entity,
 					e.editorData.Points, localName, localPowerSource, localColleges, e.editorData.Tags, nil))
-				levelAt := func(points fxp.Int) gurps.Level {
+				levelAt := func(def *gurps.SkillDefault, points fxp.Int) gurps.Level {
 					if e.target.IsRitualMagic() {
-						return e.target.RitualMagicLevelWith(e.editorData, points)
+						return e.target.RitualMagicLevelWith(e.editorData, def, points)
 					}
 					return gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
-						e.editorData.Tags, e.editorData.Difficulty, points)
+						e.editorData.Tags, def, e.editorData.Difficulty, points)
 				}
-				level := e.target.LevelWithGrants(e.editorData, levelAt(points), func(tierPoints fxp.Int) gurps.Level {
-					return levelAt(gurps.AdjustedPointsForNonContainerSpell(entity, tierPoints, localName,
-						localPowerSource, localColleges, e.editorData.Tags, nil))
-				})
+				// The level a grant keeps is read without a default, as the sheet reads it.
+				level := e.target.LevelWithGrants(e.editorData, levelAt(e.editorData.DefaultedFrom, points),
+					func(tierPoints fxp.Int) gurps.Level {
+						return levelAt(nil, gurps.AdjustedPointsForNonContainerSpell(entity, tierPoints, localName,
+							localPowerSource, localColleges, e.editorData.Tags, nil))
+					})
 				lvl := level.Level.Floor()
 				if lvl <= 0 {
 					field.SetTitle("-")
@@ -115,14 +117,19 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	if !e.target.Container() {
 		d := e.editorData
 		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
+			defaults := make([]nameable.Filler, 0, len(d.Defaults))
+			for _, one := range d.Defaults {
+				defaults = append(defaults, one)
+			}
 			return nameableUses(append([]string{
 				d.Name, d.LocalNotes, d.PowerSource, d.Class, d.Resist, d.CastingCost, d.MaintenanceCost, d.CastingTime,
 				d.Duration, d.Item, d.RitualOverrides.Ritual, d.RitualOverrides.Time, d.RitualOverrides.Cost,
 				d.RitualSkillName,
-			}, d.College...), d.Prereq, d.Features, d.Weapons)
+			}, d.College...), d.Prereq, d.Features, d.Weapons, defaults...)
 		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true).
 			withReplacementsFrom(e.editorData))
+		content.AddChild(newDefaultsPanel(entity, e.editorData, &e.editorData.Defaults, true))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
 			withReplacementsFrom(e.editorData))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)

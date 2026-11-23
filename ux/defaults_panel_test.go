@@ -31,8 +31,8 @@ import (
 )
 
 // showDefaultsPanel shows a defaultsPanel for the defaults in a window, within a host, so that its rebuilds run and its
-// edits can be undone. The panel is expanded, as most tests look at its rows; see TestDefaultsPanelStartingState for
-// how it starts out.
+// edits can be undone. The panel is that of a spell when the owner is one. It is expanded, as most tests look at its
+// rows; see TestDefaultsPanelStartingState for how it starts out.
 func showDefaultsPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault) (*defaultsPanel, *sentenceUndoHost) {
 	var p *defaultsPanel
 	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
@@ -45,7 +45,8 @@ func showDefaultsPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurp
 			}
 			return true
 		}
-		p = newDefaultsPanel(entity, owner, defaults)
+		_, ownerIsSpell := owner.(*gurps.Spell)
+		p = newDefaultsPanel(entity, owner, defaults, ownerIsSpell)
 		// Expanded ahead of showing, so that the window is sized for the rows.
 		if p.collapse.collapsed {
 			p.collapse.toggle()
@@ -255,7 +256,8 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 // TestDefaultsPanelAdd checks that the add button adds a default of the type last chosen at the end of the list, in a
 // new list, opened with the focus in its first field, that a skill-based one names its skill, and that the new type
 // becomes the one added next, unless the entity has no such attribute, when DX takes its place, or without DX, the
-// entity's first attribute.
+// entity's first attribute. A spell default added in a spell's panel names its spell and selects a spell of the same
+// power source as that spell.
 func TestDefaultsPanelAdd(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -301,16 +303,39 @@ func TestDefaultsPanelAdd(t *testing.T) {
 	lastDefaultTypeUsed = gurps.DexterityID
 	add()
 	c.Equal(gurps.StrengthID, defaults[5].Type(), "the entity's first attribute takes the place of DX")
+
+	var ofSpell []*gurps.SkillDefault
+	q, _ := showDefaultsPanel(t, screen, entity, gurps.NewSpell(entity, nil, false), &ofSpell)
+	lastDefaultTypeUsed = gurps.SpellID
+	screen.Do(func() {
+		button, ok := q.FindRefKey(defaultAddKey).Self.(*unison.Button)
+		c.True(ok, "the spell's section has an add button")
+		if ok {
+			button.ClickCallback()
+		}
+	})
+	c.True(len(ofSpell) == 1 && ofSpell[0].Type() == gurps.SpellID, "a spell default is added to a spell's panel")
+	if len(ofSpell) == 1 {
+		c.Equal(criteria.IsText, ofSpell[0].Name.Compare, "naming its spell")
+		c.True(ofSpell[0].SamePowerSource, "and selecting a spell of the same power source")
+	}
 }
 
 // TestDefaultsPanelTypeChange checks that a skill-based default keeps its criteria between the skill-based types, loses
 // them on becoming an attribute default, so that a default set back to what it was is unchanged, that one becoming
-// skill-based names its skill, so that its name field shows, and that a change of type is undone in one step.
+// skill-based names its skill, so that its name field shows, and that a change of type is undone in one step. A skill
+// default made a spell default keeps all but its specialization, and shows a power source in its place, one becoming
+// spell-based names its spell, and in a spell's panel selects a spell of the same power source as that spell.
 func TestDefaultsPanelTypeChange(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
-	defaults := newTestDefaults()
+	defaults := append(newTestDefaults(), &gurps.SkillDefault{
+		DefaultType:    gurps.SkillID,
+		Name:           criteria.Text{Compare: criteria.IsText, Qualifier: "Fireball"},
+		Specialization: criteria.Text{Compare: criteria.IsText, Qualifier: "Arcane"},
+		Tags:           criteria.Text{Compare: criteria.IsText, Qualifier: "Fire"},
+	})
 	defaults[1].Tags = criteria.Text{Compare: criteria.IsText, Qualifier: "Melee"}
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
 	defer func(last string) { lastDefaultTypeUsed = last }(lastDefaultTypeUsed)
@@ -369,20 +394,48 @@ func TestDefaultsPanelTypeChange(t *testing.T) {
 	c.Equal("Judo", defaults[0].Name.Qualifier, "with its criteria")
 	screen.Do(host.mgr.Redo)
 	c.Equal(start, defaultsJSON(c, defaults), "and redo takes them away again")
+
+	spell := defaults[3]
+	screen.Do(func() { p.toggle("3") })
+	screen.Do(func() { chooseDefaultType(c, p, "3", gurps.SpellID) })
+	c.Equal(criteria.Text{Compare: criteria.IsText, Qualifier: "Fireball"}, spell.Name, "a spell default keeps the name")
+	c.Equal("Fire", spell.Tags.Qualifier, "and the tags")
+	c.True(spell.Specialization.IsZero(), "but not the specialization, which a spell lacks")
+	c.False(spell.SamePowerSource, "and outside a spell's panel selects no power source")
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("3:name"), "its name shows")
+		for _, label := range uxtest.PanelsOfType[*unison.Label](p.FindRefKey("3" + keyFirst)) {
+			c.NotEqual("of skill", label.String(), "with no words joining it to a skill")
+		}
+		c.Nil(p.FindRefKey("3:add specialization"), "and a power source in place of the specialization")
+		c.NotNil(p.FindRefKey("3:add power"))
+		p.toggle("0")
+	})
+	screen.Do(func() { chooseDefaultType(c, p, "0", gurps.SpellID) })
+	c.Equal(criteria.IsText, defaults[0].Name.Compare, "one that becomes spell-based names its spell")
+
+	ofSpell := []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
+	q, _ := showDefaultsPanel(t, screen, entity, gurps.NewSpell(entity, nil, false), &ofSpell)
+	screen.Do(func() { q.toggle("0") })
+	screen.Do(func() { chooseDefaultType(c, q, "0", gurps.SpellID) })
+	c.True(ofSpell[0].SamePowerSource, "in a spell's panel, it selects a spell of the same power source")
 }
 
 // TestDefaultsPanelChips checks that the specialization, tags and tech level criteria are added as chips and removed
 // again, each a step to undo, that a tech level starts at the character's whole tech level, and that an attribute
-// default offers only the tech level.
+// default offers only the tech level. A spell default's power source starts as an "is" comparison, with no offer of
+// the same power source as the spell's but in a spell's panel, where it starts as that.
 func TestDefaultsPanelChips(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	// A fraction, which the whole-number field would show cut off while the sentence showed it whole.
 	entity.Profile.TechLevel = "3.5"
+	lore := criteria.Text{Compare: criteria.IsText, Qualifier: "Lore"}
 	defaults := []*gurps.SkillDefault{
 		{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "Brawling"}},
 		{DefaultType: gurps.DexterityID},
+		{DefaultType: gurps.SpellID, Name: lore},
 	}
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
 	click := func(key string) {
@@ -440,6 +493,37 @@ func TestDefaultsPanelChips(t *testing.T) {
 		c.Nil(p.FindRefKey("1:add tag"), "nor tags")
 		c.NotNil(p.FindRefKey("1:add tl"), "but has a tech level")
 	})
+
+	same := "and whose power source is the same as this spell's"
+	screen.Do(func() { p.toggle("2") })
+	click("2:add power")
+	c.Equal(criteria.Text{Compare: criteria.IsText}, defaults[2].PowerSource,
+		"a spell default's power source starts as an \"is\" comparison")
+	c.False(defaults[2].SamePowerSource)
+	screen.Do(func() {
+		popup, ok := refKeySelf(p.AsPanel(), "2:powercmp").(*unison.PopupMenu[string])
+		c.True(ok, "the power source chip has a comparison")
+		if ok {
+			c.Equal(-1, popup.IndexOfItem(same), "which doesn't offer the spell's own outside a spell's panel")
+		}
+	})
+	click("2:power" + keyChip)
+	c.True(defaults[2].PowerSource.IsZero(), "removing the chip removes the power source")
+
+	ofSpell := []*gurps.SkillDefault{{DefaultType: gurps.SpellID, Name: lore}}
+	q, _ := showDefaultsPanel(t, screen, entity, gurps.NewSpell(entity, nil, false), &ofSpell)
+	screen.Do(func() { q.toggle("0") })
+	screen.Do(func() {
+		var buttons []*unison.Button
+		if target := q.FindRefKey("0:add power"); target != nil {
+			buttons = uxtest.PanelsOfType[*unison.Button](target)
+		}
+		c.NotEqual(0, len(buttons), "a spell's panel offers a power source")
+		if len(buttons) != 0 {
+			buttons[len(buttons)-1].ClickCallback()
+		}
+	})
+	c.True(ofSpell[0].SamePowerSource, "which starts as the same as the spell's")
 }
 
 // TestDefaultsPanelMoreMenu checks that Duplicate, Move up, Move down and Delete, which a row's more button offers,
@@ -633,7 +717,7 @@ func TestDefaultsPanelDragAndDrop(t *testing.T) {
 
 	otherDefaults := []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID, Modifier: -fxp.Three}}
 	var other *defaultsPanel
-	screen.Do(func() { other = newDefaultsPanel(entity, nil, &otherDefaults) })
+	screen.Do(func() { other = newDefaultsPanel(entity, nil, &otherDefaults, false) })
 	otherJSON := defaultsJSON(c, otherDefaults)
 	modified := host.modified
 	c.True(dragFrom(other.AsPanel(), "0", "0", 0.2), "a row from another defaults panel can be dropped")
@@ -893,8 +977,8 @@ func TestDefaultsPanelStartingState(t *testing.T) {
 	var empty []*gurps.SkillDefault
 	var full, open *defaultsPanel
 	screen.Do(func() {
-		full = newDefaultsPanel(entity, nil, &defaults)
-		open = newDefaultsPanel(entity, nil, &empty)
+		full = newDefaultsPanel(entity, nil, &defaults, false)
+		open = newDefaultsPanel(entity, nil, &empty, false)
 	})
 	showInTestWindow(t, screen, 900, full, open)
 	screen.Do(func() {
@@ -987,7 +1071,8 @@ func TestDefaultsPanelTechLevelWithoutEntity(t *testing.T) {
 }
 
 // TestDefaultsPanelControlNamesDiffer checks that no two controls of an open row are announced by the same name, for
-// a skill default with every optional criterion added, a parry default, and an attribute default with a tech level.
+// a skill default and a spell default with every optional criterion added, a parry default, and an attribute default
+// with a tech level.
 func TestDefaultsPanelControlNamesDiffer(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1004,6 +1089,13 @@ func TestDefaultsPanelControlNamesDiffer(t *testing.T) {
 		{
 			DefaultType: gurps.DexterityID,
 			WhenTL:      criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.Four},
+		},
+		{
+			DefaultType: gurps.SpellID,
+			Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Fireball"},
+			PowerSource: criteria.Text{Compare: criteria.IsText, Qualifier: "Arcane"},
+			Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Fire"},
+			WhenTL:      criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three},
 		},
 	}
 	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)

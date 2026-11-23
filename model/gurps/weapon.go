@@ -589,9 +589,11 @@ func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		// Such a default exists to feed the parry or block calculation -- the Tonfa in the High Tech library carries
 		// "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and scoring it by the named skill
 		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way, as long as the
-		// multipliers the defense takes are left out; see SkillDefault.attackLevelFromSkill.
+		// multipliers the defense takes are left out; see SkillDefault.attackLevelFromSkill. A spell-based default is
+		// scored by the spell's level, as a skill-type default is by the skill's.
+		def = w.resolvedDefault(def)
 		var level fxp.Int
-		if def.SkillBased() {
+		if def.SkillOrSpellBased() {
 			_, skLevel := def.bestFastMatch(entity, replacements, false, nil)
 			level = def.attackLevelFromSkill(entity, skLevel)
 		} else {
@@ -612,6 +614,21 @@ func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		best = 0
 	}
 	return best
+}
+
+// resolvedDefault returns the default as the weapon resolves it: one whose power source is to be the same as that of
+// the spell it belongs to with the power source of the spell holding the weapon, if any, in its place (see
+// SkillDefault.withPowerSourceOf), and any other as it is.
+func (w *Weapon) resolvedDefault(def *SkillDefault) *SkillDefault {
+	if !def.SamePowerSource {
+		return def
+	}
+	var owner *string
+	if sp, ok := w.Owner.(*Spell); ok && sp != nil {
+		powerSource := sp.PowerSourceWithReplacements()
+		owner = &powerSource
+	}
+	return def.withPowerSourceOf(owner)
 }
 
 // usesCrossbowSkill reports whether the weapon is wielded with the Crossbow skill. A default may name it outright,
@@ -706,8 +723,8 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 	best := fxp.Min
 	for _, def := range w.Defaults {
 		// A default of the other defense type names a skill, not a basis for this defense, so resolve it as one of
-		// this defense's type.
-		def = def.asDefense(defenseID)
+		// this defense's type. Any other, a spell-based one included, is resolved as a basis of this defense.
+		def = w.resolvedDefault(def).asDefense(defenseID)
 		var level fxp.Int
 		if def.Type() == defenseID {
 			// A defense-type default names the skill whose defense is wanted, so the skill-level adjustment has to be
@@ -864,10 +881,10 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, 
 	if len(bySkill) != 0 {
 		usage := w.UsageWithReplacements()
 		tags := w.Owner.TagList()
-		w.forEachRequiredSkill(entity, func(name, specialization string) {
-			rsl := sync.OnceValue(func() fxp.Int { return entity.relativeSkillLevel(name, specialization) })
+		w.forEachRequiredSkill(entity, func(one requiredSkill) {
+			rsl := sync.OnceValue(func() fxp.Int { return one.relativeLevel(entity) })
 			for _, o := range bySkill {
-				if o.matchesRequiredSkill(name, specialization, usage, damageType, tags, rsl) {
+				if o.matchesRequiredSkill(one.name, one.specialization, usage, damageType, tags, rsl) {
 					add(o)
 				}
 			}
@@ -1006,8 +1023,8 @@ func (w *Weapon) findWeaponBonuses(entity *Entity, damageType string) []*WeaponB
 	// Finding the skill the weapon is used with takes several walks of the skills, so it is only done when a bonus
 	// that selects weapons by that skill exists to collect.
 	if entity.hasWeaponBonusesBySkill() {
-		w.forEachRequiredSkill(entity, func(name, specialization string) {
-			entity.addWeaponWithSkillBonusesFor(name, specialization, usage, damageType, tags, add)
+		w.forEachRequiredSkill(entity, func(one requiredSkill) {
+			entity.addWeaponWithSkillBonusesFor(one, usage, damageType, tags, add)
 		})
 	}
 	entity.addNamedWeaponBonusesFor(w, usage, damageType, tags, add)
@@ -1022,13 +1039,14 @@ func (w *Weapon) findWeaponBonuses(entity *Entity, damageType string) []*WeaponB
 	return result
 }
 
-// forEachRequiredSkill calls visit with the name and specialization of the skill the weapon attacks with, by which the
-// features selecting weapons by their required skill are qualified, then with those of each skill in the chain that a
-// technique it resolves to is based on. The name is empty when no skill-based default resolves, and must then be
-// matched with matchesRequiredSkillName. Only the defaults are ranked and skills looked up here; nothing of the weapon
-// itself is resolved, since this runs while its fields are. The skills are found once per weapon per state of the
-// entity, from the weapon's memo when it has one.
-func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specialization string)) {
+// forEachRequiredSkill calls visit with the skill the weapon attacks with, by which the features selecting weapons by
+// their required skill are qualified, or the spell it attacks with when the best of its skill- and spell-based defaults
+// rests on a spell, then with each skill in the chain that a technique it resolves to is based on. The name is empty
+// when no skill- or spell-based default resolves, and must then be matched with matchesRequiredSkillName. Only the
+// defaults are ranked and skills and spells looked up here; nothing of the weapon itself is resolved, since this runs
+// while its fields are. The skills are found once per weapon per state of the entity, from the weapon's memo when it
+// has one.
+func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(one requiredSkill)) {
 	m := w.memo()
 	if m == nil || !m.hasRequired {
 		skills := w.findRequiredSkills(entity)
@@ -1037,46 +1055,48 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 			m.hasRequired = true
 		}
 		for _, one := range skills {
-			visit(one.name, one.specialization)
+			visit(one)
 		}
 		return
 	}
 	for _, one := range m.requiredSkills {
-		visit(one.name, one.specialization)
+		visit(one)
 	}
 }
 
 // findRequiredSkills is forEachRequiredSkill without the memo, returning the skills instead of visiting them.
 func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 	var skills []requiredSkill
-	visit := func(name, specialization string) {
-		skills = append(skills, requiredSkill{name: name, specialization: specialization})
-	}
-	var bestSkill *Skill
+	var bestTarget defaultable
 	best := fxp.Min
 	replacements := w.NameableReplacements()
 	for _, one := range w.Defaults {
-		if one.SkillBased() {
-			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
-			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
-			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
+		if one = w.resolvedDefault(one); one.SkillOrSpellBased() {
+			// Ranked exactly the way SkillLevel() ranks them, so that the skill or spell whose bonuses are collected is
+			// the one the weapon actually attacks with. That includes leaving a parry- or block-type default scored by
+			// its defense level; see the note in SkillLevel(). The item each default scores by is kept, since it is the
 			// one the winner is resolved to below.
-			sk, skLevel := one.bestFastMatch(entity, replacements, false, nil)
+			target, skLevel := one.bestFastMatch(entity, replacements, false, nil)
 			if level := one.attackLevelFromSkill(entity, skLevel); best < level {
 				best = level
-				bestSkill = sk
+				bestTarget = target
 			}
 		}
 	}
-	var name, specialization string
+	// The winning default is resolved to the skill or spell it scored by -- the same one bestFast picks -- rather than
+	// to the name it gives, so that a default selecting it by tag, or by any other criteria, still collects the weapon
+	// bonuses qualified by the skill the weapon really attacks with. A spell stands as that skill by its name, with no
+	// specialization.
+	var required requiredSkill
+	bestSkill := asSkill(bestTarget)
 	if bestSkill != nil {
-		// The winning default is resolved to the skill it scored by -- the same one bestFast picks -- rather than to
-		// the name it gives, so that a default selecting its skill by tag, or by any other criteria, still collects the
-		// weapon bonuses qualified by the skill the weapon really attacks with.
-		name = bestSkill.NameWithReplacements()
-		specialization = bestSkill.SpecializationWithReplacements()
+		required.name = bestSkill.NameWithReplacements()
+		required.specialization = bestSkill.SpecializationWithReplacements()
+	} else if sp, ok := bestTarget.(*Spell); ok {
+		required.name = sp.NameWithReplacements()
+		required.spell = sp
 	}
-	visit(name, specialization)
+	skills = append(skills, required)
 	// When the weapon's best skill default resolves to a technique, also apply weapon bonuses that are qualified by the
 	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
 	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
@@ -1091,7 +1111,10 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 		if base == nil {
 			break
 		}
-		visit(base.NameWithReplacements(), base.SpecializationWithReplacements())
+		skills = append(skills, requiredSkill{
+			name:           base.NameWithReplacements(),
+			specialization: base.SpecializationWithReplacements(),
+		})
 		sk = base
 	}
 	return skills

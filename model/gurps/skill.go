@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
@@ -50,6 +49,7 @@ var (
 	_ FeatureSwitcher           = &Skill{}
 	_ LeveledOwner              = &Skill{}
 	_ SkillLevelStepper         = &Skill{}
+	_ defaultable               = &Skill{}
 
 	_ TemplatePickerProvider = &SkillData{}
 	_ TemplatePickerProvider = &SkillEditData{}
@@ -559,37 +559,22 @@ func (s *Skill) AttachWeapons(list []*Weapon) {
 }
 
 // BaseSkill returns the skill whose level the given default uses, the best one it selects whose tech level satisfies
-// its WhenTL, or nil.
+// its WhenTL, or nil, as it is for a default that isn't skill-based.
 func (s *Skill) BaseSkill(e *Entity, def *SkillDefault, requirePoints bool) *Skill {
-	if e == nil || def == nil || !def.SkillBased() {
+	if def == nil || !def.SkillBased() {
 		return nil
 	}
-	sk, _ := def.best(e, s.Replacements, requirePoints, nil)
-	return sk
+	return asSkill(defaultTargetOf(e, s, def, requirePoints))
 }
 
-// DefaultSkill returns the skill currently defaulted to, or nil.
+// DefaultSkill returns the skill currently defaulted to, or nil, as when the default rests on a spell.
 func (s *Skill) DefaultSkill() *Skill {
-	e := EntityFromNode(s)
-	if e == nil {
-		return nil
-	}
-	if s.IsTechnique() {
-		return s.BaseSkill(e, s.TechniqueDefault, true)
-	}
-	return s.BaseSkill(e, s.DefaultedFrom, true)
+	return asSkill(defaultTarget(s))
 }
 
 // HasDefaultTo returns true if the set of possible defaults includes the other skill.
 func (s *Skill) HasDefaultTo(other *Skill) bool {
-	for _, def := range s.resolveToSpecificDefaults() {
-		if def.SkillBased() && def.NameWithReplacements(s.Replacements) == other.NameWithReplacements() &&
-			skillSpecializationMatches(def.Specialization, s.Replacements,
-				other.SpecializationWithReplacements(), other.OptionalSpecializationWithReplacements()) {
-			return true
-		}
-	}
-	return false
+	return hasDefaultTo(s, other)
 }
 
 // ActiveFeatures returns the features of this skill that currently take effect, i.e. all of them except any switchable
@@ -1027,122 +1012,9 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 
 // calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill (see
 // grantState.applyLevelNotes), and with its default picked afresh while the prerequisites of an item carrying a grant
-// are judged or an editor previews a skill's level; see defaultExcept.
+// are judged or an editor previews the level of a skill or spell; see defaultExcept.
 func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Level {
-	return s.calculateLevelWith(exclude, s.defaultExcept(exclude, excludes), excludes)
-}
-
-// defaultExcept returns the default the skill recorded or, when exclude (nil, or the item whose prerequisites are being
-// judged; see Entity.judgingOr) carries a grant and the skill is not a technique, a default picked afresh as those
-// prerequisites see the sheet, since the recorded one, or the lack of one, was picked, and its level taken, with what
-// the grants did to the skills it rests on. It is picked afresh too while an editor previews a skill's level, since the
-// recorded one was picked with that skill as it is on the sheet rather than as edited (see Entity.matchLevelCapsAs),
-// at base, since it was picked, and its level taken, with what alters current values alone (see Entity.atBaseWhile),
-// and while a pool's base or thresholds are found without the features those thresholds hold, since it was
-// picked, and its level taken, with what they add (see Entity.thresholdFeaturesLeftOut). It is picked as
-// bestDefault picks, but with the levels taken with the skill added to the excludes given rather than with it alone
-// excluded, so that a chain of defaults never comes back to a skill it passes through: the recorded default, if the
-// skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill, and otherwise the best of the
-// skill's defaults. Each pick is kept while those prerequisites are judged, the edits previewed, the computation at
-// base runs, or the pool's base or thresholds are found, apart from those found otherwise, and reused only for the
-// same skill with the same excludes and the same view of the sheet, which leaves out what the thresholds do while a
-// pool's threshold is found for those prerequisites, and the features they hold while a pool's base or thresholds
-// are found (see judgedDefaultKey), so that the answers are those of picking afresh every time, while a pick beneath a
-// skill weighing several defaults is not made again for each of them, and so on down every chain. The picks are still
-// as many as the distinct excludes a skill is reached with, which double with each member of a set of skills with
-// points that default to one another, so judging stays fast only while such a set stays small.
-func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
-	e := EntityFromNode(s)
-	atBase := e != nil && e.atBase > 0
-	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit() && !atBase &&
-		!e.thresholdFeaturesLeftOut()) {
-		return s.DefaultedFrom
-	}
-	excludes = maps.Clone(excludes)
-	if excludes == nil {
-		excludes = make(map[string]bool)
-	}
-	excludes[s.String()] = true
-	key := newJudgedDefaultKey(s, excludes)
-	baseKey := baseDefaultKey{judgedDefaultKey: key, judged: e.judgingOr(exclude)}
-	if atBase {
-		if def, ok := e.baseDefaults[baseKey]; ok {
-			return def
-		}
-	} else if def, ok := e.judgedDefaults[key]; ok {
-		return def
-	}
-	var def, excluded *SkillDefault
-	if s.keepsDefault() && !s.inDefaultChain(s.DefaultedFrom, make(map[*Skill]bool)) {
-		if level := s.calcSkillDefaultLevel(s.DefaultedFrom, excludes); level != fxp.Min {
-			def = s.DefaultedFrom.CloneWithoutLevelOrPoints()
-			def.Level = level
-		} else {
-			excluded = s.DefaultedFrom
-		}
-	}
-	if def == nil {
-		def = s.bestDefaultWith(excluded, excludes)
-	}
-	if def != nil {
-		s.setDefaultPoints(def)
-	}
-	if atBase {
-		if e.baseDefaults == nil {
-			e.baseDefaults = make(map[baseDefaultKey]*SkillDefault)
-		}
-		e.baseDefaults[baseKey] = def
-	} else {
-		if e.judgedDefaults == nil {
-			e.judgedDefaults = make(map[judgedDefaultKey]*SkillDefault)
-		}
-		e.judgedDefaults[key] = def
-	}
-	return def
-}
-
-// judgedDefaultKey identifies the default Skill.defaultExcept picks for a skill with the levels taken with a set of
-// excludes, which it holds as their names sorted and joined, whether it is picked while a pool's threshold is found
-// for the prerequisites being judged, which see the sheet without what the thresholds do meanwhile (see
-// Attribute.CurrentThreshold), and whether it is picked while a pool's base or thresholds are found without the
-// features those thresholds hold (see Entity.thresholdFeaturesLeftOut).
-type judgedDefaultKey struct {
-	skill     *Skill
-	excludes  string
-	searching bool
-	untouched bool
-}
-
-// baseDefaultKey identifies the default Skill.defaultExcept picks for a skill at base, which rests as well on the item
-// whose prerequisites are being judged, if any.
-type baseDefaultKey struct {
-	judgedDefaultKey
-	judged any
-}
-
-// newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes, as
-// the sheet is seen now.
-func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
-	e := EntityFromNode(s)
-	return judgedDefaultKey{
-		skill:     s,
-		excludes:  excludesKey(excludes),
-		searching: e != nil && e.judgedThresholdSearches > 0,
-		untouched: e.thresholdFeaturesLeftOut(),
-	}
-}
-
-// excludesKey returns the excludes as a string that is the same for any two sets of the same names: the names sorted
-// and joined.
-func excludesKey(excludes map[string]bool) string {
-	names := make([]string, 0, len(excludes))
-	for name, excluded := range excludes {
-		if excluded {
-			names = append(names, name)
-		}
-	}
-	slices.Sort(names)
-	return strings.Join(names, "\x00")
+	return s.calculateLevelWith(exclude, defaultExcept(s, exclude, excludes), excludes)
 }
 
 // calculateLevelWith is calculateLevelExcept with the given default in place of the one defaultExcept returns. With
@@ -1195,26 +1067,10 @@ func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := skillAttributeLevel(e, attrDiff.Attribute)
 	if level != fxp.Min {
-		if attrDiff.Difficulty == difficulty.Wildcard {
-			points = points.Div(fxp.Three)
-		} else if def != nil && def.Points > 0 {
-			points += def.Points
-		}
-		points = points.Floor()
-		switch {
-		case points == fxp.One:
-			// relativeLevel is preset to this point value
-		case points > fxp.One && points < fxp.Four:
-			relativeLevel += fxp.One
-		case points >= fxp.Four:
-			relativeLevel += fxp.One + points.Div(fxp.Four).Floor()
-		case attrDiff.Difficulty != difficulty.Wildcard && def != nil && def.Points < 0:
-			relativeLevel = def.AdjLevel - level
-		default:
+		var bought bool
+		if relativeLevel, bought = relativeLevelForPoints(attrDiff.Difficulty, level, points, def); !bought {
 			level = fxp.Min
-			relativeLevel = 0
-		}
-		if level != fxp.Min {
+		} else {
 			level += relativeLevel
 			if attrDiff.Difficulty != difficulty.Wildcard && def != nil && level < def.AdjLevel {
 				level = def.AdjLevel
@@ -1241,6 +1097,33 @@ func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),
 	}
+}
+
+// relativeLevelForPoints returns the level the points buy an item of the difficulty before bonuses, relative to attr,
+// the level of the attribute its level rests on, or false when they buy none. A Wildcard item counts a third of the
+// points. Any other adds those its default, def, stands for, if any (see setDefaultPoints), and when they come to less
+// than 1 point, which buys nothing, it still has the level of a default that is above 0 but below what 1 point buys.
+func relativeLevelForPoints(diff difficulty.Level, attr, points fxp.Int, def *SkillDefault) (relativeLevel fxp.Int, bought bool) {
+	relativeLevel = diff.BaseRelativeLevel()
+	if diff == difficulty.Wildcard {
+		points = points.Div(fxp.Three)
+	} else if def != nil && def.Points > 0 {
+		points += def.Points
+	}
+	points = points.Floor()
+	switch {
+	case points == fxp.One:
+		// relativeLevel is preset to this point value
+	case points > fxp.One && points < fxp.Four:
+		relativeLevel += fxp.One
+	case points >= fxp.Four:
+		relativeLevel += fxp.One + points.Div(fxp.Four).Floor()
+	case diff != difficulty.Wildcard && def != nil && def.Points < 0:
+		relativeLevel = def.AdjLevel - attr
+	default:
+		return 0, false
+	}
+	return relativeLevel, true
 }
 
 // skillAttributeLevel returns the level of the attribute a skill rests on, as the prerequisites being judged see it
@@ -1449,7 +1332,10 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 						(sk.TechniqueDefault.NameWithReplacements(replacements) != name ||
 							sk.TechniqueDefault.SpecializationWithReplacements(replacements) != specialization)
 				} else {
-					usable = sk.DefaultedFrom == nil ||
+					// A skill whose default rests on a spell rests on no technique, nor on the level a Ritual Magic
+					// spell has from this skill, since that default's level is taken with the skill excluded (see
+					// bestDefault).
+					usable = sk.DefaultedFrom == nil || !sk.DefaultedFrom.SkillBased() ||
 						sk.DefaultedFrom.NameWithReplacements(replacements) != name ||
 						sk.DefaultedFrom.SpecializationWithReplacements(replacements) != specialization
 				}
@@ -1496,6 +1382,10 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 		if level != fxp.Min {
 			level = e.defenseLevel(t, level)
 		}
+	} else if def.SpellBased() {
+		// A technique rests on a skill, so a default resting on a spell, which only a hand-edited file can give it,
+		// resolves to nothing rather than to the spell or, as an attribute, to an unknown one.
+		return fxp.Min
 	} else if level = def.SkillLevelFast(e, replacements, true, nil, false); level != fxp.Min {
 		// Take the modifier back out, as we wanted the base, not the final value. An unresolved level stays fxp.Min.
 		level -= def.Modifier
@@ -1505,298 +1395,119 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 
 // UpdateLevel updates the level of the skill, returning true if it, or the default the skill settled on, has changed.
 func (s *Skill) UpdateLevel() bool {
-	savedLevel := s.LevelData
-	if !s.Enabled() {
-		s.LevelData = Level{}
-		return savedLevel != s.LevelData
-	}
-	savedDefaultedFrom := s.DefaultedFrom
-	var level Level
-	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
-		// Set the default before computing the level, since CalculateLevel reads it from the skill. Computing against
-		// the previous pass's default would leave the level a pass behind, and since Entity.Recalculate stops once the
-		// levels settle, that pass would never come.
-		s.DefaultedFrom = s.bestDefaultWithPoints(nil)
-		level = s.CalculateLevel(nil)
-	}) {
-		// A script was stopped before it could answer, so both values came from a stand-in. Keep the old ones, which
-		// are merely out of date rather than wrong -- DefaultedFrom is written to disk, so it would be wrong there too.
-		// The next recalculation that gets through its scripts puts both right.
-		s.DefaultedFrom = savedDefaultedFrom
-		return false
-	}
-	s.LevelData = level
-	// A change to the default is reported too, since other skills read it: a skill judging whether it may default to
-	// this one, or a technique judging whether this one is usable as its base.
-	return savedLevel != s.LevelData || !sameSkillDefault(savedDefaultedFrom, s.DefaultedFrom)
+	return updateLevel(s)
 }
 
-// sameSkillDefault returns true if the two defaults, either of which may be nil, hold the same values.
-func sameSkillDefault(a, b *SkillDefault) bool {
-	if a == nil || b == nil {
-		return a == b
-	}
-	return *a == *b
+// levelData implements defaultable.
+func (s *Skill) levelData() *Level {
+	return &s.LevelData
 }
 
-func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
-	if s.IsTechnique() {
+// levelExcluding implements defaultable.
+func (s *Skill) levelExcluding(excludes map[string]bool) Level {
+	return s.CalculateLevel(excludes)
+}
+
+// excludeKey implements defaultable.
+func (s *Skill) excludeKey() string {
+	return s.String()
+}
+
+// ownPowerSource implements defaultable: a skill has none.
+func (s *Skill) ownPowerSource() *string {
+	return nil
+}
+
+// ownBonus implements defaultable.
+func (s *Skill) ownBonus() fxp.Int {
+	e := EntityFromNode(s)
+	if e == nil {
+		return 0
+	}
+	return e.SkillBonusFor(s.NameWithReplacements(), s.SpecializationWithReplacements(),
+		s.OptionalSpecializationWithReplacements(), s.Tags, nil)
+}
+
+// picksDefault implements defaultable: a technique's level rests on its own default instead.
+func (s *Skill) picksDefault() bool {
+	return !s.IsTechnique()
+}
+
+// declaredDefaults implements defaultable.
+func (s *Skill) declaredDefaults() []*SkillDefault {
+	return s.Defaults
+}
+
+// syntheticDefaults implements defaultable: for a skill without an optional specialization, one at -2 to each skill
+// with points that has its name and specialization along with an optional specialization.
+func (s *Skill) syntheticDefaults() []*SkillDefault {
+	e := EntityFromNode(s)
+	if e == nil || s.OptionalSpecializationWithReplacements() != "" {
 		return nil
 	}
-	best := s.bestDefault(excluded)
-	if best != nil {
-		s.setDefaultPoints(best)
-	}
-	return best
-}
-
-// keptDefaultWithPoints is bestDefaultWithPoints with the default the skill recorded kept, when it resolves, whether
-// or not the skill has the points it keeps it for; see keepsDefault.
-func (s *Skill) keptDefaultWithPoints() *SkillDefault {
-	if s.IsTechnique() || EntityFromNode(s) == nil {
-		return nil
-	}
-	kept := s.bestDefaultKeeping(nil, map[string]bool{s.String(): true}, s.DefaultedFrom != nil && len(s.Defaults) > 0)
-	if kept != nil {
-		s.setDefaultPoints(kept)
-	}
-	return kept
-}
-
-// setDefaultPoints sets the default's adjusted level to its level rounded down, and its points to those that level
-// stands for in the skill, measured from the attribute the skill's level rests on, as CalculateSkillLevel reads it.
-func (s *Skill) setDefaultPoints(def *SkillDefault) {
-	baseLine := (skillAttributeLevel(EntityFromNode(s), s.AdjustedDifficulty().Attribute) +
-		s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
-	level := def.Level.Floor()
-	def.AdjLevel = level
-	switch {
-	case level == baseLine:
-		def.Points = fxp.One
-	case level == baseLine+fxp.One:
-		def.Points = fxp.Two
-	case level > baseLine+fxp.One:
-		def.Points = fxp.Four.Mul(level - (baseLine + fxp.One))
-	default:
-		def.Points = -level.Max(0)
-	}
-}
-
-func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
-	return s.bestDefaultWith(excluded, map[string]bool{s.String(): true})
-}
-
-// keepsDefault returns true if the skill keeps the default it recorded for as long as that resolves. A skill with
-// points that already records which default it uses keeps it, rather than silently jumping to whichever default
-// currently yields the highest level; the user changes it explicitly via "Swap Defaults". Skills with no points, and
-// those whose defaults are purely synthetic (the automatic -2 default to a sibling's optional specialization), always
-// track the dynamically-best default.
-func (s *Skill) keepsDefault() bool {
-	return s.DefaultedFrom != nil && s.AdjustedPoints(nil) > 0 && len(s.Defaults) > 0
-}
-
-// bestDefaultWith is bestDefault with the levels of the defaults taken with the given excludes, which hold the skill.
-func (s *Skill) bestDefaultWith(excluded *SkillDefault, excludes map[string]bool) *SkillDefault {
-	if EntityFromNode(s) == nil {
-		return nil
-	}
-	return s.bestDefaultKeeping(excluded, excludes, excluded == nil && s.keepsDefault())
-}
-
-// bestDefaultKeeping is bestDefaultWith with the default the skill recorded preferred, when it resolves, if
-// keepCurrent is set.
-func (s *Skill) bestDefaultKeeping(excluded *SkillDefault, excludes map[string]bool, keepCurrent bool) *SkillDefault {
-	var bestDef, preferredDef *SkillDefault
-	best := fxp.Min
-	for _, def := range s.resolveToSpecificDefaults() {
-		// Skip the excluded default and any that circle back through this skill.
-		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
-			continue
-		}
-		level := s.calcSkillDefaultLevel(def, excludes)
-		if level == fxp.Min {
-			continue
-		}
-		if best < level {
-			best = level
-			bestDef = def.CloneWithoutLevelOrPoints()
-			bestDef.Level = level
-		}
-		if keepCurrent && def.Equivalent(s.Replacements, s.DefaultedFrom) {
-			preferredDef = def.CloneWithoutLevelOrPoints()
-			preferredDef.Level = level
-		}
-	}
-	if preferredDef != nil {
-		return preferredDef
-	}
-	return bestDef
-}
-
-// resolvableDefaults returns the distinct, currently-resolvable defaults this skill could use, ordered from the highest
-// resulting level to the lowest. Candidates that currently default back to this skill are included: the user may choose
-// one, and SwapToNextDefault breaks the resulting cycle so the chosen skill re-resolves to its own best default.
-func (s *Skill) resolvableDefaults() []*SkillDefault {
-	if EntityFromNode(s) == nil {
-		return nil
-	}
-	excludes := map[string]bool{s.String(): true}
 	var result []*SkillDefault
-	for _, def := range s.resolveToSpecificDefaults() {
-		level := s.calcSkillDefaultLevel(def, excludes)
-		if level == fxp.Min {
+	excludes := map[string]bool{s.String(): true}
+	for _, one := range e.SkillNamed(s.NameWithReplacements(), s.SpecializationWithReplacements(), true, excludes) {
+		optSpec := one.OptionalSpecializationWithReplacements()
+		if optSpec == "" {
 			continue
 		}
-		dup := false
-		for _, existing := range result {
-			if existing.Equivalent(s.Replacements, def) {
-				dup = true
-				break
-			}
-		}
-		if dup {
+		// The optional-specialty default only relates skills that share the same required specialization (differing
+		// only in the optional one). SkillNamed treats an empty specialization as a wildcard, so without this check
+		// a fully-unspecialized skill would pick up defaults to differently-specialized siblings.
+		if one.SpecializationWithReplacements() != s.SpecializationWithReplacements() {
 			continue
 		}
-		clone := def.CloneWithoutLevelOrPoints()
-		clone.Level = level
-		result = append(result, clone)
+		def := &SkillDefault{DefaultType: SkillID, Modifier: -fxp.Two}
+		def.Name.Compare = criteria.IsText
+		def.Name.Qualifier = one.NameWithReplacements()
+		def.Specialization.Compare = criteria.IsText
+		if spec := one.SpecializationWithReplacements(); spec != "" {
+			def.Specialization.Qualifier = spec
+		} else {
+			def.Specialization.Qualifier = optSpec
+		}
+		result = append(result, def)
 	}
-	slices.SortStableFunc(result, func(a, b *SkillDefault) int {
-		return cmp.Compare(b.Level, a.Level)
-	})
 	return result
+}
+
+// recordedDefault implements defaultable.
+func (s *Skill) recordedDefault() *SkillDefault {
+	return s.DefaultedFrom
+}
+
+// recordDefault implements defaultable.
+func (s *Skill) recordDefault(def *SkillDefault) {
+	s.DefaultedFrom = def
+}
+
+// defaultBaseline implements defaultable: the baseline rests on the attribute the skill's level rests on, as
+// CalculateSkillLevel reads it, and the points a default stands for add to the skill's own.
+func (s *Skill) defaultBaseline() (baseline fxp.Int, stacks bool) {
+	ad := s.AdjustedDifficulty()
+	return (skillAttributeLevel(EntityFromNode(s), ad.Attribute) + ad.Difficulty.BaseRelativeLevel()).Floor(), true
+}
+
+func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
+	return resolveToSpecificDefaults(s)
+}
+
+func (s *Skill) resolvableDefaults() []*SkillDefault {
+	return resolvableDefaults(s)
 }
 
 // AlternateDefaultsAvailable returns true if this skill has more than one default it could use, allowing the user to
 // choose among them via "Swap Defaults". Only skills that declare their own defaults are swappable; purely synthetic
 // (optional-specialization) defaults track the best default automatically.
 func (s *Skill) AlternateDefaultsAvailable() bool {
-	return s.CanSwapDefaults() && len(s.Defaults) > 0 && len(s.resolvableDefaults()) > 1
+	return alternateDefaultsAvailable(s)
 }
 
 // SwapToNextDefault changes the default this skill uses to the next available one (wrapping around), preserving the
 // choice until the user changes it again.
 func (s *Skill) SwapToNextDefault() {
-	candidates := s.resolvableDefaults()
-	if len(candidates) < 2 {
-		return
-	}
-	idx := -1
-	if s.DefaultedFrom != nil {
-		for i, def := range candidates {
-			if def.Equivalent(s.Replacements, s.DefaultedFrom) {
-				idx = i
-				break
-			}
-		}
-	}
-	s.DefaultedFrom = candidates[(idx+1)%len(candidates)]
-	// If the newly chosen skill currently defaults back to this one (directly or transitively), clear its default so
-	// this explicit choice wins; the recalculation below resolves it to its own best remaining default, keeping the two
-	// from defaulting to each other.
-	if s.inDefaultChain(s.DefaultedFrom, make(map[*Skill]bool)) {
-		if target := s.DefaultSkill(); target != nil && target != s {
-			target.DefaultedFrom = nil
-		}
-	}
-	if e := EntityFromNode(s); e != nil {
-		e.Recalculate()
-	}
-}
-
-func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
-	e := EntityFromNode(s)
-	return def.skillLevelLess(e, s.Replacements, true, excludes, !s.IsTechnique(), func(other *Skill) fxp.Int {
-		// The bonus being undone was added inside other.CalculateLevel(), which queries it with the other skill's own
-		// qualifiers and tags, so all of them must come from 'other' here, not from this skill. 'other' is the skill
-		// whose level the default uses, the best one its WhenTL permits, and the bonus is undone from that level,
-		// before a parry- or block-type default halves it into a defense level.
-		return e.SkillBonusFor(other.NameWithReplacements(), other.SpecializationWithReplacements(),
-			other.OptionalSpecializationWithReplacements(), other.Tags, nil)
-	})
-}
-
-func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {
-	e := EntityFromNode(s)
-	if e == nil || def == nil || !def.SkillBased() {
-		return false
-	}
-	for _, one := range def.matchingSkills(e, s.Replacements, true, nil) {
-		if one == s {
-			return true
-		}
-		if !lookedAt[one] {
-			lookedAt[one] = true
-			if s.inDefaultChain(one.DefaultedFrom, lookedAt) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
-	e := EntityFromNode(s)
-
-	result := make([]*SkillDefault, 0, len(s.Defaults))
-	for _, def := range s.Defaults {
-		if def == nil {
-			continue
-		}
-		if e == nil || !def.SkillBased() {
-			result = append(result, def)
-		} else {
-			for _, one := range def.matchingSkills(e, s.Replacements, true, map[string]bool{s.String(): true}) {
-				local := *def
-				// The copy is pinned to the matched skill by name and specialization, so the tag criteria has already
-				// done its job. Leaving it on would carry it into the persisted DefaultedFrom and make an expansion of
-				// a tag default look different from a plain default to the same skill, so that neither the swap list
-				// nor the "keep the current default" check could pair them.
-				local.Tags = criteria.Text{}
-				local.Name.Compare = criteria.IsText
-				local.Name.Qualifier = one.NameWithReplacements()
-				local.Specialization.Compare = criteria.IsText
-				if spec := one.SpecializationWithReplacements(); spec != "" {
-					local.Specialization.Qualifier = spec
-				} else {
-					local.Specialization.Qualifier = one.OptionalSpecializationWithReplacements()
-				}
-				if one.OptionalSpecializationWithReplacements() != "" &&
-					def.Specialization.Matches(s.Replacements, one.SpecializationWithReplacements()) {
-					local.Modifier -= fxp.Two
-				}
-				result = append(result, &local)
-			}
-		}
-	}
-
-	if e != nil && s.OptionalSpecializationWithReplacements() == "" {
-		excludes := map[string]bool{s.String(): true}
-		for _, one := range e.SkillNamed(s.NameWithReplacements(), s.SpecializationWithReplacements(), true, excludes) {
-			optSpec := one.OptionalSpecializationWithReplacements()
-			if optSpec == "" {
-				continue
-			}
-			// The optional-specialty default only relates skills that share the same required specialization (differing
-			// only in the optional one). SkillNamed treats an empty specialization as a wildcard, so without this check
-			// a fully-unspecialized skill would pick up defaults to differently-specialized siblings.
-			if one.SpecializationWithReplacements() != s.SpecializationWithReplacements() {
-				continue
-			}
-			def := &SkillDefault{DefaultType: SkillID, Modifier: -fxp.Two}
-			def.Name.Compare = criteria.IsText
-			def.Name.Qualifier = one.NameWithReplacements()
-			def.Specialization.Compare = criteria.IsText
-			if spec := one.SpecializationWithReplacements(); spec != "" {
-				def.Specialization.Qualifier = spec
-			} else {
-				def.Specialization.Qualifier = optSpec
-			}
-			result = append(result, def)
-		}
-	}
-
-	return result
+	swapToNextDefault(s)
 }
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
@@ -1932,10 +1643,7 @@ func (s *Skill) ModifierNotes() string {
 		return i18n.Text("Default: ") + text + def.ModifierAsString()
 	}
 	if s.AdjustedDifficulty().Difficulty != difficulty.Wildcard {
-		defSkill := s.DefaultSkill()
-		if defSkill != nil && s.DefaultedFrom != nil {
-			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
-		}
+		return defaultNote(s)
 	}
 	return ""
 }
@@ -1998,38 +1706,18 @@ func (s *Skill) CanSwapDefaults() bool {
 // CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill, which a granted skill
 // never is, for the reason CanSwapDefaults gives.
 func (s *Skill) CanSwapDefaultsWith(other *Skill) bool {
-	return other != nil && other.Granted == nil && s.CanSwapDefaults() && other.HasDefaultTo(s)
+	return other != nil && canSwapDefaultsWith(s, other)
 }
 
-// BestSwappableSkill returns the best skill to swap with.
+// BestSwappableSkill returns the best skill or spell to swap with, as SwapDefaultsOf picks it, when that is a skill, or
+// nil.
 func (s *Skill) BestSwappableSkill() *Skill {
-	e := EntityFromNode(s)
-	if e == nil {
-		return nil
-	}
-	var best *Skill
-	Traverse(func(other *Skill) bool {
-		if s == other.DefaultSkill() && other.CanSwapDefaultsWith(s) {
-			if best == nil || best.CalculateLevel(nil).Level < other.CalculateLevel(nil).Level {
-				best = other
-			}
-		}
-		return false
-	}, true, true, e.Skills...)
-	return best
+	return asSkill(bestSwappablePartner(s))
 }
 
 // SwapDefaults causes this skill's default to be swapped.
 func (s *Skill) SwapDefaults() {
-	def := s.DefaultedFrom
-	s.DefaultedFrom = nil
-	if e := EntityFromNode(s); e != nil {
-		if baseSkill := s.BaseSkill(e, s.bestDefault(nil), true); baseSkill != nil {
-			s.DefaultedFrom = s.bestDefaultWithPoints(def)
-			baseSkill.UpdateLevel()
-			s.UpdateLevel()
-		}
-	}
+	swapDefaults(s)
 }
 
 // Kind returns the kind of data.

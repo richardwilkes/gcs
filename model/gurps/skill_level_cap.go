@@ -308,9 +308,9 @@ func (e *Entity) capSkillLevel(matched, self *Skill, exclude any, level Level, e
 	return e.capLevel(matched, skillLevelCapSubject(matched), exclude, level, penalty, excludes)
 }
 
-// capSpellLevel is capSkillLevel for a spell, except that a copy holding edits only changes what the references match,
-// since no skill's or spell's level rests on a spell's.
-func (e *Entity) capSpellLevel(matched, self *Spell, exclude any, level Level) Level {
+// capSpellLevel is capSkillLevel for a spell, which takes no encumbrance penalty: the references find the spell as
+// edited (see Entity.spellsMatching and ReferenceLevelCap.resolve), as they do a skill.
+func (e *Entity) capSpellLevel(matched, self *Spell, exclude any, level Level, excludes map[string]bool) Level {
 	if e == nil || e.SheetSettings == nil || len(e.SheetSettings.SkillLevelCaps) == 0 || level.Level == fxp.Min ||
 		matched.Container() {
 		return level
@@ -318,7 +318,11 @@ func (e *Entity) capSpellLevel(matched, self *Spell, exclude any, level Level) L
 	if matched != self {
 		defer e.matchLevelCapsAs(self, matched)()
 	}
-	return e.capLevel(self, spellLevelCapSubject(matched), exclude, level, 0, nil)
+	if key := matched.excludeKey(); excludes[key] {
+		excludes = maps.Clone(excludes)
+		delete(excludes, key)
+	}
+	return e.capLevel(matched, spellLevelCapSubject(matched), exclude, level, 0, excludes)
 }
 
 // levelCapEdit is a skill or spell on the sheet and a copy of it holding an editor's edits, along with the rows grants
@@ -335,17 +339,17 @@ type levelCapEdit struct {
 }
 
 // matchLevelCapsAs makes the references of the level caps match onSheet, a skill or spell on the sheet, as edited, a
-// copy of it holding an editor's edits, until the returned func is called; see ReferenceLevelCap.resolve. A skill is
-// found as edited by every lookup of the skills by name (see skillEdit), and the defaults of the skills are picked,
-// and their levels computed, afresh rather than read as recorded (see Skill.defaultExcept and SkillDefault.best), so
-// that a level resting on it, as a technique's or a default's does, rests on it as edited, and the points the level
-// sets of grants give the skills and spells are priced afresh (see grantReprice.pointsFor). The defaults picked and the
-// points priced while the edits are previewed are kept apart from any found before. The rows of the grants that merge
-// into it as edited in place of their own, which applying the edits takes off the sheet, are found neither by those
-// lookups nor by the references; see takenOffByEdit. The rows the grants merging into it now would put on the sheet in
-// its place are found by both, after the rows on the sheet. The other rows the grants merge into now, or would then,
-// have their levels computed with those that would then merge into them, as they would once the edits are applied; see
-// grantsMovedByEdit and grantsAsEdited.
+// copy of it holding an editor's edits, until the returned func is called; see ReferenceLevelCap.resolve. A skill or
+// spell is found as edited by every lookup of the skills or spells by name (see skillEdit and spellEdit), and the
+// defaults of the skills and spells are picked, and their levels computed, afresh rather than read as recorded (see
+// defaultExcept and SkillDefault.best), so that a level resting on it, as a technique's or a default's does, rests on
+// it as edited, and the points the level sets of grants give the skills and spells are priced afresh (see
+// grantReprice.pointsFor). The defaults picked and the points priced while the edits are previewed are kept apart from
+// any found before. The rows of the grants that merge into it as edited in place of their own, which applying the edits
+// takes off the sheet, are found neither by those lookups nor by the references; see takenOffByEdit. The rows the
+// grants merging into it now would put on the sheet in its place are found by both, after the rows on the sheet. The
+// other rows the grants merge into now, or would then, have their levels computed with those that would then merge into
+// them, as they would once the edits are applied; see grantsMovedByEdit and grantsAsEdited.
 func (e *Entity) matchLevelCapsAs(onSheet, edited any) (restore func()) {
 	saved, savedDefaults, savedPoints := e.levelCapEdit, e.judgedDefaults, e.judgedPoints
 	edit := levelCapEdit{onSheet: onSheet, edited: edited}
@@ -382,9 +386,12 @@ func (e *Entity) grantsAsEdited(holder grantHolder) *grantState {
 	return e.grantsAsJudged(holder)
 }
 
-// previewingSkillEdit returns true while an editor previews the level of a skill as edited; see matchLevelCapsAs.
-func (e *Entity) previewingSkillEdit() bool {
-	onSheet, _ := e.skillEdit()
+// previewingEdit returns true while an editor previews the level of a skill or spell as edited; see matchLevelCapsAs.
+func (e *Entity) previewingEdit() bool {
+	if onSheet, _ := e.skillEdit(); onSheet != nil {
+		return true
+	}
+	onSheet, _ := e.spellEdit()
 	return onSheet != nil
 }
 
@@ -395,6 +402,20 @@ func (e *Entity) skillEdit() (onSheet, edited *Skill) {
 		var ok bool
 		if onSheet, ok = e.levelCapEdit.onSheet.(*Skill); ok {
 			if edited, ok = e.levelCapEdit.edited.(*Skill); ok {
+				return onSheet, edited
+			}
+		}
+	}
+	return nil, nil
+}
+
+// spellEdit is skillEdit for a spell: the spell on the sheet an editor previews the level of, and the copy of it
+// holding the edits, which stands in for it, or nils when there is none.
+func (e *Entity) spellEdit() (onSheet, edited *Spell) {
+	if e != nil {
+		var ok bool
+		if onSheet, ok = e.levelCapEdit.onSheet.(*Spell); ok {
+			if edited, ok = e.levelCapEdit.edited.(*Spell); ok {
 				return onSheet, edited
 			}
 		}

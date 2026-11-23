@@ -1114,6 +1114,48 @@ func TestTechniqueRelativeLevel(t *testing.T) {
 	}
 }
 
+// TestTechniqueRestsOnSkillsAlone verifies that a technique rests on skills alone: one whose default names a spell,
+// which only a hand-edited file holds, has no level, while a skill of the name its default gives remains a base for it
+// when the skill's own default rests on a spell of the technique's name, since that skill does not rest on the
+// technique.
+func TestTechniqueRestsOnSkillsAlone(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// setup puts the technique Kick, resting on Karate-2 with 1 point, and what it is judged by on the sheet.
+		setup func(e *Entity, kick *Skill)
+		level fxp.Int
+	}{
+		{
+			name: "a default naming a spell gives no level",
+			setup: func(e *Entity, kick *Skill) {
+				addTestSpell(e, "Karate", fxp.Twelve)
+				kick.TechniqueDefault.DefaultType = SpellID
+			},
+			level: fxp.Min,
+		},
+		{
+			name: "a skill whose default rests on a spell of the technique's name is a base",
+			setup: func(e *Entity, _ *Skill) {
+				addTestSpell(e, "Kick", fxp.Twelve)                   // 12
+				karate := addTestSkill(e, "Karate", "", "", fxp.Four) // 11
+				karate.Defaults = []*SkillDefault{newSpellDefaultTo("Kick", -fxp.Four)}
+			},
+			level: fxp.Ten,
+		},
+	} {
+		c := check.New(t)
+		e := NewEntity()
+		kick := NewTechnique(e, nil, "Karate")
+		kick.Name = "Kick"
+		kick.TechniqueDefault.Modifier = -fxp.Two
+		kick.Points = fxp.One
+		e.Skills = append(e.Skills, kick)
+		tc.setup(e, kick)
+		e.Recalculate()
+		c.Equal(tc.level, kick.LevelData.Level, tc.name)
+	}
+}
+
 // TestTechniqueModifierNotes verifies that a technique's "Default:" note names the skill it rests on, followed by the
 // defense for a parry or block default, and the default's modifier.
 func TestTechniqueModifierNotes(t *testing.T) {

@@ -29,17 +29,20 @@ var skillBasedDefaultTypes = map[string]bool{
 	BlockID: true,
 }
 
-// SkillDefault holds data for a Skill default.
+// SkillDefault holds data for a Skill default. A default of the spell type rests on a spell, which it selects by name,
+// power source and tags; SamePowerSource and PowerSource select the power source as a SpellPrereq's do.
 type SkillDefault struct {
-	DefaultType    string          `json:"type"`
-	Name           criteria.Text   `json:"name,omitzero"`
-	Specialization criteria.Text   `json:"specialization,omitzero"`
-	Tags           criteria.Text   `json:"tags,omitzero"`
-	Modifier       fxp.Int         `json:"modifier,omitzero"`
-	Level          fxp.Int         `json:"level,omitzero"`
-	AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
-	Points         fxp.Int         `json:"points,omitzero"`
-	WhenTL         criteria.Number `json:"when_tl,omitzero"`
+	DefaultType     string          `json:"type"`
+	Name            criteria.Text   `json:"name,omitzero"`
+	Specialization  criteria.Text   `json:"specialization,omitzero"`
+	SamePowerSource bool            `json:"same_power_source,omitzero"`
+	PowerSource     criteria.Text   `json:"power_source,omitzero"`
+	Tags            criteria.Text   `json:"tags,omitzero"`
+	Modifier        fxp.Int         `json:"modifier,omitzero"`
+	Level           fxp.Int         `json:"level,omitzero"`
+	AdjLevel        fxp.Int         `json:"adjusted_level,omitzero"`
+	Points          fxp.Int         `json:"points,omitzero"`
+	WhenTL          criteria.Number `json:"when_tl,omitzero"`
 }
 
 // migrateStringToCriteriaText loads a criteria.Text that may have been written in the old format, as a plain string
@@ -62,7 +65,7 @@ func migrateStringToCriteriaText(raw jsontext.Value, dst *criteria.Text, opts js
 	return json.Unmarshal(raw, dst, opts)
 }
 
-// DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
+// DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based: skill, parry or block.
 func DefaultTypeIsSkillBased(skillDefaultType string) bool {
 	return skillBasedDefaultTypes[normalizeDefaultType(skillDefaultType)]
 }
@@ -97,10 +100,17 @@ func cloneSkillDefault(def *SkillDefault) *SkillDefault {
 	return &clone
 }
 
-// Normalize clears the data a default of this type makes no use of. The name, specialization and tags criteria of a
-// default that isn't skill-based are neither shown nor consulted, so they are dropped rather than being written to
-// disk, offered as nameable keys, or allowed to tell two otherwise equivalent defaults apart.
+// Normalize clears the data a default of this type makes no use of: the specialization criteria of one resting on a
+// spell, the power source criteria of any other, and the name and tags criteria too of one that rests on neither a
+// skill nor a spell. What a default makes no use of is neither shown nor consulted, so it is dropped rather than being
+// written to disk, offered as nameable keys, or allowed to tell two otherwise equivalent defaults apart.
 func (s *SkillDefault) Normalize() {
+	if s.SpellBased() {
+		s.Specialization = criteria.Text{}
+		return
+	}
+	s.SamePowerSource = false
+	s.PowerSource = criteria.Text{}
 	if !s.SkillBased() {
 		s.Name = criteria.Text{}
 		s.Specialization = criteria.Text{}
@@ -120,21 +130,25 @@ func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var localData struct {
-		DefaultType    string          `json:"type"`
-		Name           jsontext.Value  `json:"name,omitzero"`
-		Specialization jsontext.Value  `json:"specialization,omitzero"`
-		Tags           criteria.Text   `json:"tags,omitzero"`
-		Modifier       fxp.Int         `json:"modifier,omitzero"`
-		Level          fxp.Int         `json:"level,omitzero"`
-		AdjLevel       fxp.Int         `json:"adjusted_level,omitzero"`
-		Points         fxp.Int         `json:"points,omitzero"`
-		WhenTL         criteria.Number `json:"when_tl,omitzero"`
+		DefaultType     string          `json:"type"`
+		Name            jsontext.Value  `json:"name,omitzero"`
+		Specialization  jsontext.Value  `json:"specialization,omitzero"`
+		SamePowerSource bool            `json:"same_power_source,omitzero"`
+		PowerSource     criteria.Text   `json:"power_source,omitzero"`
+		Tags            criteria.Text   `json:"tags,omitzero"`
+		Modifier        fxp.Int         `json:"modifier,omitzero"`
+		Level           fxp.Int         `json:"level,omitzero"`
+		AdjLevel        fxp.Int         `json:"adjusted_level,omitzero"`
+		Points          fxp.Int         `json:"points,omitzero"`
+		WhenTL          criteria.Number `json:"when_tl,omitzero"`
 	}
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
 	// The type is kept in the form the IDs are written in, so that choosing it again in the editor changes nothing.
 	s.DefaultType = normalizeDefaultType(localData.DefaultType)
+	s.SamePowerSource = localData.SamePowerSource
+	s.PowerSource = localData.PowerSource
 	s.Tags = localData.Tags
 	s.Modifier = localData.Modifier
 	s.Level = localData.Level
@@ -159,13 +173,15 @@ func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDe
 		s.WhenTL == other.WhenTL &&
 		s.NameWithReplacements(replacements) == other.NameWithReplacements(replacements) &&
 		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements) &&
-		sameTagCriteria(s.Tags, other.Tags, replacements)
+		s.SamePowerSource == other.SamePowerSource &&
+		(s.SamePowerSource || sameTextCriteria(s.PowerSource, other.PowerSource, replacements)) &&
+		sameTextCriteria(s.Tags, other.Tags, replacements)
 }
 
-// sameTagCriteria reports whether two tag criteria select the same skills, judged the way Hash and IsZero judge them:
-// any "is anything" criteria equals any other, whatever qualifier and comparison it may still carry, and otherwise the
-// comparison and the qualifier (after replacements) must both agree.
-func sameTagCriteria(a, b criteria.Text, replacements map[string]string) bool {
+// sameTextCriteria reports whether two tag or power source criteria select the same items, judged the way Hash and
+// IsZero judge them: any "is anything" criteria equals any other, whatever qualifier and comparison it may still carry,
+// and otherwise the comparison and the qualifier (after replacements) must both agree.
+func sameTextCriteria(a, b criteria.Text, replacements map[string]string) bool {
 	if a.IsZero() && b.IsZero() {
 		return true
 	}
@@ -183,29 +199,40 @@ func (s *SkillDefault) SetType(t string) {
 	s.DefaultType = SanitizeID(t, true)
 }
 
-// FullName returns the full name of the skill to default from. A default that names a skill outright is described by
-// that name, with the specialization in parentheses when it names one; any other selection is spelled out criteria by
-// criteria, in the words the editor uses for them.
+// FullName returns the full name of the skill or spell to default from. A default that names a skill or spell outright
+// is described by that name, with a skill's specialization in parentheses when it names one; any other selection is
+// spelled out criteria by criteria, in the words the editor uses for them.
 func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) string {
-	if !s.SkillBased() {
+	spell := s.SpellBased()
+	if !spell && !s.SkillBased() {
 		return ResolveAttributeName(entity, s.Type())
 	}
 	var buffer strings.Builder
 	if s.namesSkill(replacements) {
 		buffer.WriteString(s.NameWithReplacements(replacements))
-		if spec := s.SpecializationWithReplacements(replacements); spec != "" && !s.Specialization.IsZero() {
+		if spec := s.SpecializationWithReplacements(replacements); !spell && spec != "" && !s.Specialization.IsZero() {
 			buffer.WriteString(" (")
 			buffer.WriteString(spec)
 			buffer.WriteByte(')')
 		}
 	} else {
-		buffer.WriteString(i18n.Text("any skill"))
+		if spell {
+			buffer.WriteString(i18n.Text("any spell"))
+		} else {
+			buffer.WriteString(i18n.Text("any skill"))
+		}
 		var clauses []string
 		if !s.Name.IsZero() {
 			prefix := i18n.Text("whose name")
 			clauses = append(clauses, s.Name.StringWithPrefix(replacements, prefix, prefix))
 		}
-		if !s.Specialization.IsZero() {
+		switch {
+		case spell && s.SamePowerSource:
+			clauses = append(clauses, i18n.Text("whose power source is the same as this spell's"))
+		case spell && !s.PowerSource.IsZero():
+			prefix := i18n.Text("whose power source")
+			clauses = append(clauses, s.PowerSource.StringWithPrefix(replacements, prefix, prefix))
+		case !spell && !s.Specialization.IsZero():
 			prefix := i18n.Text("whose specialization")
 			clauses = append(clauses, s.Specialization.StringWithPrefix(replacements, prefix, prefix))
 		}
@@ -241,14 +268,15 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 	return buffer.String()
 }
 
-// Describe returns a plain-language description of this default, such as "DX at -5", "Skill Broadsword at -2" or
-// "Parry of skill Shortsword at +0", naming attributes as the entity, which may be nil, defines them. Nameable markers
-// take their values from replacements, and those without one show as @Key@. Names, qualifiers and the modifier are
-// passed through em, which may wrap them for emphasis; pass an identity func for plain text.
+// Describe returns a plain-language description of this default, such as "DX at -5", "Skill Broadsword at -2",
+// "Parry of skill Shortsword at +0" or "Spell Fireball at -3", naming attributes as the entity, which may be nil,
+// defines them. Nameable markers take their values from replacements, and those without one show as @Key@. Names,
+// qualifiers and the modifier are passed through em, which may wrap them for emphasis; pass an identity func for plain
+// text.
 func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
 	var text string
 	switch t := s.Type(); t {
-	case SkillID, ParryID, BlockID:
+	case SkillID, ParryID, BlockID, SpellID:
 		text = s.describeSkill(replacements, em)
 	default:
 		text = describeDefaultType(entity, t, em)
@@ -260,8 +288,8 @@ func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, 
 	return text
 }
 
-// DefaultTypeTitle returns how a default of a type that isn't skill-based names it, such as "DX", "Dodge", "No type" or
-// `Unknown type "foo"`, naming attributes as the entity, which may be nil, defines them.
+// DefaultTypeTitle returns how a default of a type that is neither skill- nor spell-based names it, such as "DX",
+// "Dodge", "No type" or `Unknown type "foo"`, naming attributes as the entity, which may be nil, defines them.
 func DefaultTypeTitle(entity *Entity, defaultType string) string {
 	return describeDefaultType(entity, normalizeDefaultType(defaultType), func(s string) string { return s })
 }
@@ -281,14 +309,21 @@ func describeDefaultType(entity *Entity, t string, em func(string) string) strin
 	return i18n.Text(`Unknown type "%s"`, em(t))
 }
 
-// describeSkill returns how a skill-based default names its skill, such as "Skill Broadsword (Fencing)", "Parry of any
-// skill tagged Sword" or `Skill whose name contains "Sword" and whose specialization starts with "Fen"`. Once one
-// criterion has been spelled out as a clause, those after it are joined to it by "and" in the same form.
+// describeSkill returns how a skill- or spell-based default names its skill or spell, such as "Skill Broadsword
+// (Fencing)", "Parry of any skill tagged Sword", `Skill whose name contains "Sword" and whose specialization starts
+// with "Fen"` or "Spell Fireball whose power source is the same as this spell's". Once one criterion has been spelled
+// out as a clause, those after it are joined to it by "and" in the same form.
 func (s *SkillDefault) describeSkill(replacements map[string]string, em func(string) string) string {
 	nameCompare := s.Name.Compare.EnsureValid()
 	anyName := nameCompare == criteria.AnyText
 	var text string
 	switch s.Type() {
+	case SpellID:
+		if anyName {
+			text = i18n.Text("Any spell")
+		} else {
+			text = i18n.Text("Spell %s", describeName(s.Name, replacements, em))
+		}
 	case ParryID:
 		if anyName {
 			text = i18n.Text("Parry of any skill")
@@ -313,6 +348,20 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 	without := false
 	specialization := strings.TrimSpace(nameable.Apply(s.Specialization.Qualifier, replacements))
 	switch compare := s.Specialization.Compare.EnsureValid(); {
+	case s.SpellBased():
+		// A spell has no specialization, but may be selected by its power source, as a spell prerequisite words it.
+		if s.hasPowerSourceFilter() {
+			prefix := i18n.Text("whose power source")
+			if joined {
+				prefix = i18n.Text("and whose power source")
+			}
+			if s.SamePowerSource {
+				text += " " + prefix + i18n.Text(" is the same as this spell's")
+			} else {
+				text += " " + describeClause(s.PowerSource, prefix, prefix, replacements, em)
+			}
+			joined = true
+		}
 	case compare == criteria.AnyText:
 	case compare == criteria.IsText && specialization == "":
 		// A blank specialization picks only a skill without one.
@@ -381,14 +430,38 @@ func describeClause(t criteria.Text, prefix, notPrefix string, replacements map[
 	return notPrefix + " " + compare.AltString() + " " + q
 }
 
-// namesSkill reports whether this default names a skill outright: its name criteria is "is" some name, its
-// specialization criteria is "is anything" or "is" some specialization (an empty one meaning a skill without one), and
-// it asks nothing of the tags. That is the ordinary kind of default, and the one FullName describes by the name alone.
+// namesSkill reports whether this default names a skill, or a spell, outright: its name criteria is "is" some name, it
+// asks nothing of the tags, and either it rests on a spell and asks nothing of its power source, or its specialization
+// criteria is "is anything" or "is" some specialization (an empty one meaning a skill without one). That is the
+// ordinary kind of default, and the one FullName describes by the name alone.
 func (s *SkillDefault) namesSkill(replacements map[string]string) bool {
-	return s.Name.Compare.EnsureValid() == criteria.IsText &&
-		s.NameWithReplacements(replacements) != "" &&
-		(s.Specialization.IsZero() || s.Specialization.Compare.EnsureValid() == criteria.IsText) &&
-		s.Tags.IsZero()
+	if s.Name.Compare.EnsureValid() != criteria.IsText || s.NameWithReplacements(replacements) == "" || !s.Tags.IsZero() {
+		return false
+	}
+	if s.SpellBased() {
+		return !s.hasPowerSourceFilter()
+	}
+	return s.Specialization.IsZero() || s.Specialization.Compare.EnsureValid() == criteria.IsText
+}
+
+// hasPowerSourceFilter returns true if this default asks something of the power source of the spell it rests on.
+func (s *SkillDefault) hasPowerSourceFilter() bool {
+	return s.SamePowerSource || !s.PowerSource.IsZero()
+}
+
+// withPowerSourceOf returns this default with its power source criteria set to "is" the given power source, that of
+// the spell it belongs to, when it is a spell-based default whose power source is to be the same as that spell's and
+// owner is not nil, and the receiver unchanged otherwise. One left asking for the same power source as a spell it
+// does not belong to selects no spell, as a spell prerequisite of that form does; see matchingSpells. The spell a
+// default belongs to is the one holding it among its defaults or holding the weapon holding it among its defaults.
+func (s *SkillDefault) withPowerSourceOf(owner *string) *SkillDefault {
+	if owner == nil || !s.SamePowerSource || !s.SpellBased() {
+		return s
+	}
+	pinned := *s
+	pinned.SamePowerSource = false
+	pinned.PowerSource = criteria.Text{Compare: criteria.IsText, Qualifier: *owner}
+	return &pinned
 }
 
 // NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
@@ -402,7 +475,9 @@ func (s *SkillDefault) SpecializationWithReplacements(replacements map[string]st
 	return nameable.Apply(s.Specialization.Qualifier, replacements)
 }
 
-// FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
+// FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map. Those of the power
+// source criteria are left out while the power source is to be the same as that of the spell the default belongs to,
+// as the criteria plays no part then.
 func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(
 		m, existing,
@@ -410,6 +485,9 @@ func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
 		s.Specialization.Qualifier,
 		s.Tags.Qualifier,
 	)
+	if !s.SamePowerSource {
+		nameable.Extract(m, existing, s.PowerSource.Qualifier)
+	}
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.
@@ -420,27 +498,42 @@ func (s *SkillDefault) ModifierAsString() string {
 	return ""
 }
 
-// SkillBased returns true if the Type() is Skill-based.
+// SkillBased returns true if the Type() is Skill-based: skill, parry or block.
 func (s *SkillDefault) SkillBased() bool {
 	return skillBasedDefaultTypes[s.Type()]
 }
 
-// SkillLevel returns the base skill level for this SkillDefault.
-func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
-	return s.skillLevelLess(entity, replacements, requirePoints, excludes, ruleOf20, nil)
+// SpellBased returns true if the Type() is spell-based: the default rests on a spell.
+func (s *SkillDefault) SpellBased() bool {
+	return s.Type() == SpellID
 }
 
-// skillLevelLess is SkillLevel with less(sk), when less is not nil, taken off the level of the skill sk that a
-// skill-based default rests on, before a parry- or block-type default turns it into a defense level.
-func (s *SkillDefault) skillLevelLess(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool, less func(sk *Skill) fxp.Int) fxp.Int {
+// SkillOrSpellBased returns true if the Type() is skill- or spell-based: the default rests on an item on the sheet
+// rather than on an attribute or a number.
+func (s *SkillDefault) SkillOrSpellBased() bool {
+	t := s.Type()
+	return t == SpellID || skillBasedDefaultTypes[t]
+}
+
+// SkillLevel returns the base skill level for this SkillDefault.
+func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+	return s.skillLevelLess(entity, replacements, requirePoints, excludes, ruleOf20, false)
+}
+
+// skillLevelLess is SkillLevel with, when undoOwnBonus is set, the bonus the item a skill- or spell-based default rests
+// on has from the bonuses that select it (see defaultable.ownBonus) taken off its level, before a parry- or block-type
+// default turns it into a defense level. That bonus was added as the item's level was computed, which queries it with
+// the item's own qualifiers and tags, so it is undone with them too. The item is the one whose level the default uses,
+// the best one its WhenTL permits.
+func (s *SkillDefault) skillLevelLess(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20, undoOwnBonus bool) fxp.Int {
 	switch t := s.Type(); t {
-	case ParryID, BlockID, SkillID:
-		sk, best := s.best(entity, replacements, requirePoints, excludes)
-		if sk != nil {
-			if less != nil {
-				best -= less(sk)
+	case ParryID, BlockID, SkillID, SpellID:
+		target, best := s.best(entity, replacements, requirePoints, excludes)
+		if target != nil {
+			if undoOwnBonus {
+				best -= target.ownBonus()
 			}
-			if t != SkillID {
+			if t == ParryID || t == BlockID {
 				best = entity.defenseLevel(t, best)
 			}
 		}
@@ -450,8 +543,8 @@ func (s *SkillDefault) skillLevelLess(entity *Entity, replacements map[string]st
 	}
 }
 
-// isTLPermitted reports whether the WhenTL constraint (if any) is satisfied. skillTL is the tech level of the skill the
-// default is resolving against; when empty, the entity's tech level is used instead.
+// isTLPermitted reports whether the WhenTL constraint (if any) is satisfied. skillTL is the tech level of the skill or
+// spell the default is resolving against; when empty, the entity's tech level is used instead.
 func (s *SkillDefault) isTLPermitted(entity *Entity, skillTL string) bool {
 	if s.WhenTL.Compare == criteria.AnyNumber {
 		return true
@@ -485,6 +578,48 @@ func (s *SkillDefault) matchingSkills(entity *Entity, replacements map[string]st
 	})
 }
 
+// matchingSpells returns the spells this SkillDefault selects: those matching the name and power source criteria (see
+// Entity.spellsMatching), then filtered by the tag criteria when one has been set. One whose power source is to be the
+// same as that of the spell it belongs to, which withPowerSourceOf has not replaced, selects none, as a spell
+// prerequisite of that form does when it belongs to no spell.
+func (s *SkillDefault) matchingSpells(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Spell {
+	if entity == nil || s.SamePowerSource {
+		return nil
+	}
+	list := entity.spellsMatching(s.Name, s.PowerSource, replacements, requirePoints, excludes)
+	if s.Tags.IsZero() {
+		return list
+	}
+	return slices.DeleteFunc(list, func(sp *Spell) bool {
+		return !s.Tags.MatchesList(replacements, sp.Tags...)
+	})
+}
+
+// matchingTargets returns the items this SkillDefault selects: the skills (see matchingSkills) for a skill-based one,
+// the spells (see matchingSpells) for a spell-based one, and none otherwise.
+func (s *SkillDefault) matchingTargets(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) []defaultable {
+	var targets []defaultable
+	switch s.Type() {
+	case SkillID, ParryID, BlockID:
+		skills := s.matchingSkills(entity, replacements, requirePoints, excludes)
+		if len(skills) != 0 {
+			targets = make([]defaultable, len(skills))
+			for i, sk := range skills {
+				targets[i] = sk
+			}
+		}
+	case SpellID:
+		spells := s.matchingSpells(entity, replacements, requirePoints, excludes)
+		if len(spells) != 0 {
+			targets = make([]defaultable, len(spells))
+			for i, sp := range spells {
+				targets[i] = sp
+			}
+		}
+	}
+	return targets
+}
+
 // selectsPermittedSkill reports whether this SkillDefault selects a skill whose tech level satisfies WhenTL.
 func (s *SkillDefault) selectsPermittedSkill(entity *Entity, replacements map[string]string, requirePoints bool) bool {
 	return slices.ContainsFunc(s.matchingSkills(entity, replacements, requirePoints, nil), func(sk *Skill) bool {
@@ -494,57 +629,57 @@ func (s *SkillDefault) selectsPermittedSkill(entity *Entity, replacements map[st
 
 // bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by; see bestFastMatch.
 func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
-	sk, _ := s.bestFastMatch(entity, replacements, requirePoints, excludes)
-	return sk
+	target, _ := s.bestFastMatch(entity, replacements, requirePoints, excludes)
+	return asSkill(target)
 }
 
-// bestFastMatch returns the skill bestFast() scores this SkillDefault by, along with its level, or nil and fxp.Min if
+// bestFastMatch returns the item bestFast() scores this SkillDefault by, along with its level, or nil and fxp.Min if
 // there is none: the one with the highest already-calculated level among those it selects whose tech level satisfies
 // WhenTL, the first one encountered winning a tie. While the prerequisites of an item carrying a grant are judged, each
 // level is instead computed as they see it, as best computes it, since the recorded one holds what the grant gave (see
 // Entity.JudgingPrereqsOf), at base, as it is there, since the recorded one holds what alters current values alone
 // (see Entity.atBaseWhile), and while a pool's base or thresholds are found, as they see it, since the recorded one
 // holds what the features those thresholds hold add (see Entity.thresholdFeaturesLeftOut).
-func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best *Skill, level fxp.Int) {
+func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best defaultable, level fxp.Int) {
 	level = fxp.Min
 	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.atBase > 0 ||
 		entity.thresholdFeaturesLeftOut())
-	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
-		if !s.isTLPermitted(entity, sk.TL()) {
+	for _, target := range s.matchingTargets(entity, replacements, requirePoints, excludes) {
+		if !s.isTLPermitted(entity, target.TL()) {
 			continue
 		}
-		candidate := sk.LevelData.Level
+		candidate := target.levelData().Level
 		if afresh {
-			candidate = sk.CalculateLevel(excludes).Level
+			candidate = target.levelExcluding(excludes).Level
 		}
 		if level < candidate {
-			best = sk
+			best = target
 			level = candidate
 		}
 	}
 	return best, level
 }
 
-// best returns the skill with the highest level among those this SkillDefault selects whose tech level satisfies
-// WhenTL, along with that level, or nil and fxp.Min if there are none. Only a skill whose recorded level beats the best
+// best returns the item with the highest level among those this SkillDefault selects whose tech level satisfies
+// WhenTL, along with that level, or nil and fxp.Min if there are none. Only an item whose recorded level beats the best
 // so far has its level computed, except while the prerequisites of an item carrying a grant are judged: the level is
-// then computed without what that item's grants did to the skill, which a curse among them leaves above the one
-// recorded. Every level is computed too while an editor previews a skill's level, since the recorded ones are those of
-// the skill as it is on the sheet rather than as edited, and of the skills resting on it (see Entity.matchLevelCapsAs),
-// at base, since they hold what alters current values alone (see Entity.atBaseWhile), and while a pool's base or
-// thresholds are found, since they hold what the features those thresholds hold add (see
+// then computed without what that item's grants did to the candidate, which a curse among them leaves above the one
+// recorded. Every level is computed too while an editor previews the level of a skill or spell, since the recorded ones
+// are those of the item as it is on the sheet rather than as edited, and of the items resting on it (see
+// Entity.matchLevelCapsAs), at base, since they hold what alters current values alone (see Entity.atBaseWhile), and
+// while a pool's base or thresholds are found, since they hold what the features those thresholds hold add (see
 // Entity.thresholdFeaturesLeftOut).
-func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best *Skill, level fxp.Int) {
+func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best defaultable, level fxp.Int) {
 	level = fxp.Min
-	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.previewingSkillEdit() ||
+	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.previewingEdit() ||
 		entity.atBase > 0 || entity.thresholdFeaturesLeftOut())
-	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
-		if !s.isTLPermitted(entity, sk.TL()) {
+	for _, target := range s.matchingTargets(entity, replacements, requirePoints, excludes) {
+		if !s.isTLPermitted(entity, target.TL()) {
 			continue
 		}
-		if afresh || level < sk.LevelData.Level {
-			if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
-				best = sk
+		if afresh || level < target.levelData().Level {
+			if candidate := target.levelExcluding(excludes).Level; level < candidate {
+				best = target
 				level = candidate
 			}
 		}
@@ -564,7 +699,7 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 			level = 20
 		}
 		return s.finalLevel(fxp.FromInteger(level))
-	case ParryID, BlockID, SkillID:
+	case ParryID, BlockID, SkillID, SpellID:
 		_, level := s.bestFastMatch(entity, replacements, requirePoints, excludes)
 		return s.fastLevelFromSkill(entity, level)
 	default:
@@ -622,9 +757,9 @@ func defenseLevelFromSkill(skillLevel fxp.Int) fxp.Int {
 	return skillLevel.Div(fxp.Two).Floor() + fxp.Three
 }
 
-// fastLevelFromSkill returns the level SkillLevelFast gives a skill-based default when level is that of the skill
-// bestFastMatch picked for it: the level, turned into a defense level for a parry- or block-type default, plus the
-// default's modifier. fxp.Min, meaning no skill matched, yields fxp.Min.
+// fastLevelFromSkill returns the level SkillLevelFast gives a skill- or spell-based default when level is that of the
+// skill or spell bestFastMatch picked for it: the level, turned into a defense level for a parry- or block-type
+// default, plus the default's modifier. fxp.Min, meaning nothing matched, yields fxp.Min.
 func (s *SkillDefault) fastLevelFromSkill(entity *Entity, level fxp.Int) fxp.Int {
 	if level == fxp.Min {
 		return fxp.Min
@@ -661,20 +796,29 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
-// "source" data, i.e. not expected to be modified by the user after copying from a library. The name, specialization
-// and tags criteria of a default that isn't skill-based are left out, since Normalize drops them and a default must
-// hash the same before and after. The type is hashed in its normalized form, as loading leaves it.
+// "source" data, i.e. not expected to be modified by the user after copying from a library. The criteria Normalize
+// drops for the type are left out, since a default must hash the same before and after, as is the power source
+// criteria while the power source is to be the same as that of the spell the default belongs to, as for a
+// SpellPrereq. The type is hashed in its normalized form, as loading leaves it.
 func (s *SkillDefault) Hash(h hash.Hash) {
 	t := s.Type()
 	xhash.StringWithLen(h, t)
 	xhash.Num64(h, s.Modifier)
 	skillBased := DefaultTypeIsSkillBased(t)
-	if skillBased {
+	spellBased := t == SpellID
+	switch {
+	case skillBased:
 		s.Name.Hash(h)
 		s.Specialization.Hash(h)
+	case spellBased:
+		s.Name.Hash(h)
+		xhash.Bool(h, s.SamePowerSource)
+		if !s.SamePowerSource {
+			s.PowerSource.Hash(h)
+		}
 	}
 	s.WhenTL.Hash(h)
-	if skillBased {
+	if skillBased || spellBased {
 		s.Tags.Hash(h)
 	}
 }

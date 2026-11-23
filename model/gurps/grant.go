@@ -200,13 +200,14 @@ func (n *grantNote) amountFor(exclude any) fxp.Int {
 // as a whole, as the prerequisites of an item carrying a grant see the sheet, without what that item's grants give the
 // attribute or skill the level rests on (see Entity.JudgingPrereqsOf), so that they see the item at the level set,
 // which the grant setting it gives whether or not those grants are in effect, and as the sheet is seen while an editor
-// previews a skill's level, since the level may rest on the skill as edited, as a technique's or a default's does (see
-// Entity.matchLevelCapsAs). owner carries the grant, points are the points as priced against the sheet as a whole, and
-// busy is set while price or beyond runs. beyond, set for the level set giving a skill or spell the points it has
-// standing alone, returns those points as priced against the sheet as a whole, less, for a skill, those the default its
-// level is read with stands for as the sheet is seen when it runs (see Grant.pointsBeyondDefault), which is all that
-// differs at base and while a pool's base or thresholds are found without the features those thresholds hold, where
-// that default is picked afresh, so that the skill has the level set there too.
+// previews the level of a skill or spell, since the level may rest on the item as edited, as a technique's or a
+// default's does (see Entity.matchLevelCapsAs). owner carries the grant, points are the points as priced against the
+// sheet as a whole, and busy is set while price or beyond runs. beyond, set for the level set giving a skill or spell
+// the points it has standing alone, returns those points as priced against the sheet as a whole, less, for a skill or
+// spell, those the default its level is read with stands for as the sheet is seen when it runs (see
+// Grant.pointsBeyondDefault), which is all that differs at base and while a pool's base or thresholds are found without
+// the features those thresholds hold, where that default is picked afresh, so that the item has the level set there
+// too.
 type grantReprice struct {
 	entity *Entity
 	owner  any
@@ -227,12 +228,12 @@ type repriceKey struct {
 }
 
 // pointsFor returns the points as the prerequisites of exclude, or when it is nil those being judged, see the sheet:
-// priced afresh when exclude carries a grant, but not the one setting the level, and while an editor previews a skill's
-// level; at base and while a pool's base or thresholds are found without the features those thresholds hold, found
-// by beyond when that is set; and otherwise, or while they are priced afresh, as for a level set on an item resting on
-// itself, as priced against the sheet as a whole. They are found once for each view of the sheet each time those
-// prerequisites are judged, the edits are previewed, the computation at base runs, or the pool's base or thresholds are
-// found; see Entity.judgedPoints and Entity.basePoints.
+// priced afresh when exclude carries a grant, but not the one setting the level, and while an editor previews the level
+// of a skill or spell; at base and while a pool's base or thresholds are found without the features those thresholds
+// hold, found by beyond when that is set; and otherwise, or while they are priced afresh, as for a level set on an item
+// resting on itself, as priced against the sheet as a whole. They are found once for each view of the sheet each time
+// those prerequisites are judged, the edits are previewed, the computation at base runs, or the pool's base or
+// thresholds are found; see Entity.judgedPoints and Entity.basePoints.
 func (r *grantReprice) pointsFor(exclude any) fxp.Int {
 	e := r.entity
 	if exclude = e.judgingOr(exclude); r.busy || exclude == r.owner {
@@ -243,7 +244,7 @@ func (r *grantReprice) pointsFor(exclude any) fxp.Int {
 		e.JudgingPrereqsOf(exclude, func() { points = r.pricedFor(exclude, r.price) })
 		return points
 	}
-	if e.previewingSkillEdit() {
+	if e.previewingEdit() {
 		return r.pricedFor(exclude, r.price)
 	}
 	if r.beyond != nil && (e.atBase > 0 || e.thresholdFeaturesLeftOut()) {
@@ -815,26 +816,29 @@ func (g *Grant) baseUnresolved(e *Entity, item grantLeveler) bool {
 }
 
 // pointsBeyondDefault returns the points the grant gives the skill or spell on the sheet that holder is, which for a
-// level set on a skill are less those the default it uses stands for, since its level adds them (see
-// CalculateSkillLevel), so that the skill has the level set, or the default's when that is higher, rather than one
-// raised by both. The default is the one the skill recorded, or, where its level is read with one picked afresh as the
-// sheet is seen then, that one: while the prerequisites of an item carrying a grant are judged (see
-// Skill.levelForPrereqsOf), while an editor previews a skill's level (see Skill.defaultExcept), at base, and while a
-// pool's base or thresholds are found without the features those thresholds hold (see Skill.CurrentLevel). The
-// recorded one is kept when it resolves there, whatever points the skill has: these points decide whether the skill
-// keeps it (see Skill.keepsDefault), and where they are none, so are those beyond the best default it then reads its
-// level with.
+// level set on one whose points add to those its default stands for (see defaultable.defaultBaseline) are less those
+// the default it uses stands for, since its level adds them (see CalculateSkillLevel and CalculateSpellLevel), so that
+// it has the level set, or the default's when that is higher, rather than one raised by both. The default is the one it
+// recorded, or, where its level is read with one picked afresh as the sheet is seen then, that one: while the
+// prerequisites of an item carrying a grant are judged (see Skill.levelForPrereqsOf), while an editor previews the
+// level of a skill or spell (see defaultExcept), at base, and while a pool's base or thresholds are found without the
+// features those thresholds hold (see Skill.CurrentLevel). The recorded one is kept when it resolves there, whatever
+// points the item has: these points decide whether it keeps it (see keepsDefault), and where they are none, so are
+// those beyond the best default it then reads its level with.
 func (g *Grant) pointsBeyondDefault(points fxp.Int, holder grantHolder) fxp.Int {
-	s, ok := holder.(*Skill)
-	if !ok || g.EffectiveAdjust() != grantadjust.SetLevel || s.WildcardDifficulty() {
+	h, ok := holder.(defaultable)
+	if !ok || g.EffectiveAdjust() != grantadjust.SetLevel || h.WildcardDifficulty() {
 		return points
 	}
-	def := s.DefaultedFrom
-	if e := EntityFromNode(s); e != nil && (e.carriesGrant(e.judging) || e.atBase > 0 ||
-		e.thresholdFeaturesLeftOut() || e.previewingSkillEdit()) {
-		def = s.keptDefaultWithPoints()
+	def := h.recordedDefault()
+	if e := entityOf(h); e != nil && (e.carriesGrant(e.judging) || e.atBase > 0 ||
+		e.thresholdFeaturesLeftOut() || e.previewingEdit()) {
+		def = keptDefaultWithPoints(h)
 	}
 	if def == nil || def.Points <= 0 {
+		return points
+	}
+	if _, stacks := h.defaultBaseline(); !stacks {
 		return points
 	}
 	return (points - def.Points).Max(0)
@@ -1443,13 +1447,12 @@ func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points f
 
 // applyLevelsWithinLimit is applyLevels for a technique with a limit or a Ritual Magic spell, which no points raise
 // above its limit: the levels the grants add are held to the highest level points give it (see levelAt), which the
-// limit caps. A level a grant keeps is read with levelAt, so only levels added can overshoot.
+// limit caps, or to the level it has, when that is higher, as a Ritual Magic spell's default, which levelAt leaves out
+// and the limit doesn't hold, may put it. A level a grant keeps is read with levelAt, so only levels added can
+// overshoot.
 func (s *grantState) applyLevelsWithinLimit(exclude any, level Level, levelAt func(points fxp.Int) Level) Level {
 	return s.applyLevelsHeldTo(exclude, level, levelAt, func() fxp.Int {
-		if most := levelAt(fxp.MaxBasePoints).Level; most != fxp.Min {
-			return most
-		}
-		return fxp.Max
+		return levelAt(fxp.MaxBasePoints).Level.Max(level.Level)
 	})
 }
 

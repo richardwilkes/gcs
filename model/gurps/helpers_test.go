@@ -235,6 +235,11 @@ func newSkillDefaultTo(name, specialization string, anySpecialization bool, modi
 	return def
 }
 
+// newSpellDefaultTo returns a default to the spell with the given name, whatever its power source, at the modifier.
+func newSpellDefaultTo(name string, modifier fxp.Int) *SkillDefault {
+	return &SkillDefault{DefaultType: SpellID, Name: textCriteria(criteria.IsText, name), Modifier: modifier}
+}
+
 func textCriteria(compare criteria.StringComparison, qualifier string) criteria.Text {
 	return criteria.Text{Compare: compare, Qualifier: qualifier}
 }

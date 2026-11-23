@@ -64,9 +64,11 @@ func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(spell *gurps.Spell) bool {
-						// A granted spell changes only with its grant.
+						// A granted spell changes only with its grant. Any other picks its default now, as a dropped
+						// skill does, ahead of the items already on the sheet that may default to it.
 						if !gurps.IsGranted(spell) {
 							gurps.ResolveEmptyTechLevel(spell, entity.Profile.TechLevel)
+							spell.UpdateLevel()
 						}
 						return false
 					}, false, true, row.Data())

@@ -938,6 +938,9 @@ One row of the spells list. See [The sheet's lists](#the-sheets-lists).
 - `.TimeToCast` (string)
 - `.Type` (string) — `item` or `group`
 - `.UnsatisfiedReason` (string)
+- Added in GCS v5.62:
+  - `.ModifierNotes` (string) — The note naming the skill or spell the spell defaults from, such as
+    `Default: Thaumatology-2`, or an empty string if there is none.
 
 ## Trait
 

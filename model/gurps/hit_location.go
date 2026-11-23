@@ -121,7 +121,7 @@ func (h *HitLocation) ID() string {
 
 // SetID sets the ID after sanitizing it, so the stored ID may differ from the value passed in.
 func (h *HitLocation) SetID(value string) {
-	h.LocID = SanitizeID(value, false, ReservedIDs...)
+	h.LocID = SanitizeID(value, false, ReservedIDsForNew...)
 }
 
 // OwningTable returns the owning table.

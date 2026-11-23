@@ -26,13 +26,13 @@ descending](images/icons/sortDescending.svg).
 
 | Column                                                | Description                                                                                                                                                                         |
 |-------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![switched on](images/icons/toggleSwitch.svg)     | Appears only when a spell has switchable [features](Features). Select the cell to turn the spell's switch on or off.                                                                |
-| **Spell**                                             | The spell name and any notes, including the ritual information. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes for this spell.      |
+| ![switched on](images/icons/toggleSwitch.svg)         | Appears only when a spell has switchable [features](Features). Select the cell to turn the spell's switch on or off.                                                                |
+| **Spell**                                             | The spell name and any notes, including the ritual information. Select the chevron ![notes expand](images/icons/notesExpand.svg) to show or hide the notes for this spell.          |
 | **SL**                                                | The calculated skill level, based on its controlling attribute and points spent.                                                                                                    |
 | **RSL**                                               | The relative skill level compared to its controlling attribute. For example, `IQ+2`.                                                                                                |
 | **Pts**                                               | The total points you’ve invested in the spell.                                                                                                                                      |
-| ![page reference](images/icons/pageReference.svg) | Page reference for the spell. See [Page References](Page%20References) for more details.                                                                                            |
-| ![source](images/icons/source.svg)                | Tracks whether the spell matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                |
+| ![page reference](images/icons/pageReference.svg)     | Page reference for the spell. See [Page References](Page%20References) for more details.                                                                                            |
+| ![source](images/icons/source.svg)                    | Tracks whether the spell matches the library it came from. See _Master Library Syncing_ in [Character Sheet Overview](Character%20Sheet%20Overview).                                |
 
 The sheet's skill level caps can hold a spell below the level its points buy, such as to a limit set by the character's
 Thaumatology skill. A capped spell's **SL** tooltip names the cap, and the Spell Editor's **Level** shows the capped
@@ -74,6 +74,8 @@ When you add a spell:
 
 - Most spells require at least **1 point** to purchase.
 - Higher spell levels cost more points, based on the **Skill Cost Table** ([B170](B170)).
+- A spell with no points in it shows the level it has from its [defaults](Defaults), if any, but doesn't count as a
+  spell the character knows for [prerequisites](Prerequisites).
 
 ## Managing spells
 
@@ -105,6 +107,12 @@ To increase (or decrease) the spell level:
 > [!TIP]
 > Use **Increment** when you’re tracking gradual training. Use **Increase Skill Level** if you want to jump directly to
 > the next full level.
+
+### Swapping defaults
+
+A spell other than a Ritual Magic spell can be bought up from a skill or spell it defaults to. Select the spell and go
+to **Item > Swap Defaults** (`Ctrl+Shift+X` / `Cmd+Shift+X`) to cycle through its usable [defaults](Defaults), or to
+trade places with the skill or spell it defaults from.
 
 ### Tracking study time
 
@@ -141,13 +149,17 @@ differences:
 - **Field differences:**
   - Ritual Magic spells include a **Base Skill** field. This is usually the _Ritual Magic_ skill, but you can select
     another if appropriate. The character needs that skill, with the spell's college as its specialization, for the
-    spell to have a level.
+    spell to have a level, unless one of the spell's [defaults](Defaults) gives it one. A spell with neither is tagged
+    **Unsatisfied prerequisite(s)**.
   - The **Difficulty** field is restricted to **Average (A)** or **Hard (H)**, per the Ritual Magic rules.
 - **Automatic calculation:**
   - GCS automatically handles the math for Ritual Magic in the background, so you only need to enter the Base Skill and
     points.
+  - The spell's level is the higher of the level from its Base Skill and the level of its best default. Its points
+    raise only the level from the Base Skill. See _Defaults of skills and spells_ in [Defaults](Defaults).
 
-Ritual Magic spells behave like standard spells. You can edit them, track study time, and manage them in the same way.
+Ritual Magic spells behave like standard spells. You can edit them, track study time, and manage them in the same way,
+except that their defaults can't be swapped.
 
 ## Editing spells
 
@@ -166,7 +178,7 @@ The Spell Editor includes the following fields:
 | Spell Editor Field                       | Description                                                                                                                                                                                                                                    |
 |------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Name**                                 | The spell’s name.                                                                                                                                                                                                                              |
-| **Notes**                                | Notes about the spell. These appear below the spell in the list. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide).           |
+| **Notes**                                | Notes about the spell. These appear below the spell in the list. Select the Scripting Guide ![scripting guide](images/icons/scriptingGuide.svg) for instructions on including JavaScript. Supports [Markdown](Markdown%20Guide).               |
 | **VTT Notes**                            | Notes for use in your Virtual Tabletop system. See your VTT’s documentation.                                                                                                                                                                   |
 | **Tech Level**                           | The Tech Level associated with the spell, if applicable. This field is greyed out unless **Required** is checked.                                                                                                                              |
 | **Required**                             | If checked, the spell has a Tech Level.                                                                                                                                                                                                        |
@@ -188,10 +200,11 @@ The Spell Editor includes the following fields:
 | **Tags**                                 | Comma-separated [Tags](Tags) to help organize spells.                                                                                                                                                                                          |
 | **Preconfigured**                        | Only in templates and libraries. If checked, the spell's substitutions are already settled, so GCS doesn't ask about them when the spell is added to a sheet. See [Substitutions](Substitutions).                                              |
 | **Switched On**                          | Whether the spell's switchable [features](Features) are on.                                                                                                                                                                                    |
-| **Page Reference**                       | The page number where the spell appears. Select the bookmark ![page reference](images/icons/pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                                      |
+| **Page Reference**                       | The page number where the spell appears. Select the bookmark ![page reference](images/icons/pageReference.svg) beside the label to open it. See [Page References](Page%20References).                                                          |
 | **Page Highlight**                       | Text to highlight in the PDF. Leave blank unless the default highlights fail.                                                                                                                                                                  |
 | **Nameables**                            | Defines the `@code@` placeholders the spell uses, with the choices offered for each. See [Substitutions](Substitutions).                                                                                                                       |
 | **Prerequisites**                        | Requirements for this spell. See [Prerequisites](Prerequisites).                                                                                                                                                                               |
+| **Defaults**                             | Lists default skills, spells, and values ([B173](B173)). See [Defaults](Defaults).                                                                                                                                                             |
 | **Features**                             | Lists attribute, condition, skill, spell, reaction, or attack changes applied by the spell. See [Features](Features).                                                                                                                          |
 | **Melee Attack Usage**                   | Melee attack statistics if the spell grants or modifies melee attacks. See [Melee and Ranged Weapons](Melee%20and%20Ranged%20Weapons).                                                                                                         |
 | **Ranged Attack Usage**                  | Ranged attack statistics if the spell grants or modifies ranged attacks. See [Melee and Ranged Weapons](Melee%20and%20Ranged%20Weapons).                                                                                                       |
@@ -203,12 +216,12 @@ The toolbar above the Spell Editor gives you quick access to common actions:
 
 | Button                                                  | Name                    | Description                                                                                                                                                                                   |
 |:--------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![help](images/icons/help.svg)                      | **Help**                | Opens this page from the User Guide.                                                                                                                                                          |
+| ![help](images/icons/help.svg)                          | **Help**                | Opens this page from the User Guide.                                                                                                                                                          |
 | 100%                                                    | **Scale**               | Adjusts the display size of the Spell Editor.                                                                                                                                                 |
-| ![apply changes](images/icons/applyChanges.svg)     | **Apply Changes**       | Saves and closes the Spell Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                             |
-| ![discard changes](images/icons/discardChanges.svg) | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                      |
-| ![substitutions](images/icons/substitutions.svg)    | **Set Substitutions**   | Lets you enter values for spells with placeholders in their notes.                                                                                                                            |
-| ![source](images/icons/source.svg)                  | **ID & Library Source** | Shows the spell's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
+| ![apply changes](images/icons/applyChanges.svg)         | **Apply Changes**       | Saves and closes the Spell Editor (`Ctrl+Return` / `Cmd+Return`).                                                                                                                             |
+| ![discard changes](images/icons/discardChanges.svg)     | **Discard Changes**     | Exits without saving changes (`Escape`).                                                                                                                                                      |
+| ![substitutions](images/icons/substitutions.svg)        | **Set Substitutions**   | Lets you enter values for spells with placeholders in their notes.                                                                                                                            |
+| ![source](images/icons/source.svg)                      | **ID & Library Source** | Shows the spell's ID and, if it came from a library, its source. Select an entry to copy it. Offers **Sync with Source** and **Clear Source**, which take effect when you apply your changes. |
 
 ---
 

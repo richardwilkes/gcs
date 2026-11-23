@@ -73,7 +73,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 func scriptSpellLevel(spell *Spell) Level {
 	if entity := EntityFromNode(spell); entity != nil {
 		if entity.carriesGrant(entity.judging) {
-			return spell.calculateLevelExcept(entity.judging, spell.adjustedPointsExcept(entity.judging, nil))
+			return spell.calculateLevelExcept(entity.judging, spell.adjustedPointsExcept(entity.judging, nil), nil)
 		}
 		if entity.atBase > 0 || entity.thresholdFeaturesLeftOut() {
 			return spell.CalculateLevel()

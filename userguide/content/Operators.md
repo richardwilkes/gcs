@@ -31,7 +31,7 @@ none, and a tag criterion that `is` nothing means the item has no tags at all.
 
 - In **Prerequisites**, operators control how rules check for required traits, skills, or attributes.
 - In **Features**, operators define which skills, spells, traits, or weapons a bonus applies to.
-- In **Defaults**, operators pick the skill a default draws from and set Tech Level rules.
+- In **Defaults**, operators pick the skill or spell a default draws from and set Tech Level rules.
 - In **Saved Filters**, operators decide which items a library list shows.
 - In **Character Templates**, operators set how many items, or how many points, a choice requires.
 

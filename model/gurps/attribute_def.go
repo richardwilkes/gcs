@@ -39,6 +39,11 @@ var _ Hashable = &AttributeDef{}
 // hold, so nothing else need cope with one.
 var ReservedIDs = []string{SkillID, ParryID, BlockID, SizeModifierID, "10"}
 
+// ReservedIDsForNew holds the IDs the attribute and body settings never give a definition (see SanitizeID): those of
+// ReservedIDs and SpellID, by which a default's type names a spell. A definition that already has SpellID still loads
+// and works, other than as a default's type, which rests on a spell instead.
+var ReservedIDsForNew = append(slices.Clone(ReservedIDs), SpellID)
+
 // AttributeDef holds the definition of an attribute.
 type AttributeDef struct {
 	AttributeDefData
@@ -121,7 +126,7 @@ func (a *AttributeDef) ID() string {
 
 // SetID sets the ID, sanitizing it in the process, so the stored value may differ from what was passed in.
 func (a *AttributeDef) SetID(value string) {
-	a.DefID = SanitizeID(value, false, ReservedIDs...)
+	a.DefID = SanitizeID(value, false, ReservedIDsForNew...)
 }
 
 // nameOrID returns the name, or while that is empty, as it is for a definition just added in the attribute settings,

@@ -99,8 +99,8 @@ func ensureLevelCapValidity(node LevelCap, parent *LevelCapGroup) {
 }
 
 // levelCapResolver is what resolving a cap reads the sheet with: the entity, the item whose prerequisites are being
-// judged, if any (see Entity.judgingOr), and the excludes of the skill default chain the level being capped is part of,
-// less the skill being capped (see Entity.capSkillLevel).
+// judged, if any (see Entity.judgingOr), and the excludes of the default chain the level being capped is part of, less
+// the skill or spell being capped (see Entity.capSkillLevel and Entity.capSpellLevel).
 type levelCapResolver struct {
 	entity   *Entity
 	exclude  any
@@ -294,8 +294,9 @@ func (c *FixedLevelCap) resolve(_ *levelCapResolver) (levelCapValue, bool) {
 // a level, the level is taken to be 0, so that a cap such as "Thaumatology -2" holds spells down on a sheet without
 // Thaumatology rather than letting them go. One whose own caps are being resolved, or whose level a reference is
 // computing, is passed over (see Entity.capLevel), so that no cap rests on a level that rests on it, and a skill the
-// default chain of the level being capped excludes is too, as is a technique left with no level for resting on one;
-// when nothing else matching has a level, the cap can't be resolved, and is left out.
+// default chain of the level being capped excludes is too, as is a spell it excludes, and a technique or Ritual Magic
+// spell left with no level for resting on a skill it excludes; when nothing else matching has a level, the cap can't
+// be resolved, and is left out.
 type ReferenceLevelCap struct {
 	Parent                 *LevelCapGroup `json:"-"`
 	Type                   levelcap.Type  `json:"type"`
@@ -472,26 +473,36 @@ func (c *ReferenceLevelCap) resolve(r *levelCapResolver) (levelCapValue, bool) {
 	}
 	// A skill or spell passed over while not in effect, such as the row a grant puts on the sheet while what the grant
 	// gives it is priced (see grantPlan.row), is still passed over rather than taken as absent, so that a level computed
-	// with it passed over is the same whether or not it is in effect yet. The spells are found as SkillMatching finds
-	// the skills while an editor previews edits.
+	// with it passed over is the same whether or not it is in effect yet. The spells are found as spellsMatching finds
+	// them while an editor previews edits: the one edited as the copy holding the edits, which stands in for it.
 	switch c.Type {
 	case levelcap.Spell:
+		onSheet, edited := e.spellEdit()
 		visit := func(sp *Spell) bool {
 			if (!e.levelCapsResolving[sp] && !sp.Enabled()) || e.takenOffByEdit(sp) {
 				return false
 			}
-			matched := sp
-			if edited, ok := e.levelCapEdit.edited.(*Spell); ok && e.levelCapEdit.onSheet == any(sp) {
-				matched = edited
+			if sp == onSheet {
+				sp = edited
 			}
-			if !grantedFor(e.judging, sp) && c.NameCriteria.Matches(nil, matched.NameWithReplacements()) {
-				if e.levelCapsResolving[sp] {
+			if !grantedFor(e.judging, sp) && c.NameCriteria.Matches(nil, sp.NameWithReplacements()) {
+				switch {
+				case len(r.excludes) != 0 && r.excludes[sp.excludeKey()]:
+					skipped = true
+				case e.levelCapsResolving[sp]:
 					candidates = append(candidates, sp)
 					skipped = true
-				} else {
-					consider(sp, levelResolving(e, sp, func() Level {
-						return sp.calculateLevelExcept(r.exclude, sp.adjustedPointsExcept(r.exclude, nil))
-					}), sp.String())
+				default:
+					level := levelResolving(e, sp, func() Level {
+						return sp.calculateLevelExcept(r.exclude, sp.adjustedPointsExcept(r.exclude, nil), r.excludes)
+					})
+					if level == fxp.Min && ritualBaseExcluded(e, sp, r.excludes) {
+						// It rests on a ritual skill the default chain excludes, so it is passed over as that skill is.
+						candidates = append(candidates, sp)
+						skipped = true
+					} else {
+						consider(sp, level, sp.String())
+					}
 				}
 			}
 			return false
@@ -556,6 +567,30 @@ func baseExcluded(e *Entity, sk *Skill, excludes map[string]bool) bool {
 	for _, base := range sk.TechniqueDefault.matchingSkills(e, sk.Replacements, true, nil) {
 		if excludes[base.String()] {
 			return true
+		}
+	}
+	return false
+}
+
+// ritualBaseExcluded is baseExcluded for a spell: true if it is a Ritual Magic spell whose level may rest on a ritual
+// skill (see ritualMagicDefaults) the excludes hold.
+func ritualBaseExcluded(e *Entity, sp *Spell, excludes map[string]bool) bool {
+	if len(excludes) == 0 || !sp.IsRitualMagic() {
+		return false
+	}
+	colleges := sp.CollegeWithReplacements()
+	if len(colleges) == 0 {
+		colleges = []string{""}
+	}
+	ritual := sp.RitualSkillNameWithReplacements()
+	for _, college := range colleges {
+		primary, fallback, _ := ritualMagicDefaults(e, college, ritual, sp.PrereqCount)
+		for _, def := range []*SkillDefault{primary, fallback} {
+			for _, base := range def.matchingSkills(e, nil, false, nil) {
+				if excludes[base.String()] {
+					return true
+				}
+			}
 		}
 	}
 	return false

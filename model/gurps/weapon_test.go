@@ -722,6 +722,71 @@ func TestWeaponBonusWithRequiredSkillAndNoSkill(t *testing.T) {
 	c.Equal("1d+1 cr", byAbsentSkill.Damage.ResolvedDamage(nil), "a skill name of anything applies to both")
 }
 
+// TestWeaponDefaultsToSpell verifies that an attack can rest on a spell: at the level of the best spell its default
+// selects plus the modifier, for its parry as for its attack, and with that spell as the skill it is used with, by name
+// and relative level, for the bonuses selecting weapons by it. The attack belongs to the Arcane Fireball, so a default
+// whose power source is to be the same as this spell's selects that one, not the better Divine one.
+func TestWeaponDefaultsToSpell(t *testing.T) {
+	same := &gurps.SkillDefault{
+		DefaultType:     gurps.SpellID,
+		Name:            criteria.Text{Compare: criteria.IsText, Qualifier: "Fireball"},
+		SamePowerSource: true,
+		Modifier:        -fxp.One,
+	}
+	anySource := *same
+	anySource.SamePowerSource = false
+	for _, tc := range []struct {
+		name   string
+		def    *gurps.SkillDefault
+		level  fxp.Int
+		parry  string
+		damage string
+	}{
+		{name: "any power source", def: &anySource, level: fxp.Thirteen, parry: "9", damage: "1d+2 burn"},
+		{name: "the same power source as this spell", def: same, level: fxp.Eleven, parry: "8", damage: "1d+2 burn"},
+	} {
+		c := check.New(t)
+		e := gurps.NewEntity()
+		var arcane *gurps.Spell
+		for _, one := range []struct {
+			powerSource string
+			points      fxp.Int
+		}{{"Arcane", fxp.Twelve}, {"Divine", fxp.FromInteger(20)}} { // 12 and 14, IQ+2 and IQ+4
+			sp := gurps.NewSpell(e, nil, false)
+			sp.Name = "Fireball"
+			sp.PowerSource = one.powerSource
+			sp.Points = one.points
+			e.Spells = append(e.Spells, sp)
+			if arcane == nil {
+				arcane = sp
+			}
+		}
+		master := gurps.NewTrait(e, nil, false)
+		master.Name = "Fire Adept"
+		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+		bonus.SelectionType = wsel.WithRequiredSkill
+		bonus.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fireball"}
+		bonus.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Two}
+		bonus.Amount = fxp.Two
+		master.Features = gurps.Features{bonus}
+		e.Traits = append(e.Traits, master)
+		w := gurps.NewWeapon(arcane, true)
+		w.Usage = "Flaming Touch"
+		w.Damage.StrengthType = stdmg.None
+		w.Damage.Base = "1d"
+		w.Damage.Type = "burn"
+		w.Parry = attack.Parry{CanParry: true}
+		w.Defaults = []*gurps.SkillDefault{tc.def}
+		arcane.Weapons = []*gurps.Weapon{w}
+		e.Recalculate()
+		c.Equal(fxp.Twelve, arcane.LevelData.Level, "%s: precondition: the Arcane Fireball is at 12", tc.name)
+		c.Equal(tc.level, w.SkillLevel(nil), "%s: the attack's level", tc.name)
+		c.Equal(tc.parry, w.ResolvedParry(nil).String(), "%s: the parry", tc.name)
+		c.Equal(tc.damage, w.Damage.ResolvedDamage(nil), "%s: the bonus to weapons whose required skill is Fireball",
+			tc.name)
+	}
+}
+
 // newCrossbowTestWeapon builds an entity whose ST is 10 for striking and 12 for lifting, holding a Crossbow skill
 // tagged "Missile Weapon" at level 12, and returns a muscle-powered ranged weapon with a minimum ST of 12 whose only
 // default is the one given. The weapon is penalized 2 for its minimum ST unless it is recognized as a crossbow, which

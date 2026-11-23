@@ -144,7 +144,8 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 
 func (p *hitLocationSettingsPanel) validateLocID(locID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(locID)); key != "" {
-		return key == gurps.SanitizeID(key, false, gurps.ReservedIDs...)
+		// The ID the location has is kept, even one a new location could no longer have.
+		return key == p.loc.LocID || key == gurps.SanitizeID(key, false, gurps.ReservedIDsForNew...)
 	}
 	return false
 }

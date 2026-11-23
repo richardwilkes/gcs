@@ -60,3 +60,25 @@ func TestAttributeChoicesForDodgeMoveAndPools(t *testing.T) {
 	c.Equal("Move", titles[MoveID], "a move pool is left out, with a stand-in for Move in its place")
 	c.Equal("Dodge", titles[DodgeID], "and so is a dodge pool, with a stand-in for Dodge")
 }
+
+// TestAttributeChoicesForSpellFlag verifies that SpellFlag adds a choice for a spell, after the one for a skill, and
+// that it takes the place of an attribute an older sheet may define with its ID, so that the ID is offered just once.
+func TestAttributeChoicesForSpellFlag(t *testing.T) {
+	c := check.New(t)
+	defs := FactoryAttributeDefs()
+	defs.Set[SpellID] = &AttributeDef{
+		DefID: SpellID, Type: attribute.Integer, Name: "Spell Points", Base: "10", Order: len(defs.Set),
+	}
+	choices, _ := AttributeChoicesFor(defs, "", SkillFlag|SpellFlag, StrengthID)
+	keys := make([]string, 0, len(choices))
+	var title string
+	for _, one := range choices {
+		keys = append(keys, one.Key)
+		if one.Key == SpellID {
+			title = one.Title
+		}
+	}
+	c.Equal([]string{SkillID, SpellID}, keys[len(keys)-2:], "the spell choice follows the skill choice")
+	c.Equal(1, len(slices.DeleteFunc(keys, func(k string) bool { return k != SpellID })), "and is offered once")
+	c.Equal("Spell", title, "in place of the attribute")
+}

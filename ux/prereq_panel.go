@@ -575,7 +575,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 				}
 			}
 		}
-		p.powerSourceChip(chips, path, one)
+		p.powerSourceChip(chips, path, p.ownerIsSpell, &one.SamePowerSource, &one.PowerSourceCriteria)
 		p.numberChip(chips, path, "level", &one.LevelCriteria, 0, fxp.Thousand,
 			one.LevelCriteria.Compare != criteria.AnyNumber)
 	case *gurps.AttributePrereq:
@@ -871,42 +871,6 @@ func (p *prereqPanel) havePopup(parent *unison.Panel, key string, has, spell boo
 		}
 		return no
 	}, set))
-}
-
-// powerSourceChip adds the optional power source criterion of a spell prerequisite. "Same as this spell's" is offered
-// only to a spell's own prerequisites, or shown when a file edited by hand holds it elsewhere.
-func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gurps.SpellPrereq) {
-	p.optionalCriterion(chips, path, "power", one.SamePowerSource || one.PowerSourceCriteria.Compare != criteria.AnyText,
-		func() {
-			one.SamePowerSource = p.ownerIsSpell
-			if !p.ownerIsSpell {
-				one.PowerSourceCriteria.Compare = criteria.IsText
-			}
-		},
-		func() { one.SamePowerSource, one.PowerSourceCriteria = false, criteria.Text{} },
-		func(chip *unison.Panel) {
-			prefix := rowCriteria("power").prefix
-			choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
-			same := i18n.Text("and whose power source is the same as this spell's")
-			var items []string
-			if p.ownerIsSpell || one.SamePowerSource {
-				items = append(items, same)
-			}
-			items = append(items, choices[1:]...)
-			current := choices[one.PowerSourceCriteria.Compare.EnsureValid()]
-			if one.SamePowerSource {
-				current = same
-			}
-			title := i18n.Text("Power Source")
-			comparison, _ := criteriaTitles(title)
-			addCentered(chip, compactPopup(&p.sentenceRows, path+":powercmp", comparison, items, current, nil, func(choice string) {
-				one.SamePowerSource = choice == same
-				one.PowerSourceCriteria.Compare = criteria.StringComparisons[max(slices.Index(choices, choice), 0)]
-			}))
-			if !one.SamePowerSource {
-				p.textField(chip, path+":power", title, "", &one.PowerSourceCriteria.Qualifier, nil)
-			}
-		})
 }
 
 // modifierChips adds the optional criteria a single modifier of the matched item has to meet.

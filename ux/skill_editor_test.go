@@ -569,6 +569,42 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 			},
 		},
 		{
+			// With no points, IQ-2, the level 1 point buys, is the spell's level.
+			name: "spell at its default", want: "8/IQ-2", build: func(e *gurps.Entity) any {
+				light := gurps.NewSpell(e, nil, false)
+				light.Name = "Light"
+				light.Points = 0
+				light.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID, Modifier: -fxp.Two}}
+				e.Spells = append(e.Spells, light)
+				return light
+			},
+		},
+		{
+			// The 8 points that buy 11 are not added to the 4 the default of IQ+0 stands for.
+			name: "spell kept above its default", want: "11/IQ+1", build: func(e *gurps.Entity) any {
+				light := gurps.NewSpell(e, nil, false)
+				light.Name = "Light"
+				light.Points = 0
+				light.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID}}
+				e.Spells = append(e.Spells, light)
+				grantOn(e, "Training", light, grantadjust.SetLevel, fxp.Eleven, grantmerge.KeepHighest)
+				return light
+			},
+		},
+		{
+			// The default of IQ+0 is above the 8 Ritual Magic (Fire) at 10 gives Ignite for its 2 prerequisites.
+			name: "Ritual Magic spell at its default", want: "10/+0", build: func(e *gurps.Entity) any {
+				addSkill(e, "Ritual Magic", hardIQ, fxp.Four).Specialization = "Fire"
+				ignite := gurps.NewRitualMagicSpell(e, nil, false)
+				ignite.Name = "Ignite"
+				ignite.College = gurps.CollegeList{"Fire"}
+				ignite.PrereqCount = 2
+				ignite.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID}}
+				e.Spells = append(e.Spells, ignite)
+				return ignite
+			},
+		},
+		{
 			name: "difficulty chosen for a spell a grant puts on the sheet", diff: new(difficulty.VeryHard),
 			want: "9/IQ-1", build: func(e *gurps.Entity) any {
 				light := gurps.NewSpell(e, nil, false)

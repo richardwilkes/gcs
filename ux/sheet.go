@@ -728,49 +728,87 @@ func (s *Sheet) syncDisclosure() {
 	}
 }
 
-// canSwapDefaults returns true if the skills selected in the skill list can have their defaults swapped. The list has to
-// be on the page: off it, the list keeps its selection but has no undo manager to record the swap with.
-func (s *Sheet) canSwapDefaults(_ any) bool {
-	if !s.showsBlock(gurps.BlockSkillsKey) {
-		return false
-	}
-	canSwap := false
-	for _, skillNode := range s.Skills.SelectedNodes(true) {
-		skill := skillNode.Data()
-		if skill.IsTechnique() {
-			return false
-		}
-		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) &&
-			skill.BestSwappableSkill() == nil &&
-			!skill.AlternateDefaultsAvailable() {
-			return false
-		}
-		canSwap = true
-	}
-	return canSwap
+// swappableNode is a node Swap Defaults can act on: a skill or a spell.
+type swappableNode[T gurps.Node[T]] interface {
+	gurps.Node[T]
+	*gurps.Skill | *gurps.Spell
 }
 
+// swapDefaultsList returns the key of the block of the list Swap Defaults acts on: the skill or spell list holding the
+// keyboard focus or, failing that, the first of the two with a selection, or "" for neither. A list has to be on the
+// page: off it, the list keeps its selection but has no undo manager to record the swap with.
+func (s *Sheet) swapDefaultsList() string {
+	skills := s.showsBlock(gurps.BlockSkillsKey)
+	spells := s.showsBlock(gurps.BlockSpellsKey)
+	focus := s.Window().CurrentFocus()
+	switch {
+	case skills && unison.AncestorIsOrSelf(focus, s.Skills):
+		return gurps.BlockSkillsKey
+	case spells && unison.AncestorIsOrSelf(focus, s.Spells):
+		return gurps.BlockSpellsKey
+	case skills && s.Skills.Table.HasSelection():
+		return gurps.BlockSkillsKey
+	case spells && s.Spells.Table.HasSelection():
+		return gurps.BlockSpellsKey
+	default:
+		return ""
+	}
+}
+
+// canSwapDefaults returns true if the defaults of what is selected in the list Swap Defaults acts on can be swapped;
+// see swapDefaultsList.
+func (s *Sheet) canSwapDefaults(_ any) bool {
+	switch s.swapDefaultsList() {
+	case gurps.BlockSkillsKey:
+		return canSwapSelectedDefaults(s.Skills)
+	case gurps.BlockSpellsKey:
+		return canSwapSelectedDefaults(s.Spells)
+	default:
+		return false
+	}
+}
+
+// swapDefaults swaps the defaults of what is selected in the list Swap Defaults acts on; see swapDefaultsList.
 func (s *Sheet) swapDefaults(_ any) {
-	undo := beginTableUndo(s.Skills.Table, swapDefaultsAction.Title, nil, nil)
-	for _, skillNode := range s.Skills.SelectedNodes(true) {
-		skill := skillNode.Data()
-		if !skill.CanSwapDefaults() {
-			continue
-		}
-		if skill.AlternateDefaultsAvailable() {
-			skill.SwapToNextDefault()
-		} else if swap := skill.DefaultSkill(); skill.CanSwapDefaultsWith(swap) {
-			skill.DefaultedFrom = nil
-			swap.SwapDefaults()
-		} else if other := skill.BestSwappableSkill(); other != nil {
-			skill.DefaultedFrom = nil
-			other.SwapDefaults()
+	switch s.swapDefaultsList() {
+	case gurps.BlockSkillsKey:
+		swapSelectedDefaults(s, s.Skills, s.Spells.undoData)
+	case gurps.BlockSpellsKey:
+		swapSelectedDefaults(s, s.Spells, s.Skills.undoData)
+	default:
+	}
+}
+
+// canSwapSelectedDefaults returns true if something is selected in the list and the defaults of all of it can be
+// swapped; see gurps.CanSwapDefaultsOf.
+func canSwapSelectedDefaults[T swappableNode[T]](list *PageList[T]) bool {
+	selected := list.SelectedNodes(true)
+	for _, node := range selected {
+		if !gurps.CanSwapDefaultsOf(node.Data()) {
+			return false
 		}
 	}
-	// Swapping a default can change skill levels well beyond the skills list (weapons, for one), so the whole sheet is
-	// marked as modified, which also bumps the modification timestamp and updates the title.
+	return len(selected) != 0
+}
+
+// swapSelectedDefaults swaps the defaults of what is selected in the list, as one edit that undoes the changes to the
+// other of the skill and spell lists as well, whose undo data otherUndoData returns, since a skill and a spell can
+// trade places.
+func swapSelectedDefaults[T swappableNode[T]](s *Sheet, list *PageList[T], otherUndoData func() tableRestorer) {
+	others := func() []tableRestorer {
+		if data := otherUndoData(); data != nil {
+			return []tableRestorer{data}
+		}
+		return nil
+	}
+	undo := beginTableUndoWith(list.Table, swapDefaultsAction.Title, others())
+	for _, node := range list.SelectedNodes(true) {
+		gurps.SwapDefaultsOf(node.Data())
+	}
+	// Swapping a default can change levels well beyond the two lists (weapons, for one), so the whole sheet is marked
+	// as modified, which also bumps the modification timestamp and updates the title.
 	s.MarkModified(nil)
-	commitTableUndo(s.Skills.Table, undo)
+	commitTableUndoWith(list.Table, undo, others)
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder. A sheet shows its own settings and nothing of the

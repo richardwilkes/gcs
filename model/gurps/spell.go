@@ -50,6 +50,7 @@ var (
 	_ FeatureSwitcher           = &Spell{}
 	_ LeveledOwner              = &Spell{}
 	_ SkillLevelStepper         = &Spell{}
+	_ defaultable               = &Spell{}
 
 	_ TemplatePickerProvider = &SpellData{}
 	_ TemplatePickerProvider = &SpellEditData{}
@@ -112,15 +113,19 @@ type SpellEditData struct {
 	choiceGrouping
 	SpellNonContainerOnlyEditData
 	SpellContainerOnlySyncData
+	// copiedDefaultsHash is defaultsHash(Defaults) as of CopyFrom, which lets ApplyTo tell whether the defaults have
+	// been edited since. Only meaningful on edit data that CopyFrom produced.
+	copiedDefaultsHash uint64
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
 type SpellNonContainerOnlyEditData struct {
 	SpellNonContainerOnlySyncData
-	TechLevel        *string     `json:"tech_level,omitzero"`
-	Points           fxp.Int     `json:"points,omitzero"`
-	Study            []*Study    `json:"study,omitempty"`
-	StudyHoursNeeded study.Level `json:"study_hours_needed,omitzero"`
+	TechLevel        *string       `json:"tech_level,omitzero"`
+	Points           fxp.Int       `json:"points,omitzero"`
+	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitzero"`
+	Study            []*Study      `json:"study,omitempty"`
+	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitzero"`
 }
 
 // SpellContainerOnlySyncData holds the spell sync data that is only applicable to spells that are containers.
@@ -146,6 +151,7 @@ type SpellNonContainerOnlySyncData struct {
 	RitualOverrides RitualOverrides     `json:"rituals,omitzero"`
 	RitualSkillName string              `json:"base_skill,omitzero"`
 	PrereqCount     int                 `json:"prereq_count,omitzero"`
+	Defaults        []*SkillDefault     `json:"defaults,omitempty"`
 	Prereq          *PrereqList         `json:"prereqs,omitzero"`
 	Weapons         []*Weapon           `json:"weapons,omitempty"`
 	Features        Features            `json:"features,omitempty"`
@@ -374,6 +380,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	s.SpellData = localData.SpellData
 	s.Weapons = dropNilNodes(s.Weapons)
 	s.Replacements = nameable.Normalize(s.Replacements)
+	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	migrateLegacyText(&s.LocalNotes, localData.ExprNotes)
 	s.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(s, &s.Tags, localData.Categories, open)
@@ -628,84 +635,147 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 	return fxp.Min
 }
 
-// UpdateLevel updates the level of the spell, returning true if it has changed.
+// UpdateLevel updates the level of the spell, returning true if it, or the default the spell settled on, has changed.
 func (s *Spell) UpdateLevel() bool {
-	saved := s.LevelData
-	if !s.Enabled() {
-		s.LevelData = Level{}
-		return saved != s.LevelData
-	}
-	var level Level
-	// A level computed from a script that was stopped before it could produce an answer is not kept, for the reasons
-	// given in Skill.UpdateLevel; the level already here is out of date rather than wrong.
-	if anyScriptAbandonedDuring(EntityFromNode(s), func() { level = s.CalculateLevel() }) {
-		return false
-	}
-	s.LevelData = level
-	return saved != s.LevelData
+	return updateLevel(s)
 }
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
-	return s.calculateLevel(s.AdjustedPoints(nil))
+	return s.levelExcluding(nil)
+}
+
+// levelData implements defaultable.
+func (s *Spell) levelData() *Level {
+	return &s.LevelData
+}
+
+// levelExcluding implements defaultable.
+func (s *Spell) levelExcluding(excludes map[string]bool) Level {
+	return s.calculateLevelExcept(nil, s.AdjustedPoints(nil), excludes)
+}
+
+// excludeKey implements defaultable: String, marked so that a set of excludes, which holds a skill as its String alone,
+// never takes a skill of the same name for the spell, followed by the power source, which String leaves out, so that
+// a spell's set never holds another of its name and a different power source, which its defaults may select.
+func (s *Spell) excludeKey() string {
+	return "\x01" + s.String() + "\x01" + s.PowerSourceWithReplacements()
+}
+
+// ownPowerSource implements defaultable.
+func (s *Spell) ownPowerSource() *string {
+	powerSource := s.PowerSourceWithReplacements()
+	return &powerSource
+}
+
+// ownBonus implements defaultable: the spell bonuses that select the spell, rounded down, as both CalculateSpellLevel
+// and CalculateRitualMagicSpellLevel add them, whichever way the level comes. A Ritual Magic spell, a technique of its
+// ritual skill, may hold too the skill bonuses that select it as one, as a technique holds its own (see
+// Skill.ownBonus), but only when that skill rather than its default gives its level, and only as far as that skill's
+// level, which holds it, leaves room (see CalculateRitualMagicSpellLevel), so they are left in rather than guessed at.
+func (s *Spell) ownBonus() fxp.Int {
+	e := EntityFromNode(s)
+	if e == nil {
+		return 0
+	}
+	return e.SpellBonusFor(s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(),
+		s.Tags, nil).Floor()
+}
+
+// picksDefault implements defaultable.
+func (s *Spell) picksDefault() bool {
+	return true
+}
+
+// declaredDefaults implements defaultable.
+func (s *Spell) declaredDefaults() []*SkillDefault {
+	return s.Defaults
+}
+
+// syntheticDefaults implements defaultable: a spell has none.
+func (s *Spell) syntheticDefaults() []*SkillDefault {
+	return nil
+}
+
+// recordedDefault implements defaultable.
+func (s *Spell) recordedDefault() *SkillDefault {
+	return s.DefaultedFrom
+}
+
+// recordDefault implements defaultable.
+func (s *Spell) recordDefault(def *SkillDefault) {
+	s.DefaultedFrom = def
+}
+
+// defaultBaseline implements defaultable: for an ordinary spell, the baseline rests on the attribute its level rests
+// on, as CalculateSpellLevel reads it, which, unlike a skill's, half-stat defaults leave whole, and the points a
+// default stands for add to the spell's own. A Ritual Magic spell's own points don't add to them; see
+// CalculateRitualMagicSpellLevel.
+func (s *Spell) defaultBaseline() (baseline fxp.Int, stacks bool) {
+	if s.IsRitualMagic() {
+		return 0, false
+	}
+	return (EntityFromNode(s).resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute) +
+		s.Difficulty.Difficulty.BaseRelativeLevel()).Floor(), true
 }
 
 // levelForPrereqsOf returns the spell's level as the prerequisites of exclude see it: the level the last pass recorded,
 // unless exclude carries a grant, in which case it is computed afresh without what the grants exclude carries gave the
-// spell, nor what the items they put on the sheet give it through their bonuses (see Entity.JudgingPrereqsOf), since an
-// item never meets its own prerequisites with what it grants. The grants need not be in effect this pass, since the
-// recorded level may hold what they gave in the last. At base, it is computed afresh as well, since the recorded level
-// holds what alters current values alone; see Entity.atBaseWhile.
+// spell, nor what the items they put on the sheet give it through their bonuses or a default resting on them (see
+// Entity.JudgingPrereqsOf), since an item never meets its own prerequisites with what it grants, and with its default
+// picked as those prerequisites see the sheet (see defaultExcept). The grants need not be in effect this pass, since
+// the recorded level may hold what they gave in the last. At base, it is computed afresh as well, since the recorded
+// level holds what alters current values alone; see Entity.atBaseWhile.
 func (s *Spell) levelForPrereqsOf(exclude any) fxp.Int {
 	if e := EntityFromNode(s); !e.carriesGrant(exclude) && (e == nil || e.atBase == 0) {
 		return s.LevelData.Level
 	}
-	return s.calculateLevelExcept(exclude, s.adjustedPointsExcept(exclude, nil)).Level
+	return s.calculateLevelExcept(exclude, s.adjustedPointsExcept(exclude, nil), nil).Level
 }
 
-// calculateLevel returns the level the spell has with the given adjusted points.
-func (s *Spell) calculateLevel(points fxp.Int) Level {
-	return s.calculateLevelExcept(nil, points)
-}
-
-// calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell, or by the
-// item whose prerequisites are being judged when exclude is nil, and, while an editor previews edits, with those of
-// the grants that would then merge into it in place of those merging into it now; see grantState.applyLevelNotes,
-// Entity.judgingOr and Entity.grantsAsEdited.
-// A Ritual Magic spell is held to its limit; see grantState.applyLevelsWithinLimit. The sheet's level caps are applied
-// last, to the level with everything else in it; see Entity.capLevel.
-func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
+// calculateLevelExcept returns the level the spell has with the given adjusted points, with the levels of what it rests
+// on taken with the excludes, without the levels grants carried by exclude merged into it, or by the item whose
+// prerequisites are being judged when exclude is nil, and, while an editor previews edits, with those of the grants
+// that would then merge into it in place of those merging into it now (see grantState.applyLevelNotes,
+// Entity.judgingOr and Entity.grantsAsEdited), and with its default picked afresh while the prerequisites of an item
+// carrying a grant are judged (see defaultExcept). The level a grant keeps is read without a default, since the points
+// kept buy it without one (see pointsForBaseLevel). A Ritual Magic spell is held to its limit; see
+// grantState.applyLevelsWithinLimit. The sheet's level caps are applied last, to the level with everything else in it;
+// see Entity.capLevel.
+func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
+	def := defaultExcept(s, exclude, excludes)
 	exclude = e.judgingOr(exclude)
-	level := s.levelFromAdjustedPoints(points)
-	levelAt := func(points fxp.Int) Level { return s.levelAt(e, points) }
+	level := s.levelFromAdjustedPoints(def, points, excludes)
+	levelAt := func(points fxp.Int) Level { return s.levelAtWith(e, nil, points, excludes) }
 	state := e.grantsAsEdited(s)
 	if s.IsRitualMagic() {
 		level = state.applyLevelsWithinLimit(exclude, level, levelAt)
 	} else {
 		level = state.applyLevels(exclude, level, levelAt)
 	}
-	return e.capSpellLevel(s, s, exclude, level)
+	return e.capSpellLevel(s, s, exclude, level, excludes)
 }
 
-// levelFromAdjustedPoints returns the level the spell has with the given adjusted points, without what grants made of
-// it.
-func (s *Spell) levelFromAdjustedPoints(points fxp.Int) Level {
+// levelFromAdjustedPoints returns the level the spell has with the given default and adjusted points, with the levels
+// of what it rests on taken with the excludes, without what grants made of it.
+func (s *Spell) levelFromAdjustedPoints(def *SkillDefault, points fxp.Int, excludes map[string]bool) Level {
 	if s.IsRitualMagic() {
-		return s.ritualMagicLevel(s, points)
+		return s.ritualMagicLevel(def, points, excludes)
 	}
 	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+		s.CollegeWithReplacements(), s.Tags, def, s.Difficulty, points)
 }
 
-// ritualMagicLevel returns the level the Ritual Magic spell has with the given adjusted points, without what grants
-// made of it, with onSheet, the spell on the sheet, which the receiver is or holds an editor's edits for, passed over
-// by the level caps met on the way; see Entity.passOver.
-func (s *Spell) ritualMagicLevel(onSheet *Spell, points fxp.Int) Level {
+// ritualMagicLevel returns the level the Ritual Magic spell has with the given default and adjusted points, without
+// what grants made of it, with the levels of the ritual skills taken with the excludes and the spell, which may be a
+// copy holding an editor's edits, passed over by the level caps met on the way; see Entity.passOver.
+func (s *Spell) ritualMagicLevel(def *SkillDefault, points fxp.Int, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
-	defer e.passOver(onSheet)()
+	defer e.passOver(s)()
 	return CalculateRitualMagicSpellLevel(e, s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-		s.RitualSkillNameWithReplacements(), s.PrereqCount, s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+		s.RitualSkillNameWithReplacements(), s.PrereqCount, s.CollegeWithReplacements(), s.Tags, def, s.Difficulty,
+		points, excludes)
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -736,7 +806,7 @@ func (s *Spell) CurrentCalculatedLevel() fxp.Int {
 
 // CalculatedLevelBeforeGrants implements SkillLevelStepper.
 func (s *Spell) CalculatedLevelBeforeGrants() fxp.Int {
-	return s.levelFromAdjustedPoints(s.AdjustedPoints(nil)).Level
+	return s.levelFromAdjustedPoints(s.DefaultedFrom, s.AdjustedPoints(nil), nil).Level
 }
 
 // pointsForLevels implements grantLeveler. A Ritual Magic spell is a technique of its ritual skill.
@@ -752,12 +822,12 @@ func (s *Spell) restsOnSkill() bool {
 	return s.IsRitualMagic()
 }
 
-// pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses on the
-// sheet from the base of its attribute (see Entity.resolveAttributeMaximumForPrereqs), found at base, since what alters
-// current values alone, such as what the pools' thresholds alone put in effect, must leave it as it is (see
-// Entity.atBaseWhile), or for a Ritual Magic spell the level before its own bonuses from the best ritual skill it may
-// rest on, held to the highest that skill's level allows before them (see techniquePointsForLevel), or zero when none
-// do.
+// pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses and
+// defaults on the sheet from the base of its attribute (see Entity.resolveAttributeMaximumForPrereqs), found at base,
+// since what alters current values alone, such as what the pools' thresholds alone put in effect, must leave it as it
+// is (see Entity.atBaseWhile), or for a Ritual Magic spell the level before its own bonuses from the best ritual skill
+// it may rest on, held to the highest that skill's level allows before them (see techniquePointsForLevel), or zero when
+// none do.
 func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	if s.IsRitualMagic() {
 		return techniquePointsForLevel(level, s.Difficulty.Difficulty, s.ritualMagicBases(e)...)
@@ -818,32 +888,32 @@ func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
 	return bases
 }
 
-// CalculateSpellLevel returns the calculated spell level.
-func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, attrDiff AttributeDifficulty, pts fxp.Int) Level {
+// CalculateSpellLevel returns the calculated level for a spell that isn't a Ritual Magic spell, with def, which may be
+// nil, the default its level rests on. As for a skill (see CalculateSkillLevel), the points the default stands for add
+// to the spell's own, with less than 1 point the spell has the level of a default above 0, and it has no less than its
+// default's level, unless it is a Wildcard spell, which ignores its default. The relative level is raised along with
+// the level by that last rule, so that it stays the level less the attribute's, and the spell bonuses are then added
+// to both.
+func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, pts fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := fxp.Min
 	if e != nil {
-		pts = pts.Floor()
-		level = e.resolveAttributeCurrentForPrereqs(attrDiff.Attribute)
-		if attrDiff.Difficulty == difficulty.Wildcard {
-			pts = pts.Div(fxp.Three).Floor()
+		attr := e.resolveAttributeCurrentForPrereqs(attrDiff.Attribute)
+		if attr == fxp.Min {
+			// With no attribute to measure it against, a default gives no level, as for a skill.
+			def = nil
 		}
-		switch {
-		case pts < fxp.One:
-			level = fxp.Min
-			relativeLevel = 0
-		case pts == fxp.One:
-		// relativeLevel is preset to this point value
-		case pts < fxp.Four:
-			relativeLevel += fxp.One
-		default:
-			relativeLevel += fxp.One + pts.Div(fxp.Four).Floor()
-		}
-		if level != fxp.Min {
-			relativeLevel += e.SpellBonusFor(name, powerSource, colleges, tags, &tooltip)
-			relativeLevel = relativeLevel.Floor()
-			level += relativeLevel
+		var bought bool
+		if relativeLevel, bought = relativeLevelForPoints(attrDiff.Difficulty, attr, pts, def); bought &&
+			attr != fxp.Min {
+			if def != nil && attrDiff.Difficulty != difficulty.Wildcard {
+				relativeLevel = relativeLevel.Max(def.AdjLevel - attr)
+			}
+			// Rounding the bonus down alone is rounding down its sum with a whole relative level, and leaves the level
+			// a default gives whole when the attribute is not.
+			relativeLevel += e.SpellBonusFor(name, powerSource, colleges, tags, &tooltip).Floor()
+			level = attr + relativeLevel
 		}
 	}
 	return Level{
@@ -853,21 +923,36 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 	}
 }
 
-// CalculateRitualMagicSpellLevel returns the calculated spell level.
-func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, prereqCount int, colleges, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+// CalculateRitualMagicSpellLevel returns the calculated level for a Ritual Magic spell: the level from the best of the
+// ritual skills of its colleges, taken with the excludes, which its points raise as they do a technique's, up to that
+// skill's level, or, when it is higher, the level of def, its default, which may be nil. Its points don't add to the
+// default, which neither is held to the ritual skill's level nor, when at or below 0, gives a level, as for a skill.
+// With the default's level, the relative level is still measured against the ritual skill, or, when none resolves, is
+// the default's modifier. The spell bonuses are then added to both.
+func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, prereqCount int, colleges, tags []string, def *SkillDefault, diff AttributeDifficulty, points fxp.Int, excludes map[string]bool) Level {
 	// Start at fxp.Min rather than the zero value, since a zero value would be a phantom level 0 that beats every
 	// negative or unresolvable (fxp.Min) college level.
 	skillLevel := Level{Level: fxp.Min}
 	if len(colleges) == 0 {
 		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, prereqCount,
-			tags, diff, points)
+			tags, diff, points, excludes)
 	} else {
 		for _, college := range colleges {
 			possible := determineRitualMagicSkillLevelForCollege(e, name, college, ritualSkillName,
-				prereqCount, tags, diff, points)
+				prereqCount, tags, diff, points, excludes)
 			if skillLevel.Level < possible.Level {
 				skillLevel = possible
 			}
+		}
+	}
+	if def != nil && def.AdjLevel > 0 && def.AdjLevel > skillLevel.Level {
+		if skillLevel.Level == fxp.Min {
+			skillLevel = Level{Level: def.AdjLevel, RelativeLevel: def.Modifier}
+		} else {
+			skillLevel.RelativeLevel += def.AdjLevel - skillLevel.Level
+			skillLevel.Level = def.AdjLevel
+			// The skill bonuses the tooltip names are in the ritual skill's level, not the default's.
+			skillLevel.Tooltip = ""
 		}
 	}
 	// As with CalculateSkillLevel() and CalculateTechniqueLevel(), don't apply bonuses to an unresolvable level, since
@@ -883,11 +968,19 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 	return skillLevel
 }
 
-func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+// determineRitualMagicSkillLevelForCollege returns the level a Ritual Magic spell of the college has from its ritual
+// skills, the better of that of the college and the generic one (see ritualMagicDefaults), taken with the excludes.
+func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int, excludes map[string]bool) Level {
 	primary, fallback, fallbackExcludes := ritualMagicDefaults(e, college, ritualSkillName, prereqCount)
+	if len(excludes) != 0 {
+		// The caller's excludes are left as they are.
+		merged := maps.Clone(excludes)
+		maps.Copy(merged, fallbackExcludes)
+		fallbackExcludes = merged
+	}
 	var limit fxp.Int
 	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, primary, diff.Difficulty, points, false,
-		&limit, nil)
+		&limit, excludes)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += primary.Modifier
 	fallbackLevel := CalculateTechniqueLevel(e, nil, name, college, tags, fallback, diff.Difficulty, points, false,
@@ -936,7 +1029,9 @@ func specializedRitualSkills(e *Entity, ritualSkillName string) map[string]bool 
 	return excludes
 }
 
-// RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied.
+// RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied: it has a college and either a ritual skill
+// it may rest on or a default that gives it a level (see CalculateRitualMagicSpellLevel), picked as its prerequisites
+// see the sheet (see defaultExcept).
 func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string) bool {
 	if !s.IsRitualMagic() {
 		return true
@@ -963,6 +1058,9 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 		if sk.SpecializationWithReplacements() == "" && sk.OptionalSpecializationWithReplacements() == "" {
 			return true
 		}
+	}
+	if def := defaultExcept(s, nil, nil); def != nil && def.AdjLevel > 0 {
+		return true
 	}
 	if tooltip != nil {
 		tooltip.WriteString(prefix)
@@ -1016,6 +1114,20 @@ func (s *Spell) Notes() string {
 	return s.ResolveLocalNotes()
 }
 
+// ModifierNotes returns the note naming the skill or spell the spell defaults to, such as "Default: Thaumatology-2",
+// or "" when there is none, as for a Wildcard spell, which ignores its default, and for a Ritual Magic spell whose
+// default gives it no higher level than its ritual skill does.
+func (s *Spell) ModifierNotes() string {
+	if s.DefaultedFrom == nil || s.Difficulty.Difficulty == difficulty.Wildcard {
+		return ""
+	}
+	if s.IsRitualMagic() &&
+		s.levelFromAdjustedPoints(nil, s.AdjustedPoints(nil), nil).Level >= s.CalculatedLevelBeforeGrants() {
+		return ""
+	}
+	return defaultNote(s)
+}
+
 // Rituals returns the rituals required to cast the spell: the ritual, time and cost its level gives, each replaced by
 // the matching ritual override that isn't blank.
 func (s *Spell) Rituals() string {
@@ -1028,8 +1140,9 @@ func (s *Spell) Rituals() string {
 	// which for a granted spell is the level its grant would give.
 	level := s.LevelData.Level
 	if !s.Enabled() {
-		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points+e.grantedPointsFor(s),
-			s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)).Level
+		level = s.calculateLevelExcept(nil, AdjustedPointsForNonContainerSpell(e, s.Points+e.grantedPointsFor(s),
+			s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil),
+			nil).Level
 	}
 	// High skill never reduces the time or cost of an enchantment, the time of a missile spell, or the cost of a
 	// blocking spell.
@@ -1117,6 +1230,9 @@ func (s *Spell) RatedStrength() fxp.Int {
 func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(EntityFromNode(s))
+	if optionChecker(prefs.ModifiersDisplay) {
+		buffer.WriteString(s.ModifierNotes())
+	}
 	if optionChecker(prefs.NotesDisplay) {
 		txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
 		txtutil.AppendStringOntoNewLine(&buffer, s.Rituals())
@@ -1188,8 +1304,8 @@ func (s *Spell) PointsWithGrants(data *SpellEditData, points fxp.Int) fxp.Int {
 // LevelWithGrants returns the level with the levels grants merged into the spell added, as CalculateLevel adds them,
 // and held to the sheet's level caps as the edit data selects them, for a level computed from the edit data in place
 // of the spell's own (see PointsWithGrants): the level the sheet would show once the edits are applied. levelAt
-// returns the level that data gives with the given points in place of the spell's own, which the level a Keep Highest
-// or Keep Lowest grant keeps is read with, and which holds a Ritual Magic spell to its limit.
+// returns the level that data gives with the given points in place of the spell's own and without a default, which the
+// level a Keep Highest or Keep Lowest grant keeps is read with, and which holds a Ritual Magic spell to its limit.
 func (s *Spell) LevelWithGrants(data *SpellEditData, level Level, levelAt func(points fxp.Int) Level) Level {
 	edited := s.withEditData(data)
 	state := grantsWithEdits(s, edited)
@@ -1198,20 +1314,22 @@ func (s *Spell) LevelWithGrants(data *SpellEditData, level Level, levelAt func(p
 	} else {
 		level = state.applyLevels(nil, level, levelAt)
 	}
-	return EntityFromNode(s).capSpellLevel(edited, s, nil, level)
+	// The copy stands in for the spell while the caps are resolved, so it carries what the grants give it as edited.
+	edited.grant = *state
+	return EntityFromNode(s).capSpellLevel(edited, s, nil, level, nil)
 }
 
-// RitualMagicLevelWith returns the level the Ritual Magic spell has with the edit data in place of its own and the
-// given points, already adjusted for the point bonuses, before what grants make of it (see LevelWithGrants), as the
-// sheet computes it once the edits are applied: the level caps met on the way see the spell as edited (see
-// Entity.matchLevelCapsAs) and pass it over (see Entity.passOver).
-func (s *Spell) RitualMagicLevelWith(data *SpellEditData, points fxp.Int) Level {
+// RitualMagicLevelWith returns the level the Ritual Magic spell has with the edit data in place of its own, the given
+// default, which may be nil, and the given points, already adjusted for the point bonuses, before what grants make of
+// it (see LevelWithGrants), as the sheet computes it once the edits are applied: the level caps met on the way see the
+// spell as edited (see Entity.matchLevelCapsAs) and pass it over (see Entity.passOver).
+func (s *Spell) RitualMagicLevelWith(data *SpellEditData, def *SkillDefault, points fxp.Int) Level {
 	edited := s.withEditData(data)
 	e := EntityFromNode(s)
 	if e.hasLevelCaps() {
 		defer e.matchLevelCapsAs(s, edited)()
 	}
-	return edited.ritualMagicLevel(s, points)
+	return edited.ritualMagicLevel(def, points, nil)
 }
 
 // withEditData returns a copy of the spell holding the edit data in place of its own.
@@ -1439,6 +1557,9 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}
+	for _, one := range s.Defaults {
+		one.FillWithNameableKeys(m, existing)
+	}
 	for _, one := range s.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
@@ -1452,6 +1573,13 @@ func (s *Spell) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	s.FillWithNameableKeys(needed, nil)
 	s.Replacements = nameable.Reduce(needed, m)
+}
+
+// CanSwapDefaults returns true if this spell's default can be swapped.
+func (s *Spell) CanSwapDefaults() bool {
+	// A granted spell changes only with its grant, which would remake it with its default as it was. A Ritual Magic
+	// spell, whose points don't add to its default's, always takes its best default (see keepsDefault).
+	return !s.Container() && !s.IsRitualMagic() && s.Granted == nil && s.AdjustedPoints(nil) > 0
 }
 
 // Kind returns the kind of data.
@@ -1495,8 +1623,14 @@ func (s *Spell) SyncWithSource() {
 		if s.Container() {
 			s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
 		} else {
+			// As in SpellEditData.ApplyTo: a recorded default is only kept while the declared defaults it was chosen
+			// from stay the same.
+			if defaultsHash(s.Defaults) != defaultsHash(other.Defaults) {
+				s.DefaultedFrom = nil
+			}
 			s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 			s.College = slices.Clone(other.College)
+			s.Defaults = cloneSkillDefaults(other.Defaults)
 			s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 			s.Weapons = CloneWeapons(other.Weapons, s, Reference)
 			s.Features = other.Features.Clone()
@@ -1536,6 +1670,10 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.RitualOverrides.Cost)
 	xhash.StringWithLen(h, s.RitualSkillName)
 	xhash.Num64(h, s.PrereqCount)
+	// A spell with no defaults leaves them out, so that its hash is the same as before spells had any.
+	if len(s.Defaults) != 0 {
+		hashList(h, s.Defaults)
+	}
 	s.Prereq.Hash(h)
 	hashList(h, s.Weapons)
 	hashList(h, s.Features)
@@ -1544,6 +1682,7 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 // CopyFrom implements EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
 	s.copyFrom(other, &other.SpellEditData, other.Container(), false, Copy)
+	s.copiedDefaultsHash = defaultsHash(s.Defaults)
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -1558,9 +1697,17 @@ func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) 
 
 // ApplyTo implements EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
+	// A recorded default persists across recalculations (see bestDefault) only while the declared defaults it was
+	// chosen from stay the same; once they are edited, it is chosen afresh. Compare against the defaults as of
+	// CopyFrom, not the target's current ones: an undo applies a snapshot whose recorded default was chosen from that
+	// snapshot's own defaults.
+	rechoose := defaultsHash(s.Defaults) != s.copiedDefaultsHash
 	other.copyFrom(other, s, other.Container(), true, Copy)
 	slices.Sort(other.Tags)
 	slices.Sort(other.College)
+	if rechoose {
+		other.DefaultedFrom = nil
+	}
 }
 
 // copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it back, and
@@ -1573,6 +1720,8 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	s.Nameables = nameable.CloneDetails(other.Nameables)
 	s.TechLevel = clonePtr(other.TechLevel)
 	s.College = slices.Clone(other.College)
+	s.Defaults = cloneSkillDefaults(other.Defaults)
+	s.DefaultedFrom = cloneSkillDefault(other.DefaultedFrom)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, spell, mode)
 	s.Features = other.Features.Clone()

@@ -108,8 +108,12 @@ choose the same command. To hide an attack from the sheet without deleting it, c
 the attack and use **Item > Toggle State**.
 
 > [!NOTE]
-> An attack must have at least one **default skill** (e.g., Broadsword, Spear) to calculate its skill level. See
-> [Defaults](Defaults). Hover over the attack's **SL** on the sheet to see which skill it used and what adjusted it.
+> An attack must have at least one **default**, such as a skill (e.g., Broadsword, Spear), to calculate its skill
+> level. See [Defaults](Defaults). Hover over the attack's **SL** on the sheet to see what adjusted it.
+
+An attack that belongs to a spell can default from the spell itself. In its editor, a new **Spell** default starts out
+matching only spells with the same power source as the spell the attack belongs to, so you need only enter the spell's
+name. See _Spell_ in [Defaults](Defaults).
 
 ## Melee Attack Editor fields
 
@@ -138,7 +142,7 @@ The Melee Attack Editor includes the following fields:
 | **Minimum ST**                                           | Minimum Strength needed to use the weapon ([B270](B270)).                                                                                                                                                       |
 | **Two-handed**                                           | Requires two hands ([B270](B270)).                                                                                                                                                                              |
 | **Two-handed & unready**                                 | Requires two hands and becomes unready after each attack ([B270](B270)).                                                                                                                                        |
-| **Defaults**                                             | Lists default skills for this attack ([B271](B271)). See [Defaults](Defaults).                                                                                                                                  |
+| **Defaults**                                             | Lists default skills and spells for this attack ([B271](B271)). See [Defaults](Defaults).                                                                                                                       |
 
 ## Ranged Attack Editor fields
 
@@ -160,7 +164,7 @@ The Ranged Attack Editor includes the following fields:
 | **Bulk**                          | Size and handling penalty ([B270](B270)), with the bulk **For Giants** and whether the weapon has a **Retracting Stock**.                                                                                               |
 | **Recoil**                        | Minimum margin of success needed for extra hits ([B271](B271)), with the recoil **For Slugs**.                                                                                                                          |
 | **Minimum ST**                    | Minimum Strength needed to use the weapon ([B270](B270)), with **Two-handed**, **Two-handed & unready**, **Has bipod**, **Mounted**, and **Uses a musket rest** ([B412](B412)).                                         |
-| **Defaults**                      | Lists default skills for this attack ([B275](B275)). See [Defaults](Defaults).                                                                                                                                          |
+| **Defaults**                      | Lists default skills and spells for this attack ([B275](B275)). See [Defaults](Defaults).                                                                                                                               |
 
 > [!TIP]
 > Damage fields accept dice such as `1d+2` or `2d-1x3`, and the other numeric fields accept a number. A field can also

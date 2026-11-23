@@ -179,10 +179,10 @@ type Entity struct {
 	// read for them (see attributeForPrereqs), the pool thresholds found for them (see Attribute.CurrentThreshold) and
 	// the script prerequisites themselves (see ScriptPrereq.Evaluate); see resolveScript.
 	scriptsForPrereqs int
-	// judgedDefaults holds the defaults picked for the skills, by skill, excludes and view of the sheet, as the
-	// prerequisites being judged see the sheet, while the item judged carries a grant, as an editor previews a skill's
-	// level, and while a pool's base or thresholds are found without the features those thresholds hold, until that
-	// ends (see untouchedByThresholdsWhile); see Skill.defaultExcept and judgedDefaultKey.
+	// judgedDefaults holds the defaults picked for the skills and spells, by item, excludes and view of the sheet, as
+	// the prerequisites being judged see the sheet, while the item judged carries a grant, as an editor previews the
+	// level of a skill or spell, and while a pool's base or thresholds are found without the features those thresholds
+	// hold, until that ends (see untouchedByThresholdsWhile); see defaultExcept and judgedDefaultKey.
 	judgedDefaults map[judgedDefaultKey]*SkillDefault
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
@@ -205,8 +205,9 @@ type Entity struct {
 	judgedGrantStates map[judgedGrantStateKey]*grantState
 	// judgedPoints holds the points the level sets of grants give the skills and spells, by level set and view of the
 	// sheet, priced afresh as the prerequisites being judged see the sheet, while the item judged carries a grant, as
-	// an editor previews a skill's level, and while a pool's base or thresholds are found without the features those
-	// thresholds hold, until that ends (see untouchedByThresholdsWhile); see grantReprice.pointsFor and repriceKey.
+	// an editor previews the level of a skill or spell, and while a pool's base or thresholds are found without the
+	// features those thresholds hold, until that ends (see untouchedByThresholdsWhile); see grantReprice.pointsFor and
+	// repriceKey.
 	judgedPoints map[repriceKey]fxp.Int
 	// levelCapsResolving holds the skills and spells whose level caps are being resolved, whose levels a reference is
 	// computing, or for which the level of the skill they rest on is being computed, while they are, so that no cap
@@ -241,8 +242,8 @@ type Entity struct {
 	// values alone; see atBaseWhile. It guards the call stack, so discardCaches leaves it alone. baseFeatures,
 	// baseDefaults, basePoints, baseThresholdGrants and baseGrantStates hold what such a computation found, for it
 	// alone to read, until the outermost one ends: the feature lists the bonuses are read from while the item judged,
-	// if any, carries no grant (see bonusFeatures), the defaults picked for the skills (see Skill.defaultExcept), the
-	// points the level sets of grants give the skills and spells (see grantReprice.pointsFor), and what the grants
+	// if any, carries no grant (see bonusFeatures), the defaults picked for the skills and spells (see defaultExcept),
+	// the points the level sets of grants give the skills and spells (see grantReprice.pointsFor), and what the grants
 	// give the items they touch with none of the pools' thresholds' grants in effect (see thresholdGrantsAtBase and
 	// grantsAsJudged), of which baseThresholdGrantsFound records that the first has been found.
 	atBase                   int
@@ -387,10 +388,10 @@ func (e *Entity) Save(filePath string) error {
 
 // MarshalJSONTo implements json.MarshalerTo.
 //
-// It does not recalculate first. Recalculating rewrites derived state, including each skill's "defaulted_from", which
-// is written to disk, from script results that need not come out the same twice, so merely hashing an entity to ask
-// whether it has unsaved changes would alter it. Callers that need the derived state current (Save, the exporters, and
-// the sheet whenever anything changes) recalculate for themselves.
+// It does not recalculate first. Recalculating rewrites derived state, including each skill's and spell's
+// "defaulted_from", which is written to disk, from script results that need not come out the same twice, so merely
+// hashing an entity to ask whether it has unsaved changes would alter it. Callers that need the derived state current
+// (Save, the exporters, and the sheet whenever anything changes) recalculate for themselves.
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		data := e.EntityData
@@ -930,13 +931,13 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 // grant giving its details checked its prerequisites (see Trait.disabledIfChecked), or would not have, had the one
 // giving them as a carrier's prerequisites see it given them (see Trait.enabledAsJudged), the maximum level the sheet
 // enforces for the trait (see Trait.enforcedMaxLevels), the level of the skill or spell and whether it takes the
-// missing-equipment penalty, the default of the skill, and what the grants gave each, the details takeGrantDetails
-// gives a granted item included, each along with the ID of what it describes, followed by one fingerprint of whether
-// each grant's carrier has its prerequisites met, which the next pass's applyGrants reads (see grantCarrierUnmet).
-// Everything else a pass reads is either the sheet's data or recomputed from these before it is read, so two passes
-// that begin from the same state end in the same one, and a state seen before means the passes have entered a cycle
-// they will never leave. Whether a trait was judged at all is left out, since of its verdict the next pass reads only
-// whether it disables the trait. The capacity is a hint for the length and may be zero.
+// missing-equipment penalty, the default of the skill, or of the spell when it has one, and what the grants gave each,
+// the details takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by
+// one fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads
+// (see grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it
+// is read, so two passes that begin from the same state end in the same one, and a state seen before means the passes
+// have entered a cycle they will never leave. Whether a trait was judged at all is left out, since of its verdict the
+// next pass reads only whether it disables the trait. The capacity is a hint for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -979,6 +980,14 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 			xhash.Bool(h, s.takesEquipmentPenalty)
 			s.grant.hash(h)
 			hashGrantDetails(h, s)
+			// A spell with no default adds nothing, so that the fingerprints of the sheets from before spells had
+			// defaults, which settle cycling levels by comparing them, are unchanged.
+			if s.DefaultedFrom != nil {
+				s.DefaultedFrom.Hash(h)
+				xhash.Num64(h, s.DefaultedFrom.Level)
+				xhash.Num64(h, s.DefaultedFrom.Points)
+				xhash.Num64(h, s.DefaultedFrom.AdjLevel)
+			}
 		})
 		return false
 	}, false, true, e.Spells...)
@@ -1901,7 +1910,7 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil || exclude == e.judging {
 		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked and
-		// the thresholds found so far; see Skill.defaultExcept and Attribute.CurrentThreshold.
+		// the thresholds found so far; see defaultExcept and Attribute.CurrentThreshold.
 		fn()
 		return
 	}
@@ -2097,9 +2106,9 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 }
 
 // addWeaponWithSkillBonusesFor hands the weapon bonuses that select weapons by the skill they are used with and match
-// the given skill, usage, damage type and tags to add. An empty name means the weapon uses no skill, which only a name
-// criterion that would select any skill matches. The bonuses bonusExcluded leaves out are passed over.
-func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damageType string, tags []string, add func(*WeaponBonus)) {
+// the given skill, or spell, usage, damage type and tags to add. An empty name means the weapon uses no skill, which
+// only a name criterion that would select any skill matches. The bonuses bonusExcluded leaves out are passed over.
+func (e *Entity) addWeaponWithSkillBonusesFor(required requiredSkill, usage, damageType string, tags []string, add func(*WeaponBonus)) {
 	// The relative skill level takes a walk of the skills to find, so it is only found once a bonus that cares about
 	// it has matched on everything else.
 	var rsl fxp.Int
@@ -2109,8 +2118,8 @@ func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damag
 			continue
 		}
 		replacements := bonusReplacements(bonus)
-		if !matchesRequiredSkillName(bonus.NameCriteria, replacements, name) ||
-			!bonus.SpecializationCriteria.Matches(replacements, specialization) ||
+		if !matchesRequiredSkillName(bonus.NameCriteria, replacements, required.name) ||
+			!bonus.SpecializationCriteria.Matches(replacements, required.specialization) ||
 			!bonus.UsageCriteria.Matches(replacements, usage) ||
 			!bonus.DamageTypeCriteria.MatchesList(replacements, damageType) ||
 			!bonus.TagsCriteria.MatchesList(replacements, tags...) {
@@ -2118,7 +2127,7 @@ func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damag
 		}
 		if bonus.RelativeLevelCriteria.Compare != criteria.AnyNumber {
 			if !rslResolved {
-				rsl = e.relativeSkillLevel(name, specialization)
+				rsl = required.relativeLevel(e)
 				rslResolved = true
 			}
 			if !bonus.RelativeLevelCriteria.Matches(rsl) {
@@ -2326,6 +2335,44 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 	Traverse(visit, true, true, e.Skills...)
 	if len(e.levelCapEdit.plantedSkills) != 0 {
 		Traverse(visit, true, true, e.levelCapEdit.plantedSkills...)
+	}
+	return list
+}
+
+// spellsMatching returns the spells whose name and power source match the given criteria, found as SkillMatching
+// finds the skills: leaving out the spells the grants of the item whose prerequisites are being judged put on the
+// sheet, finding the spell an editor previews the level of as edited, without the rows applying the edits takes off
+// the sheet and with those it puts there, passing over those the excludes hold (see Spell.excludeKey) and, when points
+// are required, those without them other than a Ritual Magic spell, as SkillMatching does a technique.
+func (e *Entity) spellsMatching(nameCriteria, powerSourceCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Spell {
+	var list []*Spell
+	name := nameCriteria.Matcher(replacements)
+	powerSource := powerSourceCriteria.Matcher(replacements)
+	onSheet, edited := e.spellEdit()
+	visit := func(sp *Spell) bool {
+		if sp == onSheet {
+			sp = edited
+		} else if e.takenOffByEdit(sp) {
+			return false
+		}
+		if !name.Matches(sp.NameWithReplacements()) || grantedFor(e.judging, sp) {
+			return false
+		}
+		if !powerSource.Matches(sp.PowerSourceWithReplacements()) {
+			return false
+		}
+		if requirePoints && !sp.IsRitualMagic() && sp.AdjustedPoints(nil) <= 0 {
+			return false
+		}
+		if len(excludes) != 0 && excludes[sp.excludeKey()] {
+			return false
+		}
+		list = append(list, sp)
+		return false
+	}
+	Traverse(visit, true, true, e.Spells...)
+	if len(e.levelCapEdit.plantedSpells) != 0 {
+		Traverse(visit, true, true, e.levelCapEdit.plantedSpells...)
 	}
 	return list
 }

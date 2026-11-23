@@ -1357,8 +1357,8 @@ type baseGrantStateKey struct {
 
 // judgedGrantStateKey identifies what the grants give an item as the prerequisites being judged see the pools'
 // thresholds, which rests as well on whether it is found while a pool's base or thresholds are found without the
-// features those thresholds hold (see thresholdFeaturesLeftOut), since the points a level set gives a skill are less
-// those of the default picked as the sheet is seen then; see Grant.pointsBeyondDefault.
+// features those thresholds hold (see thresholdFeaturesLeftOut), since the points a level set gives a skill or spell
+// are less those of the default picked as the sheet is seen then; see Grant.pointsBeyondDefault.
 type judgedGrantStateKey struct {
 	holder    grantHolder
 	untouched bool
@@ -1983,7 +1983,7 @@ func (e *Entity) ownLevel(target grantHolder, points fxp.Int) fxp.Int {
 	case *Skill:
 		return t.levelAt(e, t.DefaultedFrom, points, nil).Level
 	case *Spell:
-		return t.levelAt(e, points).Level
+		return t.levelAtWith(e, t.DefaultedFrom, points, nil).Level
 	default:
 		return 0
 	}
@@ -2069,11 +2069,17 @@ func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int, excludes m
 		points, s.EncumbrancePenaltyMultiplier)
 }
 
-// levelAt returns the level the spell would have with the given points in place of its own, adjusted for the point
-// bonuses as its own are, leaving out what grants gave it.
+// levelAt is levelAtWith with no default and no excludes.
 func (s *Spell) levelAt(e *Entity, points fxp.Int) Level {
-	return s.levelFromAdjustedPoints(AdjustedPointsForNonContainerSpell(e, points, s.NameWithReplacements(),
-		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil))
+	return s.levelAtWith(e, nil, points, nil)
+}
+
+// levelAtWith returns the level the spell would have with the given points in place of its own, adjusted for the point
+// bonuses as its own are, leaving out what grants gave it, and the given default in place of the one it recorded, with
+// the levels of the ritual skills a Ritual Magic spell may rest on taken with the excludes.
+func (s *Spell) levelAtWith(e *Entity, def *SkillDefault, points fxp.Int, excludes map[string]bool) Level {
+	return s.levelFromAdjustedPoints(def, AdjustedPointsForNonContainerSpell(e, points, s.NameWithReplacements(),
+		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil), excludes)
 }
 
 // wouldStandIn returns true if the plan's grant, were it in effect, would stand in for the grant that put its target on

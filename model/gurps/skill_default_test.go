@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/v2"
 	"os"
 	"path/filepath"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -350,6 +352,148 @@ func TestSkillDefaultRemovesOtherSkillsBonus(t *testing.T) {
 	c.Equal(fxp.Eight, armory.LevelData.Level, "Armory rests on Machinist/TL3")
 }
 
+// TestSkillDefaultToSpell checks the level a default resting on a spell gives the skill or spell holding it: that of
+// the best spell it selects by name, power source, tags and tech level, less the bonuses that select that spell, plus
+// the modifier, with the default recorded pinned to that spell by name and power source, which a skill's note names. A
+// power source that is to be the same as this spell's is that of the spell holding the default, and selects nothing for
+// a skill. As a skill does, an ordinary spell needs points to be rested on, which a Ritual Magic spell doesn't.
+func TestSkillDefaultToSpell(t *testing.T) {
+	sameSource := func(name string) *SkillDefault {
+		def := newSpellDefaultTo(name, -fxp.Two)
+		def.SamePowerSource = true
+		return def
+	}
+	fromSource := func(name, powerSource string) *SkillDefault {
+		def := newSpellDefaultTo(name, -fxp.Two)
+		def.PowerSource = textCriteria(criteria.IsText, powerSource)
+		return def
+	}
+	tagged := &SkillDefault{DefaultType: SpellID, Tags: textCriteria(criteria.IsText, "Attack"), Modifier: -fxp.Two}
+	atLeastTL5 := newSpellDefaultTo("Fireball", -fxp.Two)
+	atLeastTL5.WhenTL = numberCriteria(criteria.AtLeastNumber, fxp.Five)
+	for _, tc := range []struct {
+		name string
+		def  *SkillDefault
+		// holder, when set, is the power source of a spell holding the default, named holderName or else Flame Jet;
+		// otherwise a skill holds it.
+		holder     string
+		holderName string
+		setup      func(e *Entity)
+		level      fxp.Int
+		pinned     string
+		// note is the modifier note of a skill holding the default, which names the spell it rests on.
+		note string
+	}{
+		{
+			name: "a skill rests on the best spell of the name", def: newSpellDefaultTo("Fireball", -fxp.Two),
+			level: fxp.Ten, pinned: "Arcane", note: "Default: Fireball-2",
+		},
+		{
+			name: "the power source criteria selects among spells of one name", def: fromSource("Fireball", "Divine"),
+			level: fxp.Nine, pinned: "Divine", note: "Default: Fireball-2",
+		},
+		{
+			name: "the same power source as this spell is the holding spell's", def: sameSource("Fireball"),
+			holder: "Divine", level: fxp.Nine, pinned: "Divine",
+		},
+		{
+			name: "the same power source as this spell selects nothing for a skill", def: sameSource("Fireball"),
+			level: fxp.Min,
+		},
+		{
+			name: "the tags criteria selects among spells", def: tagged, level: fxp.Ten, pinned: "Arcane",
+			note: "Default: Fireball-2",
+		},
+		{
+			name: "the tech level is the spell's", def: atLeastTL5, level: fxp.Nine, pinned: "Divine",
+			note: "Default: Fireball/TL5-2",
+			setup: func(e *Entity) {
+				tl := "5"
+				e.Spells[1].TechLevel = &tl
+			},
+		},
+		{
+			name: "the bonus selecting the spell is taken off", def: newSpellDefaultTo("Fireball", -fxp.Two),
+			level: fxp.Ten, pinned: "Arcane", note: "Default: Fireball-2",
+			setup: func(e *Entity) {
+				bonus := NewSpellBonus()
+				bonus.SpellMatchType = spellmatch.Name
+				bonus.NameCriteria = textCriteria(criteria.IsText, "Fireball")
+				bonus.Amount = fxp.Three
+				addTraitWithFeatures(e, "Pyromaniac", bonus)
+			},
+		},
+		{
+			name: "a spell without points is not rested on", def: newSpellDefaultTo("Spark", -fxp.Two), level: fxp.Min,
+			setup: func(e *Entity) {
+				addTestSpell(e, "Spark", 0).Defaults = []*SkillDefault{{DefaultType: IntelligenceID, Modifier: -fxp.One}}
+			},
+		},
+		{
+			name: "a Ritual Magic spell without points is", def: newSpellDefaultTo("Bless", -fxp.Two), level: fxp.Seven,
+			pinned: "Arcane", note: "Default: Bless-2",
+			setup: func(e *Entity) {
+				addTestSkill(e, "Ritual Magic", "Fire", "", fxp.Four) // 11
+				addTestRitualMagicSpell(e, "Bless", "Fire").PrereqCount = 2
+			},
+		},
+		{
+			name: "a spell rests on one of its name and another power source", def: fromSource("Fireball", "Arcane"),
+			holder: "Divine", holderName: "Fireball", level: fxp.Ten, pinned: "Arcane",
+		},
+	} {
+		c := check.New(t)
+		e := NewEntity()
+		e.Profile.TechLevel = "3"
+		// The Arcane Fireball is at 12 and the Divine one at 11, both tagged Attack, and the untagged Ice Ball at 14.
+		for _, one := range []struct {
+			name, powerSource string
+			points            fxp.Int
+			tags              []string
+		}{
+			{"Fireball", "Arcane", fxp.Twelve, []string{"Attack"}},
+			{"Fireball", "Divine", fxp.Eight, []string{"Attack"}},
+			{"Ice Ball", "Arcane", fxp.FromInteger(20), nil},
+		} {
+			sp := addTestSpell(e, one.name, one.points)
+			sp.PowerSource = one.powerSource
+			sp.Tags = one.tags
+		}
+		if tc.setup != nil {
+			tc.setup(e)
+		}
+		var holder defaultable
+		if tc.holder != "" {
+			sp := addTestSpell(e, cmp.Or(tc.holderName, "Flame Jet"), 0)
+			sp.PowerSource = tc.holder
+			sp.Defaults = []*SkillDefault{tc.def}
+			holder = sp
+		} else {
+			sk := addTestSkill(e, "Pyromancy", "", "", 0)
+			sk.Defaults = []*SkillDefault{tc.def}
+			holder = sk
+		}
+		e.Recalculate()
+		c.Equal(tc.level, holder.levelData().Level, "%s: the level", tc.name)
+		if tc.level == fxp.Min {
+			continue
+		}
+		def := holder.recordedDefault()
+		if def == nil {
+			c.Fatalf("%s: no default was recorded", tc.name)
+		}
+		c.Equal(SpellID, def.Type(), "%s: the default recorded rests on a spell", tc.name)
+		c.False(def.SamePowerSource, "%s: the default recorded names its power source", tc.name)
+		c.Equal(criteria.IsText, def.PowerSource.Compare, "%s: the default recorded is pinned to a power source",
+			tc.name)
+		c.Equal(tc.pinned, def.PowerSource.Qualifier, "%s: the power source of the spell it rests on", tc.name)
+		c.True(def.Tags.IsZero(), "%s: the default recorded is pinned by name rather than by tags", tc.name)
+		if sk, ok := holder.(*Skill); ok {
+			c.Equal(tc.note, sk.ModifierNotes(), "%s: the skill's note", tc.name)
+		}
+	}
+}
+
 // TestSkillUpdateLevelReportsDefaultChange verifies that updating a skill's level reports a change when only the
 // default it settled on changed. Other skills read the default in the next recalculation pass, to judge whether they
 // may default to this skill or use it as the base of a technique, so a pass that changes nothing but a default must not
@@ -617,6 +761,7 @@ func TestSkillDefaultTagsJSON(t *testing.T) {
 	data, err := jio.Marshal(untagged)
 	c.NoError(err)
 	c.NotContains(string(data), "tags", "a default with no tag criteria must not write a tags key")
+	c.NotContains(string(data), "power_source", "a default with no power source criteria must not write one")
 	var loaded SkillDefault
 	c.NoError(jio.Unmarshal(data, &loaded))
 	c.True(loaded.Tags.IsZero(), "a default with no tags key must load with a zero tag criteria")
@@ -629,6 +774,19 @@ func TestSkillDefaultTagsJSON(t *testing.T) {
 	c.NoError(jio.Unmarshal(data, &loaded))
 	c.Equal(criteria.IsText, loaded.Tags.Compare, "the tag comparison must survive the round trip")
 	c.Equal("Combat", loaded.Tags.Qualifier, "the tag qualifier must survive the round trip")
+
+	// The power source criteria of a spell-based default, and the flag that it is to be the same as this spell's, both
+	// load back.
+	for _, same := range []bool{false, true} {
+		spell := newSpellDefaultTo("Fireball", -fxp.Two)
+		spell.SamePowerSource = same
+		spell.PowerSource = textCriteria(criteria.StartsWithText, "Div")
+		data, err = jio.Marshal(spell)
+		c.NoError(err)
+		loaded = SkillDefault{}
+		c.NoError(jio.Unmarshal(data, &loaded))
+		c.Equal(*spell, loaded, "a spell-based default's power source must survive the round trip, same=%t", same)
+	}
 
 	// A default written before the criteria objects existed still migrates its name and carries no tag criteria.
 	loaded = SkillDefault{}
@@ -678,6 +836,20 @@ func TestSkillDefaultTagFillWithNameableKeys(t *testing.T) {
 	def.FillWithNameableKeys(m, nil)
 	c.Equal(map[string]string{"name": nameable.Unset, "spec": nameable.Unset, "tag": nameable.Unset}, m,
 		"the tag criteria's placeholder must be collected alongside the name and specialization ones")
+
+	// The power source criteria's placeholder is collected too, unless the power source is to be the same as this
+	// spell's, when the criteria plays no part.
+	spell := newSpellDefaultTo("@name@", 0)
+	spell.PowerSource = textCriteria(criteria.IsText, "@source@")
+	m = make(map[string]string)
+	spell.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"name": nameable.Unset, "source": nameable.Unset}, m,
+		"the power source criteria's placeholder must be collected")
+	spell.SamePowerSource = true
+	m = make(map[string]string)
+	spell.FillWithNameableKeys(m, nil)
+	c.Equal(map[string]string{"name": nameable.Unset}, m,
+		"the power source criteria's placeholder must not be collected while the power source is this spell's")
 }
 
 // TestSkillDefaultTagResolvesToBestTaggedSkill covers the scenario from issue #1112 end to end: a Stage Combat skill
@@ -804,6 +976,27 @@ func TestSkillDefaultTagEquivalent(t *testing.T) {
 		c.Equal(Hash64(plain), Hash64(messy), "a type of %q must hash as the form loading leaves it in", defaultType)
 	}
 
+	// The power source criteria of a spell-based default takes part as the tag criteria does, and the flag that it is
+	// to be the same as this spell's in its place.
+	arcane := newSpellDefaultTo("Fireball", -fxp.Two)
+	arcane.PowerSource = textCriteria(criteria.IsText, "Arcane")
+	divine := newSpellDefaultTo("Fireball", -fxp.Two)
+	divine.PowerSource = textCriteria(criteria.IsText, "@source@")
+	c.False(arcane.Equivalent(nil, divine), "defaults differing only in the power source are not equivalent")
+	c.True(arcane.Equivalent(map[string]string{"source": "Arcane"}, divine),
+		"a filled-in power source placeholder is equivalent to the text it resolves to")
+	anySource := newSpellDefaultTo("Fireball", -fxp.Two)
+	anySource.PowerSource = textCriteria(criteria.AnyText, "Arcane")
+	c.True(newSpellDefaultTo("Fireball", -fxp.Two).Equivalent(nil, anySource),
+		"an \"is anything\" power source criteria is the same as none at all")
+	same := newSpellDefaultTo("Fireball", -fxp.Two)
+	same.SamePowerSource = true
+	c.False(same.Equivalent(nil, newSpellDefaultTo("Fireball", -fxp.Two)),
+		"a power source that is to be the same as this spell's makes the default a different one")
+	sameArcane := *arcane
+	sameArcane.SamePowerSource = true
+	c.True(same.Equivalent(nil, &sameArcane), "whatever the criteria left behind holds")
+
 	// A tag criteria of "is anything" selects nothing in particular however it came to be that way: a qualifier left
 	// behind when the popup was switched back, or a comparison no one recognizes, changes nothing about what it
 	// selects. Hash already treats all of them as one and the same, and Equivalent has to agree with it, or a
@@ -912,6 +1105,20 @@ func TestSkillDefaultTagFullName(t *testing.T) {
 	// A name that "is" nothing matches no skill, and must not be passed off as matching any.
 	emptyName := &SkillDefault{DefaultType: SkillID, Name: textCriteria(criteria.IsText, "")}
 	c.Equal(`any skill whose name is ""`, emptyName.FullName(e, nil), "an empty name must be described as such")
+
+	// A spell-based default is described as a skill-based one is, its power source in place of a specialization.
+	spell := newSpellDefaultTo("Fireball", -fxp.Two)
+	c.Equal("Fireball", spell.FullName(e, nil), "a default naming a spell is described by that name")
+	spell.SamePowerSource = true
+	c.Equal(`any spell whose name is "Fireball" and whose power source is the same as this spell's`,
+		spell.FullName(e, nil), "the same power source as this spell's is described")
+	spell.SamePowerSource = false
+	spell.PowerSource = textCriteria(criteria.IsText, "Divine")
+	c.Equal(`any spell whose name is "Fireball" and whose power source is "Divine"`, spell.FullName(e, nil),
+		"a power source criteria is described")
+	anySpell := &SkillDefault{DefaultType: SpellID, Tags: textCriteria(criteria.IsText, "Attack")}
+	c.Equal(`any spell where at least one tag is "Attack"`, anySpell.FullName(e, nil),
+		"a spell-based default naming no spell is described by its criteria")
 
 	// The ordinary forms are unchanged: the name, with the specialization in parentheses when it names one, and without
 	// a qualifier left behind by a specialization criteria since switched back to "is anything".
@@ -1232,8 +1439,9 @@ func staleSkillDefault(defaultType string, modifier fxp.Int) *SkillDefault {
 	}
 }
 
-// TestSkillDefaultNormalize verifies that normalizing a default drops the criteria only when it isn't skill-based,
-// however the type is spelled, and leaves everything else alone.
+// TestSkillDefaultNormalize verifies that normalizing a default drops the criteria its type makes no use of, however
+// the type is spelled: the power source of a skill-based one, the specialization of a spell-based one, and all of
+// them for any other, leaving everything else alone, and that it hashes the same before and after.
 func TestSkillDefaultNormalize(t *testing.T) {
 	c := check.New(t)
 	for _, defaultType := range []string{SkillID, ParryID, BlockID, "Parry", " skill "} {
@@ -1241,20 +1449,76 @@ func TestSkillDefaultNormalize(t *testing.T) {
 		want := *def
 		def.Normalize()
 		c.Equal(want, *def, defaultType+": a skill-based default is left as it is")
+		def.SamePowerSource = true
+		def.PowerSource = textCriteria(criteria.IsText, "@Source@")
+		before := Hash64(def)
+		def.Normalize()
+		c.Equal(want, *def, defaultType+": a skill-based default drops the power source criteria")
+		c.Equal(before, Hash64(def), defaultType+": the hash is the same before and after")
+	}
+	for _, defaultType := range []string{SpellID, " Spell "} {
+		def := staleSkillDefault(defaultType, -fxp.Three)
+		def.SamePowerSource = true
+		def.PowerSource = textCriteria(criteria.IsText, "@Source@")
+		want := *def
+		want.Specialization = criteria.Text{}
+		before := Hash64(def)
+		def.Normalize()
+		c.Equal(want, *def, defaultType+": a spell-based default drops the specialization criteria alone")
+		c.Equal(before, Hash64(def), defaultType+": the hash is the same before and after")
 	}
 	for _, defaultType := range []string{DexterityID, DodgeID, "10", " DX "} {
 		def := staleSkillDefault(defaultType, -fxp.Three)
 		def.WhenTL = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Five}
+		def.SamePowerSource = true
+		def.PowerSource = textCriteria(criteria.IsText, "@Source@")
 		before := Hash64(def)
 		def.Normalize()
 		c.True(def.Name.IsZero(), defaultType+": the name criteria is dropped")
 		c.True(def.Specialization.IsZero(), defaultType+": the specialization criteria is dropped")
 		c.True(def.Tags.IsZero(), defaultType+": the tags criteria is dropped")
+		c.False(def.SamePowerSource, defaultType+": the same power source is dropped")
+		c.True(def.PowerSource.IsZero(), defaultType+": the power source criteria is dropped")
 		c.Equal(defaultType, def.DefaultType, defaultType+": the type is kept as written")
 		c.Equal(-fxp.Three, def.Modifier, defaultType+": the modifier is kept")
 		c.Equal(criteria.AtLeastNumber, def.WhenTL.Compare, defaultType+": the tech level criteria is kept")
 		c.Equal(before, Hash64(def), defaultType+": the hash is the same before and after")
 	}
+}
+
+// TestSkillDefaultHashesAsBefore pins the source hash of a default of each type there was before defaults could rest on
+// spells, each holding every criteria, so that it fails if any of them hashes what was added for spells, which would
+// mark every library item holding a default as modified, and that of a spell-based one, which takes the power source
+// criteria only when the power source is not to be the same as this spell's.
+func TestSkillDefaultHashesAsBefore(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		defaultType string
+		hash        uint64
+	}{
+		{SkillID, 6598053686303681870},
+		{ParryID, 9897594392322889140},
+		{BlockID, 15393878558457868647},
+		{DexterityID, 6114668575039124716},
+		{"10", 9743402157726485630},
+	} {
+		def := staleSkillDefault(tc.defaultType, -fxp.Three)
+		def.WhenTL = numberCriteria(criteria.AtLeastNumber, fxp.Five)
+		def.Normalize()
+		c.Equal(tc.hash, Hash64(def), tc.defaultType)
+	}
+	def := newSpellDefaultTo("Fireball", -fxp.Two)
+	def.PowerSource = textCriteria(criteria.IsText, "Divine")
+	other := *def
+	other.PowerSource = textCriteria(criteria.IsText, "Arcane")
+	c.NotEqual(Hash64(def), Hash64(&other), "the power source criteria is hashed")
+	def.SamePowerSource = true
+	other.SamePowerSource = true
+	c.Equal(Hash64(def), Hash64(&other), "but not when the power source is to be the same as this spell's")
+	def.SamePowerSource = false
+	other = *def
+	other.DefaultType = SkillID
+	c.NotEqual(Hash64(def), Hash64(&other), "the spell type is hashed apart from the skill type")
 }
 
 // TestSkillDefaultCriteriaDroppedWhenNotSkillBased verifies that the declared defaults of a skill and of a weapon carry
@@ -1532,6 +1796,20 @@ func TestSkillDefaultDescribe(t *testing.T) {
 	unknown := &SkillDefault{DefaultType: "foo", Modifier: -fxp.Two}
 	empty := &SkillDefault{Modifier: -fxp.Two}
 	fraction := &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Half}
+	spellNamed := newSpellDefaultTo("@Weapon@", -fxp.Two)
+	spellAny := &SkillDefault{DefaultType: SpellID}
+	spellSame := newSpellDefaultTo("Fireball", -fxp.One)
+	spellSame.SamePowerSource = true
+	spellSource := newSpellDefaultTo("Fireball", 0)
+	spellSource.PowerSource = textCriteria(criteria.IsText, "Divine")
+	spellClauses := &SkillDefault{
+		DefaultType: SpellID,
+		Name:        textCriteria(criteria.ContainsText, "Fire"),
+		PowerSource: textCriteria(criteria.StartsWithText, "Div"),
+		Tags:        textCriteria(criteria.IsText, "Attack"),
+	}
+	spellAnySame := &SkillDefault{DefaultType: SpellID, SamePowerSource: true, Tags: textCriteria(criteria.IsText, "Fire")}
+	spellTagged := &SkillDefault{DefaultType: SpellID, Tags: textCriteria(criteria.IsText, "Attack"), Modifier: -fxp.Three}
 	everything := &SkillDefault{
 		DefaultType:    ParryID,
 		Name:           textCriteria(criteria.IsText, "@Weapon@"),
@@ -1593,6 +1871,13 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		{empty, "No type at [-2]"},
 		{fraction, "[DX] at [-0.5]"},
 		{everything, `Parry of skill [Broadsword] whose specialization ends with "[ing]" and at least one tag contains "[Melee]" at [-3], when the tech level is at least [5]`},
+		{spellNamed, "Spell [Broadsword] at [-2]"},
+		{spellAny, "Any spell at [+0]"},
+		{spellSame, "Spell [Fireball] whose power source is the same as this spell's at [-1]"},
+		{spellSource, "Spell [Fireball] whose power source is [Divine] at [+0]"},
+		{spellClauses, `Spell whose name contains "[Fire]" and whose power source starts with "[Div]" and at least one tag is [Attack] at [+0]`},
+		{spellAnySame, "Any spell whose power source is the same as this spell's and at least one tag is [Fire] at [+0]"},
+		{spellTagged, "Any spell tagged [Attack] at [-3]"},
 	} {
 		c.Equal(one.want, one.def.Describe(e, replacements, em))
 	}

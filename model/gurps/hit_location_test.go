@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -114,13 +115,15 @@ func TestHitLocationReservedIDRefusedOnLoad(t *testing.T) {
 	}
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","choice_name":"X","table_name":"X","slots":1}`), &HitLocation{}),
 		"an ID the sanitizer would turn a reserved one into loads")
+	c.NoError(jio.Unmarshal([]byte(`{"id":"spell","choice_name":"X","table_name":"X","slots":1}`), &HitLocation{}),
+		"an ID only a new location is refused, which an existing one may have, loads")
 }
 
 // TestHitLocationSetIDAvoidsReservedIDs verifies that SetID, which the body settings editor uses, never stores one of
-// the ReservedIDs.
+// the ReservedIDs, nor the spell type's ID, which an existing location may still have.
 func TestHitLocationSetIDAvoidsReservedIDs(t *testing.T) {
 	c := check.New(t)
-	for _, id := range ReservedIDs {
+	for _, id := range append(slices.Clone(ReservedIDs), SpellID) {
 		var loc HitLocation
 		loc.SetID(id)
 		c.NotEqual(id, loc.LocID, "%s: SetID changes it", id)

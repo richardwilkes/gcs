@@ -525,8 +525,13 @@ func recalculationState(e *Entity) string {
 		return false
 	}, false, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
-		fmt.Fprintf(&buf, "spell %s: level=%+v penalized=%t reason=%q\n", s.Name, s.LevelData,
-			s.takesEquipmentPenalty, s.UnsatisfiedReason)
+		fmt.Fprintf(&buf, "spell %s: level=%+v penalized=%t default=", s.Name, s.LevelData, s.takesEquipmentPenalty)
+		if s.DefaultedFrom == nil {
+			buf.WriteString("none")
+		} else {
+			fmt.Fprintf(&buf, "%+v", *s.DefaultedFrom)
+		}
+		fmt.Fprintf(&buf, " reason=%q\n", s.UnsatisfiedReason)
 		return false
 	}, false, true, e.Spells...)
 	equipmentFunc := func(eqp *Equipment) bool {
@@ -2123,6 +2128,22 @@ func TestEntityRecalculateReportsWhetherTheDerivedStateChanged(t *testing.T) {
 	e.Attributes.Set[IntelligenceID].Adjustment = fxp.Four
 	e.Recalculate()
 	c.True(e.DerivedStateChanged(), "a change to a skill's level changes the derived state")
+
+	// A spell whose level its points give records its best default all the same, which is saved and read by the items
+	// defaulting to it, so a change to that default alone changes the derived state. Moving the tag moves the default
+	// to a skill at the same level, which gives the spell the same level.
+	thaumatology := addTestSkill(e, "Thaumatology", "", "", fxp.Four)
+	thaumatology.Tags = []string{"Lore"}
+	occultism := addTestSkill(e, "Occultism", "", "", fxp.Four)
+	light := addTestSpell(e, "Light", fxp.Four)
+	light.Defaults = []*SkillDefault{{DefaultType: SkillID, Tags: textCriteria(criteria.IsText, "Lore"), Modifier: -fxp.Six}}
+	e.Recalculate()
+	level := light.LevelData
+	thaumatology.Tags, occultism.Tags = nil, []string{"Lore"}
+	e.Recalculate()
+	c.Equal("Occultism", light.DefaultedFrom.Name.Qualifier, "precondition: the spell's default has moved")
+	c.Equal(level, light.LevelData, "precondition: its level has not")
+	c.True(e.DerivedStateChanged(), "a change to a spell's default changes the derived state")
 }
 
 // TestDisabledItemsAreAsIfAbsent verifies that a disabled skill, spell or piece of equipment counts for nothing: its

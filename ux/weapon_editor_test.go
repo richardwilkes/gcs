@@ -78,3 +78,27 @@ func TestWeaponEditorJetSetsRateOfFire(t *testing.T) {
 	c.False(w.Accuracy.Jet, "the check box stays clear")
 	c.False(w.RateOfFire.Jet, "and the rate of fire follows it")
 }
+
+// TestWeaponEditorDefaultsOfASpellsAttack verifies that the defaults of an attack belong to a spell, which a spell
+// default can then select by the power source of, only when the attack is a spell's.
+func TestWeaponEditorDefaultsOfASpellsAttack(t *testing.T) {
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	for _, tc := range []struct {
+		name  string
+		owner gurps.WeaponOwner
+		spell bool
+	}{
+		{name: "trait", owner: gurps.NewTrait(entity, nil, false)},
+		{name: "spell", owner: gurps.NewSpell(entity, nil, false), spell: true},
+	} {
+		c := check.New(t)
+		var we weaponEditor
+		_, content := buildEditorContent(sheet, gurps.NewWeapon(tc.owner, true), we.initWeaponEditor)
+		p, ok := uxtest.FirstPanelOfType[*defaultsPanel](content)
+		c.True(ok, "%s: the attack's editor has defaults", tc.name)
+		if ok {
+			c.Equal(tc.spell, p.ownerIsSpell, "%s: which belong to a spell only for a spell's attack", tc.name)
+		}
+	}
+}

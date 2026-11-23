@@ -50,10 +50,10 @@ When the item is on a character sheet, each requirement and group shows whether 
 
 | Mark                                                  | Meaning                                                                                                                               |
 |-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| ![met](images/icons/applyChanges.svg)             | **Met.**                                                                                                                              |
-| ![not met](images/icons/discardChanges.svg)       | **Not met.** Hover over it to see what's missing.                                                                                     |
-| ![warning](images/icons/exclamationTriangle.svg)  | The requirement couldn't be checked, such as a script with an error in it.                                                            |
-| ![left out](images/icons/circledMinus.svg)        | Left out of the check: an empty group, or one whose tech level condition doesn't match the character's.                               |
+| ![met](images/icons/applyChanges.svg)                 | **Met.**                                                                                                                              |
+| ![not met](images/icons/discardChanges.svg)           | **Not met.** Hover over it to see what's missing.                                                                                     |
+| ![warning](images/icons/exclamationTriangle.svg)      | The requirement couldn't be checked, such as a script with an error in it.                                                            |
+| ![left out](images/icons/circledMinus.svg)            | Left out of the check: an empty group, or one whose tech level condition doesn't match the character's.                               |
 
 The colors of these marks and of the group pills can be changed in [Colors and Fonts](Colors%20and%20Fonts).
 
@@ -165,7 +165,8 @@ that match:
 
 Add **+ power source** to count only spells from a given power source ([B77](B77)); in a spell's own editor it defaults
 to the same power source as the spell. Add **+ level** to count only spells at a given level. A spell that itself
-requires the spell being checked isn't counted.
+requires the spell being checked isn't counted, and neither is a spell with no points in it, even when it has a level
+from one of its defaults.
 
 ### Contained quantity and contained weight
 

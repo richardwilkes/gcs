@@ -117,6 +117,7 @@ type exportedSpell struct {
 	Duration          string
 	Resist            string
 	Description       string
+	ModifierNotes     string
 	Notes             string
 	Rituals           string
 	UnsatisfiedReason string
@@ -631,6 +632,7 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 			Duration:          s.DurationWithReplacements(),
 			Resist:            s.ResistWithReplacements(),
 			Description:       s.String(),
+			ModifierNotes:     s.ModifierNotes(),
 			Notes:             s.Notes(),
 			Rituals:           s.Rituals(),
 			UnsatisfiedReason: s.UnsatisfiedReason,

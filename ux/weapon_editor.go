@@ -65,7 +65,9 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 			names = pending
 		}
 	}
-	content.AddChild(newDefaultsPanel(gurps.EntityFromNode(w), names, &w.Defaults))
+	// A spell's attack may default to a spell of the same power source as that spell.
+	sp, ownerIsSpell := w.Owner.(*gurps.Spell)
+	content.AddChild(newDefaultsPanel(gurps.EntityFromNode(w), names, &w.Defaults, ownerIsSpell && sp != nil))
 	if w.IsRanged() {
 		we.jetCheckBox.OnSet = func() {
 			state := we.jetCheckBox.State == check.Off

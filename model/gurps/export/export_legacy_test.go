@@ -462,6 +462,18 @@ func TestLegacyExportSharedNodeKeys(t *testing.T) {
 				"@DESCRIPTION_MODIFIER_NOTES_PAREN|@DESCRIPTION_PRIMARY@SPELLS_LOOP_END"))
 	})
 
+	// DESCRIPTION writes the note naming what a spell defaults to ahead of its notes, as for a skill, and so does
+	// DESCRIPTION_MODIFIER_NOTES.
+	t.Run("spell with a default", func(t *testing.T) {
+		c := check.New(t)
+		entity, lore := newSpellDefaultEntity()
+		rituals := lore.Rituals()
+		c.NotEqual("", rituals)
+		c.Equal("Lore<div class=\"note\">Default: Thaumatology-2</div><div class=\"note\">"+rituals+"</div>"+
+			"| (Default: Thaumatology-2)", runLegacyExport(t, c, entity,
+			"@SPELLS_LOOP_START@DESCRIPTION|@DESCRIPTION_MODIFIER_NOTES_PAREN@SPELLS_LOOP_END"))
+	})
+
 	// MODIFIER_NOTES_FOR_ resolves the active modifier and DESCRIPTION includes the modifier notes.
 	t.Run("equipment", func(t *testing.T) {
 		c := check.New(t)

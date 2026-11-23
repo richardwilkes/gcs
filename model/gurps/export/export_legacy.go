@@ -919,6 +919,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 				}
 				return notes
 			},
+			modifierNotes: s.ModifierNotes,
 		}
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
@@ -926,6 +927,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 				ex.writeEncodedText(s.PointsCost().String())
 			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
+				ex.writeNote(s.ModifierNotes())
 				ex.writeNote(s.Notes())
 				ex.writeNote(s.Rituals())
 			case "SL":
@@ -951,10 +953,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 			case "RESIST":
 				ex.writeEncodedText(s.ResistWithReplacements())
 			default:
-				switch {
-				case strings.HasPrefix(key, "DESCRIPTION_MODIFIER_NOTES"):
-					// Here for legacy reasons. Spells have never had these notes.
-				case !processLegacyNodeKey(ex, key, s, &keys):
+				if !processLegacyNodeKey(ex, key, s, &keys) {
 					ex.unidentifiedKey(key)
 				}
 			}

@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -277,6 +278,19 @@ func TestAttributeDefReservedIDRefusedOnLoad(t *testing.T) {
 	}
 	c.NoError(jio.Unmarshal([]byte(`{"id":"sm_","type":"integer","name":"X","base":"10"}`), &AttributeDef{}),
 		"an ID SetID would turn a reserved one into loads")
+	c.NoError(jio.Unmarshal([]byte(`{"id":"spell","type":"integer","name":"X","base":"10"}`), &AttributeDef{}),
+		"an ID only a new definition is refused, which an existing one may have, loads")
+}
+
+// TestAttributeDefSetIDAvoidsReservedIDs verifies that SetID, which the attribute settings use, never gives a
+// definition one of the ReservedIDs, nor the spell type's ID, which an existing definition may still have.
+func TestAttributeDefSetIDAvoidsReservedIDs(t *testing.T) {
+	c := check.New(t)
+	for _, id := range append(slices.Clone(ReservedIDs), SpellID) {
+		var def AttributeDef
+		def.SetID(id)
+		c.NotEqual(id, def.DefID, "%s: SetID changes it", id)
+	}
 }
 
 // TestAttributeDefComputeCost verifies an attribute's point cost: the value times the cost per point, less the cost

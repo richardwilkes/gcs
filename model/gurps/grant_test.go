@@ -4574,11 +4574,13 @@ func TestGrantSpellMergeModes(t *testing.T) {
 		merge  grantmerge.Mode
 		adjust grantadjust.Kind
 		// points is what the spell bought has; with none, it has no level. ritual, when set, makes the spell Bless,
-		// which rests on Ritual Magic at 10, 7 with no points, rather than Light.
-		points fxp.Int
-		amount fxp.Int
-		level  fxp.Int
-		ritual bool
+		// which rests on Ritual Magic at 10, 7 with no points, rather than Light. defaults, when set, are those of both
+		// the spell bought and the grant's copy.
+		points   fxp.Int
+		amount   fxp.Int
+		level    fxp.Int
+		ritual   bool
+		defaults []*SkillDefault
 	}{
 		{
 			name: "ignore a level set", merge: grantmerge.Ignore, adjust: grantadjust.SetLevel, points: fxp.One,
@@ -4619,6 +4621,19 @@ func TestGrantSpellMergeModes(t *testing.T) {
 			name: "add levels to a ritual spell", merge: grantmerge.Ignore, points: fxp.Two, amount: fxp.Four,
 			level: fxp.Ten, ritual: true,
 		},
+		{
+			// The level set is compared as it is, not as the 8 points that buy it would buy along with the 4 the
+			// default of IQ+0 stands for.
+			name: "keep highest of a level set above the spell's default", merge: grantmerge.KeepHighest,
+			adjust: grantadjust.SetLevel, amount: fxp.Eleven, level: fxp.Eleven,
+			defaults: []*SkillDefault{{DefaultType: IntelligenceID}},
+		},
+		{
+			// The levels added go no higher than the level the default of IQ+1 gives it, above the ritual skill.
+			name: "add levels to a ritual spell its default holds above the ritual skill", merge: grantmerge.Ignore,
+			amount: fxp.Two, level: fxp.Eleven, ritual: true,
+			defaults: []*SkillDefault{{DefaultType: IntelligenceID, Modifier: fxp.One}},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -4628,6 +4643,7 @@ func TestGrantSpellMergeModes(t *testing.T) {
 				addHardSkill(e, "Ritual Magic", fxp.Four)
 				spell, item = newBless(tc.points), newBless(0)
 			}
+			spell.Defaults, item.Defaults = cloneSkillDefaults(tc.defaults), cloneSkillDefaults(tc.defaults)
 			spell.SetDataOwner(e)
 			e.Spells = append(e.Spells, spell)
 			addTraitWithFeatures(e, "Magery", newSpellGrantOf(item, tc.adjust, tc.amount, tc.merge))
@@ -4649,6 +4665,25 @@ func TestGrantPutsSpellOnSheet(t *testing.T) {
 	c.Equal(NumericRangeOf(0), list[0].PointsRange(nil))
 	c.Equal(fxp.Int(0), e.PointsBreakdown().Spells)
 	c.Equal("0", ResolveScript(e, deferredNewScriptSpell(list[0]), "self.points"), "a granted spell costs nothing to a script")
+}
+
+// TestGrantedSpellLevelSetCountsItsDefault checks that a level set on a spell a grant puts on the sheet gives it the
+// points that buy the level set less those its default stands for, which its level adds, so that it has the level set
+// rather than one raised by both.
+func TestGrantedSpellLevelSetCountsItsDefault(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	item := newHardSpell("Light", fxp.One)
+	// IQ+0, two levels above the IQ-2 that 1 point buys, stands for 4 points.
+	item.Defaults = []*SkillDefault{{DefaultType: IntelligenceID}}
+	addTraitWithFeatures(e, "Magery", newSpellGrantOf(item, grantadjust.SetLevel, fxp.Eleven, grantmerge.Ignore))
+	e.Recalculate()
+	granted := grantedOf(e.Spells)
+	c.Equal(1, len(granted))
+	if len(granted) == 1 {
+		c.Equal(fxp.Four, granted[0].AdjustedPoints(nil), "the 8 points that buy IQ+1 count the 4 the default stands for")
+		c.Equal(fxp.Eleven, granted[0].LevelData.Level)
+	}
 }
 
 func TestGrantKeepComparesWithOtherMerges(t *testing.T) {

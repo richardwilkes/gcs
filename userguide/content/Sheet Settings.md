@@ -179,7 +179,8 @@ The capped level is the one the rest of GCS sees:
   `Level cap of 14 (Thaumatology -2) [-3]`, which also appears wherever **Skill Level Adjustments** are shown (see
   **Where to display** under **Display**).
 - The **Level** in the Skill Editor and Spell Editor shows it, updated as you edit.
-- Skills that default from a capped skill, and prerequisites that check a skill's level, use it.
+- Skills and spells that default from a capped skill or spell, and prerequisites that check a skill's or spell's level,
+  use it.
 - **Increase Skill Level** doesn't raise a skill or spell that is held at its cap.
 
 #### Importing and exporting caps

@@ -38,10 +38,10 @@ const defaultEmptyKey = "empty"
 // defaultDropKey marks a row a dragged default can be dropped on, holding its path.
 const defaultDropKey = "default.drop"
 
-// defaultsPanel edits a list of skill defaults. Each one is a row that reads as a sentence until it is opened, one at a
-// time, to edit it. Every change, typing included, records a snapshot of the whole list with the editor's undo
-// manager. Clicking the title collapses the panel to one sentence listing every row's description. It starts out
-// collapsed when there are defaults, and open to add one when there are none.
+// defaultsPanel edits a list of skill defaults, those of a skill, a spell or an attack. Each one is a row that reads as
+// a sentence until it is opened, one at a time, to edit it. Every change, typing included, records a snapshot of the
+// whole list with the editor's undo manager. Clicking the title collapses the panel to one sentence listing every row's
+// description. It starts out collapsed when there are defaults, and open to add one when there are none.
 //
 // The list is never changed in place, by slices.Delete, slices.Insert or a swap, but replaced with a new one: code
 // still holding the old slice, because its owner was not properly updated, would otherwise find it changed under it,
@@ -54,13 +54,17 @@ type defaultsPanel struct {
 	// otherTypes holds the types the defaults had when the panel was made that the type popup doesn't otherwise
 	// offer, such as Dodge from a file, so that a default changed from one can be changed back.
 	otherTypes []string
+	// ownerIsSpell is set when the defaults belong to a spell, or to an attack of one, which a spell default can then
+	// select by the power source of.
+	ownerIsSpell bool
 }
 
-func newDefaultsPanel(entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault) *defaultsPanel {
+func newDefaultsPanel(entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault, ownerIsSpell bool) *defaultsPanel {
 	p := &defaultsPanel{
-		entity:   entity,
-		owner:    owner,
-		defaults: defaults,
+		entity:       entity,
+		owner:        owner,
+		defaults:     defaults,
+		ownerIsSpell: ownerIsSpell,
 	}
 	border := initTitledEditorSection(p, i18n.Text("Defaults"))
 	p.initRows(defaultDragKey, p.build, p.state, p.setState, p.dataHash)
@@ -143,9 +147,7 @@ func (p *defaultsPanel) build() {
 	}
 	add := newSectionAddButton(p, i18n.Text("Add a default"), func() bool {
 		def := &gurps.SkillDefault{DefaultType: p.addType()}
-		if def.SkillBased() {
-			def.Name = criteria.Text{Compare: criteria.IsText}
-		}
+		p.typeSet(def, false, false)
 		path := strconv.Itoa(len(*p.defaults))
 		p.edit(i18n.Text("Add Default"), defaultAddKey, path+keyFirst, func() {
 			p.replace(func(list []*gurps.SkillDefault) []*gurps.SkillDefault { return append(list, def) })
@@ -361,14 +363,15 @@ func (p *defaultsPanel) restructure(title, from, fallback string, change func(li
 }
 
 // defaultTypeFlags are the choices the type popup offers beside the attributes.
-const defaultTypeFlags = gurps.TenFlag | gurps.ParryFlag | gurps.BlockFlag | gurps.SkillFlag
+const defaultTypeFlags = gurps.TenFlag | gurps.ParryFlag | gurps.BlockFlag | gurps.SkillFlag | gurps.SpellFlag
 
 // defaultIndent is how far the lines of an open row after its first are indented, to show they belong to it.
 const defaultIndent = 12
 
-// editor returns the controls for an open row: its type, the criteria that pick the skill of a skill-based type and the
-// modifier, flowing as a sentence would, then its optional criteria as chips. Every line after the first is indented a
-// little.
+// editor returns the controls for an open row: its type, the name criteria that pick the skill or spell of a skill- or
+// spell-based type and the modifier, flowing as a sentence would, then its optional criteria as chips: the
+// specialization of a skill, the power source of a spell, the tags of either, and the tech level. Every line after the
+// first is indented a little.
 func (p *defaultsPanel) editor(def *gurps.SkillDefault, path string) *unison.Panel {
 	key := func(name string) string { return path + ":" + name }
 	editor := newColumn()
@@ -377,13 +380,17 @@ func (p *defaultsPanel) editor(def *gurps.SkillDefault, path string) *unison.Pan
 	editor.AddChild(fields)
 	p.typePopup(fields, path, def)
 	chips := newFlow()
-	if def.SkillBased() {
-		if def.Type() != gurps.SkillID {
+	if def.SkillOrSpellBased() {
+		if def.SkillBased() && def.Type() != gurps.SkillID {
 			addJoiningWords(fields, i18n.Text("of skill"))
 		}
 		whose := i18n.Text("whose name")
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &def.Name, true)
-		p.textChip(chips, path, "specialization", &def.Specialization)
+		if def.SpellBased() {
+			p.powerSourceChip(chips, path, p.ownerIsSpell, &def.SamePowerSource, &def.PowerSource)
+		} else {
+			p.textChip(chips, path, "specialization", &def.Specialization)
+		}
 		p.tagsChip(chips, path, &def.Tags)
 	}
 	title := i18n.Text("Modifier")
@@ -418,7 +425,7 @@ func (p *defaultsPanel) techLevel() fxp.Int {
 	return tl.Trunc()
 }
 
-// typeChoices returns the types a default can be given: an attribute, 10, Parry, Block or Skill.
+// typeChoices returns the types a default can be given: an attribute, 10, Parry, Block, Skill or Spell.
 func (p *defaultsPanel) typeChoices() []*gurps.AttributeChoice {
 	// Asked with a current type that is among them, so that none is added for it.
 	choices, _ := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, gurps.SkillID)
@@ -439,9 +446,9 @@ func (p *defaultsPanel) addType() string {
 	return choices[0].Key
 }
 
-// typePopup adds the popup that switches a default to another type: an attribute, 10, Parry, Block or Skill. A type
-// that isn't one of them, which a file can still hold, is named as the row's sentence names it, and offered for as long
-// as the panel is open, as are the others of its kind the defaults had when the panel was made.
+// typePopup adds the popup that switches a default to another type: an attribute, 10, Parry, Block, Skill or Spell. A
+// type that isn't one of them, which a file can still hold, is named as the row's sentence names it, and offered for as
+// long as the panel is open, as are the others of its kind the defaults had when the panel was made.
 func (p *defaultsPanel) typePopup(parent *unison.Panel, path string, def *gurps.SkillDefault) {
 	choices := p.typeChoices()
 	for _, t := range append(slices.Clone(p.otherTypes), def.Type()) {
@@ -458,15 +465,25 @@ func (p *defaultsPanel) typePopup(parent *unison.Panel, path string, def *gurps.
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":type", i18n.Text("Default Type"), choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
 			lastDefaultTypeUsed = c.Key
-			wasSkillBased := def.SkillBased()
+			wasNamed, wasSpell := def.SkillOrSpellBased(), def.SpellBased()
 			def.DefaultType = c.Key
-			// The skill criteria go with the skill-based types, and what they held would otherwise linger unseen on any
-			// other, to come back should the default later be made skill-based again. They are dropped within the edit,
-			// so that a default set back to what it was leaves the editor unmodified.
+			// The criteria a type makes no use of, such as those of a skill on a default made an attribute default,
+			// would otherwise linger unseen, to come back should the default later be given that type again. They are
+			// dropped within the edit, so that a default set back to what it was leaves the editor unmodified.
 			def.Normalize()
-			// One that becomes skill-based names its skill, so that the field for the name shows.
-			if !wasSkillBased && def.SkillBased() && def.Name.IsZero() {
-				def.Name = criteria.Text{Compare: criteria.IsText}
-			}
+			p.typeSet(def, wasNamed, wasSpell)
 		}))
+}
+
+// typeSet readies a default whose type has just been set, which was skill- or spell-based if wasNamed and spell-based
+// if wasSpell: one that becomes skill- or spell-based names what it rests on, so that the field for the name shows,
+// and one that becomes spell-based in the panel of a spell selects a spell of the same power source as that spell, as
+// a new spell prerequisite of a spell does.
+func (p *defaultsPanel) typeSet(def *gurps.SkillDefault, wasNamed, wasSpell bool) {
+	if !wasNamed && def.SkillOrSpellBased() && def.Name.IsZero() {
+		def.Name = criteria.Text{Compare: criteria.IsText}
+	}
+	if !wasSpell && def.SpellBased() {
+		def.SamePowerSource = p.ownerIsSpell
+	}
 }

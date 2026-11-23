@@ -11,6 +11,7 @@ package ux
 
 import (
 	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -871,6 +872,45 @@ func (p *sentenceRows[T]) collegesChip(chips *unison.Panel, path string, c *crit
 	if field := chips.FindRefKey(path + ":college"); field != nil {
 		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple colleges with commas to match any one of them, e.g. "Fire, Air"`))
 	}
+}
+
+// powerSourceChip adds the optional power source criterion of a row that selects spells, held by same, set when the
+// power source is to be the same as that of the spell the row belongs to, and otherwise by c. "Is the same as this
+// spell's" is offered beside the text comparisons only in a row of a spell, as ownerIsSpell says, or shown in a row
+// elsewhere that holds it, as one edited by hand or copied from a spell's may. Adding the criterion starts it with that
+// form where it is offered, and with "is" otherwise; removing it clears both.
+func (p *sentenceRows[T]) powerSourceChip(chips *unison.Panel, path string, ownerIsSpell bool, same *bool, c *criteria.Text) {
+	p.optionalCriterion(chips, path, "power", *same || c.Compare != criteria.AnyText,
+		func() {
+			*same = ownerIsSpell
+			if !ownerIsSpell {
+				c.Compare = criteria.IsText
+			}
+		},
+		func() { *same, *c = false, criteria.Text{} },
+		func(chip *unison.Panel) {
+			prefix := rowCriteria("power").prefix
+			choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
+			sameChoice := i18n.Text("and whose power source is the same as this spell's")
+			var items []string
+			if ownerIsSpell || *same {
+				items = append(items, sameChoice)
+			}
+			items = append(items, choices[1:]...)
+			current := choices[c.Compare.EnsureValid()]
+			if *same {
+				current = sameChoice
+			}
+			title := i18n.Text("Power Source")
+			comparison, _ := criteriaTitles(title)
+			addCentered(chip, compactPopup(p, path+":powercmp", comparison, items, current, nil, func(choice string) {
+				*same = choice == sameChoice
+				c.Compare = criteria.StringComparisons[max(slices.Index(choices, choice), 0)]
+			}))
+			if !*same {
+				p.textField(chip, path+":power", title, "", &c.Qualifier, nil)
+			}
+		})
 }
 
 // optionalCriterion adds the optional criterion with the key to chips: as a chip of the controls populate adds while

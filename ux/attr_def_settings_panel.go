@@ -329,11 +329,12 @@ func (p *attrDefSettingsPanel) createPlacementPanel(label *unison.Label) *unison
 
 func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(attrID)); key != "" {
-		if key != gurps.SanitizeID(key, false, gurps.ReservedIDs...) {
-			return false
-		}
+		// The ID the definition has is kept, even one a new definition could no longer have.
 		if key == p.def.DefID {
 			return true
+		}
+		if key != gurps.SanitizeID(key, false, gurps.ReservedIDsForNew...) {
+			return false
 		}
 		_, exists := p.dockable.model.Set[key]
 		return !exists

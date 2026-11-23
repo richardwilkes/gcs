@@ -468,6 +468,225 @@ func TestSpellRitualOverridesAreSourceDataSavedOnlyWhenSet(t *testing.T) {
 	c.Equal(spell.RitualOverrides, restored.RitualOverrides, "the overrides load back")
 }
 
+// TestSpellWithoutDefaultsSavesAndHashesAsBefore pins the saved form and source hash of an ordinary and a Ritual Magic
+// spell that have no defaults, as they were before spells could have any, so that it fails if a field added for
+// defaults is saved when empty, or if the source hash takes the defaults when there are none.
+func TestSpellWithoutDefaultsSavesAndHashesAsBefore(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSkill(e, "Ritual Magic", "Fire", "", fxp.Four)
+	for _, tc := range []struct {
+		name string
+		data string
+		hash uint64
+	}{
+		{
+			name: "ordinary",
+			data: `{"id":"pOepp3t7l52x7POW0","name":"Fireball","reference":"M74","tags":["Attack"],"difficulty":"iq/h",` +
+				`"college":["Fire"],"power_source":"Arcane","spell_class":"Regular","casting_cost":"1",` +
+				`"casting_time":"1 second","duration":"Instant","points":4}`,
+			hash: 2184077169405466337,
+		},
+		{
+			name: "Ritual Magic",
+			data: `{"id":"rSOjfYqdcZh_EpsRF","name":"Ignite Fire","difficulty":"iq/h","college":["Fire"],` +
+				`"power_source":"Arcane","spell_class":"Regular","casting_cost":"1","casting_time":"1 second",` +
+				`"duration":"Instant","base_skill":"Ritual Magic","prereq_count":1,"points":2}`,
+			hash: 7757861554086298546,
+		},
+	} {
+		var spell Spell
+		c.NoError(jio.Unmarshal([]byte(tc.data), &spell), tc.name)
+		spell.SetDataOwner(e)
+		e.Spells = append(e.Spells, &spell)
+		e.Recalculate()
+		c.NotEqual(fxp.Min, spell.LevelData.Level, "%s: precondition: the spell has a level", tc.name)
+		data, err := MarshalWithoutCalc(&spell)
+		c.NoError(err, tc.name)
+		c.Equal(tc.data, string(data), "%s: the saved form", tc.name)
+		c.Equal(tc.hash, Hash64(&spell), "%s: the source hash", tc.name)
+	}
+}
+
+// TestSpellDefaultLevels checks the level a spell has from its defaults: an ordinary spell's as a skill's, from the
+// attribute its level rests on, whole whatever the sheet does with half-stat defaults, and a Ritual Magic spell's the
+// higher of its ritual level and that of its best default, which its points don't add to, with the relative level
+// still measured against the ritual skill.
+func TestSpellDefaultLevels(t *testing.T) {
+	iq := func(modifier fxp.Int) []*SkillDefault {
+		return []*SkillDefault{{DefaultType: IntelligenceID, Modifier: modifier}}
+	}
+	skillNamed := func(e *Entity, name string) *Skill {
+		for _, sk := range e.Skills {
+			if sk.Name == name {
+				return sk
+			}
+		}
+		return nil
+	}
+	// lores gives the sheet Thaumatology at 14 and Occultism at 10, which a spell defaults to at -6, so that the first
+	// gives it 8, the level 1 point buys, until a change raises Occultism to 18, from which the second gives it 12.
+	lores := func(e *Entity, sp *Spell) {
+		addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
+		addTestSkill(e, "Occultism", "", "", fxp.Two)
+		sp.Defaults = []*SkillDefault{
+			newSkillDefaultTo("Thaumatology", "", true, -fxp.Six),
+			newSkillDefaultTo("Occultism", "", true, -fxp.Six),
+		}
+	}
+	raiseOccultism := func(e *Entity) { skillNamed(e, "Occultism").Points = fxp.FromInteger(32) }
+	// ritualSkill gives the sheet Ritual Magic (Fire) at 11, from which a Ritual Magic spell with 2 prerequisites is 9.
+	ritualSkill := func(e *Entity, _ *Spell) { addTestSkill(e, "Ritual Magic", "Fire", "", fxp.Four) }
+	for _, tc := range []struct {
+		name     string
+		ritual   bool
+		points   fxp.Int
+		defaults []*SkillDefault
+		// setup, when set, adjusts the sheet and the spell before the first recalculation, and changed, when set,
+		// changes the sheet after it, before the one whose level is checked.
+		setup    func(e *Entity, sp *Spell)
+		changed  func(e *Entity)
+		level    fxp.Int
+		relative fxp.Int
+	}{
+		{
+			name: "an attribute default gives a spell with no points its level", defaults: iq(-fxp.Six), level: fxp.Four,
+			relative: -fxp.Six,
+		},
+		{
+			// Thaumatology-6 at 8 stands for the 1 point that buys IQ-2.
+			name: "a point adds to those a default to a skill stands for", points: fxp.One,
+			setup: func(e *Entity, sp *Spell) {
+				addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
+				sp.Defaults = []*SkillDefault{newSkillDefaultTo("Thaumatology", "", true, -fxp.Six)}
+			}, level: fxp.Nine, relative: -fxp.One,
+		},
+		{
+			name: "a spell with points keeps the default it recorded", points: fxp.One, setup: lores,
+			changed: raiseOccultism, level: fxp.Nine, relative: -fxp.One,
+		},
+		{
+			name: "a spell with no points takes its best default", setup: lores, changed: raiseOccultism,
+			level: fxp.Twelve, relative: fxp.Two,
+		},
+		{
+			// IQ 14 is 12 for the default, while the spell's 1 point would buy 12 from the whole IQ.
+			name: "half-stat defaults leave the attribute of a spell's baseline whole", defaults: iq(-fxp.Two),
+			setup: func(e *Entity, _ *Spell) {
+				e.SheetSettings.UseHalfStatDefaults = true
+				e.Attributes.Set[IntelligenceID].Adjustment = fxp.Four
+			}, level: fxp.Ten, relative: -fxp.Four,
+		},
+		{
+			name: "a Wildcard spell ignores its default", points: fxp.Three, defaults: iq(-fxp.One),
+			setup: func(_ *Entity, sp *Spell) { sp.Difficulty.Difficulty = difficulty.Wildcard },
+			level: fxp.Seven, relative: -fxp.Three,
+		},
+		{
+			name: "a Ritual Magic spell takes a default above its ritual level", ritual: true, defaults: iq(0),
+			setup: ritualSkill, level: fxp.Ten, relative: -fxp.One,
+		},
+		{
+			name: "a Ritual Magic spell keeps a ritual level above its default", ritual: true, defaults: iq(-fxp.Three),
+			setup: ritualSkill, level: fxp.Nine, relative: -fxp.Two,
+		},
+		{
+			name: "a Ritual Magic spell without a ritual skill takes its default", ritual: true, defaults: iq(-fxp.Three),
+			level: fxp.Seven, relative: -fxp.Three,
+		},
+		{
+			// As for a skill, which a default at 0 or below gives no level either.
+			name: "a Ritual Magic spell takes no level from a default at 0", ritual: true, defaults: iq(-fxp.Ten),
+			level: fxp.Min,
+		},
+		{
+			// The 2 points raise the ritual level to 10, below the default's 11, to which they add nothing.
+			name: "a Ritual Magic spell's points don't add to its default", ritual: true, points: fxp.Two,
+			defaults: iq(fxp.One), setup: ritualSkill, level: fxp.Eleven, relative: 0,
+		},
+		{
+			// With no ritual skill, the relative level is the default's modifier.
+			name: "a Ritual Magic spell with points takes its best default", ritual: true, points: fxp.Two,
+			setup: lores, changed: raiseOccultism, level: fxp.Twelve, relative: -fxp.Six,
+		},
+	} {
+		c := check.New(t)
+		e := NewEntity()
+		var sp *Spell
+		if tc.ritual {
+			sp = addTestRitualMagicSpell(e, "Bless", "Fire")
+			sp.PrereqCount = 2
+			sp.Points = tc.points
+		} else {
+			sp = addTestSpell(e, "Light", tc.points)
+		}
+		sp.Defaults = tc.defaults
+		if tc.setup != nil {
+			tc.setup(e, sp)
+		}
+		e.Recalculate()
+		if tc.changed != nil {
+			tc.changed(e)
+			e.Recalculate()
+		}
+		c.Equal(tc.level, sp.LevelData.Level, "%s: the level", tc.name)
+		c.Equal(tc.relative, sp.LevelData.RelativeLevel, "%s: the relative level", tc.name)
+		if tc.ritual {
+			c.True(sp.DefaultedFrom != nil && sp.DefaultedFrom.Points == 0,
+				"%s: the default recorded stands for none of the spell's points", tc.name)
+		}
+	}
+}
+
+// TestSpellModifierNotes checks the note naming what a spell defaults to, which a Wildcard spell, ignoring its
+// default, doesn't have, nor a Ritual Magic spell whose default gives it no more than its ritual skill does, and that
+// the spell's secondary text shows it only as the sheet's modifiers display says.
+func TestSpellModifierNotes(t *testing.T) {
+	// Thaumatology is at 14, and Ritual Magic (Fire) at 11, from which a Ritual Magic spell with 2 prerequisites is 9.
+	for _, tc := range []struct {
+		name     string
+		ritual   bool
+		wildcard bool
+		modifier fxp.Int
+		want     string
+	}{
+		{name: "a spell names the skill it defaults to", modifier: -fxp.Two, want: "Default: Thaumatology-2"},
+		{name: "a Wildcard spell has no note", wildcard: true, modifier: -fxp.Two},
+		{
+			name: "a Ritual Magic spell names the default above its ritual level", ritual: true, modifier: -fxp.Two,
+			want: "Default: Thaumatology-2",
+		},
+		{
+			name: "a Ritual Magic spell whose default only ties its ritual level has no note", ritual: true,
+			modifier: -fxp.Five,
+		},
+	} {
+		c := check.New(t)
+		e := NewEntity()
+		e.SheetSettings.ModifiersDisplay = display.Inline
+		e.SheetSettings.NotesDisplay = display.Tooltip
+		addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
+		addTestSkill(e, "Ritual Magic", "Fire", "", fxp.Four)
+		var sp *Spell
+		if tc.ritual {
+			sp = addTestRitualMagicSpell(e, "Bless", "Fire")
+			sp.PrereqCount = 2
+		} else {
+			sp = addTestSpell(e, "Light", fxp.Three)
+			if tc.wildcard {
+				sp.Difficulty.Difficulty = difficulty.Wildcard
+			}
+		}
+		sp.Defaults = []*SkillDefault{newSkillDefaultTo("Thaumatology", "", true, tc.modifier)}
+		e.Recalculate()
+		c.NotNil(sp.DefaultedFrom, "%s: precondition: the spell records its default", tc.name)
+		c.Equal(tc.want, sp.ModifierNotes(), "%s: the note", tc.name)
+		c.Equal(tc.want, sp.SecondaryText(display.Option.Inline), "%s: shown inline", tc.name)
+		e.SheetSettings.ModifiersDisplay = display.Tooltip
+		c.Equal("", sp.SecondaryText(display.Option.Inline), "%s: and not while it is shown elsewhere", tc.name)
+	}
+}
+
 // TestSpellLevelStepping verifies that incrementing or decrementing a spell's level moves its points to the fewest that
 // buy the next or previous level, for Hard and Wildcard spells, and leaves containers alone.
 func TestSpellLevelStepping(t *testing.T) {
@@ -501,9 +720,10 @@ func TestSpellLevelStepping(t *testing.T) {
 	c.Equal(fxp.Int(0), container.Points)
 }
 
-// TestSpellFeaturesRoundTrip verifies that a spell's features are written and read back, including the switchable flag,
-// and that a spell with none writes no "features" key at all.
-func TestSpellFeaturesRoundTrip(t *testing.T) {
+// TestSpellFeaturesAndDefaultsRoundTrip verifies that a spell's features are written and read back, including the
+// switchable flag, that a spell with none writes no "features" key at all, and that its defaults and the one it
+// recorded are written and read back too, with a null among the defaults dropped.
+func TestSpellFeaturesAndDefaultsRoundTrip(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
@@ -542,23 +762,44 @@ func TestSpellFeaturesRoundTrip(t *testing.T) {
 	again, err := MarshalWithoutCalc(&restored)
 	c.NoError(err, "the reloaded spell should marshal without its derived values")
 	c.Equal(string(stored), string(again), "the stored form is stable across a round-trip")
+
+	var defaulted Spell
+	c.NoError(jio.Unmarshal([]byte(`{"type":"spell","name":"Light","difficulty":"iq/h",`+
+		`"defaults":[null,{"type":"iq","modifier":-2}]}`), &defaulted), "a spell with a null default should load")
+	c.Equal(1, len(defaulted.Defaults), "the null default is dropped and the other kept")
+	defaulted.SetDataOwner(e)
+	e.Spells = append(e.Spells, &defaulted)
+	e.Recalculate()
+	c.NotNil(defaulted.DefaultedFrom, "precondition: the spell records its default")
+	data, err = MarshalWithoutCalc(&defaulted)
+	c.NoError(err, "a spell with defaults should marshal")
+	var reloaded Spell
+	c.NoError(jio.Unmarshal(data, &reloaded), "a spell with defaults should load")
+	c.Equal(defaulted.Defaults, reloaded.Defaults, "the defaults load back")
+	c.Equal(defaulted.DefaultedFrom, reloaded.DefaultedFrom, "the default recorded loads back")
 }
 
-// TestSpellEditDataCopiesFeatures verifies that a spell editor works on its own copy of the features, in both
-// directions, so that editing them in an editor doesn't reach back into the spell it was opened on.
-func TestSpellEditDataCopiesFeatures(t *testing.T) {
+// TestSpellEditDataCopiesFeaturesAndDefaults verifies that a spell editor works on its own copy of the features and
+// defaults, in both directions, so that editing them in an editor doesn't reach back into the spell it was opened on,
+// and that applying an edit keeps the default the spell recorded only while the defaults stay the same, so that it is
+// chosen afresh from edited ones.
+func TestSpellEditDataCopiesFeaturesAndDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
 	spell := NewSpell(e, nil, false)
 	spell.Name = "Fireball"
 	spell.Features = Features{newSkillBonusTo("Alchemy", fxp.Two)}
+	spell.Defaults = []*SkillDefault{{DefaultType: IntelligenceID, Modifier: -fxp.Two}}
+	spell.DefaultedFrom = &SkillDefault{DefaultType: IntelligenceID, Modifier: -fxp.Two}
 
 	// What the editor is handed when it opens.
 	var edit SpellEditData
 	edit.CopyFrom(spell)
 	c.Equal(1, len(edit.Features), "the copy holds the spell's features")
 	c.False(edit.Features[0] == spell.Features[0], "the copy holds its own features, not the spell's")
+	c.False(edit.Defaults[0] == spell.Defaults[0], "the copy holds its own defaults, not the spell's")
+	c.False(edit.DefaultedFrom == spell.DefaultedFrom, "the copy holds its own default recorded, not the spell's")
 
 	// Editing the copy leaves the original alone.
 	editBonus := skillBonusAt(c, edit.Features, 0)
@@ -578,6 +819,12 @@ func TestSpellEditDataCopiesFeatures(t *testing.T) {
 	c.False(target.Features[0] == edit.Features[0], "the target holds its own features, not the editor's")
 	targetBonus.Amount = fxp.Ten
 	c.Equal(fxp.Two, editBonus.Amount, "editing the target doesn't reach back into the editor")
+	c.NotNil(target.DefaultedFrom, "an edit that leaves the defaults alone keeps the default recorded")
+	c.False(target.DefaultedFrom == edit.DefaultedFrom, "the target holds its own default recorded, not the editor's")
+
+	edit.Defaults[0].Modifier = -fxp.Three
+	edit.ApplyTo(target)
+	c.Nil(target.DefaultedFrom, "an edit that changes the defaults has the default chosen afresh")
 }
 
 // skillBonusAt returns the feature at the given index as a *SkillBonus, failing the test if it isn't one.
@@ -591,9 +838,10 @@ func skillBonusAt(c check.Checker, features Features, index int) *SkillBonus {
 	return bonus
 }
 
-// TestSpellHashIncludesFeatures verifies that a spell's features participate in the source-data hash, so that a spell
-// whose features differ from its library source is reported as out of sync.
-func TestSpellHashIncludesFeatures(t *testing.T) {
+// TestSpellHashIncludesFeaturesAndDefaults verifies that a spell's features and defaults participate in the source-data
+// hash, so that a spell whose features or defaults differ from its library source is reported as out of sync, while an
+// empty list of defaults hashes as none does.
+func TestSpellHashIncludesFeaturesAndDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
@@ -610,12 +858,20 @@ func TestSpellHashIncludesFeatures(t *testing.T) {
 
 	spell.Features = nil
 	c.Equal(before, Hash64(spell), "removing the feature restores the original hash")
+
+	spell.Defaults = []*SkillDefault{}
+	c.Equal(before, Hash64(spell), "an empty list of defaults hashes as none does")
+
+	spell.Defaults = []*SkillDefault{{DefaultType: IntelligenceID, Modifier: -fxp.Six}}
+	c.NotEqual(before, Hash64(spell), "adding a default changes the spell's hash")
 }
 
-// TestSpellSyncWithSourceClonesFeatures verifies that syncing a spell with its library source brings the source's
-// features across as clones, so that later edits to one don't reach into the other. The library data is injected
-// directly into the source matcher, which is what a real sync gets from the library file it loaded.
-func TestSpellSyncWithSourceClonesFeatures(t *testing.T) {
+// TestSpellSyncWithSourceClonesFeaturesAndDefaults verifies that syncing a spell with its library source brings the
+// source's features and defaults across as clones, so that later edits to one don't reach into the other, and that the
+// default the spell recorded is kept only while the defaults stay the same, so that it is chosen afresh from changed
+// ones. The library data is injected directly into the source matcher, which is what a real sync gets from the library
+// file it loaded.
+func TestSpellSyncWithSourceClonesFeaturesAndDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 
@@ -642,6 +898,26 @@ func TestSpellSyncWithSourceClonesFeatures(t *testing.T) {
 		skillBonusAt(c, local.Features, 0).Amount = fxp.Ten
 		c.Equal(fxp.Two, skillBonusAt(c, source.Features, 0).Amount, "editing the synced copy leaves the source alone")
 	}
+
+	iqLess := func(modifier fxp.Int) []*SkillDefault {
+		return []*SkillDefault{{DefaultType: IntelligenceID, Modifier: modifier}}
+	}
+	source.Defaults = iqLess(-fxp.Two)
+	source.PageRef = "M1"
+	local.Defaults = iqLess(-fxp.Two)
+	recorded := &SkillDefault{DefaultType: IntelligenceID, Modifier: -fxp.Two}
+	local.DefaultedFrom = recorded
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
+	local.SyncWithSource()
+	c.Equal("M1", local.PageRef, "precondition: the sync brings the source's page reference across")
+	c.True(local.DefaultedFrom == recorded, "a sync that leaves the defaults alone keeps the default recorded")
+	c.False(local.Defaults[0] == source.Defaults[0], "the synced default is a clone, not the source's own")
+
+	source.Defaults = iqLess(-fxp.Three)
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
+	local.SyncWithSource()
+	c.Equal(-fxp.Three, local.Defaults[0].Modifier, "precondition: the sync brings the source's defaults across")
+	c.Nil(local.DefaultedFrom, "a sync that changes the defaults has the default chosen afresh")
 }
 
 // TestSpellBonusFromItsOwnSpell verifies that a spell carrying a bonus that names itself resolves to a sane level
@@ -707,10 +983,10 @@ func TestSpellPointBonusesAdjustPoints(t *testing.T) {
 	}
 }
 
-// TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons verifies that the substitution keys used inside a spell's
-// features and weapons are offered to the user along with the ones in the spell's own text, so a spell can carry a
-// feature whose target is filled in when the spell is added to a sheet.
-func TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons(t *testing.T) {
+// TestSpellFillWithNameableKeysIncludesFeaturesWeaponsAndDefaults verifies that the substitution keys used inside a
+// spell's features, weapons and defaults are offered to the user along with the ones in the spell's own text, so a
+// spell can carry a feature whose target is filled in when the spell is added to a sheet.
+func TestSpellFillWithNameableKeysIncludesFeaturesWeaponsAndDefaults(t *testing.T) {
 	c := check.New(t)
 
 	spell := NewSpell(nil, nil, false)
@@ -722,6 +998,7 @@ func TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons(t *testing.T) {
 	w := NewWeapon(spell, false)
 	w.Usage = "@use@"
 	spell.Weapons = []*Weapon{w}
+	spell.Defaults = []*SkillDefault{newSkillDefaultTo("@lore@", "", true, -fxp.Two)}
 
 	m := make(map[string]string)
 	spell.FillWithNameableKeys(m, nil)
@@ -730,7 +1007,8 @@ func TestSpellFillWithNameableKeysIncludesFeaturesAndWeapons(t *testing.T) {
 		"skill": nameable.Unset,
 		"spec":  nameable.Unset,
 		"use":   nameable.Unset,
-	}, m, "the keys from the spell's features and weapons are offered along with its own")
+		"lore":  nameable.Unset,
+	}, m, "the keys from the spell's features, weapons and defaults are offered along with its own")
 }
 
 // TestRitualMagicSatisfiedNamesWhatIsMissing verifies that a ritual magic spell no ritual skill serves names what it
@@ -749,6 +1027,27 @@ func TestRitualMagicSatisfiedNamesWhatIsMissing(t *testing.T) {
 		var tooltip xbytes.InsertBuffer
 		c.False(spell.RitualMagicSatisfied(&tooltip, "- "), "colleges %v: no ritual skill serves the spell", tc.colleges)
 		c.Equal(tc.want, tooltip.String(), "colleges %v", tc.colleges)
+	}
+}
+
+// TestRitualMagicSatisfiedByItsDefault verifies that a Ritual Magic spell without a ritual skill is not reported as
+// lacking one while its default gives it a level, as one above 0 does, and still is while its default gives none.
+func TestRitualMagicSatisfiedByItsDefault(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		modifier  fxp.Int
+		level     fxp.Int
+		satisfied bool
+	}{
+		{-fxp.Three, fxp.Seven, true},
+		{-fxp.Ten, fxp.Min, false},
+	} {
+		e := NewEntity()
+		spell := addTestRitualMagicSpell(e, "Bless", "Fire")
+		spell.Defaults = []*SkillDefault{{DefaultType: IntelligenceID, Modifier: tc.modifier}}
+		e.Recalculate()
+		c.Equal(tc.level, spell.LevelData.Level, "IQ%v: precondition: the level the default gives", tc.modifier)
+		c.Equal(tc.satisfied, spell.UnsatisfiedReason == "", "IQ%v: %s", tc.modifier, spell.UnsatisfiedReason)
 	}
 }
 

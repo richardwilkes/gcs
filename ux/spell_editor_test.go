@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -102,4 +103,43 @@ func TestSpellEditorEditsEachRitualOverride(t *testing.T) {
 		_, content := buildEditorContent(sheet, spell, initSpellEditor)
 		c.Nil(panelBesideLabel(content, i18n.Text("Rituals")), "a spell container has no rituals to override")
 	})
+}
+
+// The editor of a spell, Ritual Magic or not, has a Defaults section belonging to a spell, whose placeholders the
+// Nameables section counts; a spell container's has none.
+func TestSpellEditorDefaultsPanel(t *testing.T) {
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	for _, tc := range []struct {
+		name  string
+		spell *gurps.Spell
+	}{
+		{name: "spell", spell: gurps.NewSpell(entity, nil, false)},
+		{name: "Ritual Magic spell", spell: gurps.NewRitualMagicSpell(entity, nil, false)},
+		{name: "spell container", spell: gurps.NewSpell(entity, nil, true)},
+	} {
+		c := check.New(t)
+		container := tc.spell.Container()
+		if !container {
+			tc.spell.Defaults = []*gurps.SkillDefault{{
+				DefaultType: gurps.SpellID,
+				Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "@lore@"},
+			}}
+		}
+		_, content := buildEditorContent(sheet, tc.spell, initSpellEditor)
+		panels := uxtest.PanelsOfType[*defaultsPanel](content)
+		if container {
+			c.Equal(0, len(panels), "%s: has no defaults", tc.name)
+			continue
+		}
+		c.Equal(1, len(panels), "%s: has defaults", tc.name)
+		if len(panels) == 1 {
+			c.True(panels[0].ownerIsSpell, "%s: which belong to a spell", tc.name)
+		}
+		nameables, ok := uxtest.FirstPanelOfType[*nameablesPanel](content)
+		c.True(ok, "%s: has nameables", tc.name)
+		if ok {
+			c.Equal(1, nameables.uses()["lore"], "%s: which count the placeholders of the defaults", tc.name)
+		}
+	}
 }

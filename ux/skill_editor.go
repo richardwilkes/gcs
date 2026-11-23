@@ -270,7 +270,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
 			withReplacementsFrom(e.editorData))
 		if !e.target.IsTechnique() {
-			content.AddChild(newDefaultsPanel(entity, e.editorData, &e.editorData.Defaults))
+			content.AddChild(newDefaultsPanel(entity, e.editorData, &e.editorData.Defaults, false))
 		}
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
 			withReplacementsFrom(e.editorData))

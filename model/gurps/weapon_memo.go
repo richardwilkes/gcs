@@ -36,10 +36,29 @@ type memoized[T any] struct {
 	resolving bool
 }
 
-// requiredSkill names a skill a weapon is used with; see Weapon.forEachRequiredSkill.
+// requiredSkill names a skill a weapon is used with, or the spell it is used with, which spell holds, along with its
+// name; see Weapon.forEachRequiredSkill.
 type requiredSkill struct {
 	name           string
 	specialization string
+	spell          *Spell
+}
+
+// relativeLevel returns the relative level of the skill, the best among those with its name and specialization (see
+// Entity.relativeSkillLevel), or of the spell, which, as a skill does there, has none without points unless it is a
+// Ritual Magic spell, and is computed afresh where a skill's is.
+func (r requiredSkill) relativeLevel(e *Entity) fxp.Int {
+	sp := r.spell
+	if sp == nil {
+		return e.relativeSkillLevel(r.name, r.specialization)
+	}
+	if !sp.IsRitualMagic() && sp.AdjustedPoints(nil) <= 0 {
+		return fxp.Min
+	}
+	if e.carriesGrant(e.judging) || e.atBase > 0 || e.thresholdFeaturesLeftOut() {
+		return sp.CalculateLevel().RelativeLevel
+	}
+	return sp.LevelData.RelativeLevel
 }
 
 // weaponMemo holds what resolving a weapon's fields has found for the current state of the entity's derived data:

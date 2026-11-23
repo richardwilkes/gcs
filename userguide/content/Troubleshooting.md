@@ -82,7 +82,7 @@ happens the first time you run new software that isn’t signed with a Microsoft
 
 | Warning Window - More info                                                       | Warning Window - Run anyway                                                      |
 |----------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| <img src="images/screenshots/WinProtect01.png" alt="example 1" width="410"> | <img src="images/screenshots/WinProtect02.png" alt="example 2" width="410"> |
+| <img src="images/screenshots/WinProtect01.png" alt="example 1" width="410">      | <img src="images/screenshots/WinProtect02.png" alt="example 2" width="410">      |
 
 ---
 
@@ -154,8 +154,8 @@ This forces GCS to use the correct scaling information and should restore the sh
 ## Issue: A trait, skill, or spell shows an unsatisfied prerequisite that the character meets
 
 **Cause:** The prerequisite names something slightly different from what the character has. Names must match exactly
-(ignoring case), a skill with no points in it doesn't count as a skill the character has, and spell prerequisites only
-count spells from the same power source.
+(ignoring case), a skill or spell with no points in it doesn't count as one the character has, even when it shows a
+level from a default, and spell prerequisites only count spells from the same power source.
 
 **How to fix:**
 

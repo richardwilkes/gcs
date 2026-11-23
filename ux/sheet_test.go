@@ -1124,9 +1124,9 @@ func TestSheetHidingABlockThatIsNotAList(t *testing.T) {
 	c.Equal(portrait, sheet.blocks[gurps.BlockPortraitKey])
 }
 
-// TestSwapDefaultsFollowsTheLayout checks that Swap Defaults is disabled while the layout leaves the skill list off the
-// page, where the list keeps its selection but has no undo manager, so the command would swap the hidden skills'
-// defaults where the user can't see and can't undo.
+// TestSwapDefaultsFollowsTheLayout checks that Swap Defaults is disabled while the layout leaves the skill or spell
+// list off the page, where the list keeps its selection but has no undo manager, so the command would swap the hidden
+// items' defaults where the user can't see and can't undo.
 func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -1159,6 +1159,121 @@ func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
 	c.True(layout.Show(gurps.BlockSkillsKey))
 	sheet.Rebuild(true)
 	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is enabled again once the list is back")
+
+	// The spell list is acted on in the same way when the skill list has nothing selected.
+	lore := gurps.NewSpell(entity, nil, false)
+	lore.Name = "Lore"
+	lore.Points = fxp.Four
+	lore.Defaults = []*gurps.SkillDefault{
+		{DefaultType: gurps.IntelligenceID, Modifier: -fxp.Two},
+		{DefaultType: gurps.DexterityID, Modifier: -fxp.Two},
+	}
+	entity.Spells = []*gurps.Spell{lore}
+	entity.Recalculate()
+	sheet.Rebuild(true)
+	sheet.Skills.Table.ClearSelection()
+	sheet.Spells.Table.SetSelectionMap(map[tid.TID]bool{lore.TID: true})
+	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the defaults of a selected spell can be swapped")
+	c.True(layout.Hide(gurps.BlockSpellsKey))
+	sheet.Rebuild(true)
+	c.True(sheet.Spells.Table.HasSelection(), "precondition: the hidden spell list keeps its selection")
+	c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "but not while the spell list is off the page")
+}
+
+// TestSwapDefaultsActsOnTheFocusedList checks that Swap Defaults acts on the skill or spell list holding the focus,
+// rather than on the first with a selection, and so does nothing while that list has no selection.
+func TestSwapDefaultsActsOnTheFocusedList(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	// Each has IQ-2 and DX-2 to move between, both at 8, and rests on the first.
+	defaults := func() []*gurps.SkillDefault {
+		return []*gurps.SkillDefault{
+			{DefaultType: gurps.IntelligenceID, Modifier: -fxp.Two},
+			{DefaultType: gurps.DexterityID, Modifier: -fxp.Two},
+		}
+	}
+	var skill *gurps.Skill
+	var spell *gurps.Spell
+	screen.Do(func() {
+		entity := sheet.Entity()
+		skill = gurps.NewSkill(entity, nil, false)
+		skill.Name = "Thaumatology"
+		skill.Points = fxp.Four
+		skill.Defaults = defaults()
+		spell = gurps.NewSpell(entity, nil, false)
+		spell.Name = "Lore"
+		spell.Points = fxp.Four
+		spell.Defaults = defaults()
+		entity.Skills = []*gurps.Skill{skill}
+		entity.Spells = []*gurps.Spell{spell}
+		sheet.Rebuild(true)
+		sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{skill.TID: true})
+		sheet.Spells.Table.SetSelectionMap(map[tid.TID]bool{spell.TID: true})
+		sheet.Spells.Table.RequestFocus()
+	})
+	c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "precondition: the skill rests on IQ")
+	c.Equal(gurps.IntelligenceID, spell.DefaultedFrom.Type(), "precondition: the spell rests on IQ")
+	screen.Do(func() {
+		c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the spell's defaults can be swapped")
+		sheet.PerformCmd(sheet, SwapDefaultsItemID)
+	})
+	c.Equal(gurps.DexterityID, spell.DefaultedFrom.Type(), "the spell list holding the focus is acted on")
+	c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "rather than the skill list")
+	screen.Do(func() {
+		sheet.Spells.Table.ClearSelection()
+		c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "nor is the skill list acted on with no spell selected")
+	})
+}
+
+// TestSwapDefaultsUndoRestoresBothLists checks that undoing a swap between a skill and a spell, which changes the
+// defaults of both, puts both back.
+func TestSwapDefaultsUndoRestoresBothLists(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	// Thaumatology and Lore default to each other, and the skill, updated first, rests on the spell.
+	thaumatology := gurps.NewSkill(entity, nil, false)
+	thaumatology.Name = "Thaumatology"
+	thaumatology.Points = fxp.Four
+	thaumatology.Defaults = []*gurps.SkillDefault{{
+		DefaultType: gurps.SpellID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Lore"},
+		Modifier:    -fxp.Two,
+	}}
+	lore := gurps.NewSpell(entity, nil, false)
+	lore.Name = "Lore"
+	lore.Points = fxp.Four
+	lore.Defaults = []*gurps.SkillDefault{{
+		DefaultType: gurps.SkillID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Thaumatology"},
+		Modifier:    -fxp.Two,
+	}}
+	entity.Skills = []*gurps.Skill{thaumatology}
+	entity.Spells = []*gurps.Spell{lore}
+	sheet.Rebuild(true)
+	restsOn := func() (skill, spell string) {
+		if def := entity.Skills[0].DefaultedFrom; def != nil {
+			skill = def.NameWithReplacements(nil)
+		}
+		if def := entity.Spells[0].DefaultedFrom; def != nil {
+			spell = def.NameWithReplacements(nil)
+		}
+		return skill, spell
+	}
+	skill, spell := restsOn()
+	c.True(skill == "Lore" && spell == "", "precondition: the skill rests on the spell")
+	sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{thaumatology.TID: true})
+	sheet.PerformCmd(sheet, SwapDefaultsItemID)
+	skill, spell = restsOn()
+	c.True(skill == "" && spell == "Thaumatology", "precondition: the swap has the spell rest on the skill")
+	sheet.UndoManager().Undo()
+	skill, spell = restsOn()
+	c.Equal("Lore", skill, "undo has the skill rest on the spell again")
+	c.Equal("", spell, "and the spell on nothing")
 }
 
 // TestHideAndShowBlock checks that taking a block off the sheet and putting it back are each one undoable edit that

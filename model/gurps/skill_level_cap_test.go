@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"os"
 	"path/filepath"
@@ -298,13 +299,13 @@ func TestSkillLevelCapMatcher(t *testing.T) {
 // TestSkillLevelCapReferences verifies the caps that rest on something on the sheet: the level of a skill, spell or
 // trait, or the value of an attribute, plus the adjustment, with the highest matching item taken, a disabled trait
 // ignored, the capped level of a referenced skill read, a level resting on the capped skill read as it is without that
-// skill's cap, which the item with that level keeps, along with the points a grant's level set on it costs, and has
-// as the prerequisites of an item carrying a grant see it too, a grant's level set on a technique priced against the
-// skill it rests on as capped, even by a technique granted after it, or by one resting on it in turn, each reaching
-// the level set whichever is listed first, a technique a grant puts on the sheet read as in
-// effect once it is, a technique resting on a skill held to another technique resting on it reading that skill as
-// held, a technique the default chain leaves with no level passed over, and a reference to nothing on the sheet, or to
-// nothing with a level, counted as 0.
+// skill's cap, which the item with that level keeps, along with the points a grant's level set on it costs, and has as
+// the prerequisites of an item carrying a grant see it too, a grant's level set on a technique priced against the skill
+// it rests on as capped, even by a technique granted after it, or by one resting on it in turn, each reaching the level
+// set whichever is listed first, a technique a grant puts on the sheet read as in effect once it is, a technique
+// resting on a skill held to another technique resting on it reading that skill as held, a technique or Ritual Magic
+// spell the default chain leaves with no level passed over, as is a spell the chain excludes, and a reference to
+// nothing on the sheet, or to nothing with a level, counted as 0.
 func TestSkillLevelCapReferences(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -608,6 +609,39 @@ func TestSkillLevelCapReferences(t *testing.T) {
 				only.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Broadsword"}
 				return []LevelCap{refCap(levelcap.Skill, "Shortsword", 0)},
 					func(fxp.Int) fxp.Int { return fxp.FromInteger(13) }, "Shortsword"
+			},
+			target:   levelcap.Spells,
+			capSpell: true,
+		},
+		{
+			// Likewise, with Ritual Magic (Fire) in place of Shortsword and Ignite, a Ritual Magic spell resting on it,
+			// in place of Feint.
+			name: "the level of a skill defaulting to a skill held to a Ritual Magic spell resting on it",
+			setup: func(e *Entity) ([]LevelCap, func(fxp.Int) fxp.Int, string) {
+				addTestSkill(e, "Broadsword", "", "", fxp.Twenty)
+				ritual := addTestSkill(e, "Ritual Magic", "Fire", "", fxp.One)
+				ritual.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+				addTestRitualMagicSpell(e, "Ignite", "Fire")
+				only := addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Spell, "Ignite", -1))
+				only.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Broadsword"}
+				return []LevelCap{refCap(levelcap.Skill, "Ritual Magic", 0)},
+					func(fxp.Int) fxp.Int { return fxp.FromInteger(13) }, "Ritual Magic (Fire)"
+			},
+			target:   levelcap.Spells,
+			capSpell: true,
+		},
+		{
+			// Fireball defaults to Thaumatology -2, which is held to Fireball, so the default is taken with Fireball
+			// passed over, at 12, and Lightning is held to Fireball at 12.
+			name: "the level of a spell defaulting to a skill held to it",
+			setup: func(e *Entity) ([]LevelCap, func(fxp.Int) fxp.Int, string) {
+				addTestSkill(e, "Thaumatology", "", "", fxp.FromInteger(16))
+				fireball := addTestSpell(e, "Fireball", 0)
+				fireball.Defaults = []*SkillDefault{newSkillDefaultTo("Thaumatology", "", true, -fxp.Two)}
+				only := addTestLevelCap(e, levelcap.Skills, refCap(levelcap.Spell, "Fireball", 0))
+				only.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thaumatology"}
+				return []LevelCap{refCap(levelcap.Spell, "Fireball", 0)},
+					func(fxp.Int) fxp.Int { return fxp.Twelve }, "Fireball"
 			},
 			target:   levelcap.Spells,
 			capSpell: true,
@@ -1082,9 +1116,45 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 		// levels, when set, adds a grant that adds 3 levels to Fireball, which merges into the first Fireball on the
 		// sheet, or puts its own row there when there is none.
 		levels bool
+		// points are those the spell has on the sheet, when not 20, which the edits make 20.
+		points fxp.Int
+		// setup, when set, adds what the cap rests on in place of Fireball and returns the cap.
+		setup  func(e *Entity) LevelCap
 		capped bool
 	}{
 		{name: "a spell renamed out of a reference", from: "Fireball", to: "Ignite", modifier: -1, capped: true},
+		{
+			name: "a spell bought that a default the cap rests on rests on", from: "Fireball", to: "Fireball",
+			points: fxp.One,
+			setup: func(e *Entity) LevelCap {
+				pyromancy := addTestSkill(e, "Pyromancy", "", "", 0)
+				pyromancy.Defaults = []*SkillDefault{newSpellDefaultTo("Fireball", -fxp.Two)}
+				return refCap(levelcap.Skill, "Pyromancy", 1)
+			},
+			capped: true,
+		},
+		{
+			// The grant's 3 levels count in the default once the spell is renamed into it.
+			name: "a spell renamed into a grant a default the cap rests on rests on", from: "Flash", to: "Fireball",
+			levels: true,
+			setup: func(e *Entity) LevelCap {
+				pyromancy := addTestSkill(e, "Pyromancy", "", "", 0)
+				pyromancy.Defaults = []*SkillDefault{newSpellDefaultTo("Fireball", -fxp.Two)}
+				return refCap(levelcap.Skill, "Pyromancy", 0)
+			},
+			capped: true,
+		},
+		{
+			// The grant puts its own row on the sheet once the spell is renamed, which the default then rests on.
+			name: "a spell renamed out of a grant that then grants the spell a default the cap rests on rests on",
+			from: "Fireball", to: "Ignite", levels: true,
+			setup: func(e *Entity) LevelCap {
+				pyromancy := addTestSkill(e, "Pyromancy", "", "", 0)
+				pyromancy.Defaults = []*SkillDefault{newSpellDefaultTo("Fireball", -fxp.Two)}
+				return refCap(levelcap.Skill, "Pyromancy", 0)
+			},
+			capped: true,
+		},
 		{
 			name: "a spell renamed into a grant that keeps it at a level the cap rests on", from: "Flash", to: "Fireball",
 			modifier: -3, grant: true,
@@ -1103,7 +1173,7 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 		},
 	} {
 		e = NewEntity()
-		sp = addTestSpell(e, one.from, fxp.Twenty)
+		sp = addTestSpell(e, one.from, cmp.Or(one.points, fxp.Twenty))
 		if one.grant {
 			granted := NewSpell(nil, nil, false)
 			granted.Name = "Fireball"
@@ -1118,10 +1188,15 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 			granted.Name = "Fireball"
 			addTraitWithFeatures(e, "Training", newSpellGrant(granted, fxp.Three, grantmerge.Ignore))
 		}
-		addTestLevelCap(e, levelcap.Spells, refCap(levelcap.Spell, "Fireball", one.modifier))
+		ref := LevelCap(refCap(levelcap.Spell, "Fireball", one.modifier))
+		if one.setup != nil {
+			ref = one.setup(e)
+		}
+		addTestLevelCap(e, levelcap.Spells, ref)
 		e.Recalculate()
 		spellData = sp.SpellEditData
 		spellData.Name = one.to
+		spellData.Points = fxp.Twenty
 		edited := sp.withEditData(&spellData)
 		preview := sp.LevelWithGrants(&spellData, edited.levelAt(e, spellData.Points), func(points fxp.Int) Level {
 			return edited.levelAt(e, points)

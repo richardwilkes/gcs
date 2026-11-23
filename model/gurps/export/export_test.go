@@ -20,6 +20,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
@@ -83,6 +84,27 @@ func newContainerTypesEntity() *gurps.Entity {
 	rope.Name = "Rope"
 	entity.CarriedEquipment = []*gurps.Equipment{backpack, kit, rope}
 	return entity
+}
+
+// newSpellDefaultEntity returns a sheet with Thaumatology at 11 and the spell Lore, which has no points, resting on
+// it at -2.
+func newSpellDefaultEntity() (*gurps.Entity, *gurps.Spell) {
+	entity := gurps.NewEntity()
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Thaumatology"
+	skill.Points = fxp.Four
+	lore := gurps.NewSpell(entity, nil, false)
+	lore.Name = "Lore"
+	lore.Points = 0
+	lore.Defaults = []*gurps.SkillDefault{{
+		DefaultType: gurps.SkillID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Thaumatology"},
+		Modifier:    -fxp.Two,
+	}}
+	entity.Skills = []*gurps.Skill{skill}
+	entity.Spells = []*gurps.Spell{lore}
+	entity.Recalculate()
+	return entity, lore
 }
 
 // TestTemplateFuncs verifies that the number functions and the Number methods templates can call give the documented
@@ -157,6 +179,15 @@ func TestExportGrantedRowsCostNothing(t *testing.T) {
 	c.Equal("<Brawling|0|12><Light|0|10>", runLegacyExport(t, c, entity,
 		"@SKILLS_LOOP_START<@DESCRIPTION|@POINTS|@SL>@SKILLS_LOOP_END"+
 			"@SPELLS_LOOP_START<@DESCRIPTION_PRIMARY|@POINTS|@SL>@SPELLS_LOOP_END"))
+}
+
+// TestExportSpellModifierNotes verifies that the template exporter gives a spell the note naming what it defaults to,
+// as it gives a skill.
+func TestExportSpellModifierNotes(t *testing.T) {
+	c := check.New(t)
+	entity, _ := newSpellDefaultEntity()
+	c.Equal("<<Lore|Default: Thaumatology-2>>", runTemplateExport(t, c, entity, "GCS Text Template v1\n"+
+		"{{range .Spells}}<<{{.Description}}|{{.ModifierNotes}}>>{{end}}"))
 }
 
 // TestExportTraitSelfControlAndFrequency verifies that the template exporter writes a trait's self-control and
