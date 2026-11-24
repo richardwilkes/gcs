@@ -479,11 +479,17 @@ func (c *ReferenceLevelCap) resolve(r *levelCapResolver) (levelCapValue, bool) {
 	case levelcap.Spell:
 		onSheet, edited := e.spellEdit()
 		visit := func(sp *Spell) bool {
-			if (!e.levelCapsResolving[sp] && !sp.Enabled()) || e.takenOffByEdit(sp) {
+			if e.takenOffByEdit(sp) {
 				return false
 			}
+			enabled := sp.Enabled()
 			if sp == onSheet {
+				// The copy is what capSpellLevel and Entity.passOver note as resolving while it stands in for the
+				// spell.
 				sp = edited
+			}
+			if !enabled && !e.levelCapsResolving[sp] {
+				return false
 			}
 			if !grantedFor(e.judging, sp) && c.NameCriteria.Matches(nil, sp.NameWithReplacements()) {
 				switch {

@@ -75,8 +75,9 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 					return gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
 						e.editorData.Tags, def, e.editorData.Difficulty, points)
 				}
-				// The level a grant keeps is read without a default, as the sheet reads it.
-				level := e.target.LevelWithGrants(e.editorData, levelAt(e.editorData.DefaultedFrom, points),
+				// The level rests on the default the spell would pick as edited, and the level a grant keeps is read
+				// without one, as the sheet reads them.
+				level := e.target.LevelWithGrants(e.editorData, levelAt(e.target.DefaultWith(e.editorData), points),
 					func(tierPoints fxp.Int) gurps.Level {
 						return levelAt(nil, gurps.AdjustedPointsForNonContainerSpell(entity, tierPoints, localName,
 							localPowerSource, localColleges, e.editorData.Tags, nil))

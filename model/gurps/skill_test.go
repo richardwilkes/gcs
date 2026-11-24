@@ -653,7 +653,7 @@ func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 	targets := map[string]bool{}
 	visitedBase := false
 	for range 5 {
-		earth.SwapToNextDefault()
+		swapToNextDefault(earth)
 		if ds := earth.DefaultSkill(); ds != nil {
 			targets[ds.String()] = true
 			if ds == base {
@@ -731,8 +731,8 @@ func TestAlternateDefaultsAvailable(t *testing.T) {
 	air := addRitualMagic(e, "Air", fxp.One, "any") // three resolvable defaults
 	e.Recalculate()
 
-	c.True(air.AlternateDefaultsAvailable(), "Air defaults to any sibling, so it has multiple choices")
-	c.False(fire.AlternateDefaultsAvailable(), "Fire has a single resolvable default, so there is nothing to swap among")
+	c.True(alternateDefaultsAvailable(air), "Air defaults to any sibling, so it has multiple choices")
+	c.False(alternateDefaultsAvailable(fire), "Fire has a single resolvable default, so there is nothing to swap among")
 }
 
 // TestSwapToNextDefaultCycles verifies that swapping cycles through every resolvable default and wraps back around.
@@ -748,13 +748,13 @@ func TestSwapToNextDefaultCycles(t *testing.T) {
 	start := air.DefaultSkill().SpecializationWithReplacements()
 	seen := map[string]bool{start: true}
 	for range 2 {
-		air.SwapToNextDefault()
+		swapToNextDefault(air)
 		e.Recalculate()
 		seen[air.DefaultSkill().SpecializationWithReplacements()] = true
 	}
 	c.Equal(3, len(seen), "swapping should visit all three siblings (unspecialized, Fire, Water)")
 
-	air.SwapToNextDefault()
+	swapToNextDefault(air)
 	e.Recalculate()
 	c.Equal(start, air.DefaultSkill().SpecializationWithReplacements(),
 		"cycling should wrap back to the starting default")
@@ -777,7 +777,7 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 	e.Recalculate()
 
 	c.NotNil(base.DefaultedFrom, "base should pick up a synthetic default to an optionally-specialized sibling")
-	c.False(base.AlternateDefaultsAvailable(),
+	c.False(alternateDefaultsAvailable(base),
 		"a skill with no declared defaults is not user-swappable, even with multiple synthetic defaults")
 
 	// Raise Fire well above Earth; the synthetic default must follow the best sibling instead of staying on Earth.
@@ -864,7 +864,7 @@ func TestSwapToSiblingReassignsOrphan(t *testing.T) {
 	// Cycle Earth's defaults until it selects Air (Air is one of Earth's valid choices).
 	reached := false
 	for range 8 {
-		earth.SwapToNextDefault()
+		swapToNextDefault(earth)
 		if ds := earth.DefaultSkill(); ds != nil && ds.SpecializationWithReplacements() == "Air" {
 			reached = true
 			break
@@ -904,9 +904,9 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 
 	c.False(hasCycle(), "no cycle should exist initially")
 	for range 6 {
-		air.SwapToNextDefault()
+		swapToNextDefault(air)
 		e.Recalculate()
-		earth.SwapToNextDefault()
+		swapToNextDefault(earth)
 		e.Recalculate()
 		c.False(hasCycle(), "swapping must never make two skills default to each other")
 	}
@@ -919,7 +919,8 @@ func TestSwapNeverCreatesMutualCycle(t *testing.T) {
 }
 
 // TestMutualSwapDefaults verifies that the classic pairwise swap (two skills that default to each other) flips the
-// primary skill whichever of the two it is started from, and stays stable, using the same routing the UI uses.
+// primary skill whichever of the two it is started from, and stays stable, swapping through SwapDefaultsOf as the sheet
+// does.
 func TestMutualSwapDefaults(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -932,8 +933,7 @@ func TestMutualSwapDefaults(t *testing.T) {
 	c.NotNil(broadsword.DefaultedFrom, "Broadsword should default to Rapier initially")
 	c.Nil(rapier.DefaultedFrom, "Rapier should stand on its own initially")
 
-	// Drive the swap through the same decision the sheet uses.
-	swapViaUI(broadsword)
+	SwapDefaultsOf(broadsword)
 	e.Recalculate()
 
 	c.Nil(broadsword.DefaultedFrom, "after the swap, Broadsword should stand on its own")
@@ -947,31 +947,14 @@ func TestMutualSwapDefaults(t *testing.T) {
 	c.NotNil(rapier.DefaultedFrom, "the swapped relationship should be stable")
 
 	// Swapping from the skill that stands on its own flips the pair back, through the partner defaulting to it.
-	swapViaUI(broadsword)
+	SwapDefaultsOf(broadsword)
 	e.Recalculate()
 	c.NotNil(broadsword.DefaultedFrom, "after swapping back, Broadsword should default to Rapier")
 	c.Nil(rapier.DefaultedFrom, "after swapping back, Rapier should stand on its own")
 }
 
-// swapViaUI mirrors the routing in the sheet's swapDefaults handler: cycle the skill's own alternate defaults if it has
-// them, else swap with the skill it defaults to, else with the best partner defaulting to it.
-func swapViaUI(skill *Skill) {
-	if !skill.CanSwapDefaults() {
-		return
-	}
-	if skill.AlternateDefaultsAvailable() {
-		skill.SwapToNextDefault()
-	} else if swap := skill.DefaultSkill(); skill.CanSwapDefaultsWith(swap) {
-		skill.DefaultedFrom = nil
-		swap.SwapDefaults()
-	} else if other := skill.BestSwappableSkill(); other != nil {
-		skill.DefaultedFrom = nil
-		other.SwapDefaults()
-	}
-}
-
 // TestSwapDefaultsLeavesGrantedSkillsAlone verifies that a skill a grant put on the sheet, which changes only with its
-// grant, neither swaps its own default nor serves as the partner of a swap.
+// grant, neither swaps its own default nor trades places with a skill defaulting to it.
 func TestSwapDefaultsLeavesGrantedSkillsAlone(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -985,9 +968,8 @@ func TestSwapDefaultsLeavesGrantedSkillsAlone(t *testing.T) {
 	granted := grantedOf(e.Skills)[0]
 	c.NotNil(shortsword.DefaultedFrom, "precondition: Shortsword defaults to the granted Broadsword")
 	c.False(granted.CanSwapDefaults(), "a granted skill's default is its grant's business")
-	c.False(shortsword.CanSwapDefaultsWith(granted), "nor can another skill swap with it")
-	c.Nil(shortsword.BestSwappableSkill())
-	swapViaUI(shortsword)
+	c.False(canSwapDefaultsWith(shortsword, granted), "nor can another skill swap with it")
+	SwapDefaultsOf(shortsword)
 	e.Recalculate()
 	c.NotNil(shortsword.DefaultedFrom, "so the swap changes nothing")
 	c.Nil(granted.DefaultedFrom)

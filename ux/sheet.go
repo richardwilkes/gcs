@@ -735,16 +735,17 @@ type swappableNode[T gurps.Node[T]] interface {
 }
 
 // swapDefaultsList returns the key of the block of the list Swap Defaults acts on: the skill or spell list holding the
-// keyboard focus or, failing that, the first of the two with a selection, or "" for neither. A list has to be on the
-// page: off it, the list keeps its selection but has no undo manager to record the swap with.
+// keyboard focus, on its first page or a later one it continues onto, or, failing that, the first of the two with a
+// selection, or "" for neither. A list has to be on the page: off it, the list keeps its selection but has no undo
+// manager to record the swap with.
 func (s *Sheet) swapDefaultsList() string {
 	skills := s.showsBlock(gurps.BlockSkillsKey)
 	spells := s.showsBlock(gurps.BlockSpellsKey)
 	focus := s.Window().CurrentFocus()
 	switch {
-	case skills && unison.AncestorIsOrSelf(focus, s.Skills):
+	case skills && s.Skills.holds(focus):
 		return gurps.BlockSkillsKey
-	case spells && unison.AncestorIsOrSelf(focus, s.Spells):
+	case spells && s.Spells.holds(focus):
 		return gurps.BlockSpellsKey
 	case skills && s.Skills.Table.HasSelection():
 		return gurps.BlockSkillsKey
@@ -791,9 +792,9 @@ func canSwapSelectedDefaults[T swappableNode[T]](list *PageList[T]) bool {
 	return len(selected) != 0
 }
 
-// swapSelectedDefaults swaps the defaults of what is selected in the list, as one edit that undoes the changes to the
-// other of the skill and spell lists as well, whose undo data otherUndoData returns, since a skill and a spell can
-// trade places.
+// swapSelectedDefaults swaps the defaults of what is selected in the list (see gurps.SwapDefaultsOf), as one edit that
+// undoes the changes to the other of the skill and spell lists as well, whose undo data otherUndoData returns, since a
+// skill and a spell can trade places.
 func swapSelectedDefaults[T swappableNode[T]](s *Sheet, list *PageList[T], otherUndoData func() tableRestorer) {
 	others := func() []tableRestorer {
 		if data := otherUndoData(); data != nil {
@@ -802,9 +803,12 @@ func swapSelectedDefaults[T swappableNode[T]](s *Sheet, list *PageList[T], other
 		return nil
 	}
 	undo := beginTableUndoWith(list.Table, swapDefaultsAction.Title, others())
-	for _, node := range list.SelectedNodes(true) {
-		gurps.SwapDefaultsOf(node.Data())
+	selected := list.SelectedNodes(true)
+	items := make([]T, len(selected))
+	for i, node := range selected {
+		items[i] = node.Data()
 	}
+	gurps.SwapDefaultsOf(items...)
 	// Swapping a default can change levels well beyond the two lists (weapons, for one), so the whole sheet is marked
 	// as modified, which also bumps the modification timestamp and updates the title.
 	s.MarkModified(nil)

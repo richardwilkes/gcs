@@ -229,8 +229,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					return gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec, e.editorData.Tags,
 						def, adjDiff, points, e.editorData.EncumbrancePenaltyMultiplier)
 				}
-				// The level a grant keeps is read without a default, as the sheet reads it.
-				level := e.target.LevelWithGrants(e.editorData, levelAt(e.editorData.DefaultedFrom, points),
+				// The level rests on the default the skill would pick as edited, and the level a grant keeps is read
+				// without one, as the sheet reads them.
+				level := e.target.LevelWithGrants(e.editorData, levelAt(e.target.DefaultWith(e.editorData), points),
 					func(p fxp.Int) gurps.Level {
 						return levelAt(nil, gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, p, localName,
 							localSpec, localOptionalSpec, e.editorData.Tags, nil))

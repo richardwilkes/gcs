@@ -143,9 +143,11 @@ On a character sheet, select a skill or spell and choose **Item > Swap Defaults*
 right-click it and select **Swap Defaults**, to change which default it uses:
 
 - A skill or spell with several usable defaults cycles to the next one.
-- Otherwise, it trades places with the skill or spell it defaults from, or with one that defaults from it, if each has
-  a default to the other. Afterward, the one that defaulted from the other no longer does, and the other defaults from
-  it instead. A skill and a spell can trade places this way.
+- Otherwise, it trades places with the skill or spell it defaults from, or with one that defaults from it, if each has a
+  default to the other. Afterward, the one that defaulted from the other no longer does, and the other defaults from it
+  instead. A skill and a spell can trade places this way. Since a Ritual Magic spell always uses its best default, it
+  trades places only when the result would last: once it gives up its default, it must still have a level, and once it
+  defaults from the other, that must be its best default and give it a higher level than its **Base Skill** does.
 
 The command acts on whichever of the Skills and Spells lists has the keyboard focus. When neither does, it acts on the
 Skills list if anything is selected there, and otherwise on the Spells list. Techniques, Ritual Magic spells, items

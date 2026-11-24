@@ -931,7 +931,7 @@ func TestSkillDefaultTagOffersEachTaggedSkillOnce(t *testing.T) {
 	c.NotNil(stage.DefaultedFrom, "Stage Combat must start out on its best default")
 	c.Equal("Broadsword", stage.DefaultedFrom.NameWithReplacements(nil), "the best Combat skill is chosen first")
 	for _, expected := range []string{"Judo", "Brawling", "Broadsword"} {
-		stage.SwapToNextDefault()
+		swapToNextDefault(stage)
 		c.Equal(expected, stage.DefaultedFrom.NameWithReplacements(nil),
 			"swapping defaults must move to %s", expected)
 	}
@@ -1152,7 +1152,7 @@ func TestSkillDefaultRechosenWhenDefaultsEdited(t *testing.T) {
 	e.Recalculate()
 	c.NotNil(stage.DefaultedFrom, "precondition: Stage Combat must resolve a default")
 	c.Equal("Broadsword", stage.DefaultedFrom.NameWithReplacements(nil), "precondition: the best default is chosen first")
-	stage.SwapToNextDefault()
+	swapToNextDefault(stage)
 	c.Equal("Knife", stage.DefaultedFrom.NameWithReplacements(nil), "precondition: the user has swapped to Knife")
 
 	// An edit that leaves the defaults alone keeps the user's choice, even though Broadsword would yield more.
@@ -1609,7 +1609,7 @@ func TestRecordedDefaultSurvivesCriteriaBeingDropped(t *testing.T) {
 	e.Recalculate()
 	c.NotNil(sk.DefaultedFrom, "precondition: the skill resolves a default")
 	c.Equal(DexterityID, sk.DefaultedFrom.Type(), "precondition: the best default is chosen first")
-	sk.SwapToNextDefault()
+	swapToNextDefault(sk)
 	c.Equal(StrengthID, sk.DefaultedFrom.Type(), "precondition: the user has swapped to the other default")
 	c.False(sk.DefaultedFrom.Name.IsZero(), "precondition: the recorded default carries the leftover criteria")
 

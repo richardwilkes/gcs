@@ -276,7 +276,7 @@ func levelPreview(content *unison.Panel) string {
 // skill's default, held to a technique's limit, and with its relative level, and that they merge the grants for the
 // item as edited, as applying the edits does. A technique's or Ritual Magic spell's preview, like the sheet's level,
 // is not lowered, nor the level a grant keeps it at priced higher, by a level cap on the skill it rests on that rests
-// on the item itself.
+// on the item itself. A skill's or spell's preview rests on the default it would pick from the defaults as edited.
 func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 	// grantOn puts on the sheet a trait carrying a grant of the item, which adjusts it as given.
 	grantOn := func(e *gurps.Entity, name string, item any, adjust grantadjust.Kind, amount fxp.Int,
@@ -335,10 +335,13 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 		build func(e *gurps.Entity) any
 		// typed, when not nil, is the points typed into the editor, diff, when not nil, the difficulty chosen there,
 		// and optSpec, for a skill, the optional specialization typed there, which the sheet's level is then read with.
-		typed   *fxp.Int
-		diff    *difficulty.Level
-		optSpec string
-		want    string
+		// defaults, when not nil, returns the defaults given there, which are applied to the item as the editor applies
+		// its edits.
+		typed    *fxp.Int
+		diff     *difficulty.Level
+		optSpec  string
+		defaults func() []*gurps.SkillDefault
+		want     string
 	}{
 		{name: "granted skill", want: "11/DX+1", build: func(e *gurps.Entity) any {
 			grantOn(e, "Training", newTestSkill("Brawling", fxp.One, nil), grantadjust.AddLevels, fxp.Three,
@@ -617,6 +620,54 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 				return light
 			},
 		},
+		{
+			// The 4 points the default to Karate-2 at 12 stands for add to the skill's 1.
+			name: "default given to a skill", want: "12/DX+2",
+			defaults: func() []*gurps.SkillDefault {
+				return []*gurps.SkillDefault{{
+					DefaultType: gurps.SkillID,
+					Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Karate"},
+					Modifier:    -fxp.Two,
+				}}
+			},
+			build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Twelve)
+				return addSkill(e, "Brawling", easyDX, fxp.One)
+			},
+		},
+		{
+			// Karate rests on its default to Brawling, so that the default to Karate-2 would lead back to Brawling.
+			name: "default given to a skill leading back to it", want: "10/DX",
+			defaults: func() []*gurps.SkillDefault {
+				return []*gurps.SkillDefault{{
+					DefaultType: gurps.SkillID,
+					Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Karate"},
+					Modifier:    -fxp.Two,
+				}}
+			},
+			build: func(e *gurps.Entity) any {
+				karate := addSkill(e, "Karate", easyDX, fxp.Twelve)
+				karate.Defaults = []*gurps.SkillDefault{{
+					DefaultType: gurps.SkillID,
+					Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Brawling"},
+					Modifier:    -fxp.Two,
+				}}
+				return addSkill(e, "Brawling", easyDX, fxp.One)
+			},
+		},
+		{
+			// Without the default of IQ+2 it rested on, the spell's 1 point buys IQ-2.
+			name: "default taken from a spell", want: "8/IQ-2",
+			defaults: func() []*gurps.SkillDefault { return nil },
+			build: func(e *gurps.Entity) any {
+				light := gurps.NewSpell(e, nil, false)
+				light.Name = "Light"
+				light.Points = fxp.One
+				light.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID, Modifier: fxp.Two}}
+				e.Spells = append(e.Spells, light)
+				return light
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -657,6 +708,9 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 				if tc.optSpec != "" {
 					e.editorData.OptionalSpecialization = tc.optSpec
 				}
+				if tc.defaults != nil {
+					e.editorData.Defaults = tc.defaults()
+				}
 				DeepSync(e)
 				if tc.typed != nil {
 					item.Points = *tc.typed
@@ -666,6 +720,9 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 				}
 				if tc.optSpec != "" {
 					item.OptionalSpecialization = tc.optSpec
+				}
+				if tc.defaults != nil {
+					e.editorData.ApplyTo(item)
 				}
 				preview = levelPreview(content)
 			case *gurps.Spell:
@@ -680,12 +737,18 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 				if tc.diff != nil {
 					e.editorData.Difficulty.Difficulty = *tc.diff
 				}
+				if tc.defaults != nil {
+					e.editorData.Defaults = tc.defaults()
+				}
 				DeepSync(e)
 				if tc.typed != nil {
 					item.Points = *tc.typed
 				}
 				if tc.diff != nil {
 					item.Difficulty.Difficulty = *tc.diff
+				}
+				if tc.defaults != nil {
+					e.editorData.ApplyTo(item)
 				}
 				preview = levelPreview(content)
 			}

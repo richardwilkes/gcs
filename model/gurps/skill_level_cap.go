@@ -423,15 +423,16 @@ func (e *Entity) spellEdit() (onSheet, edited *Spell) {
 	return nil, nil
 }
 
-// capLevel returns the level held to the lowest of the sheet's level caps that select the subject and resolve, with
-// the relative level lowered by as much and a line saying so added to the tooltip, or the level as it is when none do
-// or it is already no higher. A cap never raises a level. penalty, the encumbrance penalty the level carries, if any,
-// is left out of the level compared with the caps and still applies to the level held. self, the item on the sheet,
-// is noted as having its caps resolved while they are, so that a cap resting on its level, or on a level that rests
-// on it, passes it over (see ReferenceLevelCap.resolve) rather than recursing without end; the caps are still resolved
-// when its level is reached again that way, so that a cap resting on nothing in the cycle still holds. The levels the
-// caps rest on are computed afresh, with the excludes of the default chain, rather than read as recorded, so that the
-// result is a function of the sheet's data alone and settles in a pass.
+// capLevel returns the level held to the lowest of the sheet's level caps that select the subject and resolve, with the
+// relative level lowered by as much and a line saying so added to the tooltip, or the level as it is when none do or it
+// is already no higher. A cap never raises a level. penalty, the encumbrance penalty the level carries, if any, is left
+// out of the level compared with the caps and still applies to the level held. self, the item as the references find
+// it, which is the copy holding an editor's edits while they are previewed (see matchLevelCapsAs), is noted as having
+// its caps resolved while they are, so that a cap resting on its level, or on a level that rests on it, passes it over
+// (see ReferenceLevelCap.resolve) rather than recursing without end; the caps are still resolved when its level is
+// reached again that way, so that a cap resting on nothing in the cycle still holds. The levels the caps rest on are
+// computed afresh, with the excludes of the default chain, rather than read as recorded, so that the result is a
+// function of the sheet's data alone and settles in a pass.
 func (e *Entity) capLevel(self any, subject *levelCapSubject, exclude any, level Level, penalty fxp.Int, excludes map[string]bool) Level {
 	if !e.levelCapsResolving[self] {
 		if e.levelCapsResolving == nil {

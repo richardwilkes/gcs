@@ -27,6 +27,8 @@ const (
 	DodgeFlag
 	ParryFlag
 	BlockFlag
+	// SkillFlag adds a choice for a skill, which makes the choices those of a default's type, where SpellID names a
+	// spell, so an attribute with that ID, which an older sheet may define, is left out.
 	SkillFlag
 	// MoveFlag adds a choice standing in for Move when no move attribute is listed; see AttributeChoicesFor and
 	// Entity.Move.
@@ -34,7 +36,7 @@ const (
 	// NoPoolsFlag leaves out the pools, which the bonuses of their thresholds can't alter.
 	NoPoolsFlag
 	// SpellFlag adds a choice for a spell after the one SkillFlag adds, leaving out an attribute whose ID is that of
-	// the choice, which an older sheet may define.
+	// the choice, as SkillFlag does.
 	SpellFlag
 )
 
@@ -55,7 +57,7 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 // only with DodgeFlag, and a stand-in for Move is added with MoveFlag only when no move attribute is listed. A stand-in
 // for Dodge or Move takes the place of a dodge or move attribute that NoPoolsFlag leaves out as a pool, since the Dodge
 // or Move the sheet works out from such a pool takes the bonuses of the thresholds; see Entity.Dodge and Entity.Move.
-// The choice SpellFlag adds takes the place of an attribute with its ID.
+// The choice SpellFlag adds takes the place of an attribute with its ID, which SkillFlag leaves out as well.
 func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix += " "
@@ -77,7 +79,7 @@ func AttributeChoicesFor(defs *AttributeDefs, prefix string, flags AttributeFlag
 		if flags&NoPoolsFlag != 0 && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
 			continue
 		}
-		if def.DefID == SpellID && flags&SpellFlag != 0 {
+		if def.DefID == SpellID && flags&(SkillFlag|SpellFlag) != 0 {
 			continue
 		}
 		switch def.DefID {

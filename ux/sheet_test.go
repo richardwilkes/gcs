@@ -1181,10 +1181,12 @@ func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
 }
 
 // TestSwapDefaultsActsOnTheFocusedList checks that Swap Defaults acts on the skill or spell list holding the focus,
-// rather than on the first with a selection, and so does nothing while that list has no selection.
+// on its first page or a later one it continues onto, rather than on the first with a selection, and so does nothing
+// while that list has no selection.
 func TestSwapDefaultsActsOnTheFocusedList(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialSheetPaginated, true)
 	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
@@ -1197,36 +1199,61 @@ func TestSwapDefaultsActsOnTheFocusedList(t *testing.T) {
 		}
 	}
 	var skill *gurps.Skill
-	var spell *gurps.Spell
 	screen.Do(func() {
 		entity := sheet.Entity()
 		skill = gurps.NewSkill(entity, nil, false)
 		skill.Name = "Thaumatology"
 		skill.Points = fxp.Four
 		skill.Defaults = defaults()
-		spell = gurps.NewSpell(entity, nil, false)
-		spell.Name = "Lore"
-		spell.Points = fxp.Four
-		spell.Defaults = defaults()
 		entity.Skills = []*gurps.Skill{skill}
-		entity.Spells = []*gurps.Spell{spell}
+		// Enough spells for the list to continue onto a later page.
+		entity.Spells = make([]*gurps.Spell, 150)
+		for i := range entity.Spells {
+			spell := gurps.NewSpell(entity, nil, false)
+			spell.Name = fmt.Sprintf("Spell %d", i+1)
+			spell.Points = fxp.Four
+			spell.Defaults = defaults()
+			entity.Spells[i] = spell
+		}
 		sheet.Rebuild(true)
-		sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{skill.TID: true})
-		sheet.Spells.Table.SetSelectionMap(map[tid.TID]bool{spell.TID: true})
-		sheet.Spells.Table.RequestFocus()
 	})
-	c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "precondition: the skill rests on IQ")
-	c.Equal(gurps.IntelligenceID, spell.DefaultedFrom.Type(), "precondition: the spell rests on IQ")
-	screen.Do(func() {
-		c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the spell's defaults can be swapped")
-		sheet.PerformCmd(sheet, SwapDefaultsItemID)
-	})
-	c.Equal(gurps.DexterityID, spell.DefaultedFrom.Type(), "the spell list holding the focus is acted on")
-	c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "rather than the skill list")
-	screen.Do(func() {
-		sheet.Spells.Table.ClearSelection()
-		c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "nor is the skill list acted on with no spell selected")
-	})
+	for _, one := range []struct {
+		name      string
+		laterPage bool
+	}{
+		{name: "on the list's first page"},
+		{name: "on a later page", laterPage: true},
+	} {
+		var view *unison.Table[*Node[*gurps.Spell]]
+		var spell *gurps.Spell
+		screen.Do(func() {
+			view = sheet.Spells.Table
+			if one.laterPage {
+				views := view.Views()
+				view = views[len(views)-1]
+			}
+			start, _ := view.CurrentDrawRowRange()
+			spell = sheet.Spells.Table.RowFromIndex(start).Data()
+			sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{skill.TID: true})
+			sheet.Spells.Table.SetSelectionMap(map[tid.TID]bool{spell.TID: true})
+			view.RequestFocus()
+		})
+		c.Equal(one.laterPage, view != sheet.Spells.Table, "%s: precondition: the view is on the page wanted", one.name)
+		c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "%s: precondition: the skill rests on IQ", one.name)
+		c.Equal(gurps.IntelligenceID, spell.DefaultedFrom.Type(), "%s: precondition: the spell rests on IQ", one.name)
+		screen.Do(func() {
+			c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "%s: the spell's defaults can be swapped", one.name)
+			sheet.PerformCmd(sheet, SwapDefaultsItemID)
+		})
+		c.Equal(gurps.DexterityID, spell.DefaultedFrom.Type(), "%s: the spell list holding the focus is acted on",
+			one.name)
+		c.Equal(gurps.IntelligenceID, skill.DefaultedFrom.Type(), "%s: rather than the skill list", one.name)
+		screen.Do(func() {
+			sheet.Spells.Table.ClearSelection()
+			c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID),
+				"%s: nor is the skill list acted on with no spell selected", one.name)
+		})
+	}
 }
 
 // TestSwapDefaultsUndoRestoresBothLists checks that undoing a swap between a skill and a spell, which changes the
@@ -1274,6 +1301,83 @@ func TestSwapDefaultsUndoRestoresBothLists(t *testing.T) {
 	skill, spell = restsOn()
 	c.Equal("Lore", skill, "undo has the skill rest on the spell again")
 	c.Equal("", spell, "and the spell on nothing")
+}
+
+// TestSwapDefaultsSwapsASelectedPairOnce checks that Swap Defaults, with both of two skills that default to each other
+// selected, swaps them once, rather than have the swap of the second undo that of the first. Broadsword, listed first,
+// trades places with Shortsword or moves to its default to it, and Shortsword, which has a default to DX to move to as
+// well, is then left alone.
+func TestSwapDefaultsSwapsASelectedPairOnce(t *testing.T) {
+	toDX := func() *gurps.SkillDefault {
+		return &gurps.SkillDefault{DefaultType: gurps.DexterityID, Modifier: -fxp.Five}
+	}
+	for _, tc := range []struct {
+		name string
+		// setup gives the two, each of which has 4 points and a default to the other at -2 and, after that, Shortsword
+		// one to DX-5, whatever else the case needs.
+		setup func(broadsword, shortsword *gurps.Skill)
+		// before and after are what Broadsword and Shortsword rest on before and after the swap: the name of a skill,
+		// an attribute or "".
+		before, after [2]string
+	}{
+		{
+			// Broadsword, updated first, rests on Shortsword, which then can't rest on Broadsword.
+			name:   "trade",
+			before: [2]string{"Shortsword", gurps.DexterityID},
+			after:  [2]string{"", "Broadsword"},
+		},
+		{
+			// Both rest on DX-5, and Broadsword moves to Shortsword-2, which Shortsword's move to Broadsword-2 would
+			// take away from it.
+			name: "move to the other",
+			setup: func(broadsword, shortsword *gurps.Skill) {
+				broadsword.Defaults = append(broadsword.Defaults, toDX())
+				broadsword.DefaultedFrom, shortsword.DefaultedFrom = toDX(), toDX()
+			},
+			before: [2]string{gurps.DexterityID, gurps.DexterityID},
+			after:  [2]string{"Shortsword", gurps.DexterityID},
+		},
+	} {
+		c := check.New(t)
+		sheet := newTestSheetForTemplate(t)
+		entity := sheet.Entity()
+		newSkill := func(name, defaultsTo string) *gurps.Skill {
+			sk := gurps.NewSkill(entity, nil, false)
+			sk.Name = name
+			sk.Points = fxp.Four
+			sk.Defaults = []*gurps.SkillDefault{{
+				DefaultType: gurps.SkillID,
+				Name:        criteria.Text{Compare: criteria.IsText, Qualifier: defaultsTo},
+				Modifier:    -fxp.Two,
+			}}
+			return sk
+		}
+		broadsword := newSkill("Broadsword", "Shortsword")
+		shortsword := newSkill("Shortsword", "Broadsword")
+		shortsword.Defaults = append(shortsword.Defaults, toDX())
+		if tc.setup != nil {
+			tc.setup(broadsword, shortsword)
+		}
+		entity.Skills = []*gurps.Skill{broadsword, shortsword}
+		sheet.Rebuild(true)
+		restsOn := func() [2]string {
+			var result [2]string
+			for i, sk := range []*gurps.Skill{broadsword, shortsword} {
+				switch def := sk.DefaultedFrom; {
+				case def == nil:
+				case def.SkillBased():
+					result[i] = def.NameWithReplacements(nil)
+				default:
+					result[i] = def.Type()
+				}
+			}
+			return result
+		}
+		c.Equal(tc.before, restsOn(), "%s: precondition: what Broadsword and Shortsword rest on", tc.name)
+		sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{broadsword.TID: true, shortsword.TID: true})
+		sheet.PerformCmd(sheet, SwapDefaultsItemID)
+		c.Equal(tc.after, restsOn(), "%s: what Broadsword and Shortsword rest on afterwards", tc.name)
+	}
 }
 
 // TestHideAndShowBlock checks that taking a block off the sheet and putting it back are each one undoable edit that

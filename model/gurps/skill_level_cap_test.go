@@ -1118,11 +1118,15 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 		levels bool
 		// points are those the spell has on the sheet, when not 20, which the edits make 20.
 		points fxp.Int
+		// disabled, when set, disables the spell on the sheet until the edits are applied, so that the sheet then shows
+		// the level the preview gives it.
+		disabled bool
 		// setup, when set, adds what the cap rests on in place of Fireball and returns the cap.
 		setup  func(e *Entity) LevelCap
 		capped bool
 	}{
 		{name: "a spell renamed out of a reference", from: "Fireball", to: "Ignite", modifier: -1, capped: true},
+		{name: "a disabled spell a reference rests on", from: "Fireball", to: "Fireball", disabled: true},
 		{
 			name: "a spell bought that a default the cap rests on rests on", from: "Fireball", to: "Fireball",
 			points: fxp.One,
@@ -1193,15 +1197,16 @@ func TestSkillLevelCapEditPreview(t *testing.T) {
 			ref = one.setup(e)
 		}
 		addTestLevelCap(e, levelcap.Spells, ref)
+		sp.Disabled = one.disabled
 		e.Recalculate()
 		spellData = sp.SpellEditData
 		spellData.Name = one.to
 		spellData.Points = fxp.Twenty
 		edited := sp.withEditData(&spellData)
-		preview := sp.LevelWithGrants(&spellData, edited.levelAt(e, spellData.Points), func(points fxp.Int) Level {
-			return edited.levelAt(e, points)
-		})
+		preview := sp.LevelWithGrants(&spellData, edited.levelAtWith(e, nil, spellData.Points, nil),
+			func(points fxp.Int) Level { return edited.levelAtWith(e, nil, points, nil) })
 		sp.SpellEditData = spellData
+		sp.Disabled = false
 		e.Recalculate()
 		c.Equal(one.capped, cappedBy(sp.LevelData), "%s: the renamed spell is capped on the sheet", one.name)
 		c.Equal(sp.LevelData.Level, preview.Level, "%s: the preview is the level the sheet shows", one.name)

@@ -89,7 +89,12 @@ type Spell struct {
 	// of equipment they require to be equipped, so that the next pass applies the missing-equipment penalty to its
 	// level (see Entity.applyEquipmentPenalties). It is never saved.
 	takesEquipmentPenalty bool
-	grant                 grantState
+	// outrankedDefault is the default this spell recorded, when the last update of its level found that, as a Ritual
+	// Magic spell, its ritual skills give it no lower a level than that default does, so that its level doesn't rest on
+	// it (see restingDefault), and nil otherwise. A default recorded since is taken to be one its level rests on until
+	// the next update. It is never saved.
+	outrankedDefault *SkillDefault
+	grant            grantState
 }
 
 // SpellData holds the Spell data that is written to disk.
@@ -635,9 +640,23 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 	return fxp.Min
 }
 
-// UpdateLevel updates the level of the spell, returning true if it, or the default the spell settled on, has changed.
+// UpdateLevel updates the level of the spell, returning true if it, the default the spell settled on, or whether its
+// level rests on that default (see restingDefault), has changed.
 func (s *Spell) UpdateLevel() bool {
-	return updateLevel(s)
+	wasOutranked := s.DefaultedFrom != nil && s.DefaultedFrom == s.outrankedDefault
+	changed := updateLevel(s)
+	var outranked bool
+	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
+		outranked = s.DefaultedFrom != nil && s.Enabled() && !s.levelRestsOn(s.DefaultedFrom)
+	}) {
+		// As in updateLevel, a finding that came from a stand-in for a script is not kept.
+		return changed
+	}
+	s.outrankedDefault = nil
+	if outranked {
+		s.outrankedDefault = s.DefaultedFrom
+	}
+	return changed || outranked != wasOutranked
 }
 
 // CalculateLevel returns the computed level without updating it.
@@ -705,6 +724,26 @@ func (s *Spell) recordedDefault() *SkillDefault {
 // recordDefault implements defaultable.
 func (s *Spell) recordDefault(def *SkillDefault) {
 	s.DefaultedFrom = def
+}
+
+// restingDefault implements defaultable: the default the spell recorded, unless that is the one its ritual skills
+// outrank (see outrankedDefault).
+func (s *Spell) restingDefault() *SkillDefault {
+	if s.DefaultedFrom == s.outrankedDefault {
+		return nil
+	}
+	return s.DefaultedFrom
+}
+
+// levelRestsOn implements defaultable: an ordinary spell's level always rests on the default it records, but a Ritual
+// Magic spell's only when that gives it a higher level, before what grants make of it, than its ritual skills do; see
+// CalculateRitualMagicSpellLevel.
+func (s *Spell) levelRestsOn(def *SkillDefault) bool {
+	if !s.IsRitualMagic() {
+		return true
+	}
+	points := s.AdjustedPoints(nil)
+	return s.levelFromAdjustedPoints(def, points, nil).Level > s.levelFromAdjustedPoints(nil, points, nil).Level
 }
 
 // defaultBaseline implements defaultable: for an ordinary spell, the baseline rests on the attribute its level rests
@@ -1121,8 +1160,7 @@ func (s *Spell) ModifierNotes() string {
 	if s.DefaultedFrom == nil || s.Difficulty.Difficulty == difficulty.Wildcard {
 		return ""
 	}
-	if s.IsRitualMagic() &&
-		s.levelFromAdjustedPoints(nil, s.AdjustedPoints(nil), nil).Level >= s.CalculatedLevelBeforeGrants() {
+	if !s.levelRestsOn(s.DefaultedFrom) {
 		return ""
 	}
 	return defaultNote(s)
@@ -1330,6 +1368,15 @@ func (s *Spell) RitualMagicLevelWith(data *SpellEditData, def *SkillDefault, poi
 		defer e.matchLevelCapsAs(s, edited)()
 	}
 	return edited.ritualMagicLevel(def, points, nil)
+}
+
+// DefaultWith returns the default the spell would rest on with the edit data in place of its own, as the sheet picks it
+// once the edits are applied, with its points set, or nil for none.
+func (s *Spell) DefaultWith(data *SpellEditData) *SkillDefault {
+	edited := s.withEditData(data)
+	// The copy carries what the grants give it as edited, which decides whether it has the points to keep a default.
+	edited.grant = *grantsWithEdits(s, edited)
+	return defaultWithEdits(s, edited, defaultsHash(data.Defaults) != data.copiedDefaultsHash)
 }
 
 // withEditData returns a copy of the spell holding the edit data in place of its own.

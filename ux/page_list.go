@@ -432,6 +432,19 @@ func (p *PageList[T]) trimContinuations(used int) {
 	p.continuations = p.continuations[:used]
 }
 
+// holds returns true if the panel is the list or one of its continuations, or lies within one of them.
+func (p *PageList[T]) holds(panel unison.Paneler) bool {
+	if unison.AncestorIsOrSelf(panel, p) {
+		return true
+	}
+	for _, c := range p.continuations {
+		if unison.AncestorIsOrSelf(panel, c) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *PageList[T]) needReconstruction() bool {
 	return p == nil || columnsOutOfSync(p.provider.ColumnIDs(), p.Table.Columns)
 }

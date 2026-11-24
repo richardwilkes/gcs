@@ -2069,11 +2069,6 @@ func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int, excludes m
 		points, s.EncumbrancePenaltyMultiplier)
 }
 
-// levelAt is levelAtWith with no default and no excludes.
-func (s *Spell) levelAt(e *Entity, points fxp.Int) Level {
-	return s.levelAtWith(e, nil, points, nil)
-}
-
 // levelAtWith returns the level the spell would have with the given points in place of its own, adjusted for the point
 // bonuses as its own are, leaving out what grants gave it, and the given default in place of the one it recorded, with
 // the levels of the ritual skills a Ritual Magic spell may rest on taken with the excludes.

@@ -780,6 +780,18 @@ func (s *Skill) TechniqueLevelWith(data *SkillEditData, points fxp.Int) Level {
 	return edited.techniqueLevel(e, points, nil)
 }
 
+// DefaultWith returns the default the skill would rest on with the edit data in place of its own, as the sheet picks it
+// once the edits are applied, with its points set, or nil for none or for a technique, which rests on its own default.
+func (s *Skill) DefaultWith(data *SkillEditData) *SkillDefault {
+	if !s.picksDefault() {
+		return nil
+	}
+	edited := s.withEditData(data)
+	// The copy carries what the grants give it as edited, which decides whether it has the points to keep a default.
+	edited.grant = *grantsWithEdits(s, edited)
+	return defaultWithEdits(s, edited, defaultsHash(data.Defaults) != data.copiedDefaultsHash)
+}
+
 // withEditData returns a copy of the skill holding the edit data in place of its own.
 func (s *Skill) withEditData(data *SkillEditData) *Skill {
 	edited := *s
@@ -1482,6 +1494,16 @@ func (s *Skill) recordDefault(def *SkillDefault) {
 	s.DefaultedFrom = def
 }
 
+// restingDefault implements defaultable: a skill's level always rests on the default it recorded.
+func (s *Skill) restingDefault() *SkillDefault {
+	return s.DefaultedFrom
+}
+
+// levelRestsOn implements defaultable: a skill's level always rests on the default it records.
+func (s *Skill) levelRestsOn(_ *SkillDefault) bool {
+	return true
+}
+
 // defaultBaseline implements defaultable: the baseline rests on the attribute the skill's level rests on, as
 // CalculateSkillLevel reads it, and the points a default stands for add to the skill's own.
 func (s *Skill) defaultBaseline() (baseline fxp.Int, stacks bool) {
@@ -1495,19 +1517,6 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 
 func (s *Skill) resolvableDefaults() []*SkillDefault {
 	return resolvableDefaults(s)
-}
-
-// AlternateDefaultsAvailable returns true if this skill has more than one default it could use, allowing the user to
-// choose among them via "Swap Defaults". Only skills that declare their own defaults are swappable; purely synthetic
-// (optional-specialization) defaults track the best default automatically.
-func (s *Skill) AlternateDefaultsAvailable() bool {
-	return alternateDefaultsAvailable(s)
-}
-
-// SwapToNextDefault changes the default this skill uses to the next available one (wrapping around), preserving the
-// choice until the user changes it again.
-func (s *Skill) SwapToNextDefault() {
-	swapToNextDefault(s)
 }
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
@@ -1701,23 +1710,6 @@ func (s *Skill) ApplyNameableKeys(m map[string]string) {
 func (s *Skill) CanSwapDefaults() bool {
 	// A granted skill changes only with its grant, which would remake it with its default as it was.
 	return !s.IsTechnique() && !s.Container() && s.Granted == nil && s.AdjustedPoints(nil) > 0
-}
-
-// CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill, which a granted skill
-// never is, for the reason CanSwapDefaults gives.
-func (s *Skill) CanSwapDefaultsWith(other *Skill) bool {
-	return other != nil && canSwapDefaultsWith(s, other)
-}
-
-// BestSwappableSkill returns the best skill or spell to swap with, as SwapDefaultsOf picks it, when that is a skill, or
-// nil.
-func (s *Skill) BestSwappableSkill() *Skill {
-	return asSkill(bestSwappablePartner(s))
-}
-
-// SwapDefaults causes this skill's default to be swapped.
-func (s *Skill) SwapDefaults() {
-	swapDefaults(s)
 }
 
 // Kind returns the kind of data.

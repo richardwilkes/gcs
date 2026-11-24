@@ -53,9 +53,17 @@ type defaultable interface {
 	declaredDefaults() []*SkillDefault
 	// syntheticDefaults returns the defaults the item has without declaring them.
 	syntheticDefaults() []*SkillDefault
-	// recordedDefault returns the default the item recorded as the one its level rests on, or nil.
+	// recordedDefault returns the default the item recorded as the one its level rests on, or nil. A Ritual Magic spell
+	// records the best of its defaults even while its ritual skills give it a level that one doesn't beat; see
+	// restingDefault.
 	recordedDefault() *SkillDefault
 	recordDefault(def *SkillDefault)
+	// restingDefault returns the default the item recorded, or nil when it has none or the last update of its level
+	// found that its level doesn't rest on that one.
+	restingDefault() *SkillDefault
+	// levelRestsOn returns true if the item's level would rest on the default, its level set (see setDefaultPoints),
+	// were that the one it recorded.
+	levelRestsOn(def *SkillDefault) bool
 	// defaultBaseline returns the level, rounded down, that 1 point buys the item, from which the points a default's
 	// level stands for are measured, and whether those points add to the item's own; see setDefaultPoints.
 	defaultBaseline() (baseline fxp.Int, stacks bool)
@@ -126,6 +134,23 @@ func bestDefaultWithPoints(h defaultable, excluded *SkillDefault) *SkillDefault 
 		setDefaultPoints(h, best)
 	}
 	return best
+}
+
+// defaultWithEdits returns the default onSheet, a skill or spell, would rest on once the edits held by edited, a copy
+// of it, are applied, as the next recalculation picks it (see updateLevel), with its points set, or nil for none. When
+// defaultsEdited, applying the edits drops the default onSheet recorded (see SkillEditData.ApplyTo), so the copy picks
+// one afresh. The defaults are picked with onSheet found as edited (see Entity.matchLevelCapsAs), so that one leading
+// back to it is passed over. With no sheet, nothing picks one, so the copy keeps what it recorded.
+func defaultWithEdits(onSheet, edited defaultable, defaultsEdited bool) *SkillDefault {
+	if defaultsEdited {
+		edited.recordDefault(nil)
+	}
+	e := entityOf(onSheet)
+	if e == nil {
+		return edited.recordedDefault()
+	}
+	defer e.matchLevelCapsAs(onSheet, edited)()
+	return bestDefaultWithPoints(edited, nil)
 }
 
 // keptDefaultWithPoints is bestDefaultWithPoints with the default the item recorded kept, when it resolves, whether
@@ -224,7 +249,8 @@ func bestDefaultKeeping(h defaultable, excluded *SkillDefault, excludes map[stri
 
 // resolvableDefaults returns the distinct, currently-resolvable defaults the item could use, ordered from the highest
 // resulting level to the lowest. Candidates that currently default back to the item are included: the user may choose
-// one, and swapToNextDefault breaks the resulting cycle so the chosen item re-resolves to its own best default.
+// one, and swapToNextDefault breaks the resulting cycle so the chosen item re-resolves to its own best default, and
+// such a candidate's level is taken as that leaves it; see chosenDefaultLevel.
 func resolvableDefaults(h defaultable) []*SkillDefault {
 	if entityOf(h) == nil {
 		return nil
@@ -233,7 +259,7 @@ func resolvableDefaults(h defaultable) []*SkillDefault {
 	excludes := map[string]bool{h.excludeKey(): true}
 	var result []*SkillDefault
 	for _, def := range resolveToSpecificDefaults(h) {
-		level := calcSkillDefaultLevel(h, def, excludes)
+		level := chosenDefaultLevel(h, def, excludes)
 		if level == fxp.Min {
 			continue
 		}
@@ -257,6 +283,27 @@ func resolvableDefaults(h defaultable) []*SkillDefault {
 	return result
 }
 
+// chosenDefaultLevel returns the level the default gives the item, with the levels taken with the excludes, once
+// swapToNextDefault has chosen it: when the default leads back to the item, the item it selects drops the default it
+// recorded and picks afresh the best of its defaults, passing over those that now lead back to it through the item, so
+// that its level no longer holds what the item gave it.
+func chosenDefaultLevel(h defaultable, def *SkillDefault, excludes map[string]bool) fxp.Int {
+	if inDefaultChain(h, def, make(map[defaultable]bool)) {
+		if target := defaultTargetOf(entityOf(h), h, def, true); target != nil && target != h {
+			// The defaults are recorded as the swap leaves them only while the level is found.
+			saved, savedTarget := h.recordedDefault(), target.recordedDefault()
+			defer func() {
+				h.recordDefault(saved)
+				target.recordDefault(savedTarget)
+			}()
+			h.recordDefault(def)
+			target.recordDefault(nil)
+			target.recordDefault(bestDefaultWithPoints(target, nil))
+		}
+	}
+	return calcSkillDefaultLevel(h, def, excludes)
+}
+
 // alternateDefaultsAvailable returns true if the item has more than one default it could use, allowing the user to
 // choose among them via "Swap Defaults". Only items that declare their own defaults are swappable; purely synthetic
 // defaults track the best default automatically.
@@ -265,53 +312,88 @@ func alternateDefaultsAvailable(h defaultable) bool {
 }
 
 // CanSwapDefaultsOf returns true if "Swap Defaults" can change the default of the skill or spell: it can swap its own
-// (see CanSwapDefaults), and either has more than one default it could use, or could trade places with a skill or spell
-// it defaults to, or one defaulting to it, each having a default to the other. A technique, a container, an item a
-// grant put on the sheet, one without points and a Ritual Magic spell can't swap their own.
+// (see CanSwapDefaults), and either has more than one default it could use, or could trade places with the skill or
+// spell it defaults to, or one defaulting to it, so that the other defaults to it instead (see canTradePlaces). A
+// technique, a container, an item a grant put on the sheet, one without points and a Ritual Magic spell can't swap
+// their own.
 func CanSwapDefaultsOf[T *Skill | *Spell](item T) bool {
 	h := defaultable(item)
 	return h.CanSwapDefaults() && (alternateDefaultsAvailable(h) || canSwapDefaultsWith(h, defaultTarget(h)) ||
 		bestSwappablePartner(h) != nil)
 }
 
-// SwapDefaultsOf changes the default of the skill or spell as "Swap Defaults" does, when it can swap its own: to the
-// next of its defaults, when it has more than one it could use, or otherwise, so that two items defaulting one to the
-// other trade places, it drops its default and the skill or spell it defaulted to, when that has a default to it, or
-// else the best one defaulting to it, picks its own default afresh (see swapDefaults).
-func SwapDefaultsOf[T *Skill | *Spell](item T) {
-	h := defaultable(item)
-	if !h.CanSwapDefaults() {
+// SwapDefaultsOf changes the default of each of the skills or spells in turn as "Swap Defaults" does, when it can swap
+// its own: to the next of its defaults, when it has more than one it could use, or otherwise, so that two items
+// defaulting one to the other trade places, it drops its default and either the skill or spell it defaulted to, when
+// the two could trade places (see canTradePlaces), takes its default to it instead (see tradePlaces), or else the best
+// one defaulting to it that could picks its own default afresh (see swapDefaults). Each swap leaves alone the items an
+// earlier one was made for, along with the other skill or spell whose default each of those changed: such an item is
+// passed over, as is one whose swap would change the default of such an item, since it would undo the earlier swap, as
+// when both of two items defaulting to each other are given.
+func SwapDefaultsOf[T *Skill | *Spell](items ...T) {
+	changed := make(map[defaultable]bool)
+	for _, item := range items {
+		swapDefaultsOf(defaultable(item), changed)
+	}
+}
+
+// swapDefaultsOf is SwapDefaultsOf for one item, unless it or the other skill or spell its swap would change the
+// default of is in changed, to which it adds both once it has swapped.
+func swapDefaultsOf(h defaultable, changed map[defaultable]bool) {
+	if changed[h] || !h.CanSwapDefaults() {
 		return
 	}
+	var other defaultable
+	var swap func()
 	if alternateDefaultsAvailable(h) {
-		swapToNextDefault(h)
+		// Moving to the next default clears the default of the item it selects, when that leads back; see
+		// swapToNextDefault.
+		if next := nextDefault(h); inDefaultChain(h, next, make(map[defaultable]bool)) {
+			if target := defaultTargetOf(entityOf(h), h, next, true); target != h {
+				other = target
+			}
+		}
+		swap = func() { swapToNextDefault(h) }
 	} else if target := defaultTarget(h); canSwapDefaultsWith(h, target) {
-		h.recordDefault(nil)
-		swapDefaults(target)
+		other = target
+		swap = func() { tradePlaces(h, target) }
 	} else if partner := bestSwappablePartner(h); partner != nil {
-		h.recordDefault(nil)
-		swapDefaults(partner)
+		other = partner
+		swap = func() {
+			h.recordDefault(nil)
+			swapDefaults(partner)
+		}
+	} else {
+		return
+	}
+	if other != nil && changed[other] {
+		return
+	}
+	swap()
+	changed[h] = true
+	if other != nil {
+		changed[other] = true
 	}
 }
 
-// canSwapDefaultsWith returns true if the item can swap its own default (see CanSwapDefaults) and other, a skill or
-// spell, has a default to it and is no item a grant put on the sheet, since such a one changes only with its grant. A
-// nil other has none.
+// canSwapDefaultsWith returns true if the item can swap its own default (see CanSwapDefaults) and could trade places
+// with other, the skill or spell it defaults to (see canTradePlaces). A nil other has none.
 func canSwapDefaultsWith(h, other defaultable) bool {
-	return other != nil && !IsGranted(other) && h.CanSwapDefaults() && hasDefaultTo(other, h)
+	return other != nil && h.CanSwapDefaults() && canTradePlaces(h, other)
 }
 
-// bestSwappablePartner returns the skill or spell of the highest level on the item's sheet that defaults to it and
-// whose default can be swapped with it (see canSwapDefaultsWith), or nil.
+// bestSwappablePartner returns the skill or spell of the highest level on the item's sheet that defaults to it and that
+// it could trade places with (see canTradePlaces), whether or not that skill or spell can swap its own, when the item
+// can swap its own (see CanSwapDefaults), or nil.
 func bestSwappablePartner(h defaultable) defaultable {
 	e := entityOf(h)
-	if e == nil {
+	if e == nil || !h.CanSwapDefaults() {
 		return nil
 	}
 	var best defaultable
 	var bestLevel fxp.Int
 	consider := func(other defaultable) {
-		if defaultTarget(other) == h && canSwapDefaultsWith(other, h) {
+		if defaultTarget(other) == h && canTradePlaces(other, h) {
 			if level := other.levelExcluding(nil).Level; best == nil || bestLevel < level {
 				best = other
 				bestLevel = level
@@ -329,12 +411,50 @@ func bestSwappablePartner(h defaultable) defaultable {
 	return best
 }
 
-// swapToNextDefault changes the default the item uses to the next available one (wrapping around), preserving the
-// choice until the user changes it again.
-func swapToNextDefault(h defaultable) {
+// canTradePlaces returns true if lower, a skill or spell defaulting to upper, could trade places with it, so that
+// upper's level rests on lower instead and stays there: neither is an item a grant put on the sheet, since such a one
+// changes only with its grant, and, were lower to record the best of its other defaults and upper its default to lower,
+// as a swap leaves them, the default upper then picks (see bestDefaultWithPoints) would select lower and be one upper's
+// level rests on (see defaultable.levelRestsOn). It would not where lower has no level without upper, nor where upper
+// is a Ritual Magic spell, which always takes its best default, that would take another or whose ritual skills would
+// outrank its default to lower; the next recalculation would put the two back where they were.
+func canTradePlaces(lower, upper defaultable) bool {
+	e := entityOf(upper)
+	if e == nil || IsGranted(lower) || IsGranted(upper) {
+		return false
+	}
+	toLower := defaultTo(upper, lower)
+	if toLower == nil {
+		return false
+	}
+	// The defaults are recorded as a swap leaves them only while the one upper picks is found.
+	savedLower, savedUpper := lower.recordedDefault(), upper.recordedDefault()
+	defer func() {
+		lower.recordDefault(savedLower)
+		upper.recordDefault(savedUpper)
+	}()
+	lower.recordDefault(bestDefaultWithPoints(lower, savedLower))
+	upper.recordDefault(toLower)
+	def := bestDefaultWithPoints(upper, nil)
+	return def != nil && defaultTargetOf(e, upper, def, true) == lower && upper.levelRestsOn(def)
+}
+
+// tradePlaces has lower, a skill or spell defaulting to upper that could trade places with it (see canTradePlaces), do
+// so: lower drops its default and upper records its default to lower, and the levels of both are updated, lower's
+// first, so that lower picks afresh the best of its other defaults, the one to upper now leading back to it.
+func tradePlaces(lower, upper defaultable) {
+	lower.recordDefault(nil)
+	upper.recordDefault(defaultTo(upper, lower))
+	lower.UpdateLevel()
+	upper.UpdateLevel()
+}
+
+// nextDefault returns the default after the one the item uses among those it could use (see resolvableDefaults),
+// wrapping around, or nil when it has fewer than two.
+func nextDefault(h defaultable) *SkillDefault {
 	candidates := resolvableDefaults(h)
 	if len(candidates) < 2 {
-		return
+		return nil
 	}
 	idx := -1
 	if current := h.recordedDefault(); current != nil {
@@ -346,7 +466,16 @@ func swapToNextDefault(h defaultable) {
 			}
 		}
 	}
-	chosen := candidates[(idx+1)%len(candidates)]
+	return candidates[(idx+1)%len(candidates)]
+}
+
+// swapToNextDefault changes the default the item uses to the next available one (see nextDefault), preserving the
+// choice until the user changes it again.
+func swapToNextDefault(h defaultable) {
+	chosen := nextDefault(h)
+	if chosen == nil {
+		return
+	}
 	h.recordDefault(chosen)
 	// If the newly chosen item currently defaults back to this one (directly or transitively), clear its default so
 	// this explicit choice wins; the recalculation below resolves it to its own best remaining default, keeping the two
@@ -361,8 +490,8 @@ func swapToNextDefault(h defaultable) {
 	}
 }
 
-// swapDefaults is the shared body of SwapDefaults: it clears the default the item recorded and, when its best default
-// rests on another item, records the best of its defaults other than the one it had and updates the levels of both.
+// swapDefaults clears the default the item recorded and, when its best default rests on another item, records the best
+// of its defaults other than the one it had and updates the levels of both.
 func swapDefaults(h defaultable) {
 	def := h.recordedDefault()
 	h.recordDefault(nil)
@@ -382,8 +511,9 @@ func calcSkillDefaultLevel(h defaultable, def *SkillDefault, excludes map[string
 	return def.skillLevelLess(entityOf(h), h.NameableReplacements(), true, excludes, h.picksDefault(), true)
 }
 
-// inDefaultChain returns true if the item is among those the default selects, or those their recorded defaults select
-// in turn, skills and spells alike, passing over the items in lookedAt, to which those it walks through are added.
+// inDefaultChain returns true if the item is among those the default selects, or those the recorded defaults their
+// levels rest on (see defaultable.restingDefault) select in turn, skills and spells alike, passing over the items in
+// lookedAt, to which those it walks through are added.
 func inDefaultChain(h defaultable, def *SkillDefault, lookedAt map[defaultable]bool) bool {
 	e := entityOf(h)
 	if e == nil || def == nil || !def.SkillOrSpellBased() {
@@ -395,7 +525,7 @@ func inDefaultChain(h defaultable, def *SkillDefault, lookedAt map[defaultable]b
 		}
 		if !lookedAt[one] {
 			lookedAt[one] = true
-			if inDefaultChain(h, one.recordedDefault(), lookedAt) {
+			if inDefaultChain(h, one.restingDefault(), lookedAt) {
 				return true
 			}
 		}
@@ -479,10 +609,15 @@ func defaultTarget(h defaultable) defaultable {
 	return defaultTargetOf(entityOf(h), h, def, true)
 }
 
-// hasDefaultTo returns true if the set of possible defaults of the item includes the target: for a skill, a
-// skill-based default naming it and selecting its specialization, and for a spell, a spell-based default naming it
-// and selecting its power source.
+// hasDefaultTo returns true if the set of possible defaults of the item includes the target; see defaultTo.
 func hasDefaultTo(h, target defaultable) bool {
+	return defaultTo(h, target) != nil
+}
+
+// defaultTo returns the first of the item's possible defaults (see resolveToSpecificDefaults) to the target, or nil:
+// for a skill, a skill-based default naming it and selecting its specialization, and for a spell, a spell-based default
+// naming it and selecting its power source.
+func defaultTo(h, target defaultable) *SkillDefault {
 	replacements := h.NameableReplacements()
 	for _, def := range resolveToSpecificDefaults(h) {
 		if def.NameWithReplacements(replacements) != target.NameWithReplacements() {
@@ -492,16 +627,16 @@ func hasDefaultTo(h, target defaultable) bool {
 		case *Skill:
 			if def.SkillBased() && skillSpecializationMatches(def.Specialization, replacements,
 				one.SpecializationWithReplacements(), one.OptionalSpecializationWithReplacements()) {
-				return true
+				return def
 			}
 		case *Spell:
 			if def.SpellBased() && !def.SamePowerSource &&
 				def.PowerSource.Matches(replacements, one.PowerSourceWithReplacements()) {
-				return true
+				return def
 			}
 		}
 	}
-	return false
+	return nil
 }
 
 // defaultNote returns the note naming what the item defaults to, such as "Default: Broadsword-2", or "" when its
