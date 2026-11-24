@@ -182,8 +182,8 @@ func TestInstallListItemCmdHandlersForEquipmentGroups(t *testing.T) {
 }
 
 // TestTraitListCommandsFollowTheLayout checks that Add Natural Attacks and Organize Traits, like the "New …" commands,
-// are disabled while the layout leaves the trait list off the page, on a sheet and on a template alike: the list has
-// no undo manager there, so the commands would change it where the user can't see and can't undo.
+// are disabled while a sheet's layout leaves the trait list off the page: the list has no undo manager there, so the
+// commands would change it where the user can't see and can't undo.
 func TestTraitListCommandsFollowTheLayout(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -203,23 +203,6 @@ func TestTraitListCommandsFollowTheLayout(t *testing.T) {
 	c.True(layout.Show(gurps.BlockTraitsKey))
 	sheet.Rebuild(true)
 	c.Equal([]bool{true, true, true}, can(sheet, ids...), "the commands are enabled again once the list is back")
-
-	// Templates follow the default layout, which is put back as it was, since showing a hidden block again gives it a
-	// band of its own.
-	settings := gurps.GlobalSettings().Sheet
-	saved := settings.Layout.Clone()
-	t.Cleanup(func() { settings.Layout = saved })
-	global := settings.Layout
-	template := newTestTemplateWithBodyType("Humanoid")
-	ids = []int{AddNaturalAttacksItemID, OrganizeTraitsItemID, NewTraitItemID, NewCarriedEquipmentItemID}
-	c.Equal([]bool{true, true, true, true}, can(template, ids...), "a template's commands follow the default layout")
-	c.True(global.Hide(gurps.BlockTraitsKey))
-	template.Rebuild(true)
-	c.Equal([]bool{false, false, false, true}, can(template, ids...),
-		"a template's trait commands are disabled while the default layout leaves the trait list off the page")
-	c.True(global.Show(gurps.BlockTraitsKey))
-	template.Rebuild(true)
-	c.Equal([]bool{true, true, true, true}, can(template, ids...))
 }
 
 // TestMovingEquipmentClosesItsEditorsFirst checks that moving equipment to the other list first closes an editor open

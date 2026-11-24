@@ -38,7 +38,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/role"
-	"github.com/richardwilkes/unison/enums/side"
 )
 
 // TestNewItemCommandUsesTheLiveList checks that the "New Trait" command adds its item to the list on screen even after
@@ -1482,20 +1481,14 @@ func restoreDefaultSheetLayout(t *testing.T, layout *gurps.SheetLayout) {
 }
 
 // TestUseLayoutAsDefaultStoresACopy checks that making a sheet's layout the default for new sheets stores a copy of it
-// rather than the sheet's own, publishes it for the sheets opened from then on, and tells everything that lays itself
-// out from the defaults about the change.
+// rather than the sheet's own and publishes it for the sheets opened from then on.
 func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
 	restoreDefaultSheetLayout(t, global.Sheet.Layout)
 
 	sheet, _ := newTestSheetForLayoutEditing(t)
-	recorder := &sheetSettingsRecorder{}
-	recorder.Self = recorder
-	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)
 	sheet.hideLayoutBlock(gurps.BlockNotesKey)
-	recorder.entities = nil
-	recorder.updates = nil
 	c.True(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
 		"the published default must start out showing the block the sheet hides, or the test proves nothing")
 
@@ -1506,10 +1499,6 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c.True(layout != global.Sheet.Layout, "the default must be a copy, not the sheet's own layout")
 	c.Equal(gurps.Hash64(layout), gurps.Hash64(sheetLayoutGivenToNewEntity(t)),
 		"a sheet without embedded settings opened from now on must be given the new default")
-	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
-	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
-	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
-	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 
 	// Neither of the two can be changed by way of the other.
 	global.Sheet.Layout.Hide(gurps.BlockSpellsKey)
@@ -1517,24 +1506,18 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 }
 
 // TestResetDefaultLayoutRestoresTheFactoryLayout checks that resetting the default layout puts the factory layout in
-// place for new sheets and publishes it for the sheets opened from then on, leaves the sheet's own layout alone, and
-// tells everything that lays itself out from the defaults about the change.
+// place for new sheets and publishes it for the sheets opened from then on, leaving the sheet's own layout alone.
 func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
 	restoreDefaultSheetLayout(t, global.Sheet.Layout)
 
 	sheet, _ := newTestSheetForLayoutEditing(t)
-	recorder := &sheetSettingsRecorder{}
-	recorder.Self = recorder
-	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)
 	sheet.hideLayoutBlock(gurps.BlockNotesKey)
 	sheet.useLayoutAsDefault()
 	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must start out altered")
 	c.False(sheetLayoutGivenToNewEntity(t).Contains(gurps.BlockNotesKey),
 		"the published default must start out altered too, or the test proves nothing")
-	recorder.entities = nil
-	recorder.updates = nil
 
 	sheet.resetDefaultLayout()
 
@@ -1544,10 +1527,6 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 		"a sheet without embedded settings opened from now on must be given the factory layout again")
 	c.False(sheet.Entity().SheetSettings.Layout.Contains(gurps.BlockNotesKey),
 		"the sheet's own layout must be left alone")
-	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
-	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
-	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
-	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 }
 
 // TestHiddenListsOfferNoCommands checks that the commands that add to a list, or move equipment into it, are disabled
@@ -1602,50 +1581,6 @@ func TestHiddenListsOfferNoCommands(t *testing.T) {
 
 	sheet.hideLayoutBlock(gurps.BlockTraitsKey)
 	c.False(readGates().newTrait, "hiding the traits disables adding to them")
-}
-
-// TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt checks that setting the default block layout rebuilds the open
-// templates, which lay themselves out from it, and nothing else: a library list and a loot sheet have no layout, and
-// used to be fully rebuilt all the same.
-func TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-
-	var sheet *Sheet
-	var template *Template
-	var loot *LootSheet
-	var list *TableDockable[*gurps.Trait]
-	screen.Do(func() {
-		sheet = NewSheet("test"+gurps.SheetExt, gurps.NewEntity())
-		DisplayNewDockable(sheet)
-		sheet.markUnmodified() // So that closing it asks nothing.
-		template = newTestTemplateDockable("Template", gurps.NewTemplate())
-		DisplayNewDockable(template)
-		template.markUnmodified()
-		loot = NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
-		DisplayNewDockable(loot)
-		loot.markUnmodified()
-		list = NewTraitTableDockable(filepath.Join(t.TempDir(), "test"+gurps.TraitsExt),
-			[]*gurps.Trait{newFilterTestTrait("Acute Vision", "Physical")})
-		DisplayNewDockable(list)
-	})
-	row := list.table.RowFromIndex(0)
-	c.NotNil(row, "the library list must show its trait")
-	lootStamp := loot.Equipment.syncedAtStamp()
-	before := currentDisplayStamp()
-
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.Layout.Hide(gurps.BlockNotesKey)
-		sheet.useLayoutAsDefault()
-	})
-
-	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must be the sheet's layout")
-	c.True(template.Traits.syncedAtStamp() > before,
-		"a template lays itself out from the default layout, so it must be rebuilt")
-	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "a loot sheet has no layout, so it must be left alone")
-	c.True(list.table.RowFromIndex(0) == row, "a library list has no layout, so it must be left alone")
 }
 
 // closeBuyDockable closes the sheet's buy dockable, if it has one, abandoning the purchase.

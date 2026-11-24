@@ -124,8 +124,7 @@ Layout changes can be undone with **Edit > Undo** like any other edit to the she
 ![layout menu](images/icons/layoutMenu.svg) beside the Edit Layout button holds the remaining layout commands:
 
 - **Show:** Bring a hidden block back. It returns at the bottom of the sheet.
-- **Use This Layout as the Default for New Sheets:** Make this sheet's arrangement the default. Templates use the
-  default layout too.
+- **Use This Layout as the Default for New Sheets:** Make this sheet's arrangement the default.
 - **Reset Layout to Default:** Put this sheet back to the default arrangement.
 - **Reset the Default Layout to Factory Settings:** Restore the default arrangement that GCS ships with. This sheet is
   left as it is.

@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
 
@@ -72,37 +71,20 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	prepareForPage(t.template)
 	t.finishPageDockable(t, t.createContent())
 
-	// A creator returns nil while the default layout leaves its list off the page (see createLists), which disables the
-	// commands that would add to it, as a sheet's do (see Sheet.onPageCreator).
 	creators := listItemCreators{
-		traits:           onPageCreator(t.showsBlock, gurps.BlockTraitsKey, func() itemCreator { return t.Traits }),
-		skills:           onPageCreator(t.showsBlock, gurps.BlockSkillsKey, func() itemCreator { return t.Skills }),
-		spells:           onPageCreator(t.showsBlock, gurps.BlockSpellsKey, func() itemCreator { return t.Spells }),
-		carriedEquipment: onPageCreator(t.showsBlock, gurps.BlockEquipmentKey, func() itemCreator { return t.Equipment }),
-		notes:            onPageCreator(t.showsBlock, gurps.BlockNotesKey, func() itemCreator { return t.Notes }),
+		traits:           func() itemCreator { return t.Traits },
+		skills:           func() itemCreator { return t.Skills },
+		spells:           func() itemCreator { return t.Spells },
+		carriedEquipment: func() itemCreator { return t.Equipment },
+		notes:            func() itemCreator { return t.Notes },
 	}
 	installListItemCmdHandlers(t, creators)
 	installChoiceContainerCmdHandlers(t, creators)
-	installTraitListCmdHandlers(t, t.template, nil, t.onPageTraits)
+	installTraitListCmdHandlers(t, t.template, nil, func() *PageList[*gurps.Trait] { return t.Traits })
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)
 	return t
-}
-
-// showsBlock returns true if the default layout, which templates follow (see createLists), shows the block with the key
-// on the page.
-func (t *Template) showsBlock(key string) bool {
-	return gurps.GlobalSettings().Sheet.Layout.Contains(key)
-}
-
-// onPageTraits returns the trait list, or nil while the default layout leaves it off the page, which disables the
-// commands that act on it (see installTraitListCmdHandlers).
-func (t *Template) onPageTraits() *PageList[*gurps.Trait] {
-	if !t.showsBlock(gurps.BlockTraitsKey) {
-		return nil
-	}
-	return t.Traits
 }
 
 // PageInfoProvider returns the page info provider for this template.
@@ -163,10 +145,6 @@ func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
 	case noteDragKey:
 		p = t.Notes.Table
 	default:
-		return nil
-	}
-	if !unison.AncestorIs(p, t.content) {
-		// The layout doesn't place the list, so it isn't a drop target and there is nothing to draw feedback over.
 		return nil
 	}
 	return p.AsPanel()
@@ -348,34 +326,19 @@ func (t *Template) createContent() unison.Paneler {
 	return t.content
 }
 
-// createLists (re)creates the page's lists from the default block layout, which is the one templates follow. A list is
-// only built anew when the columns it has to show no longer match the ones it has, since a table's columns are fixed
-// at creation; otherwise the existing list is kept and synced (see syncOrRebuildList). Anything that captured a list
-// has to allow for it being replaced -- see installNewItemCmdHandlers. Taking the page apart takes the focus away from
-// whichever table held it and moves the scroll position; Rebuild puts both back.
+// createLists (re)creates the page's lists. A template always shows all five of them, arranged as the factory layout
+// has them; no sheet's layout, the default for new sheets included, has any part in it. A list is only built anew when
+// the columns it has to show no longer match the ones it has, since a table's columns are fixed at creation; otherwise
+// the existing list is kept and synced (see syncOrRebuildList). Anything that captured a list has to allow for it being
+// replaced -- see installNewItemCmdHandlers. Taking the page apart takes the focus away from whichever table held it
+// and moves the scroll position; Rebuild puts both back.
 func (t *Template) createLists() {
-	// The lists are detached first, so that a list the layout doesn't place is left without a parent. Removing the
-	// content's children only detaches the bands, leaving a list nested inside one still pointing at a band nobody can
-	// see, and a list's parent is how the search tells one that is on the page from one that isn't.
-	for _, list := range t.lists() {
-		if !xreflect.IsNil(list) {
-			list.AsPanel().RemoveFromParent()
-		}
-	}
 	t.content.RemoveAllChildren()
 	t.content.AddChild(t.createTopBlock())
-	layout := gurps.GlobalSettings().Sheet.Layout.Filtered(gurps.IsTemplateBlockKey)
+	layout := gurps.FactorySheetLayout().Filtered(gurps.IsTemplateBlockKey)
 	for _, band := range buildLayoutBands(layout.Root, t.layoutLeaf) {
 		t.content.AddChild(band)
 	}
-	// A list the layout doesn't show is still brought into being, since the rebuild's selection tracking and the
-	// dockable's other machinery reach for all five of them without asking whether they are on the page.
-	for _, key := range gurps.AllBlockKeys {
-		if gurps.IsTemplateBlockKey(key) && !layout.Contains(key) {
-			t.layoutLeaf(key)
-		}
-	}
-
 	t.content.ApplyPreferredSize()
 }
 
@@ -437,8 +400,7 @@ func (t *Template) searchableLists() []searchableList {
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder. A template has no entity of its own and shows what the
-// default sheet settings call for, laying itself out from the default layout among the rest, so a change to any part
-// of those -- reported with a nil entity -- concerns it.
+// default sheet settings call for, so a change to those -- reported with a nil entity -- concerns it.
 func (t *Template) SheetSettingsUpdated(e *gurps.Entity, _ gurps.SheetSettingsParts, fullRebuild bool) {
 	if e == nil {
 		t.Rebuild(fullRebuild)

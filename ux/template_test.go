@@ -68,31 +68,6 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
 }
 
-// A template's search, like a sheet's, only looks in the lists that are on the page: a match in a list the layout
-// hides could only be shown by scrolling a table nobody is looking at into view.
-func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
-	c := check.New(t)
-	sheetSettings := gurps.GlobalSettings().Sheet
-	uxtest.SwapForTest(t, &sheetSettings.Layout, sheetSettings.Layout.Clone())
-
-	data := gurps.NewTemplate()
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Findable"
-	data.Traits = []*gurps.Trait{trait}
-	data.Skills = []*gurps.Skill{newTestSkill("Findable", fxp.One, nil)}
-	template := newTestTemplateDockable("Search", data)
-	matches := template.search.findMatches("findable")
-	c.Equal(2, len(matches), "with every list on the page, both rows are found")
-
-	c.True(sheetSettings.Layout.Hide(gurps.BlockSkillsKey))
-	template.Rebuild(true)
-	c.Nil(template.Skills.AsPanel().Parent(), "the hidden skills list is not on the page")
-	matches = template.search.findMatches("findable")
-	c.Equal(1, len(matches), "only the row in the list that is on the page is found")
-	c.Equal(string(trait.ID()), matches[0].key, "and it is the trait")
-	c.Equal("Traits", matches[0].title, "under the title of its list")
-}
-
 // newTestSheetForTemplate returns a character sheet that can be built and rebuilt without a window. Both the toolbar
 // and the rebuild path reach for global state, so the key bindable actions are registered and a document dock is
 // installed for the test.
@@ -325,39 +300,20 @@ func TestApplyLibraryTemplateSourcesItsItems(t *testing.T) {
 	c.Equal(srcstate.Matched, state)
 }
 
-// TestTemplateBuildsFromTheDefaultLayout checks that a template lays its content out from the default layout, showing
-// exactly the five blocks a template can have.
-func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
+// TestTemplateShowsItsListsWhateverTheDefaultLayout checks that a template shows all five of its lists however the
+// default layout for new sheets is arranged, since that layout is for character sheets alone.
+func TestTemplateShowsItsListsWhateverTheDefaultLayout(t *testing.T) {
 	c := check.New(t)
-	template := newTestTemplateWithBodyType("Humanoid")
+	sheetSettings := gurps.GlobalSettings().Sheet
+	uxtest.SwapForTest(t, &sheetSettings.Layout, sheetSettings.Layout.Clone())
+	c.True(sheetSettings.Layout.Hide(gurps.BlockSpellsKey))
+
+	template := newTestTemplateDockable("Template", gurps.NewTemplate())
 	lists := []unison.Paneler{template.Traits, template.Skills, template.Spells, template.Equipment, template.Notes}
-	for i, list := range lists {
-		c.NotNil(list.AsPanel().Parent(), "list %d must be placed", i)
-	}
 	placed := uxtest.PanelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
 		return slices.ContainsFunc(lists, func(list unison.Paneler) bool { return list.AsPanel() == p })
 	})
-	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")
-}
-
-// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page
-// is not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
-func TestTemplateHidingABlockTakesItOffTheDropTargets(t *testing.T) {
-	c := check.New(t)
-	global := gurps.GlobalSettings()
-	restoreDefaultSheetLayout(t, global.Sheet.Layout)
-	layout := global.Sheet.Layout.Clone()
-	global.Sheet.Layout = layout
-	template := newTestTemplateDockable("Source", gurps.NewTemplate())
+	c.Equal(len(lists), len(placed), "the template shows all five of its lists")
 	c.NotNil(template.keyToPanel(spellDragKey), "a spell can be dropped onto the template")
-
-	c.True(layout.Hide(gurps.BlockSpellsKey))
-	template.Rebuild(true)
-	c.Nil(template.Spells.AsPanel().Parent(), "a list that isn't on the page has no parent")
-	c.Nil(template.keyToPanel(spellDragKey), "a list that isn't on the page is not a drop target")
-	c.NotNil(template.keyToPanel(traitDragKey), "the lists that are still on the page remain drop targets")
-
-	c.True(layout.Show(gurps.BlockSpellsKey))
-	template.Rebuild(true)
-	c.NotNil(template.keyToPanel(spellDragKey), "showing the block makes it a drop target again")
+	c.True(template.AsPanel().CanPerformCmd(template, NewSpellItemID), "a spell can be added to the template")
 }

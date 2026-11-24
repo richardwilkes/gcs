@@ -138,10 +138,10 @@ func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreat
 }
 
 // installTraitListCmdHandlers installs on the owner the handlers for the commands that act on its trait list as a
-// whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for
-// the same reason as in installNewItemCmdHandlers, and the commands are disabled while the lookup returns nil, which
-// it does while the layout leaves the list off the page (see onPageCreator). The entity is the one the natural attacks
-// are made for, and is nil for a template, whose traits have no entity until the template is applied.
+// whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for the
+// same reason as in installNewItemCmdHandlers, and the commands are disabled while the lookup returns nil, which it
+// does while a sheet's layout leaves the list off the page (see Sheet.onPageCreator). The entity is the one the natural
+// attacks are made for, and is nil for a template, whose traits have no entity until the template is applied.
 func installTraitListCmdHandlers(owner Rebuildable, provider gurps.TraitListProvider, entity *gurps.Entity, traits func() *PageList[*gurps.Trait]) {
 	p := owner.AsPanel()
 	enabled := func(_ any) bool { return traits() != nil }

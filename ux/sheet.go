@@ -838,15 +838,8 @@ func (s *Sheet) showsBlock(key string) bool {
 // leaves the block off the page, disabling the "New ..." commands for it, since they would otherwise add to a list the
 // user can't see, and one with no undo manager to record the edit with.
 func (s *Sheet) onPageCreator(key string, list func() itemCreator) func() itemCreator {
-	return onPageCreator(s.showsBlock, key, list)
-}
-
-// onPageCreator returns a creator for the list that the block with the key shows, which returns nil while shows reports
-// that the layout leaves the block off the page, disabling the "New ..." commands for it, since they would otherwise add
-// to a list the user can't see, and one with no undo manager to record the edit with.
-func onPageCreator(shows func(key string) bool, key string, list func() itemCreator) func() itemCreator {
 	return func() itemCreator {
-		if !shows(key) {
+		if !s.showsBlock(key) {
 			return nil
 		}
 		return list()
@@ -1021,10 +1014,6 @@ func setDefaultSheetLayout(layout *gurps.SheetLayout) {
 	// A sheet file without embedded settings clones the published snapshot of the global sheet settings rather than the
 	// live ones, so the snapshot has to be republished for such a sheet opened from now on to get this layout.
 	gurps.SyncGlobalSheetSettings()
-	// Templates lay themselves out from the default layout, so they have to be told. A nil entity is what says the
-	// change was to the defaults rather than to some sheet's own settings, which is why the open sheets ignore it, and
-	// the part is what lets the library lists and loot sheets, which have no layout, ignore it too.
-	notifySheetSettingsUpdated(nil, gurps.SheetSettingsLayoutPart, true)
 }
 
 func (s *Sheet) showLayoutMenu(b *unison.Button) {

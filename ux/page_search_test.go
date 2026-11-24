@@ -83,6 +83,27 @@ func TestPageSearchMatchesCarryTheirListTitles(t *testing.T) {
 		matchLabels(loot.search.findMatches("findable")))
 }
 
+// The search only looks in the lists that are on the page: a match in a list the layout hides could only be shown by
+// scrolling a table nobody is looking at into view.
+func TestPageSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := newFindableTrait(entity, "Findable")
+	entity.Traits = []*gurps.Trait{trait}
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Findable"
+	entity.Skills = []*gurps.Skill{skill}
+	sheet.Rebuild(true)
+	c.Equal(2, len(sheet.search.findMatches("findable")), "with every list on the page, both rows are found")
+
+	c.True(entity.SheetSettings.Layout.Hide(gurps.BlockSkillsKey))
+	sheet.Rebuild(true)
+	c.Nil(sheet.Skills.AsPanel().Parent(), "the hidden skills list is not on the page")
+	c.Equal([]string{"Findable | Traits"}, matchLabels(sheet.search.findMatches("findable")),
+		"only the row in the list that is on the page is found")
+}
+
 // A long label is cut short, a note's label skips the blank lines it starts with, and a weapon, whose description
 // column shows its owner, adds its usage so that one weapon's attacks can be told apart, even when its owner's name is
 // cut short.
